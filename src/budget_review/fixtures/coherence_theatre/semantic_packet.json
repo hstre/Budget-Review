@@ -1,0 +1,231 @@
+{
+  "schema_version": "budget-review.semantic-packet/0.1",
+  "document_id": "regional-skills-bridge",
+  "provenance": {
+    "provider": "controlled-fixture",
+    "model_id": "gold-extractor/1",
+    "run_id": "coherence-theatre-alpha",
+    "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "output_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "temperature": 0.0
+  },
+  "claims": [
+    {
+      "proposal_id": "C01",
+      "claim_type": "scope",
+      "canonical_content": "The programme lasts 18 months.",
+      "raw_span": "Regional Skills Bridge is an 18-month programme",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C02",
+      "claim_type": "target",
+      "canonical_content": "The programme will serve 120 participants during the first 12 months.",
+      "raw_span": "During the first twelve months, the programme will serve 120 participants",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C03",
+      "claim_type": "target",
+      "canonical_content": "The programme will graduate at least 110 participants.",
+      "raw_span": "graduate at least 110 of them",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C04",
+      "claim_type": "capacity",
+      "canonical_content": "Delivery consists of four cohorts of 25 participants.",
+      "raw_span": "Delivery will be organised in four cohorts of 25 participants.",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C05",
+      "claim_type": "capacity",
+      "canonical_content": "All four cohorts operate in parallel.",
+      "raw_span": "All four cohorts will operate in parallel",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C06",
+      "claim_type": "resource",
+      "canonical_content": "Each participant has one-to-one access to a programme laptop during workshops.",
+      "raw_span": "each participant will have one-to-one access to a programme laptop during workshops",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C07",
+      "claim_type": "baseline",
+      "canonical_content": "Comparable programmes have a 70 percent completion rate.",
+      "raw_span": "Comparable programmes complete at roughly 70 percent.",
+      "confidence": 0.90,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C08",
+      "claim_type": "forecast",
+      "canonical_content": "The programme expects an 85 percent completion rate.",
+      "raw_span": "is expected to raise completion to 85 percent",
+      "confidence": 0.90,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C09",
+      "claim_type": "baseline",
+      "canonical_content": "Current attrition is 30 percent.",
+      "raw_span": "Current attrition is 30 percent",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C10",
+      "claim_type": "forecast",
+      "canonical_content": "The programme will halve current attrition.",
+      "raw_span": "the new approach will halve attrition",
+      "confidence": 0.90,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C11",
+      "claim_type": "forecast",
+      "canonical_content": "The resulting dropout rate will be 12 percent.",
+      "raw_span": "leaving a dropout rate of 12 percent",
+      "confidence": 0.90,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C12",
+      "claim_type": "resource",
+      "canonical_content": "The programme will purchase 25 laptops.",
+      "raw_span": "The programme will purchase 25 laptops.",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C13",
+      "claim_type": "delivery",
+      "canonical_content": "Monthly in-person workshops will be delivered at 12 rural sites.",
+      "raw_span": "Monthly in-person workshops will be delivered at all twelve rural sites.",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C14",
+      "claim_type": "budget",
+      "canonical_content": "No travel budget is required.",
+      "raw_span": "No travel budget is required",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C15",
+      "claim_type": "assumption",
+      "canonical_content": "Community partners will absorb all transport costs.",
+      "raw_span": "community partners are expected to absorb all transport costs",
+      "confidence": 0.85,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C16",
+      "claim_type": "budget",
+      "canonical_content": "The coordinator works at 0.5 FTE for the first 12 months.",
+      "raw_span": "The coordinator will work at 0.5 FTE for the first twelve months.",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C17",
+      "claim_type": "budget",
+      "canonical_content": "The fully loaded annual coordinator salary is EUR 60,000.",
+      "raw_span": "The benchmark fully loaded annual salary is EUR 60,000",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C18",
+      "claim_type": "budget",
+      "canonical_content": "EUR 42,000 is allocated to the coordinator.",
+      "raw_span": "EUR 42,000 is allocated to the coordinator.",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C19",
+      "claim_type": "budget",
+      "canonical_content": "Training costs EUR 18,000.",
+      "raw_span": "EUR 18,000 for training",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C20",
+      "claim_type": "budget",
+      "canonical_content": "Equipment costs EUR 24,000.",
+      "raw_span": "EUR 24,000 for equipment",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C21",
+      "claim_type": "budget",
+      "canonical_content": "Evaluation costs EUR 16,000.",
+      "raw_span": "EUR 16,000 for evaluation",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C22",
+      "claim_type": "budget",
+      "canonical_content": "The total funding request is EUR 96,000.",
+      "raw_span": "a total funding request of EUR 96,000",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C23",
+      "claim_type": "method",
+      "canonical_content": "Before-and-after assessments will demonstrate impact.",
+      "raw_span": "Impact will be demonstrated through statistically robust before-and-after skills assessments.",
+      "confidence": 0.90,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C24",
+      "claim_type": "method",
+      "canonical_content": "A control group is unnecessary.",
+      "raw_span": "A control group is unnecessary",
+      "confidence": 0.95,
+      "source_ref": "proposal.md"
+    },
+    {
+      "proposal_id": "C25",
+      "claim_type": "causal",
+      "canonical_content": "Improved participant scores are sufficient evidence that the programme caused employment gains.",
+      "raw_span": "improvement in participant scores will provide sufficient evidence that the programme caused the observed employment gains",
+      "confidence": 0.90,
+      "source_ref": "proposal.md"
+    }
+  ],
+  "relations": [
+    {"source_id": "C04", "relation_type": "CONSTRAINS", "target_id": "C02", "confidence": 0.9, "rationale": "Cohort places constrain the participant target."},
+    {"source_id": "C05", "relation_type": "CONSTRAINS", "target_id": "C06", "confidence": 0.9, "rationale": "Parallel delivery constrains simultaneous equipment."},
+    {"source_id": "C12", "relation_type": "CONSTRAINS", "target_id": "C06", "confidence": 0.9, "rationale": "Purchased laptops constrain one-to-one access."},
+    {"source_id": "C08", "relation_type": "QUANTIFIES", "target_id": "C03", "confidence": 0.9, "rationale": "Completion percentage quantifies graduates."},
+    {"source_id": "C09", "relation_type": "BASELINE_FOR", "target_id": "C10", "confidence": 0.9, "rationale": "Current attrition is the reduction baseline."},
+    {"source_id": "C10", "relation_type": "QUANTIFIES", "target_id": "C11", "confidence": 0.9, "rationale": "The halving claim quantifies the resulting rate."},
+    {"source_id": "C15", "relation_type": "ASSUMPTION_FOR", "target_id": "C14", "confidence": 0.9, "rationale": "Partner funding is required for a zero travel budget."},
+    {"source_id": "C16", "relation_type": "QUANTIFIES", "target_id": "C18", "confidence": 0.9, "rationale": "FTE and duration quantify the allocation."},
+    {"source_id": "C17", "relation_type": "QUANTIFIES", "target_id": "C18", "confidence": 0.9, "rationale": "Annual salary quantifies the allocation."},
+    {"source_id": "C18", "relation_type": "PART_OF", "target_id": "C22", "confidence": 0.9, "rationale": "Coordinator allocation is a budget line."},
+    {"source_id": "C19", "relation_type": "PART_OF", "target_id": "C22", "confidence": 0.9, "rationale": "Training is a budget line."},
+    {"source_id": "C20", "relation_type": "PART_OF", "target_id": "C22", "confidence": 0.9, "rationale": "Equipment is a budget line."},
+    {"source_id": "C21", "relation_type": "PART_OF", "target_id": "C22", "confidence": 0.9, "rationale": "Evaluation is a budget line."},
+    {"source_id": "C23", "relation_type": "SUPPORTS", "target_id": "C25", "confidence": 0.9, "rationale": "The assessment design is offered as causal support."},
+    {"source_id": "C24", "relation_type": "ASSUMPTION_FOR", "target_id": "C25", "confidence": 0.9, "rationale": "No control group is assumed sufficient for causality."}
+  ]
+}

@@ -1,0 +1,402 @@
+"""Deterministic checks over admitted claims and relations.
+
+These checks deliberately operate after semantic extraction. They do not try to
+understand polished prose; they test explicit numeric and dependency structures.
+"""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Iterable
+
+from .models import Finding, FindingCategory, SemanticDossier
+
+_WORDS = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "twelve": 12,
+}
+
+
+def _number(value: str) -> float:
+    lowered = value.lower()
+    if lowered in _WORDS:
+        return float(_WORDS[lowered])
+    return float(value.replace(",", ""))
+
+
+def _first(pattern: str, text: str) -> float | None:
+    match = re.search(pattern, text, re.IGNORECASE)
+    return _number(match.group(1)) if match else None
+
+
+def _money(text: str) -> float | None:
+    match = re.search(r"(?:EUR|€)\s*([0-9][0-9,.]*)", text, re.IGNORECASE)
+    return _number(match.group(1)) if match else None
+
+
+def _texts(dossier: SemanticDossier) -> dict[str, str]:
+    return {
+        claim.proposal_id: f"{claim.canonical_content} {claim.raw_span}".lower()
+        for claim in dossier.claims
+    }
+
+
+class _Builder:
+    def __init__(self) -> None:
+        self.findings: list[Finding] = []
+
+    def add(
+        self,
+        category: FindingCategory,
+        severity: str,
+        summary: str,
+        claims: Iterable[str],
+        explanation: str,
+        question: str,
+        confidence: float = 0.99,
+    ) -> None:
+        claim_ids = tuple(dict.fromkeys(claims))
+        self.findings.append(
+            Finding(
+                finding_id=f"D{len(self.findings) + 1:02d}",
+                reviewer_id="deterministic-checks",
+                reviewer_kind="deterministic",
+                model_id="budget-rules/0.1",
+                category=category,
+                severity=severity,
+                summary=summary,
+                claim_ids=claim_ids,
+                explanation=explanation,
+                question_for_reviewer=question,
+                confidence=confidence,
+            )
+        )
+
+
+def deterministic_checks(dossier: SemanticDossier, tolerance: float = 0.01) -> tuple[Finding, ...]:
+    """Run conservative calculations; a finding still requires human judgment."""
+    texts = _texts(dossier)
+    builder = _Builder()
+    _check_capacity(texts, builder, tolerance)
+    _check_resource_capacity(texts, builder, tolerance)
+    _check_completion_rate(texts, builder, tolerance)
+    _check_halving(texts, builder, tolerance)
+    _check_assumption_dependencies(dossier, texts, builder)
+    _check_fte_budget(texts, builder, tolerance)
+    _check_budget_sum(dossier, texts, builder, tolerance)
+    _check_causal_design(texts, builder)
+    return tuple(builder.findings)
+
+
+def _check_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
+    target = next(
+        (
+            (claim_id, _first(r"serve\s+([0-9,.]+)\s+participants", text))
+            for claim_id, text in texts.items()
+            if "serve" in text
+        ),
+        None,
+    )
+    capacity = next(
+        (
+            (claim_id, match)
+            for claim_id, text in texts.items()
+            if (match := re.search(r"([a-z]+|[0-9]+)\s+cohorts?\s+of\s+([0-9,.]+)", text))
+        ),
+        None,
+    )
+    if not target or target[1] is None or not capacity:
+        return
+    cohorts = _number(capacity[1].group(1))
+    cohort_size = _number(capacity[1].group(2))
+    available = cohorts * cohort_size
+    if abs(available - target[1]) > tolerance:
+        builder.add(
+            FindingCategory.CAPACITY_MISMATCH,
+            "high",
+            "Stated cohort capacity does not reach the participant target",
+            (target[0], capacity[0]),
+            f"{cohorts:g} cohorts × {cohort_size:g} places = {available:g}, not {target[1]:g}.",
+            "Which additional capacity makes the participant target feasible?",
+        )
+
+
+def _check_resource_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
+    purchase = next(
+        (
+            (claim_id, _first(r"purchase\s+([0-9,.]+)\s+laptops?", text))
+            for claim_id, text in texts.items()
+            if "purchase" in text and "laptop" in text
+        ),
+        None,
+    )
+    parallel = next(
+        (
+            (claim_id, _first(r"([a-z]+|[0-9]+)\s+cohorts?", text))
+            for claim_id, text in texts.items()
+            if "parallel" in text
+        ),
+        None,
+    )
+    cohort = next(
+        (
+            (claim_id, _number(match.group(1)), _number(match.group(2)))
+            for claim_id, text in texts.items()
+            if (match := re.search(r"([a-z]+|[0-9]+)\s+cohorts?\s+of\s+([0-9,.]+)", text))
+        ),
+        None,
+    )
+    one_to_one = next(
+        (claim_id for claim_id, text in texts.items() if "one-to-one" in text and "laptop" in text),
+        None,
+    )
+    if (
+        not purchase
+        or purchase[1] is None
+        or not parallel
+        or parallel[1] is None
+        or not cohort
+        or not one_to_one
+    ):
+        return
+    simultaneous = min(parallel[1], cohort[1]) * cohort[2]
+    if purchase[1] + tolerance < simultaneous:
+        builder.add(
+            FindingCategory.RESOURCE_MISMATCH,
+            "high",
+            "One-to-one laptop promise exceeds simultaneous equipment",
+            (parallel[0], one_to_one, purchase[0], cohort[0]),
+            (
+                f"Parallel delivery implies {simultaneous:g} simultaneous places but "
+                f"only {purchase[1]:g} laptops are purchased."
+            ),
+            "What scheduling or additional equipment supports one-to-one access?",
+        )
+
+
+def _check_completion_rate(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
+    enrolled = next(
+        (
+            (claim_id, _first(r"serve\s+([0-9,.]+)\s+participants", text))
+            for claim_id, text in texts.items()
+            if "serve" in text
+        ),
+        None,
+    )
+    rate = next(
+        (
+            (claim_id, _first(r"([0-9,.]+)\s*percent", text))
+            for claim_id, text in texts.items()
+            if "completion" in text and ("expect" in text or "raise" in text)
+        ),
+        None,
+    )
+    graduates = next(
+        (
+            (claim_id, _first(r"(?:graduate|graduates?)\D{0,20}([0-9,.]+)", text))
+            for claim_id, text in texts.items()
+            if "graduat" in text
+        ),
+        None,
+    )
+    if (
+        not enrolled
+        or enrolled[1] is None
+        or not rate
+        or rate[1] is None
+        or not graduates
+        or graduates[1] is None
+    ):
+        return
+    implied = enrolled[1] * rate[1] / 100.0
+    if abs(implied - graduates[1]) > tolerance:
+        builder.add(
+            FindingCategory.ARITHMETIC_MISMATCH,
+            "high",
+            "Completion rate and graduate target diverge",
+            (enrolled[0], rate[0], graduates[0]),
+            f"{rate[1]:g}% of {enrolled[1]:g} is {implied:g}, not {graduates[1]:g}.",
+            "Which number governs the operational target?",
+        )
+
+
+def _check_halving(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
+    baseline = next(
+        (
+            (claim_id, _first(r"([0-9,.]+)\s*percent", text))
+            for claim_id, text in texts.items()
+            if "current attrition" in text
+        ),
+        None,
+    )
+    halve = next(
+        (claim_id for claim_id, text in texts.items() if "halve" in text and "attrition" in text),
+        None,
+    )
+    result = next(
+        (
+            (claim_id, _first(r"([0-9,.]+)\s*percent", text))
+            for claim_id, text in texts.items()
+            if "dropout rate" in text
+        ),
+        None,
+    )
+    if not baseline or baseline[1] is None or not halve or not result or result[1] is None:
+        return
+    implied = baseline[1] / 2.0
+    if abs(implied - result[1]) > tolerance:
+        builder.add(
+            FindingCategory.ARITHMETIC_MISMATCH,
+            "high",
+            "Halved attrition does not match stated dropout rate",
+            (baseline[0], halve, result[0]),
+            f"Half of {baseline[1]:g}% is {implied:g}%, not {result[1]:g}%.",
+            "Is the reduction relative, absolute, or based on another baseline?",
+        )
+
+
+def _check_assumption_dependencies(
+    dossier: SemanticDossier, texts: dict[str, str], builder: _Builder
+) -> None:
+    nodes = {claim.claim_node_id: claim.proposal_id for claim in dossier.claims}
+    for relation in dossier.relations:
+        if relation.relation_type.value != "ASSUMPTION_FOR":
+            continue
+        source = nodes[relation.source_claim_node_id]
+        target = nodes[relation.target_claim_node_id]
+        joined = texts[source] + " " + texts[target]
+        if any(word in joined for word in ("partner", "expected", "assume")):
+            builder.add(
+                FindingCategory.UNSUPPORTED_ASSUMPTION,
+                "medium",
+                "Budget claim depends on an external commitment",
+                (source, target),
+                (
+                    "The graph identifies an assumption as a prerequisite, but no "
+                    "admitted evidence secures it."
+                ),
+                "Is there a signed commitment, fallback budget, or quantified contingency?",
+                0.95,
+            )
+
+
+def _check_fte_budget(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
+    fte = next(
+        (
+            (claim_id, _first(r"([0-9.]+)\s*FTE", text), _first(r"([0-9,.]+)\s+months?", text))
+            for claim_id, text in texts.items()
+            if "fte" in text
+        ),
+        None,
+    )
+    salary = next(
+        (
+            (claim_id, _money(text))
+            for claim_id, text in texts.items()
+            if "annual" in text and "salary" in text
+        ),
+        None,
+    )
+    allocated = next(
+        (
+            (claim_id, _money(text))
+            for claim_id, text in texts.items()
+            if "allocated" in text and "coordinator" in text
+        ),
+        None,
+    )
+    if (
+        not fte
+        or fte[1] is None
+        or not salary
+        or salary[1] is None
+        or not allocated
+        or allocated[1] is None
+    ):
+        return
+    months = fte[2] or 12.0
+    implied = fte[1] * salary[1] * months / 12.0
+    if abs(implied - allocated[1]) > tolerance:
+        builder.add(
+            FindingCategory.BUDGET_MISMATCH,
+            "high",
+            "Coordinator allocation does not follow FTE calculation",
+            (fte[0], salary[0], allocated[0]),
+            (
+                f"{fte[1]:g} FTE × EUR {salary[1]:,.0f} × {months:g}/12 = "
+                f"EUR {implied:,.0f}, not EUR {allocated[1]:,.0f}."
+            ),
+            "Which additional coordinator costs explain the allocation?",
+        )
+
+
+def _check_budget_sum(
+    dossier: SemanticDossier, texts: dict[str, str], builder: _Builder, tolerance: float
+) -> None:
+    nodes = {claim.claim_node_id: claim.proposal_id for claim in dossier.claims}
+    grouped: dict[str, list[str]] = {}
+    for relation in dossier.relations:
+        if relation.relation_type.value == "PART_OF":
+            grouped.setdefault(nodes[relation.target_claim_node_id], []).append(
+                nodes[relation.source_claim_node_id]
+            )
+    for total_id, part_ids in grouped.items():
+        total = _money(texts[total_id])
+        parts = [(claim_id, _money(texts[claim_id])) for claim_id in part_ids]
+        if total is None or any(value is None for _, value in parts):
+            continue
+        part_sum = sum(value for _, value in parts if value is not None)
+        if abs(part_sum - total) > tolerance:
+            builder.add(
+                FindingCategory.BUDGET_MISMATCH,
+                "critical",
+                "Budget line items do not sum to the funding request",
+                (*part_ids, total_id),
+                (
+                    f"Admitted PART_OF items sum to EUR {part_sum:,.0f}; the stated "
+                    f"total is EUR {total:,.0f}."
+                ),
+                "Which line item or total should be corrected?",
+            )
+
+
+def _check_causal_design(texts: dict[str, str], builder: _Builder) -> None:
+    before_after = next(
+        (claim_id for claim_id, text in texts.items() if "before-and-after" in text), None
+    )
+    no_control = next(
+        (
+            claim_id
+            for claim_id, text in texts.items()
+            if "control group" in text and ("unnecessary" in text or "no " in text)
+        ),
+        None,
+    )
+    causal = next(
+        (claim_id for claim_id, text in texts.items() if "caused" in text or "causal" in text), None
+    )
+    if before_after and no_control and causal:
+        builder.add(
+            FindingCategory.CAUSAL_OVERCLAIM,
+            "high",
+            "Causal conclusion exceeds the stated evaluation design",
+            (before_after, no_control, causal),
+            (
+                "A before-and-after comparison without a comparator does not by itself "
+                "separate programme effects from other changes."
+            ),
+            "What design or evidence identifies the programme as the cause?",
+            0.98,
+        )
+
+
+__all__ = ["deterministic_checks"]

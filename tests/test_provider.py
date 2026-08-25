@@ -1,0 +1,70 @@
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from budget_review.provider import DeepSeekProvider, ModelConfig, ProviderError
+
+
+class _Response:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return None
+
+    def read(self) -> bytes:
+        return json.dumps(self.payload).encode()
+
+
+def test_json_completion_uses_current_model_contract(monkeypatch) -> None:
+    captured = {}
+
+    def fake_urlopen(request, timeout):
+        captured["body"] = json.loads(request.data)
+        return _Response(
+            {
+                "model": "deepseek-v4-flash",
+                "system_fingerprint": "fp",
+                "choices": [{"finish_reason": "stop", "message": {"content": '{"findings": []}'}}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 3},
+            }
+        )
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+    result, metadata = provider.complete_json(
+        system="Return json.",
+        user="Review.",
+        config=ModelConfig("deepseek-v4-flash", thinking=False),
+    )
+    assert result == {"findings": []}
+    assert captured["body"]["response_format"] == {"type": "json_object"}
+    assert captured["body"]["thinking"] == {"type": "disabled"}
+    assert metadata["model"] == "deepseek-v4-flash"
+
+
+def test_missing_key_fails_without_network(monkeypatch) -> None:
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    with pytest.raises(ProviderError, match="not configured"):
+        DeepSeekProvider()
+
+
+def test_secret_is_not_exposed_in_transport_error(monkeypatch) -> None:
+    def fail(*args, **kwargs):
+        raise TimeoutError("transport failed")
+
+    monkeypatch.setattr("urllib.request.urlopen", fail)
+    secret = "do-not-print-this-secret"
+    provider = DeepSeekProvider(api_key=secret, retries=0)
+    with pytest.raises(ProviderError) as captured:
+        provider.complete_json(
+            system="Return json.",
+            user="Review.",
+            config=ModelConfig("deepseek-v4-flash"),
+        )
+    assert secret not in str(captured.value)
