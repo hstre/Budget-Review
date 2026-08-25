@@ -34,12 +34,12 @@ DEFAULT_ARMS = (
         config=ModelConfig("deepseek-v4-flash", thinking=False),
     ),
     ReviewerArm(
-        reviewer_id="pro-dependency-skeptic",
+        reviewer_id="flash-thinking-dependency-skeptic",
         role=(
             "Dependency skeptic. Trace whether targets follow from capacity, resources, "
             "methods, and budget."
         ),
-        config=ModelConfig("deepseek-v4-pro", thinking=True, reasoning_effort="high"),
+        config=ModelConfig("deepseek-v4-flash", thinking=True, reasoning_effort="high"),
     ),
 )
 

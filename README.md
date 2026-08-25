@@ -35,7 +35,8 @@ einen Claim auf „wahr“ setzen.
 - geschlossene Claim- und Relationstypen mit Originalspans und Hash-Provenienz;
 - deterministisches Layer-9-Gate mit replay-stabilen IDs;
 - Rechenprüfungen für Kapazität, Prozentangaben, FTE, Budgetsumme und Ressourcen;
-- zwei getrennte LLM-Reviewer-Arme auf dem ClaimGraph: DeepSeek V4 Flash und V4 Pro;
+- zwei getrennte DeepSeek-V4-Flash-Arme auf dem ClaimGraph: einmal ohne und
+  einmal mit Thinking;
 - Anti-Delphi-Ausgabe ohne Abstimmungsfiktion: Widerspruch bleibt sichtbar,
   Übereinstimmung ist nur eine Prüfpriorität;
 - menschliches Dossier als Markdown und vollständiger Audit als JSON;
@@ -94,9 +95,9 @@ budget-review review antrag.md \
 
 Die Alpha verwendet den aktuellen Chat-Completions-Endpunkt. Standardmäßig
 extrahiert `deepseek-v4-flash`; Anti-Delphi kombiniert einen Flash-Arm ohne
-Thinking, einen V4-Pro-Arm mit Thinking und die lokalen deterministischen
-Rechenprüfungen. Damit entsteht keine scheinbare „Mehrheit“ dreier bloß
-umformulierter Prompts.
+Thinking, einen unabhängigen Flash-Arm mit Thinking und die lokalen
+deterministischen Rechenprüfungen. Die Alpha behauptet damit keine
+LLM-Modellvielfalt: Die Trennung besteht aus Prüfrolle und Inferenzmodus.
 
 In diesem Repository liest GitHub Actions den vorhandenen Repository-Secret
 `Deepseekapisecret` und reicht ihn intern als `DEEPSEEK_API_KEY` weiter.
@@ -131,8 +132,9 @@ ruff check .
 - PDF-Textextraktion enthält kein OCR. Gescannte Dokumente müssen vorher OCR
   erhalten.
 - Die Rechenregeln decken häufige Muster ab, nicht jede Budgetlogik.
-- Zwei DeepSeek-Modelle sind noch keine echte Anbieterdiversität. Weitere
-  Provider können über denselben Adaptervertrag ergänzt werden.
+- Zwei getrennte Läufe desselben DeepSeek-Modells sind keine Modell- oder
+  Anbieterdiversität. Weitere Provider können über denselben Adaptervertrag
+  ergänzt werden.
 - Das System prüft interne Kohärenz und Evidenzlücken; externe Tatsachen und
   Originalbelege bleiben Aufgabe des Prüfers.
 

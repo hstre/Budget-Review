@@ -58,8 +58,7 @@ def test_offline_anti_delphi_contains_deterministic_arm(controlled_semantic) -> 
     assert "human reviewer remains the merge authority" in dossier.authority_note
 
 
-def test_default_live_arms_use_distinct_models() -> None:
-    assert {arm.config.model_id for arm in DEFAULT_ARMS} == {
-        "deepseek-v4-flash",
-        "deepseek-v4-pro",
-    }
+def test_default_live_arms_use_flash_in_distinct_modes() -> None:
+    assert {arm.config.model_id for arm in DEFAULT_ARMS} == {"deepseek-v4-flash"}
+    assert {arm.config.thinking for arm in DEFAULT_ARMS} == {False, True}
+    assert len({arm.reviewer_id for arm in DEFAULT_ARMS}) == 2
