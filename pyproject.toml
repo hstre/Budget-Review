@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "budget-review"
+version = "0.1.0a1"
+description = "Auditable claim-graph preprocessing and Anti-Delphi review for polished funding proposals."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Steffen Rentschler" }]
+keywords = ["budget-review", "claim-graph", "semantic-layer", "anti-delphi"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+]
+dependencies = []
+
+[project.optional-dependencies]
+documents = ["openpyxl>=3.1", "pypdf>=5.0"]
+dev = ["pytest>=8.0", "ruff>=0.9"]
+
+[project.scripts]
+budget-review = "budget_review.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/budget_review"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

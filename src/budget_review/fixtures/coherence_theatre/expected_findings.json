@@ -1,0 +1,12 @@
+{
+  "known_findings": [
+    {"category": "capacity_mismatch", "claims": ["C02", "C04"]},
+    {"category": "resource_mismatch", "claims": ["C04", "C05", "C06", "C12"]},
+    {"category": "arithmetic_mismatch", "claims": ["C02", "C03", "C08"]},
+    {"category": "arithmetic_mismatch", "claims": ["C09", "C10", "C11"]},
+    {"category": "unsupported_assumption", "claims": ["C14", "C15"]},
+    {"category": "budget_mismatch", "claims": ["C16", "C17", "C18"]},
+    {"category": "budget_mismatch", "claims": ["C18", "C19", "C20", "C21", "C22"]},
+    {"category": "causal_overclaim", "claims": ["C23", "C24", "C25"]}
+  ]
+}
