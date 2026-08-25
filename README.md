@@ -98,8 +98,8 @@ Thinking, einen V4-Pro-Arm mit Thinking und die lokalen deterministischen
 Rechenprüfungen. Damit entsteht keine scheinbare „Mehrheit“ dreier bloß
 umformulierter Prompts.
 
-In GitHub Actions kann der Repository-Secret `DEEPSEEK_API_KEY` oder
-`DEEPSEEK_API_SECRET` heißen.
+In diesem Repository liest GitHub Actions den vorhandenen Repository-Secret
+`Deepseekapisecret` und reicht ihn intern als `DEEPSEEK_API_KEY` weiter.
 Der normale CI-Lauf ist vollständig offline. Der kostenpflichtige Live-Smoke-
 Test wird nur manuell über **Actions → Live DeepSeek smoke test → Run workflow**
 gestartet.

@@ -28,7 +28,7 @@ jobs:
         run: python -m pip install -e .
       - name: Live extraction and review
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_API_SECRET }}
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.run_reviewers }}" = "true" ]; then
             budget-review review src/budget_review/fixtures/coherence_theatre/proposal.md --provider deepseek --live-review --output review-output/live
