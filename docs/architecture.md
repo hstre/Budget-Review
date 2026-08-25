@@ -61,12 +61,17 @@ glatten Ausgangstexts. Die Alpha besitzt drei verschiedenartige Kanäle:
 |---|---|---|
 | Rechenprüfer | deterministisch, offline | Arithmetik, Kapazität, FTE, Summen |
 | Evidenzskeptiker | DeepSeek V4 Flash, Thinking aus | Annahmen, Baselines, Scope |
-| Abhängigkeitsskeptiker | DeepSeek V4 Pro, Thinking an | Ziel–Ressourcen–Methoden-Ketten |
+| Abhängigkeitsskeptiker | DeepSeek V4 Flash, Thinking an | Ziel–Ressourcen–Methoden-Ketten |
 
 Reviewer sehen die Antworten der anderen Reviewer nicht. Ihre Findings müssen
 auf vorhandene Claim-IDs verweisen und passieren ein zweites geschlossenes
 Gate. Ungültige Findings werden als Rejection protokolliert. Das System
 berechnet kein Mehrheitsurteil.
+
+Beide LLM-Arme verwenden in der Alpha bewusst dasselbe Flash-Modell, weil es
+im kontrollierten Live-Lauf mindestens gleich gute Hinweise mit deutlich
+geringerem Tokenaufwand lieferte. Das ist Perspektivtrennung, keine behauptete
+Modellvielfalt.
 
 ## 6. Dossier
 
