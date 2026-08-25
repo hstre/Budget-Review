@@ -1,6 +1,8 @@
 name: Live DeepSeek smoke test
 
 on:
+  push:
+    branches: ["alpha/v0.1.0"]
   workflow_dispatch:
     inputs:
       run_reviewers:
@@ -28,7 +30,7 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          if [ "${{ inputs.run_reviewers }}" = "true" ]; then
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.run_reviewers }}" = "true" ]; then
             budget-review review src/budget_review/fixtures/coherence_theatre/proposal.md --provider deepseek --live-review --output review-output/live
           else
             budget-review review src/budget_review/fixtures/coherence_theatre/proposal.md --provider deepseek --output review-output/live
