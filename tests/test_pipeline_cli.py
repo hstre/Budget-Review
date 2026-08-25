@@ -13,12 +13,15 @@ def test_offline_pipeline(controlled_source, controlled_packet) -> None:
     assert len(dossier.findings) == 8
 
 
-def test_write_both_audit_formats(tmp_path, controlled_source, controlled_packet) -> None:
+def test_write_all_audit_formats(tmp_path, controlled_source, controlled_packet) -> None:
     dossier = ReviewPipeline().run(controlled_source, packet=controlled_packet)
-    json_path, markdown_path = ReviewPipeline.write(dossier, tmp_path)
+    json_path, markdown_path, html_path = ReviewPipeline.write(dossier, tmp_path)
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     assert payload["schema_version"] == "budget-review.dossier/0.1"
-    assert "## ClaimGraph: Claims" in markdown_path.read_text(encoding="utf-8")
+    assert "8 konsolidierte Punkte" in markdown_path.read_text(encoding="utf-8")
+    html = html_path.read_text(encoding="utf-8")
+    assert "<strong>8</strong><span>Prüfpunkte</span>" in html
+    assert "Originalaussagen ansehen" in html
 
 
 def test_demo_cli(tmp_path, capsys) -> None:

@@ -123,10 +123,10 @@ def _check_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) 
         builder.add(
             FindingCategory.CAPACITY_MISMATCH,
             "high",
-            "Stated cohort capacity does not reach the participant target",
+            "Die Kohortenkapazität reicht nicht für das Teilnehmerziel",
             (target[0], capacity[0]),
-            f"{cohorts:g} cohorts × {cohort_size:g} places = {available:g}, not {target[1]:g}.",
-            "Which additional capacity makes the participant target feasible?",
+            f"{cohorts:g} Kohorten × {cohort_size:g} Plätze = {available:g}, nicht {target[1]:g}.",
+            "Welche zusätzliche Kapazität macht das Teilnehmerziel erreichbar?",
         )
 
 
@@ -173,13 +173,13 @@ def _check_resource_capacity(texts: dict[str, str], builder: _Builder, tolerance
         builder.add(
             FindingCategory.RESOURCE_MISMATCH,
             "high",
-            "One-to-one laptop promise exceeds simultaneous equipment",
+            "Die zugesagte Einzelausstattung übersteigt die verfügbaren Laptops",
             (parallel[0], one_to_one, purchase[0], cohort[0]),
             (
-                f"Parallel delivery implies {simultaneous:g} simultaneous places but "
-                f"only {purchase[1]:g} laptops are purchased."
+                f"Die parallele Durchführung erfordert {simultaneous:g} gleichzeitige "
+                f"Plätze, gekauft werden aber nur {purchase[1]:g} Laptops."
             ),
-            "What scheduling or additional equipment supports one-to-one access?",
+            "Wie wird der persönliche Laptopzugang organisatorisch oder materiell gesichert?",
         )
 
 
@@ -222,10 +222,10 @@ def _check_completion_rate(texts: dict[str, str], builder: _Builder, tolerance: 
         builder.add(
             FindingCategory.ARITHMETIC_MISMATCH,
             "high",
-            "Completion rate and graduate target diverge",
+            "Abschlussquote und Absolventenziel passen nicht zusammen",
             (enrolled[0], rate[0], graduates[0]),
-            f"{rate[1]:g}% of {enrolled[1]:g} is {implied:g}, not {graduates[1]:g}.",
-            "Which number governs the operational target?",
+            f"{rate[1]:g} % von {enrolled[1]:g} sind {implied:g}, nicht {graduates[1]:g}.",
+            "Welche Zahl ist für das operative Ziel maßgeblich?",
         )
 
 
@@ -257,10 +257,10 @@ def _check_halving(texts: dict[str, str], builder: _Builder, tolerance: float) -
         builder.add(
             FindingCategory.ARITHMETIC_MISMATCH,
             "high",
-            "Halved attrition does not match stated dropout rate",
+            "Die halbierte Abbruchquote stimmt nicht mit dem Zielwert überein",
             (baseline[0], halve, result[0]),
-            f"Half of {baseline[1]:g}% is {implied:g}%, not {result[1]:g}%.",
-            "Is the reduction relative, absolute, or based on another baseline?",
+            f"Die Hälfte von {baseline[1]:g} % ist {implied:g} %, nicht {result[1]:g} %.",
+            "Ist die Reduktion relativ, absolut oder auf eine andere Basis bezogen?",
         )
 
 
@@ -278,13 +278,13 @@ def _check_assumption_dependencies(
             builder.add(
                 FindingCategory.UNSUPPORTED_ASSUMPTION,
                 "medium",
-                "Budget claim depends on an external commitment",
+                "Die Budgetaussage hängt von einer externen Zusage ab",
                 (source, target),
                 (
-                    "The graph identifies an assumption as a prerequisite, but no "
-                    "admitted evidence secures it."
+                    "Der Graph weist eine Annahme als Voraussetzung aus, aber kein "
+                    "zugelassener Beleg sichert sie ab."
                 ),
-                "Is there a signed commitment, fallback budget, or quantified contingency?",
+                "Gibt es eine verbindliche Zusage, ein Ersatzbudget oder eine bezifferte Reserve?",
                 0.95,
             )
 
@@ -329,13 +329,13 @@ def _check_fte_budget(texts: dict[str, str], builder: _Builder, tolerance: float
         builder.add(
             FindingCategory.BUDGET_MISMATCH,
             "high",
-            "Coordinator allocation does not follow FTE calculation",
+            "Der Koordinationsposten folgt nicht aus der FTE-Berechnung",
             (fte[0], salary[0], allocated[0]),
             (
-                f"{fte[1]:g} FTE × EUR {salary[1]:,.0f} × {months:g}/12 = "
-                f"EUR {implied:,.0f}, not EUR {allocated[1]:,.0f}."
+                f"{fte[1]:g} FTE × {salary[1]:,.0f} EUR × {months:g}/12 = "
+                f"{implied:,.0f} EUR, nicht {allocated[1]:,.0f} EUR."
             ),
-            "Which additional coordinator costs explain the allocation?",
+            "Welche zusätzlichen Koordinationskosten erklären den Betrag?",
         )
 
 
@@ -359,13 +359,13 @@ def _check_budget_sum(
             builder.add(
                 FindingCategory.BUDGET_MISMATCH,
                 "critical",
-                "Budget line items do not sum to the funding request",
+                "Die Budgetpositionen ergeben nicht die beantragte Gesamtsumme",
                 (*part_ids, total_id),
                 (
-                    f"Admitted PART_OF items sum to EUR {part_sum:,.0f}; the stated "
-                    f"total is EUR {total:,.0f}."
+                    f"Die zugelassenen Teilposten ergeben {part_sum:,.0f} EUR; als "
+                    f"Gesamtsumme werden {total:,.0f} EUR genannt."
                 ),
-                "Which line item or total should be corrected?",
+                "Welche Einzelposition oder Gesamtsumme muss korrigiert werden?",
             )
 
 
@@ -388,13 +388,13 @@ def _check_causal_design(texts: dict[str, str], builder: _Builder) -> None:
         builder.add(
             FindingCategory.CAUSAL_OVERCLAIM,
             "high",
-            "Causal conclusion exceeds the stated evaluation design",
+            "Die kausale Schlussfolgerung geht über das Evaluationsdesign hinaus",
             (before_after, no_control, causal),
             (
-                "A before-and-after comparison without a comparator does not by itself "
-                "separate programme effects from other changes."
+                "Ein Vorher-nachher-Vergleich ohne Vergleichsgruppe trennt den "
+                "Programmeffekt nicht von anderen Veränderungen."
             ),
-            "What design or evidence identifies the programme as the cause?",
+            "Welches Design oder welcher Beleg identifiziert das Programm als Ursache?",
             0.98,
         )
 

@@ -41,7 +41,7 @@ def test_budget_total_calculation_is_exposed(controlled_semantic) -> None:
     finding = next(
         item
         for item in deterministic_checks(controlled_semantic)
-        if "sum to the funding request" in item.summary
+        if "beantragte Gesamtsumme" in item.summary
     )
     assert "100,000" in finding.explanation
     assert "96,000" in finding.explanation

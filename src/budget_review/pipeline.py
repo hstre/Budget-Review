@@ -11,7 +11,7 @@ from .gate import govern_packet
 from .ingest import SourceBundle
 from .models import ReviewDossier, SemanticPacket
 from .provider import DeepSeekProvider, ProviderError
-from .render import render_markdown
+from .render import render_html, render_markdown
 
 
 @dataclass
@@ -47,16 +47,18 @@ class ReviewPipeline:
         )
 
     @staticmethod
-    def write(dossier: ReviewDossier, output_dir: Path) -> tuple[Path, Path]:
+    def write(dossier: ReviewDossier, output_dir: Path) -> tuple[Path, Path, Path]:
         output_dir.mkdir(parents=True, exist_ok=True)
         json_path = output_dir / "dossier.json"
         markdown_path = output_dir / "dossier.md"
+        html_path = output_dir / "dossier.html"
         json_path.write_text(
             json.dumps(dossier.to_dict(), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
         markdown_path.write_text(render_markdown(dossier), encoding="utf-8")
-        return json_path, markdown_path
+        html_path.write_text(render_html(dossier), encoding="utf-8")
+        return json_path, markdown_path, html_path
 
 
 def load_packet(path: Path) -> SemanticPacket:

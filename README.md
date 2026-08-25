@@ -17,9 +17,10 @@ flowchart TD
     C --> D["Governed ClaimGraph"]
     D --> E["Deterministische Checks"]
     D --> F["Anti-Delphi Reviewer"]
-    E --> G["Prüferdossier"]
+    E --> G["Hinweise konsolidieren"]
     F --> G
-    G --> H["Menschliche Merge-Autorität"]
+    G --> H["Einfaches Prüferdossier"]
+    H --> I["Menschliche Merge-Autorität"]
 ```
 
 Das LLM ist nur ein Sensor. Das deterministische Gate lässt ausschließlich
@@ -39,7 +40,10 @@ einen Claim auf „wahr“ setzen.
   einmal mit Thinking;
 - Anti-Delphi-Ausgabe ohne Abstimmungsfiktion: Widerspruch bleibt sichtbar,
   Übereinstimmung ist nur eine Prüfpriorität;
-- menschliches Dossier als Markdown und vollständiger Audit als JSON;
+- zusammengeführte Prüfpunkte statt doppelter Reviewer-Meldungen;
+- einfache Prüferansicht als eigenständige HTML-Seite mit Prioritäten,
+  einklappbaren Originalaussagen und klaren Prüffragen;
+- Markdown-Export und vollständiger Audit als JSON;
 - eingefrorener Kontrollfall mit 25 Claims, 15 Relationen und 8 versteckten Fehlern.
 
 ## Schnellstart ohne API
@@ -56,11 +60,11 @@ budget-review demo
 Erwartetes Ergebnis:
 
 ```text
-Frozen control: 25 claims, 15 relations, 8 review findings.
+Frozen control: 25 claims, 15 relations, 8 consolidated review points from 8 raw findings.
 ```
 
-Das Dossier liegt danach unter `review-output/demo/dossier.md`, der vollständige
-Audit unter `review-output/demo/dossier.json`.
+Die menschliche Ansicht liegt danach unter `review-output/demo/dossier.html`.
+Markdown und der vollständige JSON-Audit werden daneben erzeugt.
 
 ## Live mit DeepSeek
 
@@ -138,4 +142,4 @@ ruff check .
 - Das System prüft interne Kohärenz und Evidenzlücken; externe Tatsachen und
   Originalbelege bleiben Aufgabe des Prüfers.
 
-Status: `0.1.0a1` · Research alpha · MIT
+Status: `0.1.0a2` · Research alpha · MIT
