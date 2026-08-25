@@ -68,7 +68,8 @@ def reviewer_prompt(dossier: SemanticDossier, role: str) -> tuple[str, str]:
     system = f"""You are one independent Anti-Delphi reviewer: {role}.
 Review only the governed ClaimGraph. Do not repair the application, vote on funding, or
 declare claims true/false. Find tensions that a human examiner should inspect. Cite only
-existing claim IDs. Return JSON only, exactly as:
+existing claim IDs. Write summary, explanation and question_for_reviewer in clear German.
+Return JSON only, exactly as:
 {{"findings": [{{
   "finding_id": "F01",
   "category": "review_question",

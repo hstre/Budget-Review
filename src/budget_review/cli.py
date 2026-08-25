@@ -7,6 +7,7 @@ import json
 import sys
 from pathlib import Path
 
+from .consolidate import consolidate_findings
 from .ingest import IngestError, ingest
 from .models import SchemaError
 from .pipeline import ReviewPipeline, load_packet
@@ -57,7 +58,7 @@ def _run_review(args: argparse.Namespace) -> int:
         packet=packet,
         live_review=args.live_review,
     )
-    json_path, markdown_path = ReviewPipeline.write(dossier, args.output)
+    json_path, markdown_path, html_path = ReviewPipeline.write(dossier, args.output)
     print(
         f"claims={len(dossier.semantic.claims)} "
         f"relations={len(dossier.semantic.relations)} "
@@ -65,6 +66,7 @@ def _run_review(args: argparse.Namespace) -> int:
     )
     print(f"json={json_path}")
     print(f"markdown={markdown_path}")
+    print(f"html={html_path}")
     return 0
 
 
@@ -74,15 +76,18 @@ def _run_demo(args: argparse.Namespace) -> int:
     packet = load_packet(fixture_dir / "semantic_packet.json")
     provider = _provider(args.live_review)
     dossier = ReviewPipeline(provider).run(source, packet=packet, live_review=args.live_review)
-    json_path, markdown_path = ReviewPipeline.write(dossier, args.output)
+    json_path, markdown_path, html_path = ReviewPipeline.write(dossier, args.output)
+    issues = consolidate_findings(dossier.findings)
     summary = {
         "claims": len(dossier.semantic.claims),
         "relations": len(dossier.semantic.relations),
         "semantic_rejections": len(dossier.semantic.rejections),
         "findings": len(dossier.findings),
+        "review_points": len(issues),
         "review_rejections": len(dossier.review_rejections),
         "json": str(json_path),
         "markdown": str(markdown_path),
+        "html": str(html_path),
     }
     if args.json:
         print(json.dumps(summary, indent=2, sort_keys=True))
@@ -90,9 +95,10 @@ def _run_demo(args: argparse.Namespace) -> int:
         print(
             "Frozen control: "
             f"{summary['claims']} claims, {summary['relations']} relations, "
-            f"{summary['findings']} review findings."
+            f"{summary['review_points']} consolidated review points "
+            f"from {summary['findings']} raw findings."
         )
-        print(f"Dossier: {markdown_path}")
+        print(f"Dossier: {html_path}")
     return 0
 
 

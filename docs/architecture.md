@@ -73,10 +73,22 @@ im kontrollierten Live-Lauf mindestens gleich gute Hinweise mit deutlich
 geringerem Tokenaufwand lieferte. Das ist Perspektivtrennung, keine behauptete
 Modellvielfalt.
 
-## 6. Dossier
+## 6. Konsolidierung
 
-Das Markdown-Dossier ist die Arbeitsansicht für den Menschen. JSON ist der
-vollständige maschinenlesbare Audit mit:
+Mehrere Prüfkanäle können denselben Sachverhalt unterschiedlich beschreiben.
+Vor der menschlichen Ansicht werden deshalb Findings mit stark überlappenden
+Claim-Mengen zu einem Prüfpunkt verbunden. Schweregrad, betroffene Claims und
+alle Prüfwege bleiben erhalten. Das ist reine Darstellung: Der unveränderte
+Einzelbefund bleibt im JSON-Audit sichtbar und es wird kein Mehrheitsurteil
+berechnet.
+
+## 7. Dossier
+
+Die eigenständige HTML-Seite ist die primäre Arbeitsansicht für den Menschen.
+Sie trennt hohe Prioritäten von weiteren Hinweisen und zeigt pro Prüfpunkt eine
+Erklärung und eine konkrete Prüffrage. Originalaussagen, einzelne Prüfwege und
+technische Daten sind einklappbar. Markdown bietet denselben Inhalt als
+portablen Export. JSON ist der vollständige maschinenlesbare Audit mit:
 
 - Dokument- und Provenienz-Hashes;
 - Claims, Originalspans, Relationen und Gate-Zuständen;
