@@ -20,6 +20,9 @@ class ReviewProfile:
     authority_note: str
     extraction_guidance: str
     reviewers: tuple[ReviewerSpec, ...]
+    # The English rendering of authority_note. The German form stays the one
+    # serialized into the JSON audit, so the governance record does not move.
+    authority_note_en: str = ""
 
 
 GENERAL = ReviewProfile(
@@ -51,6 +54,10 @@ GENERAL = ReviewProfile(
             True,
         ),
     ),
+    authority_note_en=(
+        "Decision support on content only, not a verdict on truth or quality. "
+        "The final decision rests with a human."
+    ),
 )
 
 
@@ -79,10 +86,19 @@ BUDGET = ReviewProfile(
             True,
         ),
     ),
+    authority_note_en=(
+        "Decision support, not a funding verdict. The final decision rests with a human."
+    ),
 )
 
 
 PROFILES = {profile.name: profile for profile in (GENERAL, BUDGET)}
+
+
+def authority_note(profile: ReviewProfile, language: str = "de") -> str:
+    if language == "en" and profile.authority_note_en:
+        return profile.authority_note_en
+    return profile.authority_note
 
 
 def get_profile(value: str | ReviewProfile) -> ReviewProfile:
@@ -95,4 +111,12 @@ def get_profile(value: str | ReviewProfile) -> ReviewProfile:
         raise ValueError(f"unknown review profile {value!r}; choose one of: {allowed}") from exc
 
 
-__all__ = ["BUDGET", "GENERAL", "PROFILES", "ReviewProfile", "ReviewerSpec", "get_profile"]
+__all__ = [
+    "BUDGET",
+    "GENERAL",
+    "PROFILES",
+    "ReviewProfile",
+    "ReviewerSpec",
+    "authority_note",
+    "get_profile",
+]

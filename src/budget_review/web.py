@@ -253,13 +253,13 @@ class ContentReviewHandler(BaseHTTPRequestHandler):
         source = SourceBundle(document_id, text, ("web-input",))
         try:
             provider = DeepSeekProvider(api_key=effective_api_key())
-            dossier = ReviewPipeline(provider, profile=profile).run(
+            dossier = ReviewPipeline(provider, profile=profile, language=language).run(
                 source,
                 live_review=data.get("live_review", [""])[0] == "yes",
             )
             timestamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
             output = Path("review-output") / "web" / f"{document_id}-{timestamp}"
-            ReviewPipeline.write(dossier, output)
+            ReviewPipeline.write(dossier, output, language)
             self._html(render_html(dossier, language=language, navigation=True))
         except (ProviderError, ValueError, OSError) as exc:
             body = (

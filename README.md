@@ -171,8 +171,12 @@ content-review review proposal.pdf budget.xlsx \
   --profile budget \
   --provider deepseek \
   --live-review \
+  --language en \
   --output review-output/proposal
 ```
+
+`--language de|en` sets the dossier language for HTML, Markdown and the reviewer
+arms. Without it the stored interface language is used.
 
 The old `budget-review` command remains as a compatible alias. A previously
 extracted semantic packet can be reviewed offline with `--packet`.
@@ -207,8 +211,10 @@ is a separate manually triggered GitHub Action.
 - Live extraction quality remains model- and domain-dependent.
 - The web alpha accepts pasted text; document upload remains a CLI feature.
 - PDF extraction has no OCR.
-- English and German interface labels are available, but quoted claims retain
-  their original language and reviewer prose can follow the source language.
+- The dossier is rendered in German or English: interface labels, deterministic
+  findings and the reviewer arms all follow `--language` (default: the stored
+  interface setting). Quoted claims keep their original wording, since they are
+  verbatim spans from the source.
 - The local web server is single-user and has no account system.
 
 Security details are collected in [SECURITY.md](SECURITY.md).
@@ -372,8 +378,12 @@ content-review review antrag.pdf budget.xlsx \
   --profile budget \
   --provider deepseek \
   --live-review \
+  --language de \
   --output review-output/antrag
 ```
+
+`--language de|en` bestimmt die Sprache von HTML, Markdown und den
+Reviewer-Armen. Ohne den Schalter gilt die gespeicherte Oberflächensprache.
 
 Der frühere Befehl `budget-review` bleibt als kompatibler Alias erhalten. Ein
 bereits extrahiertes Semantic Packet kann mit `--packet` vollständig offline
@@ -412,9 +422,10 @@ Actions manuell gestartet.
 - Die Web-Alpha akzeptiert eingefügten Text; Dokument-Upload ist noch eine
   CLI-Funktion.
 - PDF-Extraktion enthält kein OCR.
-- Oberfläche und Dossier-Bezeichnungen sind zweisprachig; zitierte Claims
-  behalten ihre Originalsprache, und Reviewertexte können der Sprache der
-  Quelle folgen.
+- Das Dossier erscheint auf Deutsch oder Englisch: Bezeichnungen,
+  deterministische Befunde und die Reviewer-Arme folgen `--language`
+  (Vorgabe: die gespeicherte Spracheinstellung). Zitierte Claims behalten ihren
+  Wortlaut, weil sie exakte Originalstellen sind.
 - Der lokale Webserver ist für einen Benutzer ausgelegt und besitzt noch kein
   Kontensystem.
 

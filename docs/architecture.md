@@ -111,6 +111,12 @@ zu einem Prüfpunkt verbunden. Schweregrad, betroffene Claims und alle Prüfwege
 bleiben erhalten. Das ist reine Darstellung: Jeder Einzelbefund bleibt im
 JSON-Audit sichtbar.
 
+Dossier und Befunde erscheinen auf Deutsch oder Englisch. Die Sprache wählt der
+Aufrufer; sie steuert die Bezeichnungen, die Texte der deterministischen Regeln
+und die Sprachvorgabe an die Reviewer-Arme. Sie verändert keine strukturellen
+Felder: Kategorie, Schweregrad, Claim-IDs, Konfidenz und Provenienz sind
+sprachunabhängig, und zitierte Originalstellen bleiben unverändert.
+
 Die HTML-Seite trennt hohe Prioritäten von weiteren Hinweisen und zeigt pro
 Prüfpunkt eine Erklärung und eine konkrete Frage. Originalaussagen, einzelne
 Prüfwege und technische Daten sind einklappbar. Markdown bietet denselben Inhalt

@@ -28,7 +28,9 @@ def main() -> int:
         print("live review did not create dossier.html", file=sys.stderr)
         return 1
     html = html_path.read_text(encoding="utf-8")
-    if "Prüferdossier" not in html or "Prüfpunkte" not in html:
+    # The dossier language is a caller choice, so accept either rendering.
+    headings = (("Prüferdossier", "Prüfpunkte"), ("Reviewer dossier", "review points"))
+    if not any(all(marker in html for marker in pair) for pair in headings):
         print("live HTML dossier is incomplete", file=sys.stderr)
         return 1
     print(

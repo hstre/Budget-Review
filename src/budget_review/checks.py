@@ -11,6 +11,7 @@ from collections.abc import Callable, Iterable
 
 from .models import ClaimType, Finding, FindingCategory, RelationType, SemanticDossier
 from .profiles import ReviewProfile, get_profile
+from .settings import LANGUAGES
 
 _WORDS = {
     "one": 1,
@@ -101,21 +102,199 @@ def _texts(dossier: SemanticDossier) -> dict[str, str]:
     }
 
 
+
+# Deterministic finding prose, keyed by check. Structural fields (category,
+# severity, claim_ids, confidence) stay language independent; only this text
+# follows the dossier language.
+_MESSAGES: dict[str, dict[str, tuple[str, str, str]]] = {
+    "internal_contradiction": {
+        "de": (
+            "Zwei Aussagen stehen in einem ausdrücklichen Widerspruch",
+            "Der zugelassene ClaimGraph verbindet diese Aussagen als widersprüchlich.",
+            "Ist der Widerspruch beabsichtigt, auflösbar oder muss eine Aussage korrigiert werden?",
+        ),
+        "en": (
+            "Two claims are explicitly contradictory",
+            "The admitted ClaimGraph links these claims as contradicting each other.",
+            "Is the contradiction intended, resolvable, or must one claim be corrected?",
+        ),
+    },
+    "scope_tension": {
+        "de": (
+            "Der Geltungsbereich verschiebt sich zwischen zwei Aussagen",
+            "Der ClaimGraph markiert unterschiedliche Reichweiten oder Bezugsgruppen.",
+            "Für welchen genauen Geltungsbereich soll die Schlussfolgerung gelten?",
+        ),
+        "en": (
+            "The scope shifts between two claims",
+            "The ClaimGraph marks differing reach or reference groups.",
+            "For exactly which scope is the conclusion meant to hold?",
+        ),
+    },
+    "overgeneralization": {
+        "de": (
+            "Eine Aussage verallgemeinert eine engere Grundlage",
+            "Die Schlussfolgerung reicht weiter als die Aussage, aus der sie abgeleitet wird.",
+            "Welche zusätzliche Grundlage rechtfertigt diese Verallgemeinerung?",
+        ),
+        "en": (
+            "A claim generalizes a narrower basis",
+            "The conclusion reaches further than the claim it is drawn from.",
+            "What additional basis justifies this generalization?",
+        ),
+    },
+    "logical_gap": {
+        "de": (
+            "Die zentrale Aussage hat keine zugelassene Stützverbindung",
+            "Im ClaimGraph führt keine SUPPORTS-, ENTAILS- oder EVIDENCED_BY-Verbindung "
+            "zu dieser Aussage.",
+            "Welche Prämisse oder welcher Beleg trägt diese Aussage?",
+        ),
+        "en": (
+            "The central claim has no admitted supporting link",
+            "No SUPPORTS, ENTAILS or EVIDENCED_BY edge in the ClaimGraph leads to this claim.",
+            "Which premise or piece of evidence carries this claim?",
+        ),
+    },
+    "unsupported_assumption": {
+        "de": (
+            "Eine wirksame Annahme bleibt unbelegt",
+            "Andere Aussagen hängen von dieser Annahme ab, ohne dass der Graph einen Beleg nennt.",
+            "Wie wird diese Annahme begründet oder gegen ihr Scheitern abgesichert?",
+        ),
+        "en": (
+            "An load-bearing assumption remains unsupported",
+            "Other claims depend on this assumption, but the graph names no evidence for it.",
+            "How is this assumption justified, or hedged against its failure?",
+        ),
+    },
+    "capacity_mismatch": {
+        "de": (
+            "Die Kohortenkapazität reicht nicht für das Teilnehmerziel",
+            "{cohorts:g} Kohorten × {cohort_size:g} Plätze = {available:g}, "
+            "nicht {participants:g}.",
+            "Welche zusätzliche Kapazität macht das Teilnehmerziel erreichbar?",
+        ),
+        "en": (
+            "Cohort capacity does not cover the participant target",
+            "{cohorts:g} cohorts × {cohort_size:g} places = {available:g}, "
+            "not {participants:g}.",
+            "What additional capacity makes the participant target reachable?",
+        ),
+    },
+    "resource_mismatch": {
+        "de": (
+            "Die zugesagte Einzelausstattung übersteigt die verfügbaren Laptops",
+            "Die parallele Durchführung erfordert {simultaneous:g} gleichzeitige Plätze, "
+            "gekauft werden aber nur {laptops:g} Laptops.",
+            "Wie wird der persönliche Laptopzugang organisatorisch oder materiell gesichert?",
+        ),
+        "en": (
+            "The promised one-to-one equipment exceeds the available laptops",
+            "Running cohorts in parallel needs {simultaneous:g} simultaneous places, "
+            "but only {laptops:g} laptops are purchased.",
+            "How is personal laptop access secured, organizationally or materially?",
+        ),
+    },
+    "completion_rate": {
+        "de": (
+            "Abschlussquote und Absolventenziel passen nicht zusammen",
+            "{percent:g} % von {participants:g} sind {implied:g}, nicht {graduate_target:g}.",
+            "Welche Zahl ist für das operative Ziel maßgeblich?",
+        ),
+        "en": (
+            "Completion rate and graduate target do not match",
+            "{percent:g} % of {participants:g} is {implied:g}, not {graduate_target:g}.",
+            "Which figure governs the operational target?",
+        ),
+    },
+    "halving": {
+        "de": (
+            "Die halbierte Abbruchquote stimmt nicht mit dem Zielwert überein",
+            "Die Hälfte von {attrition:g} % ist {implied:g} %, nicht {dropout:g} %.",
+            "Ist die Reduktion relativ, absolut oder auf eine andere Basis bezogen?",
+        ),
+        "en": (
+            "The halved attrition rate does not match the stated target",
+            "Half of {attrition:g} % is {implied:g} %, not {dropout:g} %.",
+            "Is the reduction relative, absolute, or measured against another baseline?",
+        ),
+    },
+    "assumption_dependency": {
+        "de": (
+            "Die Budgetaussage hängt von einer externen Zusage ab",
+            "Der Graph weist eine Annahme als Voraussetzung aus, aber kein zugelassener "
+            "Beleg sichert sie ab.",
+            "Gibt es eine verbindliche Zusage, ein Ersatzbudget oder eine bezifferte Reserve?",
+        ),
+        "en": (
+            "The budget claim depends on an external commitment",
+            "The graph marks an assumption as a precondition, but no admitted evidence "
+            "secures it.",
+            "Is there a binding commitment, a fallback budget, or a quantified reserve?",
+        ),
+    },
+    "fte_budget": {
+        "de": (
+            "Der Koordinationsposten folgt nicht aus der FTE-Berechnung",
+            "{fte:g} FTE × {salary:,.0f} EUR × {months:g}/12 = {implied:,.0f} EUR, "
+            "nicht {allocated:,.0f} EUR.",
+            "Welche zusätzlichen Koordinationskosten erklären den Betrag?",
+        ),
+        "en": (
+            "The coordination line does not follow from the FTE calculation",
+            "{fte:g} FTE × {salary:,.0f} EUR × {months:g}/12 = {implied:,.0f} EUR, "
+            "not {allocated:,.0f} EUR.",
+            "Which additional coordination costs explain the amount?",
+        ),
+    },
+    "budget_sum": {
+        "de": (
+            "Die Budgetpositionen ergeben nicht die beantragte Gesamtsumme",
+            "Die zugelassenen Teilposten ergeben {part_sum:,.0f} EUR; als Gesamtsumme "
+            "werden {total:,.0f} EUR genannt.",
+            "Welche Einzelposition oder Gesamtsumme muss korrigiert werden?",
+        ),
+        "en": (
+            "The budget lines do not add up to the requested total",
+            "The admitted line items sum to {part_sum:,.0f} EUR; the stated total is "
+            "{total:,.0f} EUR.",
+            "Which line item or total needs to be corrected?",
+        ),
+    },
+    "causal_design": {
+        "de": (
+            "Die kausale Schlussfolgerung geht über das Evaluationsdesign hinaus",
+            "Ein Vorher-nachher-Vergleich ohne Vergleichsgruppe trennt den Programmeffekt "
+            "nicht von anderen Veränderungen.",
+            "Welches Design oder welcher Beleg identifiziert das Programm als Ursache?",
+        ),
+        "en": (
+            "The causal conclusion reaches beyond the evaluation design",
+            "A before-and-after comparison without a control group does not separate the "
+            "programme effect from other changes.",
+            "Which design or evidence identifies the programme as the cause?",
+        ),
+    },
+}
+
+
 class _Builder:
-    def __init__(self, profile: str) -> None:
+    def __init__(self, profile: str, language: str = "de") -> None:
         self.profile = profile
+        self.language = language if language in LANGUAGES else "de"
         self.findings: list[Finding] = []
 
     def add(
         self,
+        key: str,
         category: FindingCategory,
         severity: str,
-        summary: str,
         claims: Iterable[str],
-        explanation: str,
-        question: str,
         confidence: float = 0.99,
+        **params: float | str,
     ) -> None:
+        summary, explanation, question = _MESSAGES[key][self.language]
         claim_ids = tuple(dict.fromkeys(claims))
         self.findings.append(
             Finding(
@@ -127,7 +306,7 @@ class _Builder:
                 severity=severity,
                 summary=summary,
                 claim_ids=claim_ids,
-                explanation=explanation,
+                explanation=explanation.format(**params),
                 question_for_reviewer=question,
                 confidence=confidence,
             )
@@ -138,11 +317,12 @@ def deterministic_checks(
     dossier: SemanticDossier,
     profile: str | ReviewProfile = "general",
     tolerance: float = 0.01,
+    language: str = "de",
 ) -> tuple[Finding, ...]:
     """Run profile-specific checks; every finding still requires human judgment."""
     selected = get_profile(profile)
     texts = _texts(dossier)
-    builder = _Builder(selected.name)
+    builder = _Builder(selected.name, language)
     if selected.name == "general":
         _check_general_structure(dossier, builder)
         return tuple(builder.findings)
@@ -177,34 +357,25 @@ def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> Non
 
         if relation.relation_type == RelationType.CONTRADICTS:
             builder.add(
+                "internal_contradiction",
                 FindingCategory.INTERNAL_CONTRADICTION,
                 "high",
-                "Zwei Aussagen stehen in einem ausdrücklichen Widerspruch",
                 claim_ids,
-                "Der zugelassene ClaimGraph verbindet diese Aussagen als widersprüchlich.",
-                (
-                    "Ist der Widerspruch beabsichtigt, auflösbar oder muss eine Aussage "
-                    "korrigiert werden?"
-                ),
             )
         elif relation.relation_type == RelationType.SCOPE_TENSION:
             builder.add(
+                "scope_tension",
                 FindingCategory.SCOPE_TENSION,
                 "medium",
-                "Der Geltungsbereich verschiebt sich zwischen zwei Aussagen",
                 claim_ids,
-                "Der ClaimGraph markiert unterschiedliche Reichweiten oder Bezugsgruppen.",
-                "Für welchen genauen Geltungsbereich soll die Schlussfolgerung gelten?",
             )
         elif relation.relation_type == RelationType.GENERALIZES:
             supported.add(source.proposal_id)
             builder.add(
+                "overgeneralization",
                 FindingCategory.OVERGENERALIZATION,
                 "medium",
-                "Eine Aussage verallgemeinert eine engere Grundlage",
                 claim_ids,
-                "Die Schlussfolgerung reicht weiter als die Aussage, aus der sie abgeleitet wird.",
-                "Welche zusätzliche Grundlage rechtfertigt diese Verallgemeinerung?",
             )
 
     for claim in dossier.claims:
@@ -219,13 +390,10 @@ def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> Non
             and claim_id not in supported | evidenced
         ):
             builder.add(
+                "logical_gap",
                 FindingCategory.LOGICAL_GAP,
                 "medium",
-                "Die zentrale Aussage hat keine zugelassene Stützverbindung",
                 (claim_id,),
-                "Im ClaimGraph führt keine SUPPORTS-, ENTAILS- oder EVIDENCED_BY-Verbindung "
-                "zu dieser Aussage.",
-                "Welche Prämisse oder welcher Beleg trägt diese Aussage?",
                 0.9,
             )
         if (
@@ -234,15 +402,10 @@ def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> Non
             and claim_id not in evidenced
         ):
             builder.add(
+                "unsupported_assumption",
                 FindingCategory.UNSUPPORTED_ASSUMPTION,
                 "medium",
-                "Eine wirksame Annahme bleibt unbelegt",
                 (claim_id,),
-                (
-                    "Andere Aussagen hängen von dieser Annahme ab, ohne dass der Graph "
-                    "einen Beleg nennt."
-                ),
-                "Wie wird diese Annahme begründet oder gegen ihr Scheitern abgesichert?",
                 0.95,
             )
 
@@ -257,13 +420,14 @@ def _check_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) 
     available = cohorts * cohort_size
     if abs(available - participants) > tolerance:
         builder.add(
+            "capacity_mismatch",
             FindingCategory.CAPACITY_MISMATCH,
             "high",
-            "Die Kohortenkapazität reicht nicht für das Teilnehmerziel",
             (target_id, capacity_id),
-            f"{cohorts:g} Kohorten × {cohort_size:g} Plätze = {available:g}, "
-            f"nicht {participants:g}.",
-            "Welche zusätzliche Kapazität macht das Teilnehmerziel erreichbar?",
+            cohorts=cohorts,
+            cohort_size=cohort_size,
+            available=available,
+            participants=participants,
         )
 
 
@@ -280,15 +444,12 @@ def _check_resource_capacity(texts: dict[str, str], builder: _Builder, tolerance
     simultaneous = min(parallel_cohorts, cohorts) * cohort_size
     if laptops + tolerance < simultaneous:
         builder.add(
+            "resource_mismatch",
             FindingCategory.RESOURCE_MISMATCH,
             "high",
-            "Die zugesagte Einzelausstattung übersteigt die verfügbaren Laptops",
             (parallel_id, one_to_one, purchase_id, cohort_id),
-            (
-                f"Die parallele Durchführung erfordert {simultaneous:g} gleichzeitige "
-                f"Plätze, gekauft werden aber nur {laptops:g} Laptops."
-            ),
-            "Wie wird der persönliche Laptopzugang organisatorisch oder materiell gesichert?",
+            simultaneous=simultaneous,
+            laptops=laptops,
         )
 
 
@@ -310,12 +471,14 @@ def _check_completion_rate(texts: dict[str, str], builder: _Builder, tolerance: 
     implied = participants * percent / 100.0
     if abs(implied - graduate_target) > tolerance:
         builder.add(
+            "completion_rate",
             FindingCategory.ARITHMETIC_MISMATCH,
             "high",
-            "Abschlussquote und Absolventenziel passen nicht zusammen",
             (enrolled_id, rate_id, graduates_id),
-            f"{percent:g} % von {participants:g} sind {implied:g}, nicht {graduate_target:g}.",
-            "Welche Zahl ist für das operative Ziel maßgeblich?",
+            percent=percent,
+            participants=participants,
+            implied=implied,
+            graduate_target=graduate_target,
         )
 
 
@@ -330,12 +493,13 @@ def _check_halving(texts: dict[str, str], builder: _Builder, tolerance: float) -
     implied = attrition / 2.0
     if abs(implied - dropout) > tolerance:
         builder.add(
+            "halving",
             FindingCategory.ARITHMETIC_MISMATCH,
             "high",
-            "Die halbierte Abbruchquote stimmt nicht mit dem Zielwert überein",
             (baseline_id, halve, result_id),
-            f"Die Hälfte von {attrition:g} % ist {implied:g} %, nicht {dropout:g} %.",
-            "Ist die Reduktion relativ, absolut oder auf eine andere Basis bezogen?",
+            attrition=attrition,
+            implied=implied,
+            dropout=dropout,
         )
 
 
@@ -351,15 +515,10 @@ def _check_assumption_dependencies(
         joined = texts[source] + " " + texts[target]
         if any(word in joined for word in ("partner", "expected", "assume")):
             builder.add(
+                "assumption_dependency",
                 FindingCategory.UNSUPPORTED_ASSUMPTION,
                 "medium",
-                "Die Budgetaussage hängt von einer externen Zusage ab",
                 (source, target),
-                (
-                    "Der Graph weist eine Annahme als Voraussetzung aus, aber kein "
-                    "zugelassener Beleg sichert sie ab."
-                ),
-                "Gibt es eine verbindliche Zusage, ein Ersatzbudget oder eine bezifferte Reserve?",
                 0.95,
             )
 
@@ -379,15 +538,15 @@ def _check_fte_budget(texts: dict[str, str], builder: _Builder, tolerance: float
     implied = fte_value * annual_salary * months / 12.0
     if abs(implied - allocated_amount) > tolerance:
         builder.add(
+            "fte_budget",
             FindingCategory.BUDGET_MISMATCH,
             "high",
-            "Der Koordinationsposten folgt nicht aus der FTE-Berechnung",
             (fte_id, salary_id, allocated_id),
-            (
-                f"{fte_value:g} FTE × {annual_salary:,.0f} EUR × {months:g}/12 = "
-                f"{implied:,.0f} EUR, nicht {allocated_amount:,.0f} EUR."
-            ),
-            "Welche zusätzlichen Koordinationskosten erklären den Betrag?",
+            fte=fte_value,
+            salary=annual_salary,
+            months=months,
+            implied=implied,
+            allocated=allocated_amount,
         )
 
 
@@ -409,15 +568,12 @@ def _check_budget_sum(
         part_sum = sum(value for _, value in parts if value is not None)
         if abs(part_sum - total) > tolerance:
             builder.add(
+                "budget_sum",
                 FindingCategory.BUDGET_MISMATCH,
                 "critical",
-                "Die Budgetpositionen ergeben nicht die beantragte Gesamtsumme",
                 (*part_ids, total_id),
-                (
-                    f"Die zugelassenen Teilposten ergeben {part_sum:,.0f} EUR; als "
-                    f"Gesamtsumme werden {total:,.0f} EUR genannt."
-                ),
-                "Welche Einzelposition oder Gesamtsumme muss korrigiert werden?",
+                part_sum=part_sum,
+                total=total,
             )
 
 
@@ -430,15 +586,10 @@ def _check_causal_design(texts: dict[str, str], builder: _Builder) -> None:
     causal = _find_claim(texts, lambda text: "caused" in text or "causal" in text)
     if before_after and no_control and causal:
         builder.add(
+            "causal_design",
             FindingCategory.CAUSAL_OVERCLAIM,
             "high",
-            "Die kausale Schlussfolgerung geht über das Evaluationsdesign hinaus",
             (before_after, no_control, causal),
-            (
-                "Ein Vorher-nachher-Vergleich ohne Vergleichsgruppe trennt den "
-                "Programmeffekt nicht von anderen Veränderungen."
-            ),
-            "Welches Design oder welcher Beleg identifiziert das Programm als Ursache?",
             0.98,
         )
 
