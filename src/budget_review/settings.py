@@ -27,6 +27,23 @@ class AppSettings:
         return "••••" + self.api_key[-4:]
 
 
+def _restrict_descriptor(descriptor: int) -> None:
+    """Owner-only permissions where the platform has them.
+
+    os.chmod accepts a descriptor only where fchmod exists; on Windows it does
+    not, and there is no POSIX-mode equivalent to fall back to.
+    """
+    if os.chmod in os.supports_fd:
+        os.chmod(descriptor, 0o600)
+
+
+def _restrict_path(path: Path) -> None:
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
+
+
 def settings_path() -> Path:
     configured = os.environ.get("CONTENT_REVIEW_CONFIG_DIR")
     root = Path(configured).expanduser() if configured else Path.home() / ".config"
@@ -90,11 +107,11 @@ def save_settings(
     )
     temporary = Path(temporary_name)
     try:
-        os.chmod(descriptor, 0o600)
+        _restrict_descriptor(descriptor)
         with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
             handle.write(payload + "\n")
         temporary.replace(target)
-        target.chmod(0o600)
+        _restrict_path(target)
     except Exception:
         temporary.unlink(missing_ok=True)
         raise

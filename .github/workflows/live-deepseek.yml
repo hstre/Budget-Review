@@ -1,8 +1,6 @@
 name: Live DeepSeek smoke test
 
 on:
-  push:
-    branches: ["alpha/v0.1.0"]
   workflow_dispatch:
     inputs:
       profile:
@@ -39,16 +37,13 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
           PROFILE="${{ inputs.profile }}"
-          if [ -z "$PROFILE" ]; then
-            PROFILE="budget"
-          fi
           if [ "$PROFILE" = "general" ]; then
             SOURCE="src/budget_review/fixtures/content_theatre/polished.md"
           else
             SOURCE="src/budget_review/fixtures/coherence_theatre/proposal.md"
           fi
           REVIEW_ARGS=()
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.run_reviewers }}" = "true" ]; then
+          if [ "${{ inputs.run_reviewers }}" = "true" ]; then
             REVIEW_ARGS+=(--live-review)
           fi
           content-review review "$SOURCE" --profile "$PROFILE" --provider deepseek "${REVIEW_ARGS[@]}" --output review-output/live

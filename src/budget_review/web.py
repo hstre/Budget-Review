@@ -7,21 +7,31 @@ from __future__ import annotations
 import html
 import re
 import secrets
+import sys
 import threading
+import traceback
 import webbrowser
 from datetime import UTC, datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, urlparse
 
 from .ingest import SourceBundle
 from .pipeline import ReviewPipeline
 from .provider import DeepSeekProvider, ProviderError
 from .render import render_html
-from .settings import api_key_source, effective_api_key, load_settings, save_settings
+from .settings import (
+    LANGUAGES,
+    api_key_source,
+    effective_api_key,
+    load_settings,
+    save_settings,
+)
 
 MAX_BODY_BYTES = 2_000_000
+# Redirects only ever return to a page this app actually serves.
+REDIRECT_TARGETS = ("/", "/settings")
 
 TEXT = {
     "de": {
@@ -94,19 +104,24 @@ def _safe_document_id(value: str) -> str:
     return cleaned[:80] or "document"
 
 
-def _layout(language: str, title: str, body: str, token: str) -> str:
+def _layout(language: str, title: str, body: str, token: str, path: str = "/") -> str:
     t = TEXT[language]
     other = "en" if language == "de" else "de"
     switch = "English" if other == "en" else "Deutsch"
+    back = path if path in REDIRECT_TARGETS else "/"
     return f"""<!doctype html>
 <html lang="{language}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(title)} · Content Review</title><style>{_CSS}</style></head>
 <body><main><nav><a class="brand" href="/">{t["app"]}</a><div>
 <a href="/">{t["review"]}</a><a href="/settings">{t["settings"]}</a>
-<a href="/language?{urlencode({"value": other})}">{switch}</a></div></nav>{body}
+<form class="lang" method="post" action="/language">
+<input type="hidden" name="token" value="{token}">
+<input type="hidden" name="value" value="{other}">
+<input type="hidden" name="next" value="{back}">
+<button type="submit">{switch}</button></form></div></nav>{body}
 <footer>Alpha · ClaimGraph + Layer 9 · Human merge authority</footer></main>
-<script>document.querySelectorAll('form').forEach(f=>f.addEventListener('submit',()=>{{
+<script>document.querySelectorAll('form:not(.lang)').forEach(f=>f.addEventListener('submit',()=>{{
 const b=f.querySelector('button[type=submit]');if(b){{b.disabled=true;b.textContent='…';}}
 }}));</script></body></html>"""
 
@@ -123,7 +138,7 @@ def render_home(language: str, token: str, message: str = "") -> str:
 <option value="budget">{t["budget"]}</option></select></label>
 <label class="check"><input type="checkbox" name="live_review" value="yes" checked> {t["reviewers"]}</label></div>
 <button type="submit">{t["start"]}</button><p class="hint">{t["working"]}</p></form>"""
-    return _layout(language, t["review"], body, token)
+    return _layout(language, t["review"], body, token, "/")
 
 
 def render_settings(language: str, token: str, message: str = "") -> str:
@@ -149,7 +164,7 @@ def render_settings(language: str, token: str, message: str = "") -> str:
 <label>{t["language"]}<select name="language"><option value="de"{checked_de}>Deutsch</option>
 <option value="en"{checked_en}>English</option></select></label>
 <button type="submit">{t["save"]}</button><p class="security">{t["security"]}</p></form>"""
-    return _layout(language, t["settings"], body, token)
+    return _layout(language, t["settings"], body, token, "/settings")
 
 
 class ContentReviewHandler(BaseHTTPRequestHandler):
@@ -160,45 +175,65 @@ class ContentReviewHandler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self) -> None:
-        parsed = urlparse(self.path)
+        try:
+            self._handle_get(urlparse(self.path).path)
+        except Exception:
+            self._fail()
+
+    def do_POST(self) -> None:
+        try:
+            self._handle_post(urlparse(self.path).path)
+        except Exception:
+            self._fail()
+
+    def _handle_get(self, path: str) -> None:
         language = load_settings().language
-        if parsed.path == "/":
+        if path == "/":
             self._html(render_home(language, self.csrf_token))
-        elif parsed.path == "/settings":
+        elif path == "/settings":
             self._html(render_settings(language, self.csrf_token))
-        elif parsed.path == "/language":
-            requested = parse_qs(parsed.query).get("value", [""])[0]
-            if requested in TEXT:
-                save_settings(language=requested)
-            self._redirect(self.headers.get("Referer", "/"))
         else:
             self.send_error(HTTPStatus.NOT_FOUND)
 
-    def do_POST(self) -> None:
+    def _handle_post(self, path: str) -> None:
         data = self._form_data()
         if data is None:
             return
-        language = load_settings().language
-        if data.get("token", [""])[0] != self.csrf_token:
+        if not secrets.compare_digest(data.get("token", [""])[0], self.csrf_token):
             self.send_error(HTTPStatus.FORBIDDEN)
             return
-        if self.path == "/settings":
-            requested_language = data.get("language", [language])[0]
-            api_key = data.get("api_key", [""])[0]
-            clear = data.get("clear_api_key", [""])[0] == "yes"
-            saved = save_settings(
-                language=requested_language,
-                api_key=api_key,
-                clear_api_key=clear,
-            )
-            self._html(
-                render_settings(saved.language, self.csrf_token, TEXT[saved.language]["saved"])
-            )
-            return
-        if self.path == "/review":
-            self._run_review(data, language)
-            return
-        self.send_error(HTTPStatus.NOT_FOUND)
+        if path == "/settings":
+            self._save_settings(data)
+        elif path == "/language":
+            self._switch_language(data)
+        elif path == "/review":
+            self._run_review(data, load_settings().language)
+        else:
+            self.send_error(HTTPStatus.NOT_FOUND)
+
+    def _switch_language(self, data: dict[str, list[str]]) -> None:
+        requested = data.get("value", [""])[0]
+        if requested in LANGUAGES:
+            save_settings(language=requested)
+        self._redirect(data.get("next", ["/"])[0])
+
+    def _save_settings(self, data: dict[str, list[str]]) -> None:
+        current = load_settings().language
+        requested = data.get("language", [current])[0]
+        saved = save_settings(
+            language=requested if requested in LANGUAGES else current,
+            api_key=data.get("api_key", [""])[0],
+            clear_api_key=data.get("clear_api_key", [""])[0] == "yes",
+        )
+        self._html(render_settings(saved.language, self.csrf_token, TEXT[saved.language]["saved"]))
+
+    def _fail(self) -> None:
+        """One malformed request must not take the handler thread down with it."""
+        traceback.print_exc(file=sys.stderr)
+        try:
+            self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
+        except OSError:
+            pass
 
     def _run_review(self, data: dict[str, list[str]], language: str) -> None:
         t = TEXT[language]
@@ -226,7 +261,7 @@ class ContentReviewHandler(BaseHTTPRequestHandler):
             output = Path("review-output") / "web" / f"{document_id}-{timestamp}"
             ReviewPipeline.write(dossier, output)
             self._html(render_html(dossier, language=language, navigation=True))
-        except (ProviderError, ValueError) as exc:
+        except (ProviderError, ValueError, OSError) as exc:
             body = (
                 f'<section class="hero"><h1>{t["error"]}</h1>'
                 f'<p class="notice">{html.escape(str(exc))}</p>'
@@ -240,14 +275,22 @@ class ContentReviewHandler(BaseHTTPRequestHandler):
         except ValueError:
             self.send_error(HTTPStatus.BAD_REQUEST)
             return None
-        if length <= 0 or length > MAX_BODY_BYTES:
+        if length <= 0:
+            self.send_error(HTTPStatus.BAD_REQUEST)
+            return None
+        if length > MAX_BODY_BYTES:
             self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
             return None
         content_type = self.headers.get("Content-Type", "")
         if not content_type.startswith("application/x-www-form-urlencoded"):
             self.send_error(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
             return None
-        return parse_qs(self.rfile.read(length).decode("utf-8"), keep_blank_values=True)
+        try:
+            body = self.rfile.read(length).decode("utf-8")
+        except UnicodeDecodeError:
+            self.send_error(HTTPStatus.BAD_REQUEST)
+            return None
+        return parse_qs(body, keep_blank_values=True)
 
     def _html(self, value: str, status: HTTPStatus = HTTPStatus.OK) -> None:
         payload = value.encode("utf-8")
@@ -256,6 +299,7 @@ class ContentReviewHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(payload)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
         self.send_header(
             "Content-Security-Policy",
             "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'",
@@ -264,10 +308,9 @@ class ContentReviewHandler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def _redirect(self, target: str) -> None:
-        parsed = urlparse(target)
-        safe = target if not parsed.netloc else parsed.path or "/"
         self.send_response(HTTPStatus.SEE_OTHER)
-        self.send_header("Location", safe)
+        self.send_header("Location", target if target in REDIRECT_TARGETS else "/")
+        self.send_header("Content-Length", "0")
         self.end_headers()
 
 
@@ -291,7 +334,9 @@ def serve(host: str = "127.0.0.1", port: int = 8765, open_browser: bool = True) 
 _CSS = """
 :root{color-scheme:light;--ink:#18202a;--muted:#69727d;--line:#dfe3e8;--paper:#fff;--ground:#f4f5f7;--accent:#2457d6}
 *{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{width:min(880px,calc(100% - 32px));margin:0 auto 64px}nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}nav div{display:flex;gap:18px}a{color:var(--accent);text-decoration:none}.brand{color:var(--ink);font-weight:800}
+main{width:min(880px,calc(100% - 32px));margin:0 auto 64px}nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}nav div{display:flex;gap:18px;align-items:center}
+form.lang{display:inline;background:none;border:0;border-radius:0;padding:0;margin:0;box-shadow:none;gap:0}
+form.lang button{background:none;color:var(--accent);padding:0;font:inherit;font-weight:400}a{color:var(--accent);text-decoration:none}.brand{color:var(--ink);font-weight:800}
 .hero{padding:52px 0 26px;max-width:720px}.eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}h1{font-size:clamp(2.2rem,7vw,4.4rem);line-height:1;letter-spacing:-.05em;margin:8px 0 18px}.hero p{color:var(--muted);font-size:1.05rem}
 form{display:grid;gap:18px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 4px 20px rgba(16,24,40,.04)}label{display:grid;gap:7px;font-weight:700}input,textarea,select{width:100%;font:inherit;border:1px solid #cbd1d8;border-radius:10px;padding:11px 12px;background:#fff}textarea{min-height:320px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.check{display:flex;align-items:center;align-self:end;font-weight:500;padding:11px 0}.check input{width:auto}button{border:0;border-radius:10px;background:var(--accent);color:#fff;padding:13px 18px;font:inherit;font-weight:800;cursor:pointer}button:disabled{opacity:.55}.hint,.security{margin:-8px 0 0;color:var(--muted);font-size:.84rem}.notice,.status{padding:13px 15px;border-radius:10px;background:#fff4e5;border:1px solid #fedf89}.success{background:#ecfdf3;border-color:#abefc6}.status{background:#f7f9fc;border-color:var(--line)}footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:34px}@media(max-width:650px){.row{grid-template-columns:1fr}nav div{gap:10px}.hero{padding-top:30px}form{padding:18px}}
 """

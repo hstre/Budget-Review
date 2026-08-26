@@ -69,7 +69,8 @@ The local web interface stores one key per operating-system user in:
 ~/.config/content-review/settings.json
 ```
 
-The file is written atomically with permissions `0600`. The complete key is not
+The file is written atomically and set to `0600` on POSIX systems; Windows has
+no equivalent and relies on the user profile ACL. The complete key is not
 returned to the browser, written to dossiers or included in logs. It is stored
 locally as plain text protected by the operating-system file permissions, not
 encrypted. `DEEPSEEK_API_KEY` remains available as a fallback for CLI use.
@@ -268,9 +269,10 @@ Die lokale Weboberfläche speichert einen Schlüssel je Betriebssystem-Benutzer:
 ~/.config/content-review/settings.json
 ```
 
-Die Datei wird atomar mit den Rechten `0600` geschrieben. Der vollständige Key
-wird nicht an den Browser zurückgegeben und erscheint weder in Dossiers noch in
-Logs. Er liegt lokal als Klartext vor und wird durch die Dateirechte des
+Die Datei wird atomar geschrieben und auf POSIX-Systemen auf `0600` gesetzt;
+Windows kennt keine Entsprechung und verlässt sich auf die ACL des
+Benutzerprofils. Der vollständige Key wird nicht an den Browser zurückgegeben
+und erscheint weder in Dossiers noch in Logs. Er liegt lokal als Klartext vor und wird durch die Dateirechte des
 Betriebssystems geschützt; er ist nicht verschlüsselt. Für die CLI bleibt
 `DEEPSEEK_API_KEY` als Rückfall verfügbar.
 

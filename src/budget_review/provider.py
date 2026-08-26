@@ -18,7 +18,24 @@ from .settings import effective_api_key
 
 
 class ProviderError(RuntimeError):
-    pass
+    """Transport or contract failure. Never carries headers, bodies or the API key."""
+
+
+class _FatalProviderError(ProviderError):
+    """A failure an identical retry cannot resolve, so it must not be paid for twice."""
+
+
+# Everything else (auth, malformed request, unknown model) stays failed on retry.
+_RETRYABLE_STATUS = frozenset({408, 409, 425, 429, 500, 502, 503, 504})
+
+
+def _transport_reason(error: Exception | None) -> str:
+    """Name the failure precisely without revealing headers, bodies or the key."""
+    if isinstance(error, urllib.error.HTTPError):
+        return f"HTTP {error.code}"
+    if isinstance(error, ProviderError):
+        return str(error)
+    return type(error).__name__
 
 
 @dataclass(frozen=True)
@@ -87,7 +104,8 @@ class DeepSeekProvider:
                     envelope = json.loads(response.read().decode("utf-8"))
                 choice = envelope["choices"][0]
                 if choice.get("finish_reason") == "length":
-                    raise ProviderError("DeepSeek output was truncated; raise max_tokens")
+                    # Same request at temperature 0: a retry ends the same way.
+                    raise _FatalProviderError("DeepSeek output was truncated; raise max_tokens")
                 content = choice["message"].get("content")
                 if not isinstance(content, str) or not content.strip():
                     raise ProviderError("DeepSeek returned empty JSON content")
@@ -102,6 +120,17 @@ class DeepSeekProvider:
                     "output_hash": sha256_text(content),
                 }
                 return parsed, metadata
+            except _FatalProviderError:
+                raise
+            except urllib.error.HTTPError as exc:
+                last_error = exc
+                if exc.code not in _RETRYABLE_STATUS:
+                    raise ProviderError(
+                        f"DeepSeek request failed: HTTP {exc.code}"
+                    ) from exc
+                if attempt >= self.retries:
+                    break
+                time.sleep(0.5 * (2**attempt))
             except (
                 urllib.error.URLError,
                 TimeoutError,
@@ -114,7 +143,9 @@ class DeepSeekProvider:
                     break
                 time.sleep(0.5 * (2**attempt))
         # Never include headers, request bodies or secrets in the exception.
-        raise ProviderError(f"DeepSeek request failed: {type(last_error).__name__}") from last_error
+        raise ProviderError(f"DeepSeek request failed: {_transport_reason(last_error)}") from (
+            last_error
+        )
 
     def extract(
         self,

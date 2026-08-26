@@ -69,29 +69,19 @@ def consolidate_findings(findings: tuple[Finding, ...]) -> tuple[ConsolidatedIss
     """Cluster substantially overlapping findings without hiding the raw audit."""
     if not findings:
         return ()
-    parent = list(range(len(findings)))
+    groups: list[list[Finding]] = []
+    for finding in findings:
+        for group in groups:
+            # Complete linkage: a finding joins a group only if it overlaps every
+            # member. _same_issue is not transitive, so chaining pairwise matches
+            # would merge two issues that the rule itself calls unrelated.
+            if all(_same_issue(finding, member) for member in group):
+                group.append(finding)
+                break
+        else:
+            groups.append([finding])
 
-    def root(index: int) -> int:
-        while parent[index] != index:
-            parent[index] = parent[parent[index]]
-            index = parent[index]
-        return index
-
-    def union(left: int, right: int) -> None:
-        left_root, right_root = root(left), root(right)
-        if left_root != right_root:
-            parent[right_root] = left_root
-
-    for left in range(len(findings)):
-        for right in range(left + 1, len(findings)):
-            if _same_issue(findings[left], findings[right]):
-                union(left, right)
-
-    groups: dict[int, list[Finding]] = {}
-    for index, finding in enumerate(findings):
-        groups.setdefault(root(index), []).append(finding)
-
-    prepared = [_prepare_group(group) for group in groups.values()]
+    prepared = [_prepare_group(group) for group in groups]
     prepared.sort(
         key=lambda item: (
             SEVERITY_ORDER.get(item["severity"], 9),
@@ -118,20 +108,22 @@ def _same_issue(left: Finding, right: Finding) -> bool:
 
 
 def _prepare_group(group: list[Finding]) -> dict:
+    # Severity first: the finding that sets the group's severity is the finding
+    # whose title, category and question the examiner reads next to that badge.
+    # Deterministic findings still lead among equally severe ones.
     ordered = sorted(
         group,
         key=lambda item: (
-            item.reviewer_kind != "deterministic",
             SEVERITY_ORDER.get(item.severity, 9),
+            item.reviewer_kind != "deterministic",
             -item.confidence,
         ),
     )
     lead = ordered[0]
-    severity = min((item.severity for item in group), key=lambda value: SEVERITY_ORDER[value])
     claim_ids = tuple(sorted({claim_id for item in group for claim_id in item.claim_ids}))
     reviewer_ids = tuple(dict.fromkeys(item.reviewer_id for item in ordered))
     return {
-        "severity": severity,
+        "severity": lead.severity,
         "category": lead.category,
         "title": lead.summary,
         "explanation": lead.explanation,
