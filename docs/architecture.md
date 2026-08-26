@@ -44,6 +44,14 @@ Das Gate ist deterministisch und replay-stabil. Es prüft:
 5. geschlossene Relationstypen;
 6. vorhandene Endpunkte, keine Selbstkanten und keine Duplikate.
 
+Inhaltsadressierung heißt: Zwei Vorschläge mit gleichem Typ, gleichem
+`canonical_content` und gleichem `raw_span` bezeichnen denselben Knoten. Der
+zweite wird als `duplicate_claim_node` abgewiesen, seine Kanten bleiben aber
+erhalten und zeigen auf den zugelassenen Knoten. Relationen werden deshalb über
+die aufgelösten Knoten-IDs dedupliziert, nicht über Proposal-IDs; eine doppelt
+vorgeschlagene Kante erscheint als `duplicate_relation` im Audit. Claim- und
+Relations-IDs sind im Dossier damit eindeutig.
+
 Mehrdeutige Spans oder Konfidenzen unter 0,75 bleiben zugelassen, werden aber
 als `human_review_required` markiert. Das Gate schließt keine inhaltliche Lücke
 und kennt keinen Wahrheitszustand.

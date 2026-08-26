@@ -40,6 +40,7 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
     relations: list[GovernedRelation] = []
     rejections: list[Rejection] = list(packet.relation_rejections)
     admitted: dict[str, GovernedClaim] = {}
+    by_node: dict[str, GovernedClaim] = {}
     seen_ids: set[str] = set()
 
     for proposal in packet.claims:
@@ -67,6 +68,12 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
                 )
             )[:20]
         )
+        duplicate = by_node.get(node_id)
+        if duplicate is not None:
+            # Same content address: one node, not two. The edge still resolves.
+            rejections.append(Rejection("claim", proposal.proposal_id, "duplicate_claim_node"))
+            admitted[proposal.proposal_id] = duplicate
+            continue
         state = (
             "human_review_required"
             if len(offsets) > 1 or proposal.confidence < 0.75
@@ -87,15 +94,11 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
         )
         claims.append(governed)
         admitted[proposal.proposal_id] = governed
+        by_node[node_id] = governed
 
-    seen_relations: set[tuple[str, str, str]] = set()
+    seen_relations: set[str] = set()
     for index, proposal in enumerate(packet.relations, start=1):
         item_id = f"R{index:03d}"
-        key = (proposal.source_id, proposal.relation_type.value, proposal.target_id)
-        if key in seen_relations:
-            rejections.append(Rejection("relation", item_id, "duplicate_relation"))
-            continue
-        seen_relations.add(key)
         source = admitted.get(proposal.source_id)
         target = admitted.get(proposal.target_id)
         if source is None or target is None:
@@ -115,6 +118,12 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
                 )
             )[:20]
         )
+        if relation_id in seen_relations:
+            # Dedup on the resolved edge, not on proposal ids: two proposals may
+            # address the same pair of claim nodes.
+            rejections.append(Rejection("relation", item_id, "duplicate_relation"))
+            continue
+        seen_relations.add(relation_id)
         relations.append(
             GovernedRelation(
                 relation_id=relation_id,

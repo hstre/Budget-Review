@@ -7,7 +7,7 @@ understand polished prose; they test explicit numeric and dependency structures.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from .models import ClaimType, Finding, FindingCategory, RelationType, SemanticDossier
 from .profiles import ReviewProfile, get_profile
@@ -27,11 +27,21 @@ _WORDS = {
 }
 
 
-def _number(value: str) -> float:
+_MONEY = r"(?:EUR|€)\s*([0-9][0-9,.]*)"
+_SERVE = r"serve\s+([0-9,.]+)\s+participants"
+_COHORTS_OF = r"([a-z]+|[0-9]+)\s+cohorts?\s+of\s+([0-9,.]+)"
+_PERCENT = r"([0-9,.]+)\s*percent"
+
+
+def _number(value: str) -> float | None:
+    """Read one number, or None. An unreadable word is not a number and never a zero."""
     lowered = value.lower()
     if lowered in _WORDS:
         return float(_WORDS[lowered])
-    return float(value.replace(",", ""))
+    try:
+        return float(value.replace(",", ""))
+    except ValueError:
+        return None
 
 
 def _first(pattern: str, text: str) -> float | None:
@@ -40,8 +50,48 @@ def _first(pattern: str, text: str) -> float | None:
 
 
 def _money(text: str) -> float | None:
-    match = re.search(r"(?:EUR|€)\s*([0-9][0-9,.]*)", text, re.IGNORECASE)
-    return _number(match.group(1)) if match else None
+    return _first(_MONEY, text)
+
+
+def _find_number(
+    texts: dict[str, str],
+    pattern: str,
+    where: Callable[[str], bool] | None = None,
+) -> tuple[str, float] | None:
+    """First claim that carries a readable number for this pattern.
+
+    A claim that satisfies the keyword filter but holds no readable number is
+    skipped rather than consumed: it must not mask a later claim that matches.
+    """
+    for claim_id, text in texts.items():
+        if where is not None and not where(text):
+            continue
+        value = _first(pattern, text)
+        if value is not None:
+            return claim_id, value
+    return None
+
+
+def _find_pair(
+    texts: dict[str, str],
+    pattern: str,
+    where: Callable[[str], bool] | None = None,
+) -> tuple[str, float, float] | None:
+    """Same skip-don't-consume contract as _find_number for a two-number pattern."""
+    for claim_id, text in texts.items():
+        if where is not None and not where(text):
+            continue
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match is None:
+            continue
+        first, second = _number(match.group(1)), _number(match.group(2))
+        if first is not None and second is not None:
+            return claim_id, first, second
+    return None
+
+
+def _find_claim(texts: dict[str, str], where: Callable[[str], bool]) -> str | None:
+    return next((claim_id for claim_id, text in texts.items() if where(text)), None)
 
 
 def _texts(dossier: SemanticDossier) -> dict[str, str]:
@@ -198,168 +248,93 @@ def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> Non
 
 
 def _check_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
-    target = next(
-        (
-            (claim_id, _first(r"serve\s+([0-9,.]+)\s+participants", text))
-            for claim_id, text in texts.items()
-            if "serve" in text
-        ),
-        None,
-    )
-    capacity = next(
-        (
-            (claim_id, match)
-            for claim_id, text in texts.items()
-            if (match := re.search(r"([a-z]+|[0-9]+)\s+cohorts?\s+of\s+([0-9,.]+)", text))
-        ),
-        None,
-    )
-    if not target or target[1] is None or not capacity:
+    target = _find_number(texts, _SERVE)
+    capacity = _find_pair(texts, _COHORTS_OF)
+    if target is None or capacity is None:
         return
-    cohorts = _number(capacity[1].group(1))
-    cohort_size = _number(capacity[1].group(2))
+    target_id, participants = target
+    capacity_id, cohorts, cohort_size = capacity
     available = cohorts * cohort_size
-    if abs(available - target[1]) > tolerance:
+    if abs(available - participants) > tolerance:
         builder.add(
             FindingCategory.CAPACITY_MISMATCH,
             "high",
             "Die Kohortenkapazität reicht nicht für das Teilnehmerziel",
-            (target[0], capacity[0]),
-            f"{cohorts:g} Kohorten × {cohort_size:g} Plätze = {available:g}, nicht {target[1]:g}.",
+            (target_id, capacity_id),
+            f"{cohorts:g} Kohorten × {cohort_size:g} Plätze = {available:g}, "
+            f"nicht {participants:g}.",
             "Welche zusätzliche Kapazität macht das Teilnehmerziel erreichbar?",
         )
 
 
 def _check_resource_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
-    purchase = next(
-        (
-            (claim_id, _first(r"purchase\s+([0-9,.]+)\s+laptops?", text))
-            for claim_id, text in texts.items()
-            if "purchase" in text and "laptop" in text
-        ),
-        None,
-    )
-    parallel = next(
-        (
-            (claim_id, _first(r"([a-z]+|[0-9]+)\s+cohorts?", text))
-            for claim_id, text in texts.items()
-            if "parallel" in text
-        ),
-        None,
-    )
-    cohort = next(
-        (
-            (claim_id, _number(match.group(1)), _number(match.group(2)))
-            for claim_id, text in texts.items()
-            if (match := re.search(r"([a-z]+|[0-9]+)\s+cohorts?\s+of\s+([0-9,.]+)", text))
-        ),
-        None,
-    )
-    one_to_one = next(
-        (claim_id for claim_id, text in texts.items() if "one-to-one" in text and "laptop" in text),
-        None,
-    )
-    if (
-        not purchase
-        or purchase[1] is None
-        or not parallel
-        or parallel[1] is None
-        or not cohort
-        or not one_to_one
-    ):
+    purchase = _find_number(texts, r"purchase\s+([0-9,.]+)\s+laptops?")
+    parallel = _find_number(texts, r"([a-z]+|[0-9]+)\s+cohorts?", lambda text: "parallel" in text)
+    cohort = _find_pair(texts, _COHORTS_OF)
+    one_to_one = _find_claim(texts, lambda text: "one-to-one" in text and "laptop" in text)
+    if purchase is None or parallel is None or cohort is None or one_to_one is None:
         return
-    simultaneous = min(parallel[1], cohort[1]) * cohort[2]
-    if purchase[1] + tolerance < simultaneous:
+    purchase_id, laptops = purchase
+    parallel_id, parallel_cohorts = parallel
+    cohort_id, cohorts, cohort_size = cohort
+    simultaneous = min(parallel_cohorts, cohorts) * cohort_size
+    if laptops + tolerance < simultaneous:
         builder.add(
             FindingCategory.RESOURCE_MISMATCH,
             "high",
             "Die zugesagte Einzelausstattung übersteigt die verfügbaren Laptops",
-            (parallel[0], one_to_one, purchase[0], cohort[0]),
+            (parallel_id, one_to_one, purchase_id, cohort_id),
             (
                 f"Die parallele Durchführung erfordert {simultaneous:g} gleichzeitige "
-                f"Plätze, gekauft werden aber nur {purchase[1]:g} Laptops."
+                f"Plätze, gekauft werden aber nur {laptops:g} Laptops."
             ),
             "Wie wird der persönliche Laptopzugang organisatorisch oder materiell gesichert?",
         )
 
 
 def _check_completion_rate(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
-    enrolled = next(
-        (
-            (claim_id, _first(r"serve\s+([0-9,.]+)\s+participants", text))
-            for claim_id, text in texts.items()
-            if "serve" in text
-        ),
-        None,
+    enrolled = _find_number(texts, _SERVE)
+    rate = _find_number(
+        texts,
+        _PERCENT,
+        lambda text: "completion" in text and ("expect" in text or "raise" in text),
     )
-    rate = next(
-        (
-            (claim_id, _first(r"([0-9,.]+)\s*percent", text))
-            for claim_id, text in texts.items()
-            if "completion" in text and ("expect" in text or "raise" in text)
-        ),
-        None,
+    graduates = _find_number(
+        texts, r"(?:graduate|graduates?)\D{0,20}([0-9,.]+)", lambda text: "graduat" in text
     )
-    graduates = next(
-        (
-            (claim_id, _first(r"(?:graduate|graduates?)\D{0,20}([0-9,.]+)", text))
-            for claim_id, text in texts.items()
-            if "graduat" in text
-        ),
-        None,
-    )
-    if (
-        not enrolled
-        or enrolled[1] is None
-        or not rate
-        or rate[1] is None
-        or not graduates
-        or graduates[1] is None
-    ):
+    if enrolled is None or rate is None or graduates is None:
         return
-    implied = enrolled[1] * rate[1] / 100.0
-    if abs(implied - graduates[1]) > tolerance:
+    enrolled_id, participants = enrolled
+    rate_id, percent = rate
+    graduates_id, graduate_target = graduates
+    implied = participants * percent / 100.0
+    if abs(implied - graduate_target) > tolerance:
         builder.add(
             FindingCategory.ARITHMETIC_MISMATCH,
             "high",
             "Abschlussquote und Absolventenziel passen nicht zusammen",
-            (enrolled[0], rate[0], graduates[0]),
-            f"{rate[1]:g} % von {enrolled[1]:g} sind {implied:g}, nicht {graduates[1]:g}.",
+            (enrolled_id, rate_id, graduates_id),
+            f"{percent:g} % von {participants:g} sind {implied:g}, nicht {graduate_target:g}.",
             "Welche Zahl ist für das operative Ziel maßgeblich?",
         )
 
 
 def _check_halving(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
-    baseline = next(
-        (
-            (claim_id, _first(r"([0-9,.]+)\s*percent", text))
-            for claim_id, text in texts.items()
-            if "current attrition" in text
-        ),
-        None,
-    )
-    halve = next(
-        (claim_id for claim_id, text in texts.items() if "halve" in text and "attrition" in text),
-        None,
-    )
-    result = next(
-        (
-            (claim_id, _first(r"([0-9,.]+)\s*percent", text))
-            for claim_id, text in texts.items()
-            if "dropout rate" in text
-        ),
-        None,
-    )
-    if not baseline or baseline[1] is None or not halve or not result or result[1] is None:
+    baseline = _find_number(texts, _PERCENT, lambda text: "current attrition" in text)
+    halve = _find_claim(texts, lambda text: "halve" in text and "attrition" in text)
+    result = _find_number(texts, _PERCENT, lambda text: "dropout rate" in text)
+    if baseline is None or halve is None or result is None:
         return
-    implied = baseline[1] / 2.0
-    if abs(implied - result[1]) > tolerance:
+    baseline_id, attrition = baseline
+    result_id, dropout = result
+    implied = attrition / 2.0
+    if abs(implied - dropout) > tolerance:
         builder.add(
             FindingCategory.ARITHMETIC_MISMATCH,
             "high",
             "Die halbierte Abbruchquote stimmt nicht mit dem Zielwert überein",
-            (baseline[0], halve, result[0]),
-            f"Die Hälfte von {baseline[1]:g} % ist {implied:g} %, nicht {result[1]:g} %.",
+            (baseline_id, halve, result_id),
+            f"Die Hälfte von {attrition:g} % ist {implied:g} %, nicht {dropout:g} %.",
             "Ist die Reduktion relativ, absolut oder auf eine andere Basis bezogen?",
         )
 
@@ -390,50 +365,27 @@ def _check_assumption_dependencies(
 
 
 def _check_fte_budget(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:
-    fte = next(
-        (
-            (claim_id, _first(r"([0-9.]+)\s*FTE", text), _first(r"([0-9,.]+)\s+months?", text))
-            for claim_id, text in texts.items()
-            if "fte" in text
-        ),
-        None,
+    fte = _find_number(texts, r"([0-9.]+)\s*FTE", lambda text: "fte" in text)
+    salary = _find_number(texts, _MONEY, lambda text: "annual" in text and "salary" in text)
+    allocated = _find_number(
+        texts, _MONEY, lambda text: "allocated" in text and "coordinator" in text
     )
-    salary = next(
-        (
-            (claim_id, _money(text))
-            for claim_id, text in texts.items()
-            if "annual" in text and "salary" in text
-        ),
-        None,
-    )
-    allocated = next(
-        (
-            (claim_id, _money(text))
-            for claim_id, text in texts.items()
-            if "allocated" in text and "coordinator" in text
-        ),
-        None,
-    )
-    if (
-        not fte
-        or fte[1] is None
-        or not salary
-        or salary[1] is None
-        or not allocated
-        or allocated[1] is None
-    ):
+    if fte is None or salary is None or allocated is None:
         return
-    months = fte[2] or 12.0
-    implied = fte[1] * salary[1] * months / 12.0
-    if abs(implied - allocated[1]) > tolerance:
+    fte_id, fte_value = fte
+    salary_id, annual_salary = salary
+    allocated_id, allocated_amount = allocated
+    months = _first(r"([0-9,.]+)\s+months?", texts[fte_id]) or 12.0
+    implied = fte_value * annual_salary * months / 12.0
+    if abs(implied - allocated_amount) > tolerance:
         builder.add(
             FindingCategory.BUDGET_MISMATCH,
             "high",
             "Der Koordinationsposten folgt nicht aus der FTE-Berechnung",
-            (fte[0], salary[0], allocated[0]),
+            (fte_id, salary_id, allocated_id),
             (
-                f"{fte[1]:g} FTE × {salary[1]:,.0f} EUR × {months:g}/12 = "
-                f"{implied:,.0f} EUR, nicht {allocated[1]:,.0f} EUR."
+                f"{fte_value:g} FTE × {annual_salary:,.0f} EUR × {months:g}/12 = "
+                f"{implied:,.0f} EUR, nicht {allocated_amount:,.0f} EUR."
             ),
             "Welche zusätzlichen Koordinationskosten erklären den Betrag?",
         )
@@ -470,20 +422,12 @@ def _check_budget_sum(
 
 
 def _check_causal_design(texts: dict[str, str], builder: _Builder) -> None:
-    before_after = next(
-        (claim_id for claim_id, text in texts.items() if "before-and-after" in text), None
+    before_after = _find_claim(texts, lambda text: "before-and-after" in text)
+    no_control = _find_claim(
+        texts,
+        lambda text: "control group" in text and ("unnecessary" in text or "no " in text),
     )
-    no_control = next(
-        (
-            claim_id
-            for claim_id, text in texts.items()
-            if "control group" in text and ("unnecessary" in text or "no " in text)
-        ),
-        None,
-    )
-    causal = next(
-        (claim_id for claim_id, text in texts.items() if "caused" in text or "causal" in text), None
-    )
+    causal = _find_claim(texts, lambda text: "caused" in text or "causal" in text)
     if before_after and no_control and causal:
         builder.add(
             FindingCategory.CAUSAL_OVERCLAIM,
