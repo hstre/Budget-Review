@@ -81,6 +81,25 @@ Offline-Regeln in diesem Graphen keine der definierten Spannungen fanden.
 Die menschliche Ansicht liegt unter `review-output/demo/dossier.html`. Markdown
 und der vollständige JSON-Audit werden daneben erzeugt.
 
+## Lokale Weboberfläche
+
+Die Alpha enthält eine zweisprachige Oberfläche für Deutsch und Englisch:
+
+```bash
+content-review web
+```
+
+Sie öffnet standardmäßig `http://127.0.0.1:8765`. Unter **Einstellungen / Settings**
+kann jeder lokale Benutzer seinen eigenen DeepSeek API-Key eintragen, ersetzen oder
+entfernen und die Sprache wechseln. Ist noch kein Key vorhanden, führt die Oberfläche
+vor der ersten Live-Prüfung automatisch zu dieser Seite.
+
+Der Schlüssel wird nicht in Dossiers, Browser-Speicher oder Logs geschrieben. Die lokale
+Einstellungsdatei unter `~/.config/content-review/settings.json` erhält Dateirechte `0600`.
+Ein bereits gesetztes `DEEPSEEK_API_KEY` bleibt als Rückfall erhalten. Für eine gemeinsam
+erreichbare Installation muss vor einer Netzwerkfreigabe zusätzlich eine Benutzeranmeldung
+vorgeschaltet werden; ohne `--allow-network` verweigert die Alpha Nicht-Localhost-Bindungen.
+
 ## Einen Text live prüfen
 
 Der Schlüssel wird ausschließlich aus `DEEPSEEK_API_KEY` gelesen und nie in
@@ -157,4 +176,4 @@ ruff check .
 - PDF-Textextraktion enthält kein OCR.
 - Übereinstimmung der Reviewer ist keine Wahrheit und kein Qualitätswert.
 
-Status: `0.2.0a1` · Research alpha · MIT
+Status: `0.2.0a2` · Research alpha · MIT
