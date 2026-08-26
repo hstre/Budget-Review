@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "content-review"
-version = "0.2.0a2"
+version = "0.2.0a3"
 description = "Auditable claim-graph and Anti-Delphi review of content, independent of style or authorship."
 readme = "README.md"
 requires-python = ">=3.11"

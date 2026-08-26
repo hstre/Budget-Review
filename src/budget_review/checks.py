@@ -28,6 +28,15 @@ _WORDS = {
 }
 
 
+# Provenance of the deterministic path. Bump whenever a rule changes which
+# findings it produces, so two dossiers cannot claim one version for two results.
+RULES_VERSION = "0.3"
+
+
+def rules_model_id(profile_name: str) -> str:
+    return f"content-rules/{profile_name}/{RULES_VERSION}"
+
+
 _MONEY = r"(?:EUR|€)\s*([0-9][0-9,.]*)"
 _SERVE = r"serve\s+([0-9,.]+)\s+participants"
 _COHORTS_OF = r"([a-z]+|[0-9]+)\s+cohorts?\s+of\s+([0-9,.]+)"
@@ -301,7 +310,7 @@ class _Builder:
                 finding_id=f"D{len(self.findings) + 1:02d}",
                 reviewer_id="deterministic-checks",
                 reviewer_kind="deterministic",
-                model_id=f"content-rules/{self.profile}/0.2",
+                model_id=rules_model_id(self.profile),
                 category=category,
                 severity=severity,
                 summary=summary,

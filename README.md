@@ -14,7 +14,7 @@ It is deliberately **not an AI detector**. Smooth writing receives no bonus,
 rough writing no penalty. The system produces review questions, never a truth,
 quality or funding verdict.
 
-Status: `0.2.0a2` · Research alpha · MIT
+Status: `0.2.0a3` · Research alpha · MIT
 
 ---
 
@@ -217,7 +217,8 @@ is a separate manually triggered GitHub Action.
   verbatim spans from the source.
 - The local web server is single-user and has no account system.
 
-Security details are collected in [SECURITY.md](SECURITY.md).
+Security details are collected in [SECURITY.md](SECURITY.md); changes per
+release are in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -429,4 +430,5 @@ Actions manuell gestartet.
 - Der lokale Webserver ist für einen Benutzer ausgelegt und besitzt noch kein
   Kontensystem.
 
-Sicherheitsdetails stehen in [SECURITY.md](SECURITY.md).
+Sicherheitsdetails stehen in [SECURITY.md](SECURITY.md), die Änderungen je
+Version in [CHANGELOG.md](CHANGELOG.md).

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .checks import deterministic_checks
+from .checks import deterministic_checks, rules_model_id
 from .models import (
     Finding,
     FindingCategory,
@@ -60,7 +60,7 @@ def review_claim_graph(
         {
             "reviewer_id": "deterministic-checks",
             "kind": "deterministic",
-            "model_id": f"content-rules/{selected.name}/0.2",
+            "model_id": rules_model_id(selected.name),
             "status": "completed",
             "finding_count": len(findings),
         }
