@@ -8,11 +8,11 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from .gate import sha256_text
-from .models import SchemaError, SemanticPacket
+from .models import Rejection, RelationProposal, SchemaError, SemanticPacket
 from .prompts import extraction_prompt
 
 
@@ -158,11 +158,43 @@ class DeepSeekProvider:
                 validation_error = exc
                 if validation_attempt == 0:
                     continue
+                recovered = _reject_invalid_relations(packet_data)
+                if recovered is not None:
+                    return recovered
                 raise ProviderError(
                     f"DeepSeek extraction failed local schema validation: {exc}"
                 ) from exc
 
         raise AssertionError("unreachable")
+
+
+def _reject_invalid_relations(packet_data: dict[str, Any]) -> SemanticPacket | None:
+    """Fail closed per malformed edge while preserving an auditable rejection."""
+    raw_relations = packet_data.get("relations")
+    if not isinstance(raw_relations, list):
+        return None
+    valid_relations: list[dict[str, Any]] = []
+    rejections: list[Rejection] = []
+    for index, item in enumerate(raw_relations, start=1):
+        try:
+            if not isinstance(item, dict):
+                raise SchemaError("relation must be object")
+            RelationProposal.from_dict(item)
+        except SchemaError as exc:
+            rejections.append(
+                Rejection("relation", f"R{index:03d}", f"closed_schema_rejection: {exc}")
+            )
+        else:
+            valid_relations.append(item)
+    if not rejections:
+        return None
+    sanitized = dict(packet_data)
+    sanitized["relations"] = valid_relations
+    try:
+        packet = SemanticPacket.from_dict(sanitized)
+    except SchemaError:
+        return None
+    return replace(packet, relation_rejections=tuple(rejections))
 
 
 def _strip_fence(value: str) -> str:

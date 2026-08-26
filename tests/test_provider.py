@@ -135,6 +135,43 @@ def test_extraction_repairs_one_schema_violation(monkeypatch) -> None:
     assert packet.relations[0].relation_type.value == "SUPPORTS"
 
 
+def test_extraction_rejects_bad_relation_after_repair_attempt(monkeypatch) -> None:
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+
+    def fake_complete_json(**kwargs):
+        return (
+            {
+                "claims": [
+                    {
+                        "proposal_id": "C01",
+                        "claim_type": "method",
+                        "canonical_content": "A method is used.",
+                        "raw_span": "A method is used.",
+                        "confidence": 0.9,
+                        "source_ref": "example",
+                    }
+                ],
+                "relations": [
+                    {
+                        "source_id": "C01",
+                        "relation_type": "CAUSAL",
+                        "target_id": "C01",
+                        "confidence": 0.8,
+                        "rationale": "Invalid model label.",
+                    }
+                ],
+            },
+            {"model": "deepseek-v4-flash", "output_hash": "1234567890abcdef"},
+        )
+
+    monkeypatch.setattr(provider, "complete_json", fake_complete_json)
+    packet = provider.extract("example", "A method is used.", profile="general")
+
+    assert packet.relations == ()
+    assert packet.relation_rejections[0].item_id == "R001"
+    assert "unknown relation_type: CAUSAL" in packet.relation_rejections[0].reason
+
+
 def test_secret_is_not_exposed_in_transport_error(monkeypatch) -> None:
     def fail(*args, **kwargs):
         raise TimeoutError("transport failed")
