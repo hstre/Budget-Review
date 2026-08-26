@@ -123,32 +123,46 @@ class DeepSeekProvider:
         profile: str = "general",
     ) -> SemanticPacket:
         system, user = extraction_prompt(document_id, document, profile)
-        response, metadata = self.complete_json(
-            system=system,
-            user=user,
-            config=ModelConfig(model_id=model, thinking=False),
-            max_tokens=16384,
-        )
-        packet_data = {
-            "schema_version": "content-review.semantic-packet/0.2",
-            "document_id": document_id,
-            "provenance": {
-                "provider": "deepseek",
-                "model_id": str(metadata["model"]),
-                "run_id": str(uuid.uuid4()),
-                "prompt_hash": sha256_text(system + "\n" + user),
-                "output_hash": str(metadata["output_hash"]),
-                "temperature": 0.0,
-            },
-            "claims": response.get("claims"),
-            "relations": response.get("relations", []),
-        }
-        try:
-            return SemanticPacket.from_dict(packet_data)
-        except SchemaError as exc:
-            raise ProviderError(
-                f"DeepSeek extraction failed local schema validation: {exc}"
-            ) from exc
+        validation_error: SchemaError | None = None
+        for validation_attempt in range(2):
+            active_system = system
+            if validation_error is not None:
+                active_system += (
+                    "\n\nYour previous JSON was rejected by the local closed-schema gate: "
+                    f"{validation_error}. Regenerate the complete JSON object. Correct the "
+                    "schema violation; do not add new fields. Omit any uncertain relation."
+                )
+            response, metadata = self.complete_json(
+                system=active_system,
+                user=user,
+                config=ModelConfig(model_id=model, thinking=False),
+                max_tokens=16384,
+            )
+            packet_data = {
+                "schema_version": "content-review.semantic-packet/0.2",
+                "document_id": document_id,
+                "provenance": {
+                    "provider": "deepseek",
+                    "model_id": str(metadata["model"]),
+                    "run_id": str(uuid.uuid4()),
+                    "prompt_hash": sha256_text(active_system + "\n" + user),
+                    "output_hash": str(metadata["output_hash"]),
+                    "temperature": 0.0,
+                },
+                "claims": response.get("claims"),
+                "relations": response.get("relations", []),
+            }
+            try:
+                return SemanticPacket.from_dict(packet_data)
+            except SchemaError as exc:
+                validation_error = exc
+                if validation_attempt == 0:
+                    continue
+                raise ProviderError(
+                    f"DeepSeek extraction failed local schema validation: {exc}"
+                ) from exc
+
+        raise AssertionError("unreachable")
 
 
 def _strip_fence(value: str) -> str:

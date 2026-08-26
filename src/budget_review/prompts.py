@@ -33,6 +33,9 @@ Decompose polished prose aggressively: an elegant sentence may contain several c
 Each raw_span must be copied verbatim and exactly from the document.
 Allowed claim_type values: {CLAIM_TYPES}.
 Allowed relation_type values: {RELATION_TYPES}.
+The relation_type field must contain one of those UPPERCASE relation values only. Never put
+a claim_type such as method, evidence or assumption into relation_type. If no allowed relation
+fits with high confidence, omit that relation instead of inventing a label.
 Relation direction is semantic: source SUPPORTS target; source claim EVIDENCED_BY target
 evidence; source broader claim GENERALIZES target narrower basis; source QUALIFIES target;
 source premise ENTAILS target conclusion; source example EXAMPLE_OF target general claim;
