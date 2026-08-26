@@ -10,6 +10,7 @@ from .anti_delphi import review_claim_graph
 from .gate import govern_packet
 from .ingest import SourceBundle
 from .models import ReviewDossier, SemanticPacket
+from .profiles import get_profile
 from .provider import DeepSeekProvider, ProviderError
 from .render import render_html, render_markdown
 
@@ -18,6 +19,7 @@ from .render import render_html, render_markdown
 class ReviewPipeline:
     provider: DeepSeekProvider | None = None
     extraction_model: str = "deepseek-v4-flash"
+    profile: str = "general"
 
     def run(
         self,
@@ -26,6 +28,7 @@ class ReviewPipeline:
         packet: SemanticPacket | None = None,
         live_review: bool = False,
     ) -> ReviewDossier:
+        selected = get_profile(self.profile)
         if packet is None:
             if self.provider is None:
                 raise ProviderError(
@@ -35,6 +38,7 @@ class ReviewPipeline:
                 source.document_id,
                 source.text,
                 model=self.extraction_model,
+                profile=selected.name,
             )
         if packet.document_id != source.document_id:
             raise ValueError(
@@ -44,6 +48,7 @@ class ReviewPipeline:
         return review_claim_graph(
             semantic,
             provider=self.provider if live_review else None,
+            profile=selected,
         )
 
     @staticmethod

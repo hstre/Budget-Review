@@ -130,7 +130,7 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
         )
 
     return SemanticDossier(
-        schema_version="budget-review.semantic-dossier/0.1",
+        schema_version="content-review.semantic-dossier/0.2",
         document_id=packet.document_id,
         document_hash=sha256_text(document),
         provenance=packet.provenance,

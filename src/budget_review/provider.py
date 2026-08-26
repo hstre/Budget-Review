@@ -75,7 +75,7 @@ class DeepSeekProvider:
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "budget-review/0.1-alpha",
+                "User-Agent": "content-review/0.2-alpha",
             },
             method="POST",
         )
@@ -116,9 +116,13 @@ class DeepSeekProvider:
         raise ProviderError(f"DeepSeek request failed: {type(last_error).__name__}") from last_error
 
     def extract(
-        self, document_id: str, document: str, model: str = "deepseek-v4-flash"
+        self,
+        document_id: str,
+        document: str,
+        model: str = "deepseek-v4-flash",
+        profile: str = "general",
     ) -> SemanticPacket:
-        system, user = extraction_prompt(document_id, document)
+        system, user = extraction_prompt(document_id, document, profile)
         response, metadata = self.complete_json(
             system=system,
             user=user,
@@ -126,7 +130,7 @@ class DeepSeekProvider:
             max_tokens=16384,
         )
         packet_data = {
-            "schema_version": "budget-review.semantic-packet/0.1",
+            "schema_version": "content-review.semantic-packet/0.2",
             "document_id": document_id,
             "provenance": {
                 "provider": "deepseek",

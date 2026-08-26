@@ -18,6 +18,10 @@ CATEGORY_LABELS = {
     FindingCategory.CAUSAL_OVERCLAIM: "Kausalitätsproblem",
     FindingCategory.SCOPE_TENSION: "Unklarer Geltungsbereich",
     FindingCategory.INTERNAL_CONTRADICTION: "Innerer Widerspruch",
+    FindingCategory.LOGICAL_GAP: "Logische Lücke",
+    FindingCategory.OVERGENERALIZATION: "Unzulässige Verallgemeinerung",
+    FindingCategory.DEFINITION_SHIFT: "Begriffsverschiebung",
+    FindingCategory.RELEVANCE_GAP: "Fehlender Bezug",
     FindingCategory.REVIEW_QUESTION: "Offene Prüffrage",
 }
 
@@ -29,9 +33,10 @@ SEVERITY_LABELS = {
 }
 
 REVIEWER_LABELS = {
-    "deterministic-checks": "Deterministische Rechenprüfung",
+    "deterministic-checks": "Deterministische Struktur- und Rechenprüfung",
     "flash-evidence-skeptic": "Evidenzprüfung (Flash)",
     "flash-thinking-dependency-skeptic": "Abhängigkeitsprüfung (Flash + Thinking)",
+    "flash-thinking-argument-skeptic": "Argumentprüfung (Flash + Thinking)",
 }
 
 

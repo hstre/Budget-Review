@@ -9,7 +9,8 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 
-from .models import Finding, FindingCategory, SemanticDossier
+from .models import ClaimType, Finding, FindingCategory, RelationType, SemanticDossier
+from .profiles import ReviewProfile, get_profile
 
 _WORDS = {
     "one": 1,
@@ -51,7 +52,8 @@ def _texts(dossier: SemanticDossier) -> dict[str, str]:
 
 
 class _Builder:
-    def __init__(self) -> None:
+    def __init__(self, profile: str) -> None:
+        self.profile = profile
         self.findings: list[Finding] = []
 
     def add(
@@ -70,7 +72,7 @@ class _Builder:
                 finding_id=f"D{len(self.findings) + 1:02d}",
                 reviewer_id="deterministic-checks",
                 reviewer_kind="deterministic",
-                model_id="budget-rules/0.1",
+                model_id=f"content-rules/{self.profile}/0.2",
                 category=category,
                 severity=severity,
                 summary=summary,
@@ -82,10 +84,18 @@ class _Builder:
         )
 
 
-def deterministic_checks(dossier: SemanticDossier, tolerance: float = 0.01) -> tuple[Finding, ...]:
-    """Run conservative calculations; a finding still requires human judgment."""
+def deterministic_checks(
+    dossier: SemanticDossier,
+    profile: str | ReviewProfile = "general",
+    tolerance: float = 0.01,
+) -> tuple[Finding, ...]:
+    """Run profile-specific checks; every finding still requires human judgment."""
+    selected = get_profile(profile)
     texts = _texts(dossier)
-    builder = _Builder()
+    builder = _Builder(selected.name)
+    if selected.name == "general":
+        _check_general_structure(dossier, builder)
+        return tuple(builder.findings)
     _check_capacity(texts, builder, tolerance)
     _check_resource_capacity(texts, builder, tolerance)
     _check_completion_rate(texts, builder, tolerance)
@@ -95,6 +105,96 @@ def deterministic_checks(dossier: SemanticDossier, tolerance: float = 0.01) -> t
     _check_budget_sum(dossier, texts, builder, tolerance)
     _check_causal_design(texts, builder)
     return tuple(builder.findings)
+
+
+def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> None:
+    """Expose explicit graph tensions without rereading style or guessing authorship."""
+    node_to_claim = {claim.claim_node_id: claim for claim in dossier.claims}
+    supported: set[str] = set()
+    evidenced: set[str] = set()
+    assumption_sources: set[str] = set()
+
+    for relation in dossier.relations:
+        source = node_to_claim[relation.source_claim_node_id]
+        target = node_to_claim[relation.target_claim_node_id]
+        claim_ids = (source.proposal_id, target.proposal_id)
+        if relation.relation_type in {RelationType.SUPPORTS, RelationType.ENTAILS}:
+            supported.add(target.proposal_id)
+        elif relation.relation_type == RelationType.EVIDENCED_BY:
+            evidenced.add(source.proposal_id)
+        elif relation.relation_type == RelationType.ASSUMPTION_FOR:
+            assumption_sources.add(source.proposal_id)
+
+        if relation.relation_type == RelationType.CONTRADICTS:
+            builder.add(
+                FindingCategory.INTERNAL_CONTRADICTION,
+                "high",
+                "Zwei Aussagen stehen in einem ausdrücklichen Widerspruch",
+                claim_ids,
+                "Der zugelassene ClaimGraph verbindet diese Aussagen als widersprüchlich.",
+                (
+                    "Ist der Widerspruch beabsichtigt, auflösbar oder muss eine Aussage "
+                    "korrigiert werden?"
+                ),
+            )
+        elif relation.relation_type == RelationType.SCOPE_TENSION:
+            builder.add(
+                FindingCategory.SCOPE_TENSION,
+                "medium",
+                "Der Geltungsbereich verschiebt sich zwischen zwei Aussagen",
+                claim_ids,
+                "Der ClaimGraph markiert unterschiedliche Reichweiten oder Bezugsgruppen.",
+                "Für welchen genauen Geltungsbereich soll die Schlussfolgerung gelten?",
+            )
+        elif relation.relation_type == RelationType.GENERALIZES:
+            supported.add(source.proposal_id)
+            builder.add(
+                FindingCategory.OVERGENERALIZATION,
+                "medium",
+                "Eine Aussage verallgemeinert eine engere Grundlage",
+                claim_ids,
+                "Die Schlussfolgerung reicht weiter als die Aussage, aus der sie abgeleitet wird.",
+                "Welche zusätzliche Grundlage rechtfertigt diese Verallgemeinerung?",
+            )
+
+    for claim in dossier.claims:
+        claim_id = claim.proposal_id
+        if (
+            claim.claim_type
+            in {
+                ClaimType.THESIS,
+                ClaimType.INFERENCE,
+                ClaimType.RECOMMENDATION,
+            }
+            and claim_id not in supported | evidenced
+        ):
+            builder.add(
+                FindingCategory.LOGICAL_GAP,
+                "medium",
+                "Die zentrale Aussage hat keine zugelassene Stützverbindung",
+                (claim_id,),
+                "Im ClaimGraph führt keine SUPPORTS-, ENTAILS- oder EVIDENCED_BY-Verbindung "
+                "zu dieser Aussage.",
+                "Welche Prämisse oder welcher Beleg trägt diese Aussage?",
+                0.9,
+            )
+        if (
+            claim.claim_type == ClaimType.ASSUMPTION
+            and claim_id in assumption_sources
+            and claim_id not in evidenced
+        ):
+            builder.add(
+                FindingCategory.UNSUPPORTED_ASSUMPTION,
+                "medium",
+                "Eine wirksame Annahme bleibt unbelegt",
+                (claim_id,),
+                (
+                    "Andere Aussagen hängen von dieser Annahme ab, ohne dass der Graph "
+                    "einen Beleg nennt."
+                ),
+                "Wie wird diese Annahme begründet oder gegen ihr Scheitern abgesichert?",
+                0.95,
+            )
 
 
 def _check_capacity(texts: dict[str, str], builder: _Builder, tolerance: float) -> None:

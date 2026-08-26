@@ -54,6 +54,37 @@ def test_missing_key_fails_without_network(monkeypatch) -> None:
         DeepSeekProvider()
 
 
+def test_extraction_receives_general_profile_contract(monkeypatch) -> None:
+    captured = {}
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+
+    def fake_complete_json(**kwargs):
+        captured["system"] = kwargs["system"]
+        return (
+            {
+                "claims": [
+                    {
+                        "proposal_id": "C01",
+                        "claim_type": "thesis",
+                        "canonical_content": "A claim.",
+                        "raw_span": "A claim.",
+                        "confidence": 0.9,
+                        "source_ref": "example",
+                    }
+                ],
+                "relations": [],
+            },
+            {"model": "deepseek-v4-flash", "output_hash": "1234567890abcdef"},
+        )
+
+    monkeypatch.setattr(provider, "complete_json", fake_complete_json)
+    packet = provider.extract("example", "A claim.", profile="general")
+
+    assert packet.schema_version == "content-review.semantic-packet/0.2"
+    assert "Ignore prose quality" in captured["system"]
+    assert "human-written or AI-written" in captured["system"]
+
+
 def test_secret_is_not_exposed_in_transport_error(monkeypatch) -> None:
     def fail(*args, **kwargs):
         raise TimeoutError("transport failed")

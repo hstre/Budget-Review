@@ -1,4 +1,4 @@
-"""Turn supported proposal and budget files into one auditable source text."""
+"""Turn supported documents into one auditable source text."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def _read_pdf(path: Path) -> str:
     try:
         from pypdf import PdfReader
     except ImportError as exc:  # pragma: no cover - depends on optional extra
-        raise IngestError("PDF support requires: pip install 'budget-review[documents]'") from exc
+        raise IngestError("PDF support requires: pip install 'content-review[documents]'") from exc
     pages = []
     for index, page in enumerate(PdfReader(str(path)).pages, start=1):
         pages.append(f"[PAGE {index}]\n{page.extract_text() or ''}")
@@ -71,7 +71,7 @@ def _read_xlsx(path: Path) -> str:
     try:
         from openpyxl import load_workbook
     except ImportError as exc:  # pragma: no cover - depends on optional extra
-        raise IngestError("XLSX support requires: pip install 'budget-review[documents]'") from exc
+        raise IngestError("XLSX support requires: pip install 'content-review[documents]'") from exc
     workbook = load_workbook(path, read_only=True, data_only=True)
     lines: list[str] = []
     for sheet in workbook.worksheets:
