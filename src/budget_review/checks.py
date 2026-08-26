@@ -163,7 +163,7 @@ _MESSAGES: dict[str, dict[str, tuple[str, str, str]]] = {
             "Wie wird diese Annahme begründet oder gegen ihr Scheitern abgesichert?",
         ),
         "en": (
-            "An load-bearing assumption remains unsupported",
+            "A load-bearing assumption remains unsupported",
             "Other claims depend on this assumption, but the graph names no evidence for it.",
             "How is this assumption justified, or hedged against its failure?",
         ),
