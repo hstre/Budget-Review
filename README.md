@@ -125,7 +125,8 @@ keine behauptete Modellvielfalt.
 GitHub Actions liest das vorhandene Repository-Secret `Deepseekapisecret` und
 reicht es intern als `DEEPSEEK_API_KEY` weiter. Der normale CI-Lauf ist
 vollständig offline. Der kostenpflichtige Live-Smoke-Test wird nur manuell über
-**Actions → Live DeepSeek smoke test → Run workflow** gestartet.
+**Actions → Live DeepSeek smoke test → Run workflow** gestartet; dort kann
+zwischen `general` und `budget` gewählt werden.
 
 ## Autoritätsgrenzen
 
