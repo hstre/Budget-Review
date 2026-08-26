@@ -12,6 +12,12 @@ class SchemaError(ValueError):
 
 
 class ClaimType(StrEnum):
+    THESIS = "thesis"
+    FACT = "fact"
+    INFERENCE = "inference"
+    VALUE_JUDGMENT = "value_judgment"
+    RECOMMENDATION = "recommendation"
+    EXAMPLE = "example"
     SCOPE = "scope"
     TARGET = "target"
     CAPACITY = "capacity"
@@ -40,6 +46,10 @@ class RelationType(StrEnum):
     PART_OF = "PART_OF"
     EVIDENCED_BY = "EVIDENCED_BY"
     SCOPE_TENSION = "SCOPE_TENSION"
+    QUALIFIES = "QUALIFIES"
+    GENERALIZES = "GENERALIZES"
+    EXAMPLE_OF = "EXAMPLE_OF"
+    ENTAILS = "ENTAILS"
 
 
 class FindingCategory(StrEnum):
@@ -52,6 +62,10 @@ class FindingCategory(StrEnum):
     CAUSAL_OVERCLAIM = "causal_overclaim"
     SCOPE_TENSION = "scope_tension"
     INTERNAL_CONTRADICTION = "internal_contradiction"
+    LOGICAL_GAP = "logical_gap"
+    OVERGENERALIZATION = "overgeneralization"
+    DEFINITION_SHIFT = "definition_shift"
+    RELEVANCE_GAP = "relevance_gap"
     REVIEW_QUESTION = "review_question"
 
 
@@ -69,7 +83,7 @@ def _closed(data: dict[str, Any], allowed: set[str], where: str) -> None:
 
 
 def _confidence(value: Any, where: str) -> float:
-    if not isinstance(value, (int, float)) or isinstance(value, bool):
+    if not isinstance(value, int | float) or isinstance(value, bool):
         raise SchemaError(f"{where} confidence must be numeric")
     result = float(value)
     if not 0.0 <= result <= 1.0:
@@ -98,7 +112,7 @@ class Provenance:
         if len(prompt_hash) < 8 or len(output_hash) < 8:
             raise SchemaError("provenance hashes are too short")
         temperature = data.get("temperature", 0.0)
-        if not isinstance(temperature, (int, float)):
+        if not isinstance(temperature, int | float):
             raise SchemaError("temperature must be numeric")
         return cls(
             provider=_required(data, "provider", str),
@@ -198,7 +212,10 @@ class SemanticPacket:
             {"schema_version", "document_id", "provenance", "claims", "relations"},
             "semantic packet",
         )
-        if data.get("schema_version") != "budget-review.semantic-packet/0.1":
+        if data.get("schema_version") not in {
+            "budget-review.semantic-packet/0.1",
+            "content-review.semantic-packet/0.2",
+        }:
             raise SchemaError("unsupported semantic packet schema_version")
         raw_claims = _required(data, "claims", list)
         raw_relations = data.get("relations", [])
@@ -295,6 +312,7 @@ class ReviewDossier:
     semantic: SemanticDossier
     findings: tuple[Finding, ...]
     review_rejections: tuple[ReviewRejection, ...]
+    profile: str = "general"
     reviewer_runs: tuple[dict[str, Any], ...] = field(default_factory=tuple)
     authority_note: str = (
         "Decision support only. Agreement between reviewers is not evidence of truth; "
@@ -310,7 +328,7 @@ def _jsonable(value: Any) -> Any:
         return value.value
     if isinstance(value, dict):
         return {key: _jsonable(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return [_jsonable(item) for item in value]
     return value
 

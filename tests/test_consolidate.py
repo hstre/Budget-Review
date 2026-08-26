@@ -8,7 +8,7 @@ from budget_review.render import render_html
 
 
 def test_overlapping_reviewer_finding_becomes_one_issue(controlled_semantic) -> None:
-    dossier = review_claim_graph(controlled_semantic)
+    dossier = review_claim_graph(controlled_semantic, profile="budget")
     original = dossier.findings[0]
     duplicate = replace(
         original,
@@ -31,13 +31,13 @@ def test_overlapping_reviewer_finding_becomes_one_issue(controlled_semantic) -> 
 
 
 def test_unrelated_findings_remain_separate(controlled_semantic) -> None:
-    dossier = review_claim_graph(controlled_semantic)
+    dossier = review_claim_graph(controlled_semantic, profile="budget")
     issues = consolidate_findings(dossier.findings)
     assert len(issues) == len(dossier.findings) == 8
 
 
 def test_html_escapes_model_and_source_text(controlled_semantic) -> None:
-    dossier = review_claim_graph(controlled_semantic)
+    dossier = review_claim_graph(controlled_semantic, profile="budget")
     malicious = replace(
         dossier.findings[0],
         summary='<script>alert("x")</script>',
@@ -49,7 +49,7 @@ def test_html_escapes_model_and_source_text(controlled_semantic) -> None:
 
 
 def test_html_keeps_multiple_paths_from_same_reviewer(controlled_semantic) -> None:
-    dossier = review_claim_graph(controlled_semantic)
+    dossier = review_claim_graph(controlled_semantic, profile="budget")
     original = dossier.findings[0]
     second_path = replace(
         original,

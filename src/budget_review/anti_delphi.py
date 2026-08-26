@@ -13,6 +13,7 @@ from .models import (
     ReviewRejection,
     SemanticDossier,
 )
+from .profiles import BUDGET, GENERAL, ReviewProfile, get_profile
 from .prompts import reviewer_prompt
 from .provider import DeepSeekProvider, ModelConfig, ProviderError
 
@@ -24,45 +25,48 @@ class ReviewerArm:
     config: ModelConfig
 
 
-DEFAULT_ARMS = (
-    ReviewerArm(
-        reviewer_id="flash-evidence-skeptic",
-        role=(
-            "Evidence skeptic. Focus on unsupported assumptions, missing baselines, "
-            "and scope shifts."
-        ),
-        config=ModelConfig("deepseek-v4-flash", thinking=False),
-    ),
-    ReviewerArm(
-        reviewer_id="flash-thinking-dependency-skeptic",
-        role=(
-            "Dependency skeptic. Trace whether targets follow from capacity, resources, "
-            "methods, and budget."
-        ),
-        config=ModelConfig("deepseek-v4-flash", thinking=True, reasoning_effort="high"),
-    ),
-)
+def reviewer_arms(profile: str | ReviewProfile) -> tuple[ReviewerArm, ...]:
+    selected = get_profile(profile)
+    return tuple(
+        ReviewerArm(
+            reviewer_id=spec.reviewer_id,
+            role=spec.role,
+            config=ModelConfig(
+                "deepseek-v4-flash",
+                thinking=spec.thinking,
+                reasoning_effort="high",
+            ),
+        )
+        for spec in selected.reviewers
+    )
+
+
+DEFAULT_ARMS = reviewer_arms(GENERAL)
+BUDGET_ARMS = reviewer_arms(BUDGET)
 
 
 def review_claim_graph(
     dossier: SemanticDossier,
     provider: DeepSeekProvider | None = None,
-    arms: tuple[ReviewerArm, ...] = DEFAULT_ARMS,
+    arms: tuple[ReviewerArm, ...] | None = None,
+    profile: str | ReviewProfile = "general",
 ) -> ReviewDossier:
-    findings = list(deterministic_checks(dossier))
+    selected = get_profile(profile)
+    selected_arms = reviewer_arms(selected) if arms is None else arms
+    findings = list(deterministic_checks(dossier, selected))
     rejections: list[ReviewRejection] = []
     runs: list[dict[str, Any]] = [
         {
             "reviewer_id": "deterministic-checks",
             "kind": "deterministic",
-            "model_id": "budget-rules/0.1",
+            "model_id": f"content-rules/{selected.name}/0.2",
             "status": "completed",
             "finding_count": len(findings),
         }
     ]
     if provider is not None:
-        for arm in arms:
-            system, user = reviewer_prompt(dossier, arm.role)
+        for arm in selected_arms:
+            system, user = reviewer_prompt(dossier, arm.role, selected)
             try:
                 payload, metadata = provider.complete_json(
                     system=system,
@@ -97,11 +101,13 @@ def review_claim_graph(
                     }
                 )
     return ReviewDossier(
-        schema_version="budget-review.dossier/0.1",
+        schema_version="content-review.dossier/0.2",
         semantic=dossier,
         findings=tuple(findings),
         review_rejections=tuple(rejections),
+        profile=selected.name,
         reviewer_runs=tuple(runs),
+        authority_note=selected.authority_note,
     )
 
 
@@ -189,7 +195,7 @@ def _review_rejection_reason(
             return f"empty_{field}"
     confidence = item.get("confidence")
     if (
-        not isinstance(confidence, (int, float))
+        not isinstance(confidence, int | float)
         or isinstance(confidence, bool)
         or not 0 <= confidence <= 1
     ):
@@ -197,4 +203,11 @@ def _review_rejection_reason(
     return None
 
 
-__all__ = ["DEFAULT_ARMS", "ReviewerArm", "govern_review_payload", "review_claim_graph"]
+__all__ = [
+    "BUDGET_ARMS",
+    "DEFAULT_ARMS",
+    "ReviewerArm",
+    "govern_review_payload",
+    "review_claim_graph",
+    "reviewer_arms",
+]

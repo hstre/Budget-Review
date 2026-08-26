@@ -18,6 +18,6 @@ Vertraulichkeit und Löschregeln durch die betreibende Stelle geklärt sein.
 
 ## Meldungen
 
-Bitte Sicherheitsprobleme nicht mit realen Antragsdaten reproduzieren. Eine
+Bitte Sicherheitsprobleme nicht mit realen vertraulichen Dokumenten reproduzieren. Eine
 Meldung sollte einen synthetischen Minimalfall und die betroffene Version
 enthalten.

@@ -2,10 +2,17 @@
 
 ## 1. Problem
 
-LLM-überarbeitete Anträge sind häufig sprachlich kohärenter als die darin
-enthaltene Begründungsstruktur. Übergänge können logische Lücken verdecken.
-Ein zweites LLM, das wieder nur den Fließtext liest, ist für dieselbe Glättung
-anfällig. Budget Review trennt deshalb Formulierung und Prüfstruktur.
+Form und Inhalt sind bei LLM-überarbeiteten Texten leicht zu verwechseln.
+Sprachliche Glätte kann logische Lücken verdecken; umgekehrt kann ein rau
+formulierter Text eine tragfähige Argumentation enthalten. Ein Inhaltsprüfer
+darf deshalb weder Stilmerkmale noch vermutete KI-Autorenschaft als Signal für
+inhaltliche Qualität verwenden.
+
+Content Review trennt die Aufgaben strikt:
+
+1. Inhalt in eine prüfbare Struktur überführen;
+2. diese Struktur auf definierte Spannungen prüfen;
+3. dem Menschen Originalstellen und konkrete Prüffragen vorlegen.
 
 ## 2. Semantic Packet
 
@@ -17,6 +24,11 @@ Der Extraktor liefert atomare Claim-Vorschläge mit:
 - `source_ref` und Konfidenz;
 - vorgeschlagenen, geschlossen typisierten Relationen;
 - lokal erzeugter Provenienz mit Prompt- und Output-Hash.
+
+Allgemeine Claim-Typen umfassen `thesis`, `fact`, `inference`,
+`value_judgment`, `recommendation`, `example`, `assumption`, `causal`,
+`evidence`, `limitation`, `definition` und `scope`. Das Budgetprofil ergänzt
+unter anderem `target`, `capacity`, `resource`, `delivery` und `budget`.
 
 Der Anbieter darf keine Provenienzfelder selbst behaupten. Der Adapter setzt
 sie erst nach dem API-Aufruf.
@@ -38,62 +50,67 @@ und kennt keinen Wahrheitszustand.
 
 ## 4. ClaimGraph
 
-Claim-Typen:
+Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
+`ASSUMPTION_FOR`, `EVIDENCED_BY`, `QUALIFIES`, `GENERALIZES`, `EXAMPLE_OF`,
+`ENTAILS` und `SCOPE_TENSION`. Budget- und Zahlenstrukturen verwenden außerdem
+`QUANTIFIES`, `BASELINE_FOR` und `PART_OF`.
 
-`scope`, `target`, `capacity`, `resource`, `baseline`, `forecast`, `delivery`,
-`assumption`, `budget`, `method`, `causal`, `evidence`, `limitation`,
-`definition`, `other`.
+Relationen sind Vorschläge über die Argumentstruktur des Textes, nicht über die
+Wahrheit der verbundenen Aussagen.
 
-Relationen:
+## 5. Profile
 
-`SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`, `ASSUMPTION_FOR`, `CONSTRAINS`,
-`QUANTIFIES`, `BASELINE_FOR`, `PART_OF`, `EVIDENCED_BY`, `SCOPE_TENSION`.
+Ein Profil verändert nur drei kontrollierte Komponenten:
 
-Die Relationen sind Behauptungen über die Struktur des Antrags, nicht über die
-Wahrheit der verbundenen Claims.
+- Extraktionsfokus;
+- deterministische Regeln;
+- unabhängige Reviewer-Rollen.
 
-## 5. Anti-Delphi
+Der semantische Vertrag, das Gate, die Konsolidierung und die menschliche
+Merge-Autorität bleiben identisch. `general` ist das Standardprofil. `budget`
+ist der erste Domänenadapter und bewahrt die bisherige Budgetfunktion.
+
+## 6. Anti-Delphi
 
 Die Reviewer arbeiten unabhängig und sehen den gegateten Graphen statt des
-glatten Ausgangstexts. Die Alpha besitzt drei verschiedenartige Kanäle:
+glatten Ausgangstexts. Im allgemeinen Profil prüft ein Arm Evidenzbezüge; der
+Thinking-Arm verfolgt Prämissen, Schlussfolgerungen, Verallgemeinerungen,
+Widersprüche sowie Scope- und Begriffswechsel. Das Budgetprofil ersetzt den
+zweiten Schwerpunkt durch Ziel–Ressourcen–Methoden–Budget-Abhängigkeiten.
 
-| Kanal | Implementierung | Schwerpunkt |
-|---|---|---|
-| Rechenprüfer | deterministisch, offline | Arithmetik, Kapazität, FTE, Summen |
-| Evidenzskeptiker | DeepSeek V4 Flash, Thinking aus | Annahmen, Baselines, Scope |
-| Abhängigkeitsskeptiker | DeepSeek V4 Flash, Thinking an | Ziel–Ressourcen–Methoden-Ketten |
-
-Reviewer sehen die Antworten der anderen Reviewer nicht. Ihre Findings müssen
-auf vorhandene Claim-IDs verweisen und passieren ein zweites geschlossenes
-Gate. Ungültige Findings werden als Rejection protokolliert. Das System
+Beide Arme verwenden DeepSeek V4 Flash, einmal ohne und einmal mit Thinking.
+Sie sehen ihre gegenseitigen Antworten nicht. Findings müssen auf vorhandene
+Claim-IDs verweisen und passieren ein zweites geschlossenes Gate. Das System
 berechnet kein Mehrheitsurteil.
 
-Beide LLM-Arme verwenden in der Alpha bewusst dasselbe Flash-Modell, weil es
-im kontrollierten Live-Lauf mindestens gleich gute Hinweise mit deutlich
-geringerem Tokenaufwand lieferte. Das ist Perspektivtrennung, keine behauptete
-Modellvielfalt.
+## 7. Deterministische Prüfungen
 
-## 6. Konsolidierung
+Im allgemeinen Profil werden nur explizite Graphstrukturen geprüft:
 
-Mehrere Prüfkanäle können denselben Sachverhalt unterschiedlich beschreiben.
-Vor der menschlichen Ansicht werden deshalb Findings mit stark überlappenden
-Claim-Mengen zu einem Prüfpunkt verbunden. Schweregrad, betroffene Claims und
-alle Prüfwege bleiben erhalten. Das ist reine Darstellung: Der unveränderte
-Einzelbefund bleibt im JSON-Audit sichtbar und es wird kein Mehrheitsurteil
-berechnet.
+- `CONTRADICTS` → möglicher innerer Widerspruch;
+- `GENERALIZES` → zu prüfende Verallgemeinerung;
+- `SCOPE_TENSION` → wechselnder Geltungsbereich;
+- zentrale Aussagen ohne zugelassene Stützverbindung → logische Lücke;
+- wirksame Annahmen ohne Evidenzverbindung → unbelegte Annahme.
 
-## 7. Dossier
+Das Budgetprofil verwendet zusätzlich konservative Rechenregeln für Kapazität,
+Ressourcen, Prozentangaben, FTE und Summen.
 
-Die eigenständige HTML-Seite ist die primäre Arbeitsansicht für den Menschen.
-Sie trennt hohe Prioritäten von weiteren Hinweisen und zeigt pro Prüfpunkt eine
-Erklärung und eine konkrete Prüffrage. Originalaussagen, einzelne Prüfwege und
-technische Daten sind einklappbar. Markdown bietet denselben Inhalt als
-portablen Export. JSON ist der vollständige maschinenlesbare Audit mit:
+## 8. Konsolidierung und Dossier
 
-- Dokument- und Provenienz-Hashes;
-- Claims, Originalspans, Relationen und Gate-Zuständen;
-- Findings samt Reviewer, Modell, Konfidenz und Prüferfrage;
-- Rejections beider Gates;
-- Reviewer-Läufen und Token-Nutzung, aber ohne Promptinhalte oder Secrets.
+Findings mit stark überlappenden Claim-Mengen werden für die menschliche Ansicht
+zu einem Prüfpunkt verbunden. Schweregrad, betroffene Claims und alle Prüfwege
+bleiben erhalten. Das ist reine Darstellung: Jeder Einzelbefund bleibt im
+JSON-Audit sichtbar.
 
-Die letzte Autorität liegt explizit beim Prüfer.
+Die HTML-Seite trennt hohe Prioritäten von weiteren Hinweisen und zeigt pro
+Prüfpunkt eine Erklärung und eine konkrete Frage. Originalaussagen, einzelne
+Prüfwege und technische Daten sind einklappbar. Markdown bietet denselben Inhalt
+als portablen Export.
+
+## 9. Bewusste Grenze
+
+Content Review bewertet interne inhaltliche Tragfähigkeit. Externe Faktenprüfung
+ist nicht stillschweigend eingebaut, weil sie Quellenwahl, Aktualität und einen
+eigenen Provenienzvertrag benötigt. Sie kann später als getrennte Schicht an den
+zugelassenen ClaimGraph angeschlossen werden.

@@ -31,9 +31,9 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.run_reviewers }}" = "true" ]; then
-            budget-review review src/budget_review/fixtures/coherence_theatre/proposal.md --provider deepseek --live-review --output review-output/live
+            content-review review src/budget_review/fixtures/coherence_theatre/proposal.md --profile budget --provider deepseek --live-review --output review-output/live
           else
-            budget-review review src/budget_review/fixtures/coherence_theatre/proposal.md --provider deepseek --output review-output/live
+            content-review review src/budget_review/fixtures/coherence_theatre/proposal.md --profile budget --provider deepseek --output review-output/live
           fi
       - name: Validate live audit
         run: python scripts/validate_live_audit.py review-output/live/dossier.json

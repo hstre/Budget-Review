@@ -5,7 +5,8 @@ from __future__ import annotations
 from html import escape
 
 from .consolidate import REVIEWER_LABELS, ConsolidatedIssue, consolidate_findings
-from .models import ReviewDossier
+from .models import ClaimType, GovernedClaim, ReviewDossier
+from .profiles import get_profile
 
 
 def _cell(value: object) -> str:
@@ -13,9 +14,10 @@ def _cell(value: object) -> str:
 
 
 def render_markdown(dossier: ReviewDossier) -> str:
+    profile = get_profile(dossier.profile)
     issues = consolidate_findings(dossier.findings)
     lines = [
-        "# Budget Review — Prüferdossier",
+        f"# {profile.display_name} — Prüferdossier",
         "",
         f"**Dokument:** `{dossier.semantic.document_id}`  ",
         f"**Zu prüfen:** {len(issues)} konsolidierte Punkte  ",
@@ -23,15 +25,17 @@ def render_markdown(dossier: ReviewDossier) -> str:
         f"{len(dossier.semantic.relations)} Relationen, "
         f"{len(dossier.findings)} rohe Prüfhinweise",
         "",
-        "> Entscheidungshilfe, kein Fördervotum. Die letzte Entscheidung liegt beim Menschen.",
+        f"> {profile.authority_note}",
         "",
     ]
+    if profile.name == "general":
+        lines.extend(_markdown_argument_map(dossier))
     if not issues:
         lines.extend(
             [
                 "## Keine maschinellen Prüfhinweise",
                 "",
-                "Das ist kein positives Urteil. Der Antrag muss weiterhin fachlich geprüft werden.",
+                "Das ist kein positives Urteil. Der Text muss weiterhin inhaltlich geprüft werden.",
             ]
         )
     for issue in issues:
@@ -79,36 +83,38 @@ def _markdown_issue(dossier: ReviewDossier, issue: ConsolidatedIssue) -> list[st
 
 
 def render_html(dossier: ReviewDossier) -> str:
+    profile = get_profile(dossier.profile)
     issues = consolidate_findings(dossier.findings)
     urgent = tuple(issue for issue in issues if issue.severity in {"critical", "high"})
     further = tuple(issue for issue in issues if issue.severity not in {"critical", "high"})
     rejection_count = len(dossier.semantic.rejections) + len(dossier.review_rejections)
     empty = (
         '<section class="empty"><h2>Keine maschinellen Prüfhinweise</h2>'
-        "<p>Das ist kein positives Urteil. Der Antrag muss weiterhin fachlich geprüft werden.</p>"
+        "<p>Das ist kein positives Urteil. Der Text muss weiterhin inhaltlich geprüft werden.</p>"
         "</section>"
         if not issues
         else ""
     )
     urgent_section = _issue_section(dossier, "Zuerst", "Hohe Priorität", urgent)
     further_section = _issue_section(dossier, "Danach", "Weitere Hinweise", further)
+    argument_map = _argument_map_html(dossier) if profile.name == "general" else ""
     return f"""<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Budget Review · {escape(dossier.semantic.document_id)}</title>
+  <title>{escape(profile.display_name)} · {escape(dossier.semantic.document_id)}</title>
   <style>{_CSS}</style>
 </head>
 <body>
   <main>
     <header class="hero">
       <div>
-        <p class="eyebrow">Budget Review · Alpha</p>
+        <p class="eyebrow">{escape(profile.display_name)} · Alpha</p>
         <h1>Prüferdossier</h1>
         <p class="document">{escape(dossier.semantic.document_id)}</p>
       </div>
-      <div class="decision-note">Entscheidungshilfe<br><strong>Kein Fördervotum</strong></div>
+      {_decision_note(profile.name)}
     </header>
     <section class="summary" aria-label="Zusammenfassung">
       <div><strong>{len(issues)}</strong><span>Prüfpunkte</span></div>
@@ -116,8 +122,8 @@ def render_html(dossier: ReviewDossier) -> str:
       <div><strong>{len(dossier.semantic.claims)}</strong><span>Originalaussagen</span></div>
       <div><strong>{rejection_count}</strong><span>nicht zugelassen</span></div>
     </section>
-    <p class="intro">Beginnen Sie mit den Punkten hoher Priorität. Öffnen Sie die
-      Originalaussagen erst, wenn Sie den Wortlaut prüfen möchten.</p>
+    {_intro_html(profile.name)}
+    {argument_map}
     {empty}
     {urgent_section}
     {further_section}
@@ -142,6 +148,107 @@ def _issue_section(
         f'<section><div class="section-heading"><p>{escape(eyebrow)}</p>'
         f"<h2>{escape(title)}</h2></div>"
         f'<div class="issue-list">{cards}</div></section>'
+    )
+
+
+def _argument_groups(
+    dossier: ReviewDossier,
+) -> tuple[tuple[str, tuple[GovernedClaim, ...]], ...]:
+    definitions = (
+        (
+            "Kernthesen",
+            {ClaimType.THESIS},
+        ),
+        (
+            "Schlüsse und Empfehlungen",
+            {
+                ClaimType.INFERENCE,
+                ClaimType.RECOMMENDATION,
+                ClaimType.CAUSAL,
+                ClaimType.FORECAST,
+            },
+        ),
+        (
+            "Fakten, Belege und Beispiele",
+            {ClaimType.FACT, ClaimType.EVIDENCE, ClaimType.EXAMPLE, ClaimType.BASELINE},
+        ),
+        (
+            "Annahmen und Begrenzungen",
+            {
+                ClaimType.ASSUMPTION,
+                ClaimType.LIMITATION,
+                ClaimType.SCOPE,
+                ClaimType.DEFINITION,
+                ClaimType.VALUE_JUDGMENT,
+            },
+        ),
+    )
+    assigned = set().union(*(types for _, types in definitions))
+    groups = [
+        (label, tuple(claim for claim in dossier.semantic.claims if claim.claim_type in types))
+        for label, types in definitions
+    ]
+    remaining = tuple(
+        claim for claim in dossier.semantic.claims if claim.claim_type not in assigned
+    )
+    if remaining:
+        groups.append(("Weitere Aussagen", remaining))
+    return tuple((label, claims) for label, claims in groups if claims)
+
+
+def _markdown_argument_map(dossier: ReviewDossier) -> list[str]:
+    lines = ["## Inhaltsgerüst", ""]
+    for label, claims in _argument_groups(dossier):
+        lines.extend((f"**{label}**", ""))
+        lines.extend(
+            f"- `{claim.proposal_id}` {_cell(claim.canonical_content)}" for claim in claims
+        )
+        lines.append("")
+    return lines
+
+
+def _argument_map_html(dossier: ReviewDossier) -> str:
+    groups = "".join(
+        (
+            '<div class="argument-group">'
+            f"<h3>{escape(label)}</h3><ul>"
+            + "".join(
+                f"<li><code>{escape(claim.proposal_id)}</code> "
+                f"{escape(claim.canonical_content)}</li>"
+                for claim in claims
+            )
+            + "</ul></div>"
+        )
+        for label, claims in _argument_groups(dossier)
+    )
+    return (
+        '<section class="argument-map"><div class="section-heading">'
+        "<p>Zuerst verstehen</p><h2>Inhaltsgerüst</h2></div>"
+        f'<div class="argument-grid">{groups}</div></section>'
+    )
+
+
+def _decision_note(profile: str) -> str:
+    if profile == "budget":
+        return (
+            '<div class="decision-note">Entscheidungshilfe<br>'
+            "<strong>Kein Fördervotum</strong></div>"
+        )
+    return (
+        '<div class="decision-note">Nur Inhalt<br>'
+        "<strong>Kein Stil- oder Autorenurteil</strong></div>"
+    )
+
+
+def _intro_html(profile: str) -> str:
+    if profile == "general":
+        return (
+            '<p class="intro">Sehen Sie zuerst das Inhaltsgerüst an. Prüfen Sie danach die '
+            "markierten Verbindungen und bei Bedarf den Originalwortlaut.</p>"
+        )
+    return (
+        '<p class="intro">Beginnen Sie mit den Punkten hoher Priorität. Öffnen Sie die '
+        "Originalaussagen erst, wenn Sie den Wortlaut prüfen möchten.</p>"
     )
 
 
@@ -193,6 +300,7 @@ def _audit_html(dossier: ReviewDossier) -> str:
   <dl>
     <div><dt>Dokument-Hash</dt><dd><code>{escape(dossier.semantic.document_hash)}</code></dd></div>
     <div><dt>Extraktion</dt><dd>{escape(dossier.semantic.provenance.provider)}/{escape(dossier.semantic.provenance.model_id)}</dd></div>
+    <div><dt>Prüfprofil</dt><dd>{escape(dossier.profile)}</dd></div>
     <div><dt>ClaimGraph</dt><dd>{claim_count} Claims · {relation_count} Relationen</dd></div>
     <div><dt>Rohe Findings</dt><dd>{len(dossier.findings)}</dd></div>
     <div><dt>Rejections</dt><dd>{rejection_count}</dd></div>
@@ -223,6 +331,13 @@ h1 { margin:0; font-size:clamp(2rem,6vw,3.6rem); letter-spacing:-.045em; line-he
 .summary strong { font-size:1.7rem; letter-spacing:-.03em; }
 .summary span { color:var(--muted); font-size:.84rem; }
 .intro { max-width:650px; margin:-28px 0 44px; color:var(--muted); }
+.argument-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.argument-group { border:1px solid var(--line); border-radius:12px; background:var(--paper);
+  padding:16px 18px; }
+.argument-group h3 { margin:0 0 8px; font-size:.92rem; }
+.argument-group ul { list-style:none; margin:0; padding:0; }
+.argument-group li { padding:7px 0; border-top:1px solid #eef0f2; font-size:.88rem; }
+.argument-group code { margin-right:4px; }
 .section-heading { margin:42px 0 16px; }
 .section-heading h2 { margin:0; font-size:1.5rem; letter-spacing:-.02em; }
 .issue-list { display:grid; gap:14px; }
@@ -258,6 +373,7 @@ footer { color:var(--muted); text-align:center; margin-top:34px; font-size:.82re
 @media (max-width:700px) { main { margin-top:24px; } .hero { align-items:flex-start;
   flex-direction:column; } .decision-note { text-align:left; }
   .summary { grid-template-columns:1fr 1fr; }
+  .argument-grid { grid-template-columns:1fr; }
   .issue { padding:18px; } .audit dl div { grid-template-columns:1fr; gap:0; } }
 @media print { body { background:#fff; } main { width:100%; margin:0; }
   .issue { break-inside:avoid; box-shadow:none; }

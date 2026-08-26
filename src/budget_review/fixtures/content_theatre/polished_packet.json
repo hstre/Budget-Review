@@ -1,0 +1,91 @@
+{
+  "schema_version": "content-review.semantic-packet/0.2",
+  "document_id": "content-polished",
+  "provenance": {
+    "provider": "frozen-control",
+    "model_id": "manual-semantic-packet/0.2",
+    "run_id": "content-polished-v1",
+    "prompt_hash": "1111111111111111",
+    "output_hash": "2222222222222222",
+    "temperature": 0.0
+  },
+  "claims": [
+    {
+      "proposal_id": "C01",
+      "claim_type": "thesis",
+      "canonical_content": "Remote work inevitably makes every organisation more productive.",
+      "raw_span": "Remote work inevitably makes every organisation more productive.",
+      "confidence": 0.98,
+      "source_ref": "polished.md"
+    },
+    {
+      "proposal_id": "C02",
+      "claim_type": "evidence",
+      "canonical_content": "Nine of twelve volunteers at one software company reported feeling more productive at home.",
+      "raw_span": "A survey of twelve volunteers at one software company found that nine said they felt more productive at home.",
+      "confidence": 0.98,
+      "source_ref": "polished.md"
+    },
+    {
+      "proposal_id": "C03",
+      "claim_type": "inference",
+      "canonical_content": "The survey proves higher measured output in every industry.",
+      "raw_span": "This small survey proves that remote work increases measured output in every industry.",
+      "confidence": 0.98,
+      "source_ref": "polished.md"
+    },
+    {
+      "proposal_id": "C04",
+      "claim_type": "limitation",
+      "canonical_content": "The survey measured impressions rather than output.",
+      "raw_span": "The survey recorded self-reported impressions and did not measure output.",
+      "confidence": 0.99,
+      "source_ref": "polished.md"
+    },
+    {
+      "proposal_id": "C05",
+      "claim_type": "recommendation",
+      "canonical_content": "All organisations should close their offices.",
+      "raw_span": "Therefore all organisations should close their offices.",
+      "confidence": 0.98,
+      "source_ref": "polished.md"
+    }
+  ],
+  "relations": [
+    {
+      "source_id": "C02",
+      "relation_type": "SUPPORTS",
+      "target_id": "C01",
+      "confidence": 0.9,
+      "rationale": "The survey is offered as support for the thesis."
+    },
+    {
+      "source_id": "C03",
+      "relation_type": "GENERALIZES",
+      "target_id": "C02",
+      "confidence": 0.98,
+      "rationale": "The inference expands one small self-report survey to measured output in all industries."
+    },
+    {
+      "source_id": "C04",
+      "relation_type": "CONTRADICTS",
+      "target_id": "C03",
+      "confidence": 0.99,
+      "rationale": "The stated method did not measure the outcome claimed by the inference."
+    },
+    {
+      "source_id": "C01",
+      "relation_type": "ENTAILS",
+      "target_id": "C05",
+      "confidence": 0.8,
+      "rationale": "The recommendation is presented as following from the thesis."
+    },
+    {
+      "source_id": "C05",
+      "relation_type": "GENERALIZES",
+      "target_id": "C01",
+      "confidence": 0.95,
+      "rationale": "A universal policy is derived from the universalised thesis."
+    }
+  ]
+}

@@ -3,14 +3,14 @@ requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
 [project]
-name = "budget-review"
-version = "0.1.0a2"
-description = "Auditable claim-graph preprocessing and Anti-Delphi review for polished funding proposals."
+name = "content-review"
+version = "0.2.0a1"
+description = "Auditable claim-graph and Anti-Delphi review of content, independent of style or authorship."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Steffen Rentschler" }]
-keywords = ["budget-review", "claim-graph", "semantic-layer", "anti-delphi"]
+keywords = ["content-review", "claim-graph", "semantic-layer", "anti-delphi"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
@@ -23,6 +23,7 @@ documents = ["openpyxl>=3.1", "pypdf>=5.0"]
 dev = ["pytest>=8.0", "ruff>=0.9"]
 
 [project.scripts]
+content-review = "budget_review.cli:main"
 budget-review = "budget_review.cli:main"
 
 [tool.hatch.build.targets.wheel]

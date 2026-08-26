@@ -25,5 +25,8 @@ jobs:
         run: pytest
       - name: Lint
         run: ruff check .
-      - name: Frozen control
-        run: budget-review demo --json --output review-output/demo
+      - name: Frozen controls
+        run: |
+          content-review demo --json --output review-output/content-demo
+          content-review demo --case rough --json --output review-output/rough-demo
+          content-review demo --profile budget --json --output review-output/budget-demo

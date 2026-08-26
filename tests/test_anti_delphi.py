@@ -52,10 +52,10 @@ def test_extra_verdict_field_is_rejected(controlled_semantic) -> None:
 
 
 def test_offline_anti_delphi_contains_deterministic_arm(controlled_semantic) -> None:
-    dossier = review_claim_graph(controlled_semantic)
+    dossier = review_claim_graph(controlled_semantic, profile="budget")
     assert len(dossier.findings) == 8
     assert dossier.reviewer_runs[0]["reviewer_id"] == "deterministic-checks"
-    assert "human reviewer remains the merge authority" in dossier.authority_note
+    assert "letzte Entscheidung liegt beim Menschen" in dossier.authority_note
 
 
 def test_default_live_arms_use_flash_in_distinct_modes() -> None:
