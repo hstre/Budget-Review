@@ -8,9 +8,14 @@ from budget_review.models import Finding, FindingCategory
 from budget_review.render import render_html
 
 
+def _first_with_claims(dossier):
+    """Coverage findings carry no claim ids by design, so they never cluster."""
+    return next(item for item in dossier.findings if item.claim_ids)
+
+
 def test_overlapping_reviewer_finding_becomes_one_issue(controlled_semantic) -> None:
     dossier = review_claim_graph(controlled_semantic, profile="budget")
-    original = dossier.findings[0]
+    original = _first_with_claims(dossier)
     duplicate = replace(
         original,
         finding_id="flash:F01",
@@ -21,7 +26,7 @@ def test_overlapping_reviewer_finding_becomes_one_issue(controlled_semantic) -> 
     )
     issues = consolidate_findings((*dossier.findings, duplicate))
 
-    assert len(issues) == 8
+    assert len(issues) == 10
     merged = next(
         issue
         for issue in issues
@@ -34,13 +39,13 @@ def test_overlapping_reviewer_finding_becomes_one_issue(controlled_semantic) -> 
 def test_unrelated_findings_remain_separate(controlled_semantic) -> None:
     dossier = review_claim_graph(controlled_semantic, profile="budget")
     issues = consolidate_findings(dossier.findings)
-    assert len(issues) == len(dossier.findings) == 8
+    assert len(issues) == len(dossier.findings) == 10
 
 
 def test_html_escapes_model_and_source_text(controlled_semantic) -> None:
     dossier = review_claim_graph(controlled_semantic, profile="budget")
     malicious = replace(
-        dossier.findings[0],
+        _first_with_claims(dossier),
         summary='<script>alert("x")</script>',
     )
     html = render_html(replace(dossier, findings=(malicious, *dossier.findings[1:])))
@@ -51,7 +56,7 @@ def test_html_escapes_model_and_source_text(controlled_semantic) -> None:
 
 def test_html_keeps_multiple_paths_from_same_reviewer(controlled_semantic) -> None:
     dossier = review_claim_graph(controlled_semantic, profile="budget")
-    original = dossier.findings[0]
+    original = _first_with_claims(dossier)
     second_path = replace(
         original,
         finding_id="deterministic:second-path",

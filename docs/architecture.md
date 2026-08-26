@@ -56,6 +56,25 @@ Mehrdeutige Spans oder Konfidenzen unter 0,75 bleiben zugelassen, werden aber
 als `human_review_required` markiert. Das Gate schließt keine inhaltliche Lücke
 und kennt keinen Wahrheitszustand.
 
+## 3a. Abdeckungsmessung
+
+Das Gate kann eine Aussage abweisen, aber keine ergänzen. Alles Nachfolgende —
+deterministische Regeln wie Reviewer-Arme — ist deshalb durch das begrenzt, was
+der Extraktor vorgeschlagen hat. Ein nie vorgeschlagener Claim ist für das
+gesamte System unsichtbar, und das Dossier sieht dann sauber aus.
+
+Weil jeder zugelassene Claim seine exakten Quellpositionen mitführt, ist dieser
+blinde Fleck messbar: Das Gate berechnet den verankerten Anteil des Textes und
+benennt zusammenhängende Passagen ohne Anker. Whitespace zählt nicht mit, und
+überlappende Anker zählen ein Zeichen einmal. Die Messung ist deterministisch
+und replay-stabil; sie steht als `coverage` im Audit.
+
+Sie ist ausdrücklich kein Urteil. Eine nicht erfasste Passage kann eine
+Überschrift, eine Überleitung oder tatsächlich aussagefreier Text sein. Der
+daraus erzeugte Befund `coverage_gap` trägt deshalb keine Claim-IDs, hat die
+niedrigste Dringlichkeit und formuliert eine Frage an den Prüfer statt einer
+Feststellung.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
@@ -100,6 +119,8 @@ Im allgemeinen Profil werden nur explizite Graphstrukturen geprüft:
 - `SCOPE_TENSION` → wechselnder Geltungsbereich;
 - zentrale Aussagen ohne zugelassene Stützverbindung → logische Lücke;
 - wirksame Annahmen ohne Evidenzverbindung → unbelegte Annahme.
+
+Profilunabhängig kommt die Abdeckungsprüfung aus Abschnitt 3a hinzu.
 
 Das Budgetprofil verwendet zusätzlich konservative Rechenregeln für Kapazität,
 Ressourcen, Prozentangaben, FTE und Summen.

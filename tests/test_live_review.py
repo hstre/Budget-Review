@@ -70,7 +70,7 @@ def llm_runs(dossier) -> list[dict[str, Any]]:
     return [run for run in dossier.reviewer_runs if run["kind"] == "llm"]
 
 
-DETERMINISTIC_FINDINGS = 8
+DETERMINISTIC_FINDINGS = 10
 
 
 def test_both_arms_are_asked_and_their_findings_join_the_deterministic_ones(

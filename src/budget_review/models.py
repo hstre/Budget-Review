@@ -66,6 +66,7 @@ class FindingCategory(StrEnum):
     OVERGENERALIZATION = "overgeneralization"
     DEFINITION_SHIFT = "definition_shift"
     RELEVANCE_GAP = "relevance_gap"
+    COVERAGE_GAP = "coverage_gap"
     REVIEW_QUESTION = "review_question"
 
 
@@ -290,6 +291,29 @@ class GovernedRelation:
 
 
 @dataclass(frozen=True)
+class CoverageGap:
+    """One stretch of the source that no admitted claim is anchored to."""
+
+    start: int
+    end: int
+    excerpt: str
+
+
+@dataclass(frozen=True)
+class Coverage:
+    """How much of the source the admitted claims touch.
+
+    A measurement, not a verdict: an uncovered passage may be a heading, a
+    transition or genuinely claim-free prose. Deciding that is the human's.
+    """
+
+    document_characters: int
+    anchored_characters: int
+    ratio: float
+    gaps: tuple[CoverageGap, ...] = ()
+
+
+@dataclass(frozen=True)
 class SemanticDossier:
     schema_version: str
     document_id: str
@@ -299,6 +323,7 @@ class SemanticDossier:
     relations: tuple[GovernedRelation, ...]
     rejections: tuple[Rejection, ...]
     authority_note: str = "Semantic structure only. No claim has been judged true or false."
+    coverage: Coverage | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return _jsonable(asdict(self))
@@ -357,6 +382,8 @@ def _jsonable(value: Any) -> Any:
 __all__ = [
     "ClaimProposal",
     "ClaimType",
+    "Coverage",
+    "CoverageGap",
     "Finding",
     "FindingCategory",
     "GovernedClaim",

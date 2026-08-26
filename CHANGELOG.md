@@ -7,7 +7,34 @@ The frozen offline controls are the reference for behaviour changes. Unless a
 line says otherwise, they are unchanged: `polished` 5 claims / 5 relations /
 3 findings, `rough` 4 / 4 / 0, `budget` 25 / 15 / 8.
 
-## [0.2.0a3] — unreleased
+## [Unreleased]
+
+### Added
+
+- **Coverage measurement of the semantic extraction.** The gate can reject a
+  claim but never add one, so a claim the extractor never proposed is invisible
+  to every deterministic check and to both reviewer arms, and the dossier it
+  produces looks clean. Every admitted claim already carries its exact source
+  offsets, so the gate now reports the anchored share of the document and names
+  contiguous passages no claim reaches. Whitespace does not count, overlapping
+  anchors count a character once, and the result is replay-stable and recorded
+  as `coverage` in the audit.
+- A `coverage_gap` finding per named passage, in both languages. It carries no
+  claim ids (a gap is the absence of one), sits at the lowest severity, and asks
+  whether the passage should have carried a claim rather than asserting that it
+  should — an uncovered stretch may be a heading or a transition.
+- The technical audit in HTML and Markdown shows the anchored share and the
+  number of uncovered passages.
+
+### Changed
+
+- The frozen budget control now yields 10 findings rather than 8: the fixture
+  anchors 63% of its own source, and the two passages it misses are the
+  justification for the cohort size and the scheduling assumption that is meant
+  to resolve the laptop shortfall. The two content controls are unaffected at
+  95% and 96% coverage, so their form-versus-content demonstration is unchanged.
+
+## [0.2.0a3] — 2026-08-26
 
 ### Fixed
 

@@ -271,6 +271,20 @@ _MESSAGES: dict[str, dict[str, tuple[str, str, str]]] = {
             "Which line item or total needs to be corrected?",
         ),
     },
+    "coverage_gap": {
+        "de": (
+            "Ein Abschnitt trägt keine zugelassene Aussage",
+            "Zwischen Zeichen {start} und {end} ist kein zugelassener Claim verankert: "
+            "„{excerpt}“",
+            "Enthält dieser Abschnitt eine prüfbare Aussage, die im Graphen fehlt?",
+        ),
+        "en": (
+            "A passage carries no admitted claim",
+            "No admitted claim is anchored between characters {start} and {end}: "
+            "“{excerpt}”",
+            "Does this passage contain a checkable claim that is missing from the graph?",
+        ),
+    },
     "causal_design": {
         "de": (
             "Die kausale Schlussfolgerung geht über das Evaluationsdesign hinaus",
@@ -301,7 +315,7 @@ class _Builder:
         severity: str,
         claims: Iterable[str],
         confidence: float = 0.99,
-        **params: float | str,
+        **params: float | int | str,
     ) -> None:
         summary, explanation, question = _MESSAGES[key][self.language]
         claim_ids = tuple(dict.fromkeys(claims))
@@ -332,6 +346,9 @@ def deterministic_checks(
     selected = get_profile(profile)
     texts = _texts(dossier)
     builder = _Builder(selected.name, language)
+    # Profile independent: what the extractor never proposed is invisible to
+    # every other check, so measure it before the profile branch.
+    _check_coverage(dossier, builder)
     if selected.name == "general":
         _check_general_structure(dossier, builder)
         return tuple(builder.findings)
@@ -344,6 +361,23 @@ def deterministic_checks(
     _check_budget_sum(dossier, texts, builder, tolerance)
     _check_causal_design(texts, builder)
     return tuple(builder.findings)
+
+
+def _check_coverage(dossier: SemanticDossier, builder: _Builder) -> None:
+    """Name the passages no admitted claim reaches; the examiner decides why."""
+    if dossier.coverage is None:
+        return
+    for gap in dossier.coverage.gaps:
+        builder.add(
+            "coverage_gap",
+            FindingCategory.COVERAGE_GAP,
+            "low",
+            (),
+            0.9,
+            start=gap.start,
+            end=gap.end,
+            excerpt=gap.excerpt,
+        )
 
 
 def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> None:

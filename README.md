@@ -213,7 +213,10 @@ is a separate manually triggered GitHub Action.
 ### Alpha limitations
 
 - The general profile inspects internal support, not the external truth of facts.
-- Empty or incomplete ClaimGraphs are not positive results.
+- Empty or incomplete ClaimGraphs are not positive results. Every run reports
+  how much of the source its admitted claims are anchored to and names the
+  passages none of them reach, but whether such a passage should have carried a
+  claim is a question for the examiner, not a verdict.
 - Live extraction quality remains model- and domain-dependent.
 - The web alpha accepts pasted text; document upload remains a CLI feature.
 - PDF extraction has no OCR.
@@ -431,7 +434,10 @@ Actions manuell gestartet.
 
 - Das allgemeine Profil prüft interne Tragfähigkeit, nicht die externe Wahrheit
   von Tatsachenbehauptungen.
-- Ein leerer oder unvollständiger ClaimGraph ist kein positives Ergebnis.
+- Ein leerer oder unvollständiger ClaimGraph ist kein positives Ergebnis. Jeder
+  Lauf weist aus, welcher Anteil der Quelle von zugelassenen Claims verankert
+  ist, und benennt Passagen ohne Anker; ob eine solche Passage eine Aussage
+  hätte tragen müssen, entscheidet der Prüfer.
 - Die Qualität der Live-Extraktion bleibt modell- und domänenabhängig.
 - Die Web-Alpha akzeptiert eingefügten Text; Dokument-Upload ist noch eine
   CLI-Funktion.
