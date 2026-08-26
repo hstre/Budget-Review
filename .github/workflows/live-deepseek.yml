@@ -5,6 +5,14 @@ on:
     branches: ["alpha/v0.1.0"]
   workflow_dispatch:
     inputs:
+      profile:
+        description: "Review profile to exercise"
+        required: true
+        default: general
+        type: choice
+        options:
+          - general
+          - budget
       run_reviewers:
         description: "Also run both Anti-Delphi LLM arms"
         required: true
@@ -30,11 +38,20 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.run_reviewers }}" = "true" ]; then
-            content-review review src/budget_review/fixtures/coherence_theatre/proposal.md --profile budget --provider deepseek --live-review --output review-output/live
-          else
-            content-review review src/budget_review/fixtures/coherence_theatre/proposal.md --profile budget --provider deepseek --output review-output/live
+          PROFILE="${{ inputs.profile }}"
+          if [ -z "$PROFILE" ]; then
+            PROFILE="budget"
           fi
+          if [ "$PROFILE" = "general" ]; then
+            SOURCE="docs/architecture.md"
+          else
+            SOURCE="src/budget_review/fixtures/coherence_theatre/proposal.md"
+          fi
+          REVIEW_ARGS=()
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.run_reviewers }}" = "true" ]; then
+            REVIEW_ARGS+=(--live-review)
+          fi
+          content-review review "$SOURCE" --profile "$PROFILE" --provider deepseek "${REVIEW_ARGS[@]}" --output review-output/live
       - name: Validate live audit
         run: python scripts/validate_live_audit.py review-output/live/dossier.json
       - uses: actions/upload-artifact@v4
