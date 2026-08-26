@@ -51,3 +51,58 @@ def test_gate_has_no_truth_state(controlled_semantic) -> None:
     states = {claim["semantic_state"] for claim in serialized["claims"]}
     assert states <= {"proposed", "human_review_required"}
     assert all("truth" not in claim and "verdict" not in claim for claim in serialized["claims"])
+
+
+def _duplicate_of(claim: dict, proposal_id: str) -> dict:
+    """Same content, different proposal id: one claim node addressed twice."""
+    return {**claim, "proposal_id": proposal_id}
+
+
+def test_claims_with_identical_content_collapse_to_one_node(
+    controlled_source, controlled_packet
+) -> None:
+    data = controlled_packet.to_dict()
+    original = len(data["claims"])
+    data["claims"].append(_duplicate_of(data["claims"][0], "CDUP"))
+    dossier = govern_packet(controlled_source.text, SemanticPacket.from_dict(data))
+
+    node_ids = [claim.claim_node_id for claim in dossier.claims]
+    assert len(node_ids) == len(set(node_ids))
+    assert len(dossier.claims) == original
+    assert "duplicate_claim_node" in {item.reason for item in dossier.rejections}
+
+
+def test_duplicate_claim_keeps_its_edge_on_the_canonical_node(
+    controlled_source, controlled_packet
+) -> None:
+    data = controlled_packet.to_dict()
+    edge = data["relations"][0]
+    source_claim = next(
+        claim for claim in data["claims"] if claim["proposal_id"] == edge["source_id"]
+    )
+    data["claims"].append(_duplicate_of(source_claim, "CDUP"))
+    data["relations"].append({**edge, "source_id": "CDUP"})
+    dossier = govern_packet(controlled_source.text, SemanticPacket.from_dict(data))
+
+    relation_ids = [relation.relation_id for relation in dossier.relations]
+    assert len(relation_ids) == len(set(relation_ids))
+    assert len(dossier.relations) == len(controlled_packet.relations)
+    assert "duplicate_relation" in {item.reason for item in dossier.rejections}
+    assert "relation_endpoint_not_admitted" not in {item.reason for item in dossier.rejections}
+
+
+def test_distinct_proposals_addressing_one_edge_are_deduplicated(
+    controlled_source, controlled_packet
+) -> None:
+    """Dedup keys on resolved claim nodes, not on proposal ids."""
+    data = controlled_packet.to_dict()
+    edge = data["relations"][0]
+    target_claim = next(
+        claim for claim in data["claims"] if claim["proposal_id"] == edge["target_id"]
+    )
+    data["claims"].append(_duplicate_of(target_claim, "CDUP"))
+    data["relations"].append({**edge, "target_id": "CDUP"})
+    dossier = govern_packet(controlled_source.text, SemanticPacket.from_dict(data))
+
+    assert len(dossier.relations) == len(controlled_packet.relations)
+    assert [item.reason for item in dossier.rejections].count("duplicate_relation") == 1

@@ -12,77 +12,81 @@ from .consolidate import (
     consolidate_findings,
 )
 from .models import ClaimType, FindingCategory, GovernedClaim, ReviewDossier
-from .profiles import get_profile
+from .profiles import authority_note, get_profile
 
 
 def _cell(value: object) -> str:
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
-def render_markdown(dossier: ReviewDossier) -> str:
+def render_markdown(dossier: ReviewDossier, language: str = "de") -> str:
+    language = language if language in _TEXT else "de"
+    t = _TEXT[language]
     profile = get_profile(dossier.profile)
     issues = consolidate_findings(dossier.findings)
     lines = [
-        f"# {profile.display_name} — Prüferdossier",
+        f"# {profile.display_name} — {t['md_dossier']}",
         "",
-        f"**Dokument:** `{dossier.semantic.document_id}`  ",
-        f"**Zu prüfen:** {len(issues)} konsolidierte Punkte  ",
-        f"**Grundlage:** {len(dossier.semantic.claims)} Originalaussagen, "
-        f"{len(dossier.semantic.relations)} Relationen, "
-        f"{len(dossier.findings)} rohe Prüfhinweise",
+        f"**{t['md_document']}:** `{dossier.semantic.document_id}`  ",
+        f"**{t['md_to_review']}:** {len(issues)} {t['md_points']}  ",
+        f"**{t['md_basis']}:** {len(dossier.semantic.claims)} {t['md_basis_claims']}, "
+        f"{len(dossier.semantic.relations)} {t['md_basis_relations']}, "
+        f"{len(dossier.findings)} {t['md_basis_findings']}",
         "",
-        f"> {profile.authority_note}",
+        f"> {authority_note(profile, language)}",
         "",
     ]
     if profile.name == "general":
-        lines.extend(_markdown_argument_map(dossier))
+        lines.extend(_markdown_argument_map(dossier, language))
     if not issues:
-        lines.extend(
-            [
-                "## Keine maschinellen Prüfhinweise",
-                "",
-                "Das ist kein positives Urteil. Der Text muss weiterhin inhaltlich geprüft werden.",
-            ]
-        )
+        lines.extend([f"## {t['no_findings']}", "", t["no_positive"]])
     for issue in issues:
-        lines.extend(_markdown_issue(dossier, issue))
+        lines.extend(_markdown_issue(dossier, issue, language))
     lines.extend(
         [
             "",
-            "## Technischer Audit",
+            f"## {t['md_audit']}",
             "",
-            f"- Dokument-Hash: `{dossier.semantic.document_hash}`",
-            f"- Extraktion: `{dossier.semantic.provenance.provider}/"
+            f"- {t['document_hash']}: `{dossier.semantic.document_hash}`",
+            f"- {t['extraction']}: `{dossier.semantic.provenance.provider}/"
             f"{dossier.semantic.provenance.model_id}`",
-            f"- Layer-9-Rejections: {len(dossier.semantic.rejections)}",
-            f"- Reviewer-Rejections: {len(dossier.review_rejections)}",
-            "- Vollständige Einzelbefunde und Provenienz: `dossier.json`",
+            f"- {t['md_semantic_rejections']}: {len(dossier.semantic.rejections)}",
+            f"- {t['md_review_rejections']}: {len(dossier.review_rejections)}",
+            f"- {t['md_full_audit']}: `dossier.json`",
         ]
     )
     return "\n".join(lines) + "\n"
 
 
-def _markdown_issue(dossier: ReviewDossier, issue: ConsolidatedIssue) -> list[str]:
+def _markdown_issue(
+    dossier: ReviewDossier, issue: ConsolidatedIssue, language: str = "de"
+) -> list[str]:
+    t = _TEXT[language]
     claims = {claim.proposal_id: claim for claim in dossier.semantic.claims}
+    severity = _severity_label(issue.severity, language)
+    category = _category_label(issue.category, language)
+    reviewers = ", ".join(_reviewer_label(item, language) for item in issue.reviewer_ids)
     lines = [
-        f"## {issue.issue_id} · {issue.severity_label}: {issue.category_label}",
+        f"## {issue.issue_id} · {severity}: {category}",
         "",
         f"**{issue.title}**",
         "",
         issue.explanation,
         "",
-        f"**Prüffrage:** {issue.question}",
+        f"**{t['review_question']}:** {issue.question}",
         "",
-        f"**Erkannt durch:** {', '.join(issue.reviewer_labels)}",
+        f"**{t['md_detected_by']}:** {reviewers}",
         "",
-        "**Originalaussagen:**",
+        f"**{t['md_claims']}:**",
         "",
     ]
     for claim_id in issue.claim_ids:
         claim = claims.get(claim_id)
         if claim is not None:
+            opening, closing = t["md_quote"]
             lines.append(
-                f"- `{claim_id}` {_cell(claim.canonical_content)} — „{_cell(claim.raw_span)}“"
+                f"- `{claim_id}` {_cell(claim.canonical_content)} — "
+                f"{opening}{_cell(claim.raw_span)}{closing}"
             )
     lines.append("")
     return lines
@@ -93,8 +97,8 @@ def render_html(
     language: str = "de",
     navigation: bool = False,
 ) -> str:
-    language = language if language in _HTML_TEXT else "de"
-    t = _HTML_TEXT[language]
+    language = language if language in _TEXT else "de"
+    t = _TEXT[language]
     profile = get_profile(dossier.profile)
     issues = consolidate_findings(dossier.findings)
     urgent = tuple(issue for issue in issues if issue.severity in {"critical", "high"})
@@ -214,10 +218,10 @@ def _argument_groups(
     return tuple((label, claims) for label, claims in groups if claims)
 
 
-def _markdown_argument_map(dossier: ReviewDossier) -> list[str]:
-    lines = ["## Inhaltsgerüst", ""]
+def _markdown_argument_map(dossier: ReviewDossier, language: str = "de") -> list[str]:
+    lines = [f"## {_TEXT[language]['content_map']}", ""]
     for label, claims in _argument_groups(dossier):
-        lines.extend((f"**{label}**", ""))
+        lines.extend((f"**{_argument_group_label(label, language)}**", ""))
         lines.extend(
             f"- `{claim.proposal_id}` {_cell(claim.canonical_content)}" for claim in claims
         )
@@ -226,7 +230,7 @@ def _markdown_argument_map(dossier: ReviewDossier) -> list[str]:
 
 
 def _argument_map_html(dossier: ReviewDossier, language: str) -> str:
-    t = _HTML_TEXT[language]
+    t = _TEXT[language]
     groups = "".join(
         (
             '<div class="argument-group">'
@@ -248,7 +252,7 @@ def _argument_map_html(dossier: ReviewDossier, language: str) -> str:
 
 
 def _decision_note(profile: str, language: str) -> str:
-    t = _HTML_TEXT[language]
+    t = _TEXT[language]
     if profile == "budget":
         return (
             f'<div class="decision-note">{t["decision_support"]}<br>'
@@ -261,14 +265,14 @@ def _decision_note(profile: str, language: str) -> str:
 
 
 def _intro_html(profile: str, language: str) -> str:
-    t = _HTML_TEXT[language]
+    t = _TEXT[language]
     if profile == "general":
         return f'<p class="intro">{t["general_intro"]}</p>'
     return f'<p class="intro">{t["budget_intro"]}</p>'
 
 
 def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue, language: str) -> str:
-    t = _HTML_TEXT[language]
+    t = _TEXT[language]
     claims = {claim.proposal_id: claim for claim in dossier.semantic.claims}
     shown_claims = [claim_id for claim_id in issue.claim_ids if claim_id in claims]
     claim_rows = "".join(
@@ -312,7 +316,7 @@ def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue, language: str)
 
 
 def _audit_html(dossier: ReviewDossier, language: str) -> str:
-    t = _HTML_TEXT[language]
+    t = _TEXT[language]
     claim_count = len(dossier.semantic.claims)
     relation_count = len(dossier.semantic.relations)
     rejection_count = len(dossier.semantic.rejections) + len(dossier.review_rejections)
@@ -331,7 +335,7 @@ def _audit_html(dossier: ReviewDossier, language: str) -> str:
 </details>"""
 
 
-_HTML_TEXT = {
+_TEXT = {
     "de": {
         "dossier": "Prüferdossier",
         "summary": "Zusammenfassung",
@@ -373,6 +377,21 @@ _HTML_TEXT = {
         "human_decides": "Die letzte Entscheidung trifft immer ein Mensch.",
         "new_review": "Neue Prüfung",
         "settings": "Einstellungen",
+        "md_dossier": "Prüferdossier",
+        "md_document": "Dokument",
+        "md_to_review": "Zu prüfen",
+        "md_points": "konsolidierte Punkte",
+        "md_basis": "Grundlage",
+        "md_basis_claims": "Originalaussagen",
+        "md_basis_relations": "Relationen",
+        "md_basis_findings": "rohe Prüfhinweise",
+        "md_detected_by": "Erkannt durch",
+        "md_claims": "Originalaussagen",
+        "md_audit": "Technischer Audit",
+        "md_semantic_rejections": "Layer-9-Rejections",
+        "md_review_rejections": "Reviewer-Rejections",
+        "md_full_audit": "Vollständige Einzelbefunde und Provenienz",
+        "md_quote": ("\u201e", "\u201c"),
     },
     "en": {
         "dossier": "Reviewer dossier",
@@ -413,6 +432,21 @@ _HTML_TEXT = {
         "human_decides": "The final decision always remains with a human.",
         "new_review": "New review",
         "settings": "Settings",
+        "md_dossier": "Reviewer dossier",
+        "md_document": "Document",
+        "md_to_review": "To review",
+        "md_points": "consolidated points",
+        "md_basis": "Basis",
+        "md_basis_claims": "original claims",
+        "md_basis_relations": "relations",
+        "md_basis_findings": "raw findings",
+        "md_detected_by": "Detected by",
+        "md_claims": "Original claims",
+        "md_audit": "Technical audit",
+        "md_semantic_rejections": "Layer 9 rejections",
+        "md_review_rejections": "Reviewer rejections",
+        "md_full_audit": "Complete individual findings and provenance",
+        "md_quote": ("\u201c", "\u201d"),
     },
 }
 

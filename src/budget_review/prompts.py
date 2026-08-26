@@ -63,12 +63,17 @@ Return exactly this JSON object, with no extra keys:
     return system, user
 
 
+_REVIEWER_LANGUAGE = {"de": "clear German", "en": "clear English"}
+
+
 def reviewer_prompt(
     dossier: SemanticDossier,
     role: str,
     profile: str | ReviewProfile = "general",
+    language: str = "de",
 ) -> tuple[str, str]:
     selected = get_profile(profile)
+    prose = _REVIEWER_LANGUAGE.get(language, _REVIEWER_LANGUAGE["de"])
     graph = {
         "claims": [
             {
@@ -92,7 +97,7 @@ def reviewer_prompt(
 Review only the governed ClaimGraph. Ignore fluency, formatting and suspected AI authorship.
 Do not repair the text, give an overall quality verdict, or declare claims true/false. Find
 content tensions that a human examiner should inspect. Cite only existing claim IDs. Write
-summary, explanation and question_for_reviewer in clear German.
+summary, explanation and question_for_reviewer in {prose}.
 Return JSON only, exactly as:
 {{"findings": [{{
   "finding_id": "F01",

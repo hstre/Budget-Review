@@ -14,7 +14,7 @@ It is deliberately **not an AI detector**. Smooth writing receives no bonus,
 rough writing no penalty. The system produces review questions, never a truth,
 quality or funding verdict.
 
-Status: `0.2.0a2` · Research alpha · MIT
+Status: `0.2.0a3` · Research alpha · MIT
 
 ---
 
@@ -61,6 +61,11 @@ available, the first live review directs you there automatically. Paste a text,
 choose `general` or `budget`, and start the review. A live run may take a few
 minutes.
 
+Every completed web review also writes its full dossier to
+`./review-output/web/<document>-<timestamp>/`, relative to the directory the
+server was started in. `dossier.json` contains the verbatim wording of every
+admitted claim, so place that directory accordingly.
+
 ### API-key handling
 
 The local web interface stores one key per operating-system user in:
@@ -69,7 +74,8 @@ The local web interface stores one key per operating-system user in:
 ~/.config/content-review/settings.json
 ```
 
-The file is written atomically with permissions `0600`. The complete key is not
+The file is written atomically and set to `0600` on POSIX systems; Windows has
+no equivalent and relies on the user profile ACL. The complete key is not
 returned to the browser, written to dossiers or included in logs. It is stored
 locally as plain text protected by the operating-system file permissions, not
 encrypted. `DEEPSEEK_API_KEY` remains available as a fallback for CLI use.
@@ -86,6 +92,7 @@ No API key is needed for the frozen controls:
 ```bash
 content-review demo
 content-review demo --case rough
+content-review demo --profile budget --language en
 ```
 
 They test the intended separation of form and content:
@@ -170,8 +177,12 @@ content-review review proposal.pdf budget.xlsx \
   --profile budget \
   --provider deepseek \
   --live-review \
+  --language en \
   --output review-output/proposal
 ```
+
+`--language de|en` sets the dossier language for HTML, Markdown and the reviewer
+arms. Without it the stored interface language is used.
 
 The old `budget-review` command remains as a compatible alias. A previously
 extracted semantic packet can be reviewed offline with `--packet`.
@@ -206,11 +217,14 @@ is a separate manually triggered GitHub Action.
 - Live extraction quality remains model- and domain-dependent.
 - The web alpha accepts pasted text; document upload remains a CLI feature.
 - PDF extraction has no OCR.
-- English and German interface labels are available, but quoted claims retain
-  their original language and reviewer prose can follow the source language.
+- The dossier is rendered in German or English: interface labels, deterministic
+  findings and the reviewer arms all follow `--language` (default: the stored
+  interface setting). Quoted claims keep their original wording, since they are
+  verbatim spans from the source.
 - The local web server is single-user and has no account system.
 
-Security details are collected in [SECURITY.md](SECURITY.md).
+Security details are collected in [SECURITY.md](SECURITY.md); changes per
+release are in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -260,6 +274,11 @@ automatisch dorthin. Anschließend Text einfügen, das Profil `general` oder
 `budget` wählen und die Prüfung starten. Ein Live-Lauf kann einige Minuten
 dauern.
 
+Jede abgeschlossene Web-Prüfung schreibt ihr vollständiges Dossier zusätzlich
+nach `./review-output/web/<dokument>-<zeitstempel>/`, relativ zum
+Startverzeichnis des Servers. `dossier.json` enthält den Originalwortlaut aller
+zugelassenen Claims; das Verzeichnis sollte entsprechend gewählt werden.
+
 ### Umgang mit dem API-Key
 
 Die lokale Weboberfläche speichert einen Schlüssel je Betriebssystem-Benutzer:
@@ -268,10 +287,12 @@ Die lokale Weboberfläche speichert einen Schlüssel je Betriebssystem-Benutzer:
 ~/.config/content-review/settings.json
 ```
 
-Die Datei wird atomar mit den Rechten `0600` geschrieben. Der vollständige Key
-wird nicht an den Browser zurückgegeben und erscheint weder in Dossiers noch in
-Logs. Er liegt lokal als Klartext vor und wird durch die Dateirechte des
-Betriebssystems geschützt; er ist nicht verschlüsselt. Für die CLI bleibt
+Die Datei wird atomar geschrieben und auf POSIX-Systemen auf `0600` gesetzt;
+Windows kennt keine Entsprechung und verlässt sich auf die ACL des
+Benutzerprofils. Der vollständige Key wird nicht an den Browser zurückgegeben
+und erscheint weder in Dossiers noch in Logs. Er liegt lokal als Klartext vor
+und wird durch die Dateirechte des Betriebssystems geschützt; er ist nicht
+verschlüsselt. Für die CLI bleibt
 `DEEPSEEK_API_KEY` als Rückfall verfügbar.
 
 Der Server bindet standardmäßig nur an `127.0.0.1`. Andere Adressen verlangen
@@ -286,6 +307,7 @@ Die eingefrorenen Gegenproben benötigen keinen API-Key:
 ```bash
 content-review demo
 content-review demo --case rough
+content-review demo --profile budget --language en
 ```
 
 | Gegenprobe | Governed Graph | Deterministisches Ergebnis |
@@ -370,8 +392,12 @@ content-review review antrag.pdf budget.xlsx \
   --profile budget \
   --provider deepseek \
   --live-review \
+  --language de \
   --output review-output/antrag
 ```
+
+`--language de|en` bestimmt die Sprache von HTML, Markdown und den
+Reviewer-Armen. Ohne den Schalter gilt die gespeicherte Oberflächensprache.
 
 Der frühere Befehl `budget-review` bleibt als kompatibler Alias erhalten. Ein
 bereits extrahiertes Semantic Packet kann mit `--packet` vollständig offline
@@ -410,10 +436,12 @@ Actions manuell gestartet.
 - Die Web-Alpha akzeptiert eingefügten Text; Dokument-Upload ist noch eine
   CLI-Funktion.
 - PDF-Extraktion enthält kein OCR.
-- Oberfläche und Dossier-Bezeichnungen sind zweisprachig; zitierte Claims
-  behalten ihre Originalsprache, und Reviewertexte können der Sprache der
-  Quelle folgen.
+- Das Dossier erscheint auf Deutsch oder Englisch: Bezeichnungen,
+  deterministische Befunde und die Reviewer-Arme folgen `--language`
+  (Vorgabe: die gespeicherte Spracheinstellung). Zitierte Claims behalten ihren
+  Wortlaut, weil sie exakte Originalstellen sind.
 - Der lokale Webserver ist für einen Benutzer ausgelegt und besitzt noch kein
   Kontensystem.
 
-Sicherheitsdetails stehen in [SECURITY.md](SECURITY.md).
+Sicherheitsdetails stehen in [SECURITY.md](SECURITY.md), die Änderungen je
+Version in [CHANGELOG.md](CHANGELOG.md).

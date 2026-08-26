@@ -20,6 +20,7 @@ class ReviewPipeline:
     provider: DeepSeekProvider | None = None
     extraction_model: str = "deepseek-v4-flash"
     profile: str = "general"
+    language: str = "de"
 
     def run(
         self,
@@ -49,10 +50,13 @@ class ReviewPipeline:
             semantic,
             provider=self.provider if live_review else None,
             profile=selected,
+            language=self.language,
         )
 
     @staticmethod
-    def write(dossier: ReviewDossier, output_dir: Path) -> tuple[Path, Path, Path]:
+    def write(
+        dossier: ReviewDossier, output_dir: Path, language: str = "de"
+    ) -> tuple[Path, Path, Path]:
         output_dir.mkdir(parents=True, exist_ok=True)
         json_path = output_dir / "dossier.json"
         markdown_path = output_dir / "dossier.md"
@@ -61,8 +65,8 @@ class ReviewPipeline:
             json.dumps(dossier.to_dict(), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        markdown_path.write_text(render_markdown(dossier), encoding="utf-8")
-        html_path.write_text(render_html(dossier), encoding="utf-8")
+        markdown_path.write_text(render_markdown(dossier, language), encoding="utf-8")
+        html_path.write_text(render_html(dossier, language), encoding="utf-8")
         return json_path, markdown_path, html_path
 
 

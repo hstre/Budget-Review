@@ -44,6 +44,14 @@ Das Gate ist deterministisch und replay-stabil. Es prüft:
 5. geschlossene Relationstypen;
 6. vorhandene Endpunkte, keine Selbstkanten und keine Duplikate.
 
+Inhaltsadressierung heißt: Zwei Vorschläge mit gleichem Typ, gleichem
+`canonical_content` und gleichem `raw_span` bezeichnen denselben Knoten. Der
+zweite wird als `duplicate_claim_node` abgewiesen, seine Kanten bleiben aber
+erhalten und zeigen auf den zugelassenen Knoten. Relationen werden deshalb über
+die aufgelösten Knoten-IDs dedupliziert, nicht über Proposal-IDs; eine doppelt
+vorgeschlagene Kante erscheint als `duplicate_relation` im Audit. Claim- und
+Relations-IDs sind im Dossier damit eindeutig.
+
 Mehrdeutige Spans oder Konfidenzen unter 0,75 bleiben zugelassen, werden aber
 als `human_review_required` markiert. Das Gate schließt keine inhaltliche Lücke
 und kennt keinen Wahrheitszustand.
@@ -102,6 +110,12 @@ Findings mit stark überlappenden Claim-Mengen werden für die menschliche Ansic
 zu einem Prüfpunkt verbunden. Schweregrad, betroffene Claims und alle Prüfwege
 bleiben erhalten. Das ist reine Darstellung: Jeder Einzelbefund bleibt im
 JSON-Audit sichtbar.
+
+Dossier und Befunde erscheinen auf Deutsch oder Englisch. Die Sprache wählt der
+Aufrufer; sie steuert die Bezeichnungen, die Texte der deterministischen Regeln
+und die Sprachvorgabe an die Reviewer-Arme. Sie verändert keine strukturellen
+Felder: Kategorie, Schweregrad, Claim-IDs, Konfidenz und Provenienz sind
+sprachunabhängig, und zitierte Originalstellen bleiben unverändert.
 
 Die HTML-Seite trennt hohe Prioritäten von weiteren Hinweisen und zeigt pro
 Prüfpunkt eine Erklärung und eine konkrete Frage. Originalaussagen, einzelne

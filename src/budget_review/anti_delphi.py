@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .checks import deterministic_checks
+from .checks import deterministic_checks, rules_model_id
 from .models import (
     Finding,
     FindingCategory,
@@ -13,7 +13,7 @@ from .models import (
     ReviewRejection,
     SemanticDossier,
 )
-from .profiles import BUDGET, GENERAL, ReviewProfile, get_profile
+from .profiles import BUDGET, GENERAL, ReviewProfile, authority_note, get_profile
 from .prompts import reviewer_prompt
 from .provider import DeepSeekProvider, ModelConfig, ProviderError
 
@@ -50,23 +50,24 @@ def review_claim_graph(
     provider: DeepSeekProvider | None = None,
     arms: tuple[ReviewerArm, ...] | None = None,
     profile: str | ReviewProfile = "general",
+    language: str = "de",
 ) -> ReviewDossier:
     selected = get_profile(profile)
     selected_arms = reviewer_arms(selected) if arms is None else arms
-    findings = list(deterministic_checks(dossier, selected))
+    findings = list(deterministic_checks(dossier, selected, language=language))
     rejections: list[ReviewRejection] = []
     runs: list[dict[str, Any]] = [
         {
             "reviewer_id": "deterministic-checks",
             "kind": "deterministic",
-            "model_id": f"content-rules/{selected.name}/0.2",
+            "model_id": rules_model_id(selected.name),
             "status": "completed",
             "finding_count": len(findings),
         }
     ]
     if provider is not None:
         for arm in selected_arms:
-            system, user = reviewer_prompt(dossier, arm.role, selected)
+            system, user = reviewer_prompt(dossier, arm.role, selected, language)
             try:
                 payload, metadata = provider.complete_json(
                     system=system,
@@ -107,7 +108,7 @@ def review_claim_graph(
         review_rejections=tuple(rejections),
         profile=selected.name,
         reviewer_runs=tuple(runs),
-        authority_note=selected.authority_note,
+        authority_note=authority_note(selected, language),
     )
 
 

@@ -13,6 +13,17 @@ from .models import SchemaError
 from .pipeline import ReviewPipeline, load_packet
 from .profiles import PROFILES
 from .provider import DeepSeekProvider, ProviderError
+from .settings import LANGUAGES, load_settings
+
+
+def _add_language(parser: argparse.ArgumentParser) -> None:
+    """Dossier language. Defaults to the interface language stored per OS user."""
+    parser.add_argument(
+        "--language",
+        choices=tuple(sorted(LANGUAGES)),
+        default=None,
+        help="language of the HTML and Markdown dossier (default: stored setting)",
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -33,6 +44,7 @@ def _parser() -> argparse.ArgumentParser:
         "--live-review", action="store_true", help="run two independent LLM reviewer arms"
     )
     review.add_argument("--output", type=Path, default=Path("review-output"))
+    _add_language(review)
 
     demo = subparsers.add_parser("demo", help="run a frozen content-review control case")
     demo.add_argument("--profile", choices=tuple(PROFILES), default="general")
@@ -40,12 +52,14 @@ def _parser() -> argparse.ArgumentParser:
     demo.add_argument("--live-review", action="store_true")
     demo.add_argument("--output", type=Path, default=Path("review-output/demo"))
     demo.add_argument("--json", action="store_true", help="print a JSON summary")
+    _add_language(demo)
 
     validate = subparsers.add_parser("validate", help="validate and gate a frozen extraction")
     validate.add_argument("source", type=Path)
     validate.add_argument("packet", type=Path)
     validate.add_argument("--profile", choices=tuple(PROFILES), default="general")
     validate.add_argument("--output", type=Path, default=Path("review-output/validation"))
+    _add_language(validate)
 
     web = subparsers.add_parser("web", help="start the local bilingual web interface")
     web.add_argument("--host", default="127.0.0.1")
@@ -63,17 +77,24 @@ def _provider(enabled: bool) -> DeepSeekProvider | None:
     return DeepSeekProvider() if enabled else None
 
 
+def _language(args: argparse.Namespace) -> str:
+    return args.language or load_settings().language
+
+
 def _run_review(args: argparse.Namespace) -> int:
+    language = _language(args)
     use_live = args.provider == "deepseek" or args.live_review
     provider = _provider(use_live)
     source = ingest(args.inputs, document_id=args.document_id)
     packet = load_packet(args.packet) if args.packet else None
-    dossier = ReviewPipeline(provider, args.extraction_model, args.profile).run(
+    dossier = ReviewPipeline(provider, args.extraction_model, args.profile, language).run(
         source,
         packet=packet,
         live_review=args.live_review,
     )
-    json_path, markdown_path, html_path = ReviewPipeline.write(dossier, args.output)
+    json_path, markdown_path, html_path = ReviewPipeline.write(
+        dossier, args.output, language
+    )
     print(
         f"claims={len(dossier.semantic.claims)} "
         f"relations={len(dossier.semantic.relations)} "
@@ -101,12 +122,15 @@ def _run_demo(args: argparse.Namespace) -> int:
     source = ingest([source_path], document_id=document_id)
     packet = load_packet(packet_path)
     provider = _provider(args.live_review)
-    dossier = ReviewPipeline(provider, profile=args.profile).run(
+    language = _language(args)
+    dossier = ReviewPipeline(provider, profile=args.profile, language=language).run(
         source,
         packet=packet,
         live_review=args.live_review,
     )
-    json_path, markdown_path, html_path = ReviewPipeline.write(dossier, args.output)
+    json_path, markdown_path, html_path = ReviewPipeline.write(
+        dossier, args.output, language
+    )
     issues = consolidate_findings(dossier.findings)
     summary = {
         "claims": len(dossier.semantic.claims),
@@ -160,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
                 profile=args.profile,
                 live_review=False,
                 output=args.output,
+                language=args.language,
             )
         return _run_review(args)
     except (IngestError, ProviderError, SchemaError, ValueError) as exc:

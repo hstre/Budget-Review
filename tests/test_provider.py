@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import io
 import json
+import urllib.error
 
 import pytest
 
@@ -186,3 +188,70 @@ def test_secret_is_not_exposed_in_transport_error(monkeypatch) -> None:
             config=ModelConfig("deepseek-v4-flash"),
         )
     assert secret not in str(captured.value)
+
+
+def _raise_http(code: int, calls: list[int]):
+    def fail(request, timeout=None):
+        calls.append(code)
+        raise urllib.error.HTTPError(request.full_url, code, "reason", {}, io.BytesIO(b"{}"))
+
+    return fail
+
+
+def _truncated(calls: list[int]):
+    class _Response(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def respond(request, timeout=None):
+        calls.append(0)
+        envelope = {"choices": [{"finish_reason": "length", "message": {"content": "{}"}}]}
+        return _Response(json.dumps(envelope).encode("utf-8"))
+
+    return respond
+
+
+@pytest.fixture
+def instant_sleep(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda _seconds: None)
+
+
+def _complete(monkeypatch, opener):
+    monkeypatch.setattr("urllib.request.urlopen", opener)
+    provider = DeepSeekProvider(api_key="secret-key", retries=2)
+    with pytest.raises(ProviderError) as captured:
+        provider.complete_json(system="s", user="u", config=ModelConfig("deepseek-v4-flash"))
+    return str(captured.value)
+
+
+def test_truncated_output_is_not_paid_for_twice(monkeypatch, instant_sleep) -> None:
+    """Identical request at temperature 0: a retry cannot end differently."""
+    calls: list[int] = []
+
+    message = _complete(monkeypatch, _truncated(calls))
+
+    assert len(calls) == 1
+    assert "max_tokens" in message
+
+
+def test_client_error_is_not_retried_and_names_the_status(monkeypatch, instant_sleep) -> None:
+    calls: list[int] = []
+
+    message = _complete(monkeypatch, _raise_http(401, calls))
+
+    assert len(calls) == 1
+    assert "HTTP 401" in message
+    assert "secret-key" not in message
+
+
+def test_rate_limit_and_upstream_errors_are_retried(monkeypatch, instant_sleep) -> None:
+    for code in (429, 503):
+        calls: list[int] = []
+
+        message = _complete(monkeypatch, _raise_http(code, calls))
+
+        assert len(calls) == 3, f"HTTP {code} should be retried"
+        assert f"HTTP {code}" in message
