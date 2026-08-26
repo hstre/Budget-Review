@@ -198,18 +198,42 @@ class RelationProposal:
 
 
 @dataclass(frozen=True)
+class Rejection:
+    item_kind: str
+    item_id: str
+    reason: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Rejection:
+        _closed(data, {"item_kind", "item_id", "reason"}, "rejection")
+        return cls(
+            item_kind=_required(data, "item_kind", str),
+            item_id=_required(data, "item_id", str),
+            reason=_required(data, "reason", str),
+        )
+
+
+@dataclass(frozen=True)
 class SemanticPacket:
     schema_version: str
     document_id: str
     provenance: Provenance
     claims: tuple[ClaimProposal, ...]
     relations: tuple[RelationProposal, ...] = ()
+    relation_rejections: tuple[Rejection, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SemanticPacket:
         _closed(
             data,
-            {"schema_version", "document_id", "provenance", "claims", "relations"},
+            {
+                "schema_version",
+                "document_id",
+                "provenance",
+                "claims",
+                "relations",
+                "relation_rejections",
+            },
             "semantic packet",
         )
         if data.get("schema_version") not in {
@@ -221,6 +245,9 @@ class SemanticPacket:
         raw_relations = data.get("relations", [])
         if not isinstance(raw_relations, list):
             raise SchemaError("relations must be a list")
+        raw_rejections = data.get("relation_rejections", [])
+        if not isinstance(raw_rejections, list):
+            raise SchemaError("relation_rejections must be a list")
         if not raw_claims:
             raise SchemaError("semantic packet must contain at least one claim")
         return cls(
@@ -229,6 +256,7 @@ class SemanticPacket:
             provenance=Provenance.from_dict(_required(data, "provenance", dict)),
             claims=tuple(ClaimProposal.from_dict(item) for item in raw_claims),
             relations=tuple(RelationProposal.from_dict(item) for item in raw_relations),
+            relation_rejections=tuple(Rejection.from_dict(item) for item in raw_rejections),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -259,13 +287,6 @@ class GovernedRelation:
     confidence: float
     rationale: str
     semantic_state: str
-
-
-@dataclass(frozen=True)
-class Rejection:
-    item_kind: str
-    item_id: str
-    reason: str
 
 
 @dataclass(frozen=True)
