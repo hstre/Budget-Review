@@ -46,6 +46,16 @@ def _parser() -> argparse.ArgumentParser:
     validate.add_argument("packet", type=Path)
     validate.add_argument("--profile", choices=tuple(PROFILES), default="general")
     validate.add_argument("--output", type=Path, default=Path("review-output/validation"))
+
+    web = subparsers.add_parser("web", help="start the local bilingual web interface")
+    web.add_argument("--host", default="127.0.0.1")
+    web.add_argument("--port", type=int, default=8765)
+    web.add_argument("--no-browser", action="store_true")
+    web.add_argument(
+        "--allow-network",
+        action="store_true",
+        help="allow binding beyond localhost; add authentication before shared deployment",
+    )
     return parser
 
 
@@ -126,6 +136,17 @@ def _run_demo(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "web":
+            if args.host not in {"127.0.0.1", "localhost", "::1"} and not args.allow_network:
+                print(
+                    "content-review: non-local binding requires --allow-network",
+                    file=sys.stderr,
+                )
+                return 2
+            from .web import serve
+
+            serve(args.host, args.port, open_browser=not args.no_browser)
+            return 0
         if args.command == "demo":
             return _run_demo(args)
         if args.command == "validate":
