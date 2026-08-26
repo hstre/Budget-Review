@@ -61,6 +61,11 @@ available, the first live review directs you there automatically. Paste a text,
 choose `general` or `budget`, and start the review. A live run may take a few
 minutes.
 
+Every completed web review also writes its full dossier to
+`./review-output/web/<document>-<timestamp>/`, relative to the directory the
+server was started in. `dossier.json` contains the verbatim wording of every
+admitted claim, so place that directory accordingly.
+
 ### API-key handling
 
 The local web interface stores one key per operating-system user in:
@@ -87,6 +92,7 @@ No API key is needed for the frozen controls:
 ```bash
 content-review demo
 content-review demo --case rough
+content-review demo --profile budget --language en
 ```
 
 They test the intended separation of form and content:
@@ -268,6 +274,11 @@ automatisch dorthin. Anschließend Text einfügen, das Profil `general` oder
 `budget` wählen und die Prüfung starten. Ein Live-Lauf kann einige Minuten
 dauern.
 
+Jede abgeschlossene Web-Prüfung schreibt ihr vollständiges Dossier zusätzlich
+nach `./review-output/web/<dokument>-<zeitstempel>/`, relativ zum
+Startverzeichnis des Servers. `dossier.json` enthält den Originalwortlaut aller
+zugelassenen Claims; das Verzeichnis sollte entsprechend gewählt werden.
+
 ### Umgang mit dem API-Key
 
 Die lokale Weboberfläche speichert einen Schlüssel je Betriebssystem-Benutzer:
@@ -279,8 +290,9 @@ Die lokale Weboberfläche speichert einen Schlüssel je Betriebssystem-Benutzer:
 Die Datei wird atomar geschrieben und auf POSIX-Systemen auf `0600` gesetzt;
 Windows kennt keine Entsprechung und verlässt sich auf die ACL des
 Benutzerprofils. Der vollständige Key wird nicht an den Browser zurückgegeben
-und erscheint weder in Dossiers noch in Logs. Er liegt lokal als Klartext vor und wird durch die Dateirechte des
-Betriebssystems geschützt; er ist nicht verschlüsselt. Für die CLI bleibt
+und erscheint weder in Dossiers noch in Logs. Er liegt lokal als Klartext vor
+und wird durch die Dateirechte des Betriebssystems geschützt; er ist nicht
+verschlüsselt. Für die CLI bleibt
 `DEEPSEEK_API_KEY` als Rückfall verfügbar.
 
 Der Server bindet standardmäßig nur an `127.0.0.1`. Andere Adressen verlangen
@@ -295,6 +307,7 @@ Die eingefrorenen Gegenproben benötigen keinen API-Key:
 ```bash
 content-review demo
 content-review demo --case rough
+content-review demo --profile budget --language en
 ```
 
 | Gegenprobe | Governed Graph | Deterministisches Ergebnis |
