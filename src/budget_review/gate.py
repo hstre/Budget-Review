@@ -38,7 +38,7 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
     """
     claims: list[GovernedClaim] = []
     relations: list[GovernedRelation] = []
-    rejections: list[Rejection] = []
+    rejections: list[Rejection] = list(packet.relation_rejections)
     admitted: dict[str, GovernedClaim] = {}
     seen_ids: set[str] = set()
 
