@@ -14,6 +14,7 @@ from typing import Any
 from .gate import sha256_text
 from .models import Rejection, RelationProposal, SchemaError, SemanticPacket
 from .prompts import extraction_prompt
+from .settings import effective_api_key
 
 
 class ProviderError(RuntimeError):
@@ -37,7 +38,7 @@ class DeepSeekProvider:
         timeout: float = 120.0,
         retries: int = 2,
     ) -> None:
-        self.api_key = api_key or os.environ.get("DEEPSEEK_API_KEY", "")
+        self.api_key = api_key or effective_api_key()
         if not self.api_key:
             raise ProviderError("DEEPSEEK_API_KEY is not configured")
         self.base_url = (
