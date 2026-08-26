@@ -85,6 +85,56 @@ def test_extraction_receives_general_profile_contract(monkeypatch) -> None:
     assert "human-written or AI-written" in captured["system"]
 
 
+def test_extraction_repairs_one_schema_violation(monkeypatch) -> None:
+    calls = []
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+
+    def fake_complete_json(**kwargs):
+        calls.append(kwargs)
+        relation_type = "METHOD" if len(calls) == 1 else "SUPPORTS"
+        return (
+            {
+                "claims": [
+                    {
+                        "proposal_id": "C01",
+                        "claim_type": "method",
+                        "canonical_content": "A method is used.",
+                        "raw_span": "A method is used.",
+                        "confidence": 0.9,
+                        "source_ref": "example",
+                    },
+                    {
+                        "proposal_id": "C02",
+                        "claim_type": "thesis",
+                        "canonical_content": "A result follows.",
+                        "raw_span": "A result follows.",
+                        "confidence": 0.9,
+                        "source_ref": "example",
+                    },
+                ],
+                "relations": [
+                    {
+                        "source_id": "C01",
+                        "relation_type": relation_type,
+                        "target_id": "C02",
+                        "confidence": 0.8,
+                        "rationale": "Method supports result.",
+                    }
+                ],
+            },
+            {"model": "deepseek-v4-flash", "output_hash": "1234567890abcdef"},
+        )
+
+    monkeypatch.setattr(provider, "complete_json", fake_complete_json)
+    packet = provider.extract(
+        "example", "A method is used. A result follows.", profile="general"
+    )
+
+    assert len(calls) == 2
+    assert "unknown relation_type: METHOD" in calls[1]["system"]
+    assert packet.relations[0].relation_type.value == "SUPPORTS"
+
+
 def test_secret_is_not_exposed_in_transport_error(monkeypatch) -> None:
     def fail(*args, **kwargs):
         raise TimeoutError("transport failed")
