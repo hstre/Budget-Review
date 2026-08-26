@@ -4,8 +4,14 @@ from __future__ import annotations
 
 from html import escape
 
-from .consolidate import REVIEWER_LABELS, ConsolidatedIssue, consolidate_findings
-from .models import ClaimType, GovernedClaim, ReviewDossier
+from .consolidate import (
+    CATEGORY_LABELS,
+    REVIEWER_LABELS,
+    SEVERITY_LABELS,
+    ConsolidatedIssue,
+    consolidate_findings,
+)
+from .models import ClaimType, FindingCategory, GovernedClaim, ReviewDossier
 from .profiles import get_profile
 
 
@@ -82,24 +88,34 @@ def _markdown_issue(dossier: ReviewDossier, issue: ConsolidatedIssue) -> list[st
     return lines
 
 
-def render_html(dossier: ReviewDossier) -> str:
+def render_html(
+    dossier: ReviewDossier,
+    language: str = "de",
+    navigation: bool = False,
+) -> str:
+    language = language if language in _HTML_TEXT else "de"
+    t = _HTML_TEXT[language]
     profile = get_profile(dossier.profile)
     issues = consolidate_findings(dossier.findings)
     urgent = tuple(issue for issue in issues if issue.severity in {"critical", "high"})
     further = tuple(issue for issue in issues if issue.severity not in {"critical", "high"})
     rejection_count = len(dossier.semantic.rejections) + len(dossier.review_rejections)
     empty = (
-        '<section class="empty"><h2>Keine maschinellen Prüfhinweise</h2>'
-        "<p>Das ist kein positives Urteil. Der Text muss weiterhin inhaltlich geprüft werden.</p>"
-        "</section>"
+        f'<section class="empty"><h2>{t["no_findings"]}</h2><p>{t["no_positive"]}</p></section>'
         if not issues
         else ""
     )
-    urgent_section = _issue_section(dossier, "Zuerst", "Hohe Priorität", urgent)
-    further_section = _issue_section(dossier, "Danach", "Weitere Hinweise", further)
-    argument_map = _argument_map_html(dossier) if profile.name == "general" else ""
+    urgent_section = _issue_section(dossier, t["first"], t["high_priority"], urgent, language)
+    further_section = _issue_section(dossier, t["then"], t["more_findings"], further, language)
+    argument_map = _argument_map_html(dossier, language) if profile.name == "general" else ""
+    navigation_html = (
+        f'<nav class="result-nav"><a href="/">{t["new_review"]}</a>'
+        f'<a href="/settings">{t["settings"]}</a></nav>'
+        if navigation
+        else ""
+    )
     return f"""<!doctype html>
-<html lang="de">
+<html lang="{language}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -108,27 +124,28 @@ def render_html(dossier: ReviewDossier) -> str:
 </head>
 <body>
   <main>
+    {navigation_html}
     <header class="hero">
       <div>
         <p class="eyebrow">{escape(profile.display_name)} · Alpha</p>
-        <h1>Prüferdossier</h1>
+        <h1>{t["dossier"]}</h1>
         <p class="document">{escape(dossier.semantic.document_id)}</p>
       </div>
-      {_decision_note(profile.name)}
+      {_decision_note(profile.name, language)}
     </header>
-    <section class="summary" aria-label="Zusammenfassung">
-      <div><strong>{len(issues)}</strong><span>Prüfpunkte</span></div>
-      <div><strong>{len(urgent)}</strong><span>hohe Priorität</span></div>
-      <div><strong>{len(dossier.semantic.claims)}</strong><span>Originalaussagen</span></div>
-      <div><strong>{rejection_count}</strong><span>nicht zugelassen</span></div>
+    <section class="summary" aria-label="{t["summary"]}">
+      <div><strong>{len(issues)}</strong><span>{t["review_points"]}</span></div>
+      <div><strong>{len(urgent)}</strong><span>{t["high_priority"]}</span></div>
+      <div><strong>{len(dossier.semantic.claims)}</strong><span>{t["original_claims"]}</span></div>
+      <div><strong>{rejection_count}</strong><span>{t["rejected"]}</span></div>
     </section>
-    {_intro_html(profile.name)}
+    {_intro_html(profile.name, language)}
     {argument_map}
     {empty}
     {urgent_section}
     {further_section}
-    {_audit_html(dossier)}
-    <footer>Die letzte Entscheidung trifft immer ein Mensch.</footer>
+    {_audit_html(dossier, language)}
+    <footer>{t["human_decides"]}</footer>
   </main>
 </body>
 </html>
@@ -140,10 +157,11 @@ def _issue_section(
     eyebrow: str,
     title: str,
     issues: tuple[ConsolidatedIssue, ...],
+    language: str,
 ) -> str:
     if not issues:
         return ""
-    cards = "".join(_issue_html(dossier, issue) for issue in issues)
+    cards = "".join(_issue_html(dossier, issue, language) for issue in issues)
     return (
         f'<section><div class="section-heading"><p>{escape(eyebrow)}</p>'
         f"<h2>{escape(title)}</h2></div>"
@@ -207,11 +225,12 @@ def _markdown_argument_map(dossier: ReviewDossier) -> list[str]:
     return lines
 
 
-def _argument_map_html(dossier: ReviewDossier) -> str:
+def _argument_map_html(dossier: ReviewDossier, language: str) -> str:
+    t = _HTML_TEXT[language]
     groups = "".join(
         (
             '<div class="argument-group">'
-            f"<h3>{escape(label)}</h3><ul>"
+            f"<h3>{escape(_argument_group_label(label, language))}</h3><ul>"
             + "".join(
                 f"<li><code>{escape(claim.proposal_id)}</code> "
                 f"{escape(claim.canonical_content)}</li>"
@@ -223,36 +242,33 @@ def _argument_map_html(dossier: ReviewDossier) -> str:
     )
     return (
         '<section class="argument-map"><div class="section-heading">'
-        "<p>Zuerst verstehen</p><h2>Inhaltsgerüst</h2></div>"
+        f"<p>{t['understand_first']}</p><h2>{t['content_map']}</h2></div>"
         f'<div class="argument-grid">{groups}</div></section>'
     )
 
 
-def _decision_note(profile: str) -> str:
+def _decision_note(profile: str, language: str) -> str:
+    t = _HTML_TEXT[language]
     if profile == "budget":
         return (
-            '<div class="decision-note">Entscheidungshilfe<br>'
-            "<strong>Kein Fördervotum</strong></div>"
+            f'<div class="decision-note">{t["decision_support"]}<br>'
+            f"<strong>{t['no_funding_verdict']}</strong></div>"
         )
     return (
-        '<div class="decision-note">Nur Inhalt<br>'
-        "<strong>Kein Stil- oder Autorenurteil</strong></div>"
+        f'<div class="decision-note">{t["content_only"]}<br>'
+        f"<strong>{t['no_style_verdict']}</strong></div>"
     )
 
 
-def _intro_html(profile: str) -> str:
+def _intro_html(profile: str, language: str) -> str:
+    t = _HTML_TEXT[language]
     if profile == "general":
-        return (
-            '<p class="intro">Sehen Sie zuerst das Inhaltsgerüst an. Prüfen Sie danach die '
-            "markierten Verbindungen und bei Bedarf den Originalwortlaut.</p>"
-        )
-    return (
-        '<p class="intro">Beginnen Sie mit den Punkten hoher Priorität. Öffnen Sie die '
-        "Originalaussagen erst, wenn Sie den Wortlaut prüfen möchten.</p>"
-    )
+        return f'<p class="intro">{t["general_intro"]}</p>'
+    return f'<p class="intro">{t["budget_intro"]}</p>'
 
 
-def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue) -> str:
+def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue, language: str) -> str:
+    t = _HTML_TEXT[language]
     claims = {claim.proposal_id: claim for claim in dossier.semantic.claims}
     shown_claims = [claim_id for claim_id in issue.claim_ids if claim_id in claims]
     claim_rows = "".join(
@@ -264,49 +280,200 @@ def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue) -> str:
         for claim_id in shown_claims
     )
     voices = "".join(
-        f"<li><strong>{escape(REVIEWER_LABELS.get(finding.reviewer_id, finding.reviewer_id))}"
+        f"<li><strong>{escape(_reviewer_label(finding.reviewer_id, language))}"
         f"</strong>: {escape(finding.explanation)}</li>"
         for finding in issue.findings
     )
-    sources = " · ".join(escape(label) for label in issue.reviewer_labels)
+    sources = " · ".join(
+        escape(_reviewer_label(reviewer_id, language)) for reviewer_id in issue.reviewer_ids
+    )
+    severity = _severity_label(issue.severity, language)
+    category = _category_label(issue.category, language)
     return f"""
 <article class="issue {escape(issue.severity)}">
   <div class="issue-topline">
-    <span class="badge">{escape(issue.severity_label)}</span>
-    <span>{escape(issue.issue_id)} · {escape(issue.category_label)}</span>
+    <span class="badge">{escape(severity)}</span>
+    <span>{escape(issue.issue_id)} · {escape(category)}</span>
   </div>
   <h3>{escape(issue.title)}</h3>
   <p class="explanation">{escape(issue.explanation)}</p>
-  <div class="question"><span>Prüffrage</span><strong>{escape(issue.question)}</strong></div>
+  <div class="question"><span>{t["review_question"]}</span>
+    <strong>{escape(issue.question)}</strong></div>
   <p class="sources">{sources}</p>
   <details>
-    <summary>Originalaussagen ansehen ({len(shown_claims)})</summary>
+    <summary>{t["show_claims"]} ({len(shown_claims)})</summary>
     <ul class="claims">{claim_rows}</ul>
   </details>
   <details>
-    <summary>Einzelne Prüfwege ({len(issue.findings)})</summary>
+    <summary>{t["show_paths"]} ({len(issue.findings)})</summary>
     <ul class="voices">{voices}</ul>
   </details>
 </article>"""
 
 
-def _audit_html(dossier: ReviewDossier) -> str:
+def _audit_html(dossier: ReviewDossier, language: str) -> str:
+    t = _HTML_TEXT[language]
     claim_count = len(dossier.semantic.claims)
     relation_count = len(dossier.semantic.relations)
     rejection_count = len(dossier.semantic.rejections) + len(dossier.review_rejections)
     return f"""
 <details class="audit">
-  <summary>Technischen Audit anzeigen</summary>
+  <summary>{t["show_audit"]}</summary>
   <dl>
-    <div><dt>Dokument-Hash</dt><dd><code>{escape(dossier.semantic.document_hash)}</code></dd></div>
-    <div><dt>Extraktion</dt><dd>{escape(dossier.semantic.provenance.provider)}/{escape(dossier.semantic.provenance.model_id)}</dd></div>
-    <div><dt>Prüfprofil</dt><dd>{escape(dossier.profile)}</dd></div>
-    <div><dt>ClaimGraph</dt><dd>{claim_count} Claims · {relation_count} Relationen</dd></div>
-    <div><dt>Rohe Findings</dt><dd>{len(dossier.findings)}</dd></div>
+    <div><dt>{t["document_hash"]}</dt><dd><code>{escape(dossier.semantic.document_hash)}</code></dd></div>
+    <div><dt>{t["extraction"]}</dt><dd>{escape(dossier.semantic.provenance.provider)}/{escape(dossier.semantic.provenance.model_id)}</dd></div>
+    <div><dt>{t["profile"]}</dt><dd>{escape(dossier.profile)}</dd></div>
+    <div><dt>ClaimGraph</dt><dd>{claim_count} Claims · {relation_count} {t["relations"]}</dd></div>
+    <div><dt>{t["raw_findings"]}</dt><dd>{len(dossier.findings)}</dd></div>
     <div><dt>Rejections</dt><dd>{rejection_count}</dd></div>
   </dl>
-  <p>Der vollständige maschinenlesbare Audit steht in <code>dossier.json</code>.</p>
+  <p>{t["full_audit"]} <code>dossier.json</code>.</p>
 </details>"""
+
+
+_HTML_TEXT = {
+    "de": {
+        "dossier": "Prüferdossier",
+        "summary": "Zusammenfassung",
+        "review_points": "Prüfpunkte",
+        "high_priority": "hohe Priorität",
+        "original_claims": "Originalaussagen",
+        "rejected": "nicht zugelassen",
+        "no_findings": "Keine maschinellen Prüfhinweise",
+        "no_positive": (
+            "Das ist kein positives Urteil. Der Text muss weiterhin inhaltlich geprüft werden."
+        ),
+        "first": "Zuerst",
+        "then": "Danach",
+        "more_findings": "Weitere Hinweise",
+        "understand_first": "Zuerst verstehen",
+        "content_map": "Inhaltsgerüst",
+        "decision_support": "Entscheidungshilfe",
+        "no_funding_verdict": "Kein Fördervotum",
+        "content_only": "Nur Inhalt",
+        "no_style_verdict": "Kein Stil- oder Autorenurteil",
+        "general_intro": (
+            "Sehen Sie zuerst das Inhaltsgerüst an. Prüfen Sie danach die markierten "
+            "Verbindungen und bei Bedarf den Originalwortlaut."
+        ),
+        "budget_intro": (
+            "Beginnen Sie mit den Punkten hoher Priorität. Öffnen Sie die "
+            "Originalaussagen erst, wenn Sie den Wortlaut prüfen möchten."
+        ),
+        "review_question": "Prüffrage",
+        "show_claims": "Originalaussagen ansehen",
+        "show_paths": "Einzelne Prüfwege",
+        "show_audit": "Technischen Audit anzeigen",
+        "document_hash": "Dokument-Hash",
+        "extraction": "Extraktion",
+        "profile": "Prüfprofil",
+        "raw_findings": "Rohe Findings",
+        "relations": "Relationen",
+        "full_audit": "Der vollständige maschinenlesbare Audit steht in",
+        "human_decides": "Die letzte Entscheidung trifft immer ein Mensch.",
+        "new_review": "Neue Prüfung",
+        "settings": "Einstellungen",
+    },
+    "en": {
+        "dossier": "Reviewer dossier",
+        "summary": "Summary",
+        "review_points": "review points",
+        "high_priority": "high priority",
+        "original_claims": "original claims",
+        "rejected": "not admitted",
+        "no_findings": "No machine-generated review findings",
+        "no_positive": "This is not a positive verdict. The content still requires human review.",
+        "first": "First",
+        "then": "Then",
+        "more_findings": "Further findings",
+        "understand_first": "Understand first",
+        "content_map": "Content map",
+        "decision_support": "Decision support",
+        "no_funding_verdict": "No funding verdict",
+        "content_only": "Content only",
+        "no_style_verdict": "No style or authorship verdict",
+        "general_intro": (
+            "Start with the content map. Then inspect the marked connections and open the "
+            "original wording where needed."
+        ),
+        "budget_intro": (
+            "Start with high-priority points. Open the original claims when you need to "
+            "verify the wording."
+        ),
+        "review_question": "Review question",
+        "show_claims": "Show original claims",
+        "show_paths": "Individual review paths",
+        "show_audit": "Show technical audit",
+        "document_hash": "Document hash",
+        "extraction": "Extraction",
+        "profile": "Review profile",
+        "raw_findings": "Raw findings",
+        "relations": "relations",
+        "full_audit": "The complete machine-readable audit is available in",
+        "human_decides": "The final decision always remains with a human.",
+        "new_review": "New review",
+        "settings": "Settings",
+    },
+}
+
+_CATEGORY_LABELS_EN = {
+    FindingCategory.ARITHMETIC_MISMATCH: "Arithmetic mismatch",
+    FindingCategory.BUDGET_MISMATCH: "Budget mismatch",
+    FindingCategory.CAPACITY_MISMATCH: "Capacity mismatch",
+    FindingCategory.RESOURCE_MISMATCH: "Resource mismatch",
+    FindingCategory.UNSUPPORTED_ASSUMPTION: "Unsupported assumption",
+    FindingCategory.EVIDENCE_GAP: "Evidence gap",
+    FindingCategory.CAUSAL_OVERCLAIM: "Causal overclaim",
+    FindingCategory.SCOPE_TENSION: "Scope tension",
+    FindingCategory.INTERNAL_CONTRADICTION: "Internal contradiction",
+    FindingCategory.LOGICAL_GAP: "Logical gap",
+    FindingCategory.OVERGENERALIZATION: "Overgeneralization",
+    FindingCategory.DEFINITION_SHIFT: "Definition shift",
+    FindingCategory.RELEVANCE_GAP: "Relevance gap",
+    FindingCategory.REVIEW_QUESTION: "Open review question",
+}
+
+_REVIEWER_LABELS_EN = {
+    "deterministic-checks": "Deterministic structure and arithmetic checks",
+    "flash-evidence-skeptic": "Evidence review (Flash)",
+    "flash-thinking-dependency-skeptic": "Dependency review (Flash + Thinking)",
+    "flash-thinking-argument-skeptic": "Argument review (Flash + Thinking)",
+}
+
+
+def _category_label(category: FindingCategory, language: str) -> str:
+    if language == "en":
+        return _CATEGORY_LABELS_EN.get(category, category.value)
+    return CATEGORY_LABELS[category]
+
+
+def _severity_label(severity: str, language: str) -> str:
+    if language == "en":
+        return {
+            "critical": "Critical",
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low",
+        }.get(severity, severity)
+    return SEVERITY_LABELS.get(severity, severity)
+
+
+def _reviewer_label(reviewer_id: str, language: str) -> str:
+    if language == "en":
+        return _REVIEWER_LABELS_EN.get(reviewer_id, reviewer_id)
+    return REVIEWER_LABELS.get(reviewer_id, reviewer_id)
+
+
+def _argument_group_label(label: str, language: str) -> str:
+    if language == "de":
+        return label
+    return {
+        "Kernthesen": "Core theses",
+        "Schlüsse und Empfehlungen": "Inferences and recommendations",
+        "Fakten, Belege und Beispiele": "Facts, evidence and examples",
+        "Annahmen und Begrenzungen": "Assumptions and limitations",
+        "Weitere Aussagen": "Further claims",
+    }.get(label, label)
 
 
 _CSS = """
@@ -317,6 +484,8 @@ _CSS = """
 body { margin:0; background:var(--ground); color:var(--ink); font:16px/1.55
   -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 main { width:min(980px,calc(100% - 32px)); margin:40px auto 80px; }
+.result-nav { display:flex; justify-content:flex-end; gap:18px; margin-bottom:28px; }
+.result-nav a { color:var(--accent); text-decoration:none; font-weight:650; }
 .hero { display:flex; justify-content:space-between; gap:24px; align-items:flex-end; }
 .eyebrow,.section-heading p { margin:0 0 4px; color:var(--accent); font-size:.78rem;
   font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
