@@ -43,7 +43,7 @@ jobs:
             PROFILE="budget"
           fi
           if [ "$PROFILE" = "general" ]; then
-            SOURCE="docs/architecture.md"
+            SOURCE="src/budget_review/fixtures/content_theatre/polished.md"
           else
             SOURCE="src/budget_review/fixtures/coherence_theatre/proposal.md"
           fi

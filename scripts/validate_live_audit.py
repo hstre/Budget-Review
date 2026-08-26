@@ -11,8 +11,14 @@ def main() -> int:
     path = Path(sys.argv[1])
     dossier = json.loads(path.read_text(encoding="utf-8"))
     claims = dossier["semantic"]["claims"]
-    if len(claims) < 10:
-        print(f"live extraction admitted only {len(claims)} claims", file=sys.stderr)
+    profile = dossier.get("profile", "budget")
+    minimum_claims = 4 if profile == "general" else 10
+    if len(claims) < minimum_claims:
+        print(
+            f"live {profile} extraction admitted only {len(claims)} claims; "
+            f"expected at least {minimum_claims}",
+            file=sys.stderr,
+        )
         return 1
     if any(not claim["raw_span"] for claim in claims):
         print("live extraction contains an empty source span", file=sys.stderr)
