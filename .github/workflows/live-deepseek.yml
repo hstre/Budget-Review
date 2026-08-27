@@ -16,6 +16,11 @@ on:
         required: true
         default: true
         type: boolean
+      gold_decision:
+        description: "ECHR decision id to measure recall on instead of a fixture"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
