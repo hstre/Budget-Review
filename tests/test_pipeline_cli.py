@@ -10,7 +10,7 @@ def test_offline_pipeline(controlled_source, controlled_packet) -> None:
     dossier = ReviewPipeline(profile="budget").run(controlled_source, packet=controlled_packet)
     assert len(dossier.semantic.claims) == 25
     assert len(dossier.semantic.relations) == 15
-    assert len(dossier.findings) == 8
+    assert len(dossier.findings) == 10
 
 
 def test_write_all_audit_formats(tmp_path, controlled_source, controlled_packet) -> None:
@@ -19,9 +19,9 @@ def test_write_all_audit_formats(tmp_path, controlled_source, controlled_packet)
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     assert payload["schema_version"] == "content-review.dossier/0.2"
     assert payload["profile"] == "budget"
-    assert "8 konsolidierte Punkte" in markdown_path.read_text(encoding="utf-8")
+    assert "10 konsolidierte Punkte" in markdown_path.read_text(encoding="utf-8")
     html = html_path.read_text(encoding="utf-8")
-    assert "<strong>8</strong><span>Prüfpunkte</span>" in html
+    assert "<strong>10</strong><span>Prüfpunkte</span>" in html
     assert "Originalaussagen ansehen" in html
 
 

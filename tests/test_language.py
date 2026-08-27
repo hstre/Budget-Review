@@ -121,6 +121,8 @@ def test_json_audit_stays_machine_readable_in_both_languages(tmp_path) -> None:
         audit = json.loads(json_path.read_text(encoding="utf-8"))
         categories = [finding["category"] for finding in audit["findings"]]
         assert categories == [
+            "coverage_gap",
+            "coverage_gap",
             "capacity_mismatch",
             "resource_mismatch",
             "arithmetic_mismatch",

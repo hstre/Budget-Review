@@ -56,6 +56,45 @@ Mehrdeutige Spans oder Konfidenzen unter 0,75 bleiben zugelassen, werden aber
 als `human_review_required` markiert. Das Gate schließt keine inhaltliche Lücke
 und kennt keinen Wahrheitszustand.
 
+## 3a. Abdeckungsmessung
+
+Das Gate kann eine Aussage abweisen, aber keine ergänzen. Alles Nachfolgende —
+deterministische Regeln wie Reviewer-Arme — ist deshalb durch das begrenzt, was
+der Extraktor vorgeschlagen hat. Ein nie vorgeschlagener Claim ist für das
+gesamte System unsichtbar, und das Dossier sieht dann sauber aus.
+
+Weil jeder zugelassene Claim seine exakten Quellpositionen mitführt, ist dieser
+blinde Fleck messbar: Das Gate berechnet den verankerten Anteil des Textes und
+benennt zusammenhängende Passagen ohne Anker. Whitespace zählt nicht mit, und
+überlappende Anker zählen ein Zeichen einmal. Die Messung ist deterministisch
+und replay-stabil; sie steht als `coverage` im Audit.
+
+Sie ist ausdrücklich kein Urteil. Eine nicht erfasste Passage kann eine
+Überschrift, eine Überleitung oder tatsächlich aussagefreier Text sein. Der
+daraus erzeugte Befund `coverage_gap` trägt deshalb keine Claim-IDs, hat die
+niedrigste Dringlichkeit und formuliert eine Frage an den Prüfer statt einer
+Feststellung.
+
+Der Zahlenwert selbst ist eine beschreibende Größe, keine Note. Er hängt davon
+ab, wie weit der Extraktionsvertrag „Claim" fasst, nicht nur davon, wie gut
+extrahiert wurde. Gemessen an AbstRCT (Mayer u. a., ECAI 2020; 293 medizinische
+Abstracts mit annotierten Argumentkomponenten) liegt derselbe Text bei einer
+Rate von 0,48, wenn alle Komponenten zählen, und bei 0,14, wenn nur
+Schlussfolgerungen zählen. Raten sind damit über Läufe desselben Vertrags
+vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Der belastbare
+Teil der Messung ist die Liste der Lücken: sie deckt im Mittel 98 % des
+unverankerten Textes ab, ist also eine Zerlegung der Rate und keine Stichprobe
+daraus.
+
+Ein erster Live-Lauf stützt das. Die Messung hatte im eingefrorenen
+Budget-Packet zwei Passagen als unverankert benannt; eine unabhängige
+Live-Extraktion desselben Dokuments, die von der Messung nichts wusste,
+extrahierte Claims aus genau diesen beiden Passagen und erreichte dabei alle 25
+Gold-Claims. Die Lückenliste zeigt also auf verwertbare Stellen und nicht nur
+auf unverankerte. Das ist ein kurzes, konstruiertes Dokument und kein
+Benchmark; es zeigt aber auch, dass ein handgebautes Packet gegenüber dem
+Extraktor unterannotiert sein kann.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
@@ -100,6 +139,8 @@ Im allgemeinen Profil werden nur explizite Graphstrukturen geprüft:
 - `SCOPE_TENSION` → wechselnder Geltungsbereich;
 - zentrale Aussagen ohne zugelassene Stützverbindung → logische Lücke;
 - wirksame Annahmen ohne Evidenzverbindung → unbelegte Annahme.
+
+Profilunabhängig kommt die Abdeckungsprüfung aus Abschnitt 3a hinzu.
 
 Das Budgetprofil verwendet zusätzlich konservative Rechenregeln für Kapazität,
 Ressourcen, Prozentangaben, FTE und Summen.

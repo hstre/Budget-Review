@@ -29,7 +29,8 @@ review queue. Each point contains:
 - a concrete question for the examiner;
 - the original claims and exact source wording;
 - the reviewer paths that raised the issue;
-- a technical audit with hashes, model provenance and rejected proposals.
+- a technical audit with hashes, model provenance, rejected proposals and how
+  much of the source the admitted claims are anchored to.
 
 The same run also writes Markdown and a complete machine-readable JSON audit.
 Agreement between reviewers is recorded as overlap, not treated as truth.
@@ -104,6 +105,33 @@ They test the intended separation of form and content:
 
 Zero findings are not a positive verdict. They only mean that the conservative
 offline rules found none of their defined tensions in that graph.
+
+### Completeness of the extraction
+
+The gate can reject a claim but never add one. Everything after it — the
+deterministic rules and both reviewer arms alike — is therefore bounded by what
+the extractor proposed, and a claim that was never proposed is invisible to all
+of them. The dossier it produces still looks clean.
+
+Because every admitted claim carries the exact offsets of its source span, that
+blind spot is measurable without a model. Each run reports the anchored share
+of the document and names contiguous passages no admitted claim reaches. Each
+named passage becomes a `coverage_gap` review point that quotes it and asks
+whether it should have carried a claim.
+
+The finding is a question, not a defect report. An uncovered passage may be a
+heading, a transition, or genuinely claim-free prose; deciding that is the
+examiner's. It therefore carries no claim IDs — a gap is defined by the absence
+of one — and sits at the lowest severity.
+
+**The anchored share is a descriptive statistic, not a score.** It moves with
+how broadly the extraction contract defines a claim, not only with how well the
+extractor worked. Measured against AbstRCT, a corpus of clinical abstracts with
+expert-annotated argument spans, the same documents read 0.48 when every
+annotated component counts and 0.14 when only conclusions do. A share is
+comparable between runs of one contract and meaningless across different ones.
+The dependable part is the list of gaps: it accounts for 98% of the unanchored
+text on average, so it decomposes the share rather than sampling it.
 
 ### Review profiles
 
@@ -194,6 +222,7 @@ extracted semantic packet can be reviewed offline with `--packet`.
 | Extractor | propose claims and relations | judge truth, style or authorship |
 | Layer-9 gate | verify schema, spans, IDs, confidence and edges | repair gaps or invent claims |
 | Deterministic checks | inspect explicit graph and numeric relations | add unstated assumptions |
+| Coverage measurement | count anchored characters and name unanchored passages | decide that a gap is a defect |
 | Anti-Delphi reviewers | propose content problems and review questions | issue an overall or majority verdict |
 | Human examiner | inspect wording, evidence and meaning; make the final decision | — |
 
@@ -210,10 +239,27 @@ ruff check .
 CI runs fully offline on Python 3.11, 3.12 and 3.13. The paid DeepSeek smoke test
 is a separate manually triggered GitHub Action.
 
+`scripts/measure_recall.py` scores an extraction against a frozen packet for the
+same document, matching on span overlap rather than identity because two
+extractions may split one sentence differently and both be right:
+
+```bash
+python scripts/measure_recall.py review-output/live/dossier.json \
+  src/budget_review/fixtures/coherence_theatre/semantic_packet.json \
+  src/budget_review/fixtures/coherence_theatre/proposal.md
+```
+
+The frozen packets serve as the reference because they were hand-built for this
+extraction contract, so their scope matches what the extractor is asked for —
+which a general argument-mining corpus cannot offer.
+
 ### Alpha limitations
 
 - The general profile inspects internal support, not the external truth of facts.
-- Empty or incomplete ClaimGraphs are not positive results.
+- Empty or incomplete ClaimGraphs are not positive results. Every run reports
+  how much of the source its admitted claims are anchored to and names the
+  passages none of them reach, but whether such a passage should have carried a
+  claim is a question for the examiner, not a verdict.
 - Live extraction quality remains model- and domain-dependent.
 - The web alpha accepts pasted text; document upload remains a CLI feature.
 - PDF extraction has no OCR.
@@ -239,7 +285,8 @@ priorisierten Prüfwarteschlange. Jeder Prüfpunkt enthält:
 - eine konkrete Frage für den Prüfer;
 - die betroffenen Claims mit dem exakten Originalwortlaut;
 - die Prüfwege, die den Hinweis erzeugt haben;
-- einen technischen Audit mit Hashes, Modellprovenienz und Rejections.
+- einen technischen Audit mit Hashes, Modellprovenienz, Rejections und dem
+  Anteil der Quelle, den die zugelassenen Claims verankern.
 
 Daneben entstehen eine Markdown-Fassung und ein vollständiger
 maschinenlesbarer JSON-Audit. Übereinstimmung zwischen Reviewern wird als
@@ -318,6 +365,35 @@ content-review demo --profile budget --language en
 Null Hinweise sind kein positives Urteil. Sie bedeuten lediglich, dass die
 konservativen Offline-Regeln in diesem Graphen keine der definierten Spannungen
 gefunden haben.
+
+### Vollständigkeit der Extraktion
+
+Das Gate kann eine Aussage abweisen, aber keine ergänzen. Alles Nachfolgende —
+die deterministischen Regeln wie beide Reviewer-Arme — ist deshalb durch das
+begrenzt, was der Extraktor vorgeschlagen hat. Ein nie vorgeschlagener Claim
+ist für sie alle unsichtbar, und das Dossier sieht trotzdem sauber aus.
+
+Weil jeder zugelassene Claim seine exakten Quellpositionen mitführt, ist dieser
+blinde Fleck ohne Modell messbar. Jeder Lauf weist den verankerten Anteil des
+Dokuments aus und benennt zusammenhängende Passagen, die kein zugelassener
+Claim erreicht. Jede benannte Passage wird zu einem Prüfpunkt `coverage_gap`,
+der sie zitiert und fragt, ob dort eine Aussage hätte stehen müssen.
+
+Der Befund ist eine Frage, keine Feststellung. Eine nicht erfasste Passage kann
+eine Überschrift, eine Überleitung oder tatsächlich aussagefreier Text sein;
+das entscheidet der Prüfer. Der Befund trägt deshalb keine Claim-IDs — eine
+Lücke ist durch deren Abwesenheit definiert — und hat die niedrigste
+Dringlichkeit.
+
+**Der verankerte Anteil ist eine beschreibende Größe, keine Note.** Er hängt
+davon ab, wie weit der Extraktionsvertrag „Claim“ fasst, nicht nur davon, wie
+gut extrahiert wurde. Gemessen an AbstRCT, einem Korpus medizinischer Abstracts
+mit fachlich annotierten Argument-Spans, liegen dieselben Dokumente bei 0,48,
+wenn alle annotierten Komponenten zählen, und bei 0,14, wenn nur
+Schlussfolgerungen zählen. Anteile sind zwischen Läufen desselben Vertrags
+vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Belastbar ist
+die Liste der Lücken: sie deckt im Mittel 98 % des unverankerten Textes ab,
+zerlegt den Anteil also, statt Stichproben daraus zu ziehen.
 
 ### Prüfprofile
 
@@ -410,6 +486,7 @@ geprüft werden.
 | Extraktor | Claims und Relationen vorschlagen | Wahrheit, Stil oder Autorenschaft bewerten |
 | Layer-9-Gate | Schema, Spans, IDs, Konfidenz und Kanten prüfen | Lücken schließen oder Claims erfinden |
 | Regelprüfer | explizite Graph- und Zahlenbeziehungen prüfen | ungenannte Annahmen ergänzen |
+| Abdeckungsmessung | verankerte Zeichen zählen, unverankerte Passagen benennen | eine Lücke zum Mangel erklären |
 | Anti-Delphi | Inhaltsprobleme und Prüffragen vorschlagen | Gesamturteil oder Mehrheitsvotum abgeben |
 | Mensch | Wortlaut, Belege und Bedeutung prüfen; endgültig entscheiden | — |
 
@@ -427,11 +504,30 @@ Die CI läuft unter Python 3.11, 3.12 und 3.13 vollständig offline. Der
 kostenpflichtige DeepSeek-Smoke-Test ist davon getrennt und wird in GitHub
 Actions manuell gestartet.
 
+`scripts/measure_recall.py` bewertet eine Extraktion gegen ein eingefrorenes
+Packet desselben Dokuments. Verglichen wird über Span-Überlappung statt über
+Identität, weil zwei Extraktionen denselben Satz unterschiedlich schneiden und
+beide recht haben können:
+
+```bash
+python scripts/measure_recall.py review-output/live/dossier.json \
+  src/budget_review/fixtures/coherence_theatre/semantic_packet.json \
+  src/budget_review/fixtures/coherence_theatre/proposal.md
+```
+
+Die eingefrorenen Packets dienen als Referenz, weil sie für genau diesen
+Extraktionsvertrag von Hand gebaut wurden — ihr Umfang passt also zu dem, was
+der Extraktor liefern soll. Ein allgemeiner Argument-Mining-Korpus kann das
+nicht bieten.
+
 ### Grenzen der Alpha
 
 - Das allgemeine Profil prüft interne Tragfähigkeit, nicht die externe Wahrheit
   von Tatsachenbehauptungen.
-- Ein leerer oder unvollständiger ClaimGraph ist kein positives Ergebnis.
+- Ein leerer oder unvollständiger ClaimGraph ist kein positives Ergebnis. Jeder
+  Lauf weist aus, welcher Anteil der Quelle von zugelassenen Claims verankert
+  ist, und benennt Passagen ohne Anker; ob eine solche Passage eine Aussage
+  hätte tragen müssen, entscheidet der Prüfer.
 - Die Qualität der Live-Extraktion bleibt modell- und domänenabhängig.
 - Die Web-Alpha akzeptiert eingefügten Text; Dokument-Upload ist noch eine
   CLI-Funktion.

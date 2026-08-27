@@ -12,11 +12,16 @@ from budget_review.checks import (
     deterministic_checks,
 )
 from budget_review.gate import govern_packet
-from budget_review.models import SemanticPacket
+from budget_review.models import FindingCategory, SemanticPacket
 
 
 def test_control_case_finds_all_eight_known_problems(controlled_semantic) -> None:
-    findings = deterministic_checks(controlled_semantic, "budget")
+    """The eight content problems, kept apart from the coverage measurement."""
+    findings = [
+        item
+        for item in deterministic_checks(controlled_semantic, "budget")
+        if item.category is not FindingCategory.COVERAGE_GAP
+    ]
     assert len(findings) == 8
 
 
@@ -31,6 +36,7 @@ def test_expected_categories(controlled_semantic) -> None:
         "unsupported_assumption": 1,
         "budget_mismatch": 2,
         "causal_overclaim": 1,
+        "coverage_gap": 2,
     }
 
 

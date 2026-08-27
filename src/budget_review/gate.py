@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 
+from .coverage import measure_coverage
 from .models import (
     GovernedClaim,
     GovernedRelation,
@@ -146,6 +147,7 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
         claims=tuple(claims),
         relations=tuple(relations),
         rejections=tuple(rejections),
+        coverage=measure_coverage(document, claims),
     )
 
 

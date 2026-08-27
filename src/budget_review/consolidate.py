@@ -22,6 +22,7 @@ CATEGORY_LABELS = {
     FindingCategory.OVERGENERALIZATION: "Unzulässige Verallgemeinerung",
     FindingCategory.DEFINITION_SHIFT: "Begriffsverschiebung",
     FindingCategory.RELEVANCE_GAP: "Fehlender Bezug",
+    FindingCategory.COVERAGE_GAP: "Nicht erfasster Abschnitt",
     FindingCategory.REVIEW_QUESTION: "Offene Prüffrage",
 }
 

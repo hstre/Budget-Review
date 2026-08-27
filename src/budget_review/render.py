@@ -50,6 +50,7 @@ def render_markdown(dossier: ReviewDossier, language: str = "de") -> str:
             f"- {t['document_hash']}: `{dossier.semantic.document_hash}`",
             f"- {t['extraction']}: `{dossier.semantic.provenance.provider}/"
             f"{dossier.semantic.provenance.model_id}`",
+            f"- {t['coverage']}: {_coverage_line(dossier, language)}",
             f"- {t['md_semantic_rejections']}: {len(dossier.semantic.rejections)}",
             f"- {t['md_review_rejections']}: {len(dossier.review_rejections)}",
             f"- {t['md_full_audit']}: `dossier.json`",
@@ -315,6 +316,14 @@ def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue, language: str)
 </article>"""
 
 
+def _coverage_line(dossier: ReviewDossier, language: str) -> str:
+    coverage = dossier.semantic.coverage
+    if coverage is None:
+        return "—"
+    t = _TEXT[language]
+    return f"{coverage.ratio:.0%} · {len(coverage.gaps)} {t['coverage_gaps']}"
+
+
 def _audit_html(dossier: ReviewDossier, language: str) -> str:
     t = _TEXT[language]
     claim_count = len(dossier.semantic.claims)
@@ -328,6 +337,7 @@ def _audit_html(dossier: ReviewDossier, language: str) -> str:
     <div><dt>{t["extraction"]}</dt><dd>{escape(dossier.semantic.provenance.provider)}/{escape(dossier.semantic.provenance.model_id)}</dd></div>
     <div><dt>{t["profile"]}</dt><dd>{escape(dossier.profile)}</dd></div>
     <div><dt>ClaimGraph</dt><dd>{claim_count} Claims · {relation_count} {t["relations"]}</dd></div>
+    <div><dt>{t["coverage"]}</dt><dd>{_coverage_line(dossier, language)}</dd></div>
     <div><dt>{t["raw_findings"]}</dt><dd>{len(dossier.findings)}</dd></div>
     <div><dt>Rejections</dt><dd>{rejection_count}</dd></div>
   </dl>
@@ -372,6 +382,8 @@ _TEXT = {
         "extraction": "Extraktion",
         "profile": "Prüfprofil",
         "raw_findings": "Rohe Findings",
+        "coverage": "Textabdeckung",
+        "coverage_gaps": "nicht erfasste Abschnitte",
         "relations": "Relationen",
         "full_audit": "Der vollständige maschinenlesbare Audit steht in",
         "human_decides": "Die letzte Entscheidung trifft immer ein Mensch.",
@@ -427,6 +439,8 @@ _TEXT = {
         "extraction": "Extraction",
         "profile": "Review profile",
         "raw_findings": "Raw findings",
+        "coverage": "Text coverage",
+        "coverage_gaps": "passages not covered",
         "relations": "relations",
         "full_audit": "The complete machine-readable audit is available in",
         "human_decides": "The final decision always remains with a human.",
@@ -464,6 +478,7 @@ _CATEGORY_LABELS_EN = {
     FindingCategory.OVERGENERALIZATION: "Overgeneralization",
     FindingCategory.DEFINITION_SHIFT: "Definition shift",
     FindingCategory.RELEVANCE_GAP: "Relevance gap",
+    FindingCategory.COVERAGE_GAP: "Passage not covered",
     FindingCategory.REVIEW_QUESTION: "Open review question",
 }
 
