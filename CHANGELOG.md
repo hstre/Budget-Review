@@ -3,9 +3,9 @@
 Notable changes per release. Dates are release dates; the format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-The frozen offline controls are the reference for behaviour changes. Unless a
-line says otherwise, they are unchanged: `polished` 5 claims / 5 relations /
-3 findings, `rough` 4 / 4 / 0, `budget` 25 / 15 / 8.
+The frozen offline controls are the reference for behaviour changes; every entry
+says when it moves them. Their current values are `polished` 5 claims /
+5 relations / 3 findings, `rough` 4 / 4 / 0, `budget` 25 / 15 / 10.
 
 ## [Unreleased]
 
