@@ -51,8 +51,37 @@ says when it moves them. Their current values are `polished` 5 claims /
   rather than merely somewhere unanchored — and it means the frozen packet is
   itself under-annotated relative to what the extractor finds.
 
+- **Recall measured against a long external gold standard.** The 25-of-25 live
+  result was a property of a 1700-character document, not of the extractor.
+  Against the argument spans of the ECHR legal corpus (Habernal et al.,
+  Artificial Intelligence and Law 2023, Apache-2.0, cloned at run time and not
+  vendored), a 10,308-character court decision scores 16 of 24 gold spans at
+  80% span overlap and 18 of 24 at 50%, and a 26,715-character one produces no
+  extraction at all: the reply outgrows the 16k output budget, since every
+  claim must carry its verbatim span. The middle case is the dangerous one — it
+  returned 43 claims, 27 relations and 13 findings with no error, and the only
+  signal that a third of the annotated argument never reached the graph was the
+  anchored share, 0.68 against the gold answer's 0.95 on the same document.
+  `scripts/echr_gold.py` builds the document and the gold packet; the paid
+  workflow runs the measurement as a second job.
+- The deterministic half is unaffected by length: fed the gold spans as a
+  packet, the gate admits all 24 and 49 claims with no rejections and the
+  coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+
 ### Changed
 
+- **The gap list decomposes the ratio only on short documents.** The 98% figure
+  was established on 1700-character abstracts. On the 10k-to-40k-character
+  argumentation of court decisions the named gaps cover a median 72% of the
+  unanchored text, 77% below 15k characters and 63% above 30k, because 94% of
+  the stretches between anchors fall under the 120-character threshold and
+  their mass grows with the document. README, `docs/architecture.md` and the
+  module docstring now say so; the threshold itself is unchanged.
+- `scripts/measure_recall.py` believes a gold packet's own offsets once it has
+  checked that they quote the span, and only searches for the text when none
+  are given. Searching is wrong on a long document: legal prose repeats whole
+  formulas, so the first match can sit in a different passage than the one
+  annotated.
 - The frozen budget control now yields 10 findings rather than 8: the fixture
   anchors 63% of its own source, and the two passages it misses are the
   justification for the cohort size and the scheduling assumption that is meant

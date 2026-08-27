@@ -81,10 +81,16 @@ extrahiert wurde. Gemessen an AbstRCT (Mayer u. a., ECAI 2020; 293 medizinische
 Abstracts mit annotierten Argumentkomponenten) liegt derselbe Text bei einer
 Rate von 0,48, wenn alle Komponenten zählen, und bei 0,14, wenn nur
 Schlussfolgerungen zählen. Raten sind damit über Läufe desselben Vertrags
-vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Der belastbare
-Teil der Messung ist die Liste der Lücken: sie deckt im Mittel 98 % des
-unverankerten Textes ab, ist also eine Zerlegung der Rate und keine Stichprobe
-daraus.
+vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Die
+Lückenliste ist der belastbarere Teil der Messung, aber ebenfalls nicht
+längenunabhängig: Bei den rund 1700 Zeichen langen AbstRCT-Abstracts deckt sie
+98 % des unverankerten Textes ab und ist damit eine Zerlegung der Rate. Auf den
+Argumentationsteilen von EGMR-Entscheidungen (10.000 bis 40.000 Zeichen) sind
+es im Median 72 %, mit 77 % unterhalb von 15.000 und 63 % oberhalb von 30.000
+Zeichen. Der Grund ist mechanisch: 94 % der Zwischenräume zwischen Ankern
+liegen unter der 120-Zeichen-Schwelle, und ihre Summe wächst mit der
+Dokumentlänge. Auf langen Dokumenten benennt die Liste also die größten Lücken,
+nicht mehr alle.
 
 Ein erster Live-Lauf stützt das. Die Messung hatte im eingefrorenen
 Budget-Packet zwei Passagen als unverankert benannt; eine unabhängige
@@ -94,6 +100,41 @@ Gold-Claims. Die Lückenliste zeigt also auf verwertbare Stellen und nicht nur
 auf unverankerte. Das ist ein kurzes, konstruiertes Dokument und kein
 Benchmark; es zeigt aber auch, dass ein handgebautes Packet gegenüber dem
 Extraktor unterannotiert sein kann.
+
+### 3b. Recall und Dokumentlänge
+
+Das 25-von-25-Ergebnis war eine Eigenschaft des kurzen Dokuments, nicht des
+Extraktors. Gemessen an den Argumentspannen des EGMR-Korpus (Habernal u. a.,
+Artificial Intelligence and Law 2023; Apache-2.0, zur Laufzeit geklont, nicht
+ins Repo übernommen) bricht der Recall mit der Länge ein:
+
+| Dokument | Zeichen | Gold-Spannen | Recall bei 80 % Überlappung |
+|---|---:|---:|---|
+| Budget-Fixture | 1.707 | 25 | 25/25 |
+| EGMR 001-141170 | 10.308 | 24 | 16/24 |
+| EGMR 001-110144 | 26.715 | 49 | Lauf bricht ab |
+
+Der mittlere Fall ist der gefährliche, weil er wie ein Erfolg aussieht: 43
+Claims, 27 Relationen, 13 Befunde, kein Fehler. Das einzige Signal war die
+Abdeckung mit 0,68 gegenüber 0,95 für die Gold-Antwort auf demselben Dokument
+— die Messung aus Abschnitt 3a hat also genau das getan, wofür sie gebaut
+wurde. Die acht verfehlten Spannen sind nicht die längsten (gefundene und
+verfehlte haben dieselbe Medianlänge von rund 300 Zeichen), sondern
+überwiegend Subsumtionsschritte des Gerichts und dessen Schlussfolgerung. Bei
+24 Spannen ist das ein Hinweis, keine belegte Systematik.
+
+Ab etwa 27.000 Zeichen scheitert die Extraktion mit „output was truncated":
+Zu jedem Claim muss die wörtliche Textstelle zurückkommen, und die Antwort
+übersteigt das Ausgabebudget von 16.384 Token. Der Abbruch ist der bessere der
+beiden Fehler und der Grund, warum eine abgeschnittene Antwort seit 0.2.0a3
+sofort als endgültig gilt: ein Wiederholungsversuch würde dasselbe Ergebnis
+bezahlen.
+
+Die deterministische Hälfte trägt die Länge dagegen problemlos. Speist man die
+Gold-Spannen als Packet ein, lässt das Gate alle 24 beziehungsweise 49 Claims
+ohne Rejection zu, und die Abdeckungsmessung liefert 0,946 und 0,977. Die
+Begrenzung liegt allein bei der Extraktion, was den offenen Fahrplanpunkt
+abschnittsweise Extraktion bestätigt.
 
 ## 4. ClaimGraph
 

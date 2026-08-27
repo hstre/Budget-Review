@@ -130,8 +130,46 @@ extractor worked. Measured against AbstRCT, a corpus of clinical abstracts with
 expert-annotated argument spans, the same documents read 0.48 when every
 annotated component counts and 0.14 when only conclusions do. A share is
 comparable between runs of one contract and meaningless across different ones.
-The dependable part is the list of gaps: it accounts for 98% of the unanchored
-text on average, so it decomposes the share rather than sampling it.
+The gap list is the more dependable half, but it is not scale-free either. On
+AbstRCT's 1700-character abstracts it accounts for 98% of the unanchored text,
+so it decomposes the share rather than sampling it. On the 10k-to-40k-character
+argumentation of court decisions it accounts for a median 72%, falling from 77%
+below 15k characters to 63% above 30k, because 94% of the untouched stretches
+between anchors fall under the 120-character threshold and their total mass
+grows with the document. Read the list as a decomposition on short documents
+and as the largest gaps only on long ones.
+
+### What recall does with length
+
+Coverage says how much of a document the claims touch. Whether the claims that
+matter were among them needs a reference, and the answer turns out to depend
+sharply on how long the document is. Measured against the argument spans of the
+ECHR legal corpus:
+
+| Document | Characters | Gold spans | Result |
+|---|---:|---:|---|
+| Frozen budget fixture | 1,707 | 25 | 25/25 found at 80% span overlap |
+| Court decision 001-141170 | 10,308 | 24 | 16/24 at 80%, 18/24 at 50% |
+| Court decision 001-110144 | 26,715 | 49 | no extraction: output truncated |
+
+The middle row is the one to worry about. That run did not fail: it returned 43
+claims, 27 relations and 13 findings, and nothing in the dossier announced that
+a third of the expert-annotated argument had never entered the graph. The only
+signal was the anchored share, 0.68 against the 0.95 the gold answer reaches on
+the same document. The eight missed spans were not the long ones — missed and
+found spans have the same median length — but mostly the Court's own reasoning
+steps and its concluding finding.
+
+Past roughly 27,000 characters the run stops instead, naming a truncated model
+response, because a claim must be returned with its verbatim span and the reply
+outgrows the output budget. A refusal is the better failure of the two, and it
+is why truncation counts as fatal on the first response rather than being
+retried.
+
+So a document beyond a few thousand characters should be split before review,
+and until section-wise extraction exists that is manual work. The anchored share
+is the warning light: if it sits far below what the document plausibly supports,
+the graph is thin, whatever the findings say.
 
 ### Review profiles
 
@@ -251,7 +289,11 @@ python scripts/measure_recall.py review-output/live/dossier.json \
 
 The frozen packets serve as the reference because they were hand-built for this
 extraction contract, so their scope matches what the extractor is asked for —
-which a general argument-mining corpus cannot offer.
+which a general argument-mining corpus cannot offer. For documents longer than
+a packet covers, `scripts/echr_gold.py` builds a document and a gold packet
+from the ECHR legal corpus, and `scripts/calibrate_coverage.py` re-derives the
+two calibration figures quoted above from it. Both read a corpus checkout and
+copy nothing into this repository.
 
 ### Alpha limitations
 
@@ -391,9 +433,49 @@ gut extrahiert wurde. Gemessen an AbstRCT, einem Korpus medizinischer Abstracts
 mit fachlich annotierten Argument-Spans, liegen dieselben Dokumente bei 0,48,
 wenn alle annotierten Komponenten zählen, und bei 0,14, wenn nur
 Schlussfolgerungen zählen. Anteile sind zwischen Läufen desselben Vertrags
-vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Belastbar ist
-die Liste der Lücken: sie deckt im Mittel 98 % des unverankerten Textes ab,
-zerlegt den Anteil also, statt Stichproben daraus zu ziehen.
+vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Die
+Lückenliste ist die belastbarere Hälfte, aber ebenfalls nicht längenunabhängig:
+Bei den rund 1700 Zeichen langen AbstRCT-Abstracts deckt sie 98 % des
+unverankerten Textes ab, zerlegt den Anteil also. Bei der 10.000 bis 40.000
+Zeichen langen Argumentation von Gerichtsentscheidungen sind es im Median 72 %
+— 77 % unterhalb von 15.000 Zeichen, 63 % oberhalb von 30.000 —, weil 94 % der
+Zwischenräume unter der 120-Zeichen-Schwelle liegen und ihre Summe mit der
+Dokumentlänge wächst. Auf kurzen Dokumenten ist die Liste eine Zerlegung, auf
+langen nur noch die Aufzählung der größten Lücken.
+
+### Was die Länge mit dem Recall macht
+
+Die Abdeckung sagt, wie viel eines Dokuments die Claims berühren. Ob die
+wichtigen Claims darunter waren, braucht eine Referenz — und die Antwort hängt
+stark von der Dokumentlänge ab. Gemessen an den Argumentspannen des
+EGMR-Rechtskorpus:
+
+| Dokument | Zeichen | Gold-Spannen | Ergebnis |
+|---|---:|---:|---|
+| Eingefrorene Budget-Fixture | 1.707 | 25 | 25/25 bei 80 % Span-Überlappung |
+| Entscheidung 001-141170 | 10.308 | 24 | 16/24 bei 80 %, 18/24 bei 50 % |
+| Entscheidung 001-110144 | 26.715 | 49 | keine Extraktion: Ausgabe abgeschnitten |
+
+Die mittlere Zeile ist die gefährliche. Dieser Lauf ist nicht gescheitert: Er
+lieferte 43 Claims, 27 Relationen und 13 Befunde, und nichts im Dossier wies
+darauf hin, dass ein Drittel der fachlich annotierten Argumentation nie in den
+Graphen gelangt war. Das einzige Signal war der verankerte Anteil: 0,68 gegen
+die 0,95, die die Gold-Antwort auf demselben Dokument erreicht. Die acht
+verfehlten Spannen waren nicht die langen — gefundene und verfehlte haben
+dieselbe Medianlänge —, sondern überwiegend die Subsumtionsschritte des
+Gerichts und seine Schlussfolgerung.
+
+Ab etwa 27.000 Zeichen bricht der Lauf stattdessen ab und benennt eine
+abgeschnittene Modellantwort, weil zu jedem Claim die wörtliche Textstelle
+zurückkommen muss und die Antwort das Ausgabebudget übersteigt. Von beiden
+Fehlern ist der Abbruch der bessere — und der Grund, warum eine abgeschnittene
+Antwort sofort als endgültig gilt und nicht wiederholt wird.
+
+Ein Dokument jenseits weniger tausend Zeichen sollte also vor der Prüfung
+geteilt werden; solange es keine abschnittsweise Extraktion gibt, ist das
+Handarbeit. Der verankerte Anteil ist die Warnleuchte: Liegt er deutlich unter
+dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig davon,
+was die Befunde sagen.
 
 ### Prüfprofile
 
@@ -518,7 +600,11 @@ python scripts/measure_recall.py review-output/live/dossier.json \
 Die eingefrorenen Packets dienen als Referenz, weil sie für genau diesen
 Extraktionsvertrag von Hand gebaut wurden — ihr Umfang passt also zu dem, was
 der Extraktor liefern soll. Ein allgemeiner Argument-Mining-Korpus kann das
-nicht bieten.
+nicht bieten. Für Dokumente jenseits der Packet-Länge baut
+`scripts/echr_gold.py` ein Dokument samt Gold-Packet aus dem EGMR-Rechtskorpus,
+und `scripts/calibrate_coverage.py` leitet die beiden oben genannten
+Kalibrierungswerte daraus neu her. Beide lesen einen Korpus-Checkout und
+kopieren nichts in dieses Repository.
 
 ### Grenzen der Alpha
 
