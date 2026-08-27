@@ -36,6 +36,20 @@ says when it moves them. Their current values are `polished` 5 claims /
   annotated component counts and 0.14 when only conclusions do, so a ratio is
   comparable within one extraction contract and meaningless across different
   ones. Documented in `docs/architecture.md`.
+- `scripts/measure_recall.py` compares a live extraction against a frozen
+  packet for the same document by span overlap, since two extractions may split
+  one sentence differently and both be right. Two offline controls pin it: a run
+  reproducing the gold scores 1.0, one with eight claims withheld scores exactly
+  17/25.
+- A first live measurement, one DeepSeek V4 Flash extraction of the budget
+  fixture, reached 25/25 gold claims at 80% span overlap and produced 29 claims
+  in total, for a coverage ratio of 0.93 with no gaps against the packet's 0.63
+  with two. All three of the extra claims fall inside the two passages the gap
+  list had named, so an extraction that knew nothing of the measurement filled
+  exactly the places it pointed at. That is one short synthetic document, not a
+  benchmark, but it is the first evidence that the gap list points somewhere
+  rather than merely somewhere unanchored — and it means the frozen packet is
+  itself under-annotated relative to what the extractor finds.
 
 ### Changed
 
