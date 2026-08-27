@@ -42,15 +42,30 @@ def covered_characters(span: tuple[int, int], union: list[list[int]]) -> int:
 
 
 def gold_spans(packet: dict, document: str) -> list[tuple[str, tuple[int, int], str]]:
-    """Locate each gold claim in the source. Unfindable spans are a fixture bug."""
+    """Locate each gold claim in the source. Unfindable spans are a fixture bug.
+
+    A packet that carries its own offsets is believed once they are checked to
+    quote the same characters. Searching for the text instead would be wrong on
+    a long document: legal and administrative prose repeats whole formulas, so
+    the first match can sit in a different passage than the one annotated, and
+    recall would then be scored against the wrong place.
+    """
     located = []
     for claim in packet["claims"]:
         raw = claim["raw_span"]
+        proposal_id = claim["proposal_id"]
+        begin, end = claim.get("begin"), claim.get("end")
+        if begin is not None and end is not None:
+            if document[begin:end] != raw:
+                print(f"  ! gold offsets do not quote the span: {proposal_id}", file=sys.stderr)
+                continue
+            located.append((proposal_id, (begin, end), raw))
+            continue
         offset = document.find(raw)
         if offset < 0:
-            print(f"  ! gold span not in source: {claim['proposal_id']}", file=sys.stderr)
+            print(f"  ! gold span not in source: {proposal_id}", file=sys.stderr)
             continue
-        located.append((claim["proposal_id"], (offset, offset + len(raw)), raw))
+        located.append((proposal_id, (offset, offset + len(raw)), raw))
     return located
 
 

@@ -119,3 +119,42 @@ def test_overlapping_live_claims_do_not_inflate_the_score() -> None:
 
     assert union == [[0, 50]]
     assert recall.covered_characters((0, 50), union) == 50
+
+
+def test_offsets_win_over_a_repeated_formula(capsys) -> None:
+    """The motivation for carrying offsets: legal prose repeats whole sentences."""
+    document = "The Court finds no violation. Other matter. The Court finds no violation."
+    packet = {
+        "claims": [
+            {
+                "proposal_id": "G01",
+                "raw_span": "The Court finds no violation.",
+                "begin": 44,
+                "end": 73,
+            }
+        ]
+    }
+
+    located = recall.gold_spans(packet, document)
+
+    assert located == [("G01", (44, 73), "The Court finds no violation.")]
+    assert capsys.readouterr().err == ""
+
+
+def test_offsets_that_quote_other_text_are_rejected_not_silently_searched(capsys) -> None:
+    packet = {"claims": [{"proposal_id": "G01", "raw_span": "alpha", "begin": 0, "end": 5}]}
+
+    located = recall.gold_spans(packet, "beta alpha")
+
+    assert located == []
+    assert "gold offsets do not quote the span" in capsys.readouterr().err
+
+
+def test_a_packet_without_offsets_still_falls_back_to_searching(source, gold) -> None:
+    stripped = {
+        "claims": [
+            {"proposal_id": c["proposal_id"], "raw_span": c["raw_span"]} for c in gold["claims"]
+        ]
+    }
+
+    assert len(recall.gold_spans(stripped, source)) == len(gold["claims"])
