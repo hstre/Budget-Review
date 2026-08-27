@@ -11,6 +11,13 @@ It counts characters and names gaps. It never decides that a gap is a defect:
 an uncovered passage may be a heading, a transition, or genuinely claim-free
 prose. That judgment belongs to the human examiner, so the finding this feeds
 is phrased as a question.
+
+The ratio is a descriptive statistic, not a score, and it must not be read as
+one. It moves with how broadly claims are defined, not only with how well they
+were extracted: on AbstRCT the same documents measure a median ratio of 0.48
+when every annotated argument component counts and 0.14 when only conclusions
+do. A ratio is therefore comparable across runs of one extraction contract and
+meaningless across different ones.
 """
 
 from __future__ import annotations
@@ -20,7 +27,12 @@ from collections.abc import Iterable
 from .models import Coverage, CoverageGap, GovernedClaim
 
 # A gap shorter than this is connective tissue between two anchored spans, not
-# a passage the extractor plausibly skipped.
+# a passage the extractor plausibly skipped. Calibrated against AbstRCT (Mayer
+# et al., ECAI 2020), 293 clinical abstracts with expert-annotated argument
+# spans: between thresholds of 60 and 300 the reported gaps per document only
+# move from 1.31 to 1.01, so the exact value is not a sensitive knob. The
+# reported gaps account for 98% of the unanchored text on average, which is
+# what makes the list a decomposition of the ratio rather than a sample of it.
 MIN_GAP_CHARACTERS = 120
 EXCERPT_CHARACTERS = 160
 

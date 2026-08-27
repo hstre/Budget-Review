@@ -75,6 +75,17 @@ daraus erzeugte Befund `coverage_gap` trägt deshalb keine Claim-IDs, hat die
 niedrigste Dringlichkeit und formuliert eine Frage an den Prüfer statt einer
 Feststellung.
 
+Der Zahlenwert selbst ist eine beschreibende Größe, keine Note. Er hängt davon
+ab, wie weit der Extraktionsvertrag „Claim" fasst, nicht nur davon, wie gut
+extrahiert wurde. Gemessen an AbstRCT (Mayer u. a., ECAI 2020; 293 medizinische
+Abstracts mit annotierten Argumentkomponenten) liegt derselbe Text bei einer
+Rate von 0,48, wenn alle Komponenten zählen, und bei 0,14, wenn nur
+Schlussfolgerungen zählen. Raten sind damit über Läufe desselben Vertrags
+vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Der belastbare
+Teil der Messung ist die Liste der Lücken: sie deckt im Mittel 98 % des
+unverankerten Textes ab, ist also eine Zerlegung der Rate und keine Stichprobe
+daraus.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

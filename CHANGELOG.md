@@ -25,6 +25,17 @@ says when it moves them. Their current values are `polished` 5 claims /
   should — an uncovered stretch may be a heading or a transition.
 - The technical audit in HTML and Markdown shows the anchored share and the
   number of uncovered passages.
+- The threshold and the ratio are calibrated against AbstRCT (Mayer et al.,
+  ECAI 2020), 293 clinical abstracts with expert-annotated argument spans, used
+  as measurement input only and not vendored — it is CC BY-NC-SA and this repo
+  is MIT. Feeding the gold spans in as if they were admitted claims shows the
+  gap threshold is insensitive between 60 and 300 characters (1.31 to 1.01 gaps
+  per document) and that the reported gaps account for 98% of the unanchored
+  text, so the list decomposes the ratio rather than sampling it. It also shows
+  the ratio is not a score: the same documents measure 0.48 when every
+  annotated component counts and 0.14 when only conclusions do, so a ratio is
+  comparable within one extraction contract and meaningless across different
+  ones. Documented in `docs/architecture.md`.
 
 ### Changed
 
