@@ -86,6 +86,15 @@ Teil der Messung ist die Liste der Lücken: sie deckt im Mittel 98 % des
 unverankerten Textes ab, ist also eine Zerlegung der Rate und keine Stichprobe
 daraus.
 
+Ein erster Live-Lauf stützt das. Die Messung hatte im eingefrorenen
+Budget-Packet zwei Passagen als unverankert benannt; eine unabhängige
+Live-Extraktion desselben Dokuments, die von der Messung nichts wusste,
+extrahierte Claims aus genau diesen beiden Passagen und erreichte dabei alle 25
+Gold-Claims. Die Lückenliste zeigt also auf verwertbare Stellen und nicht nur
+auf unverankerte. Das ist ein kurzes, konstruiertes Dokument und kein
+Benchmark; es zeigt aber auch, dass ein handgebautes Packet gegenüber dem
+Extraktor unterannotiert sein kann.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
