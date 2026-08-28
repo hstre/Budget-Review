@@ -182,7 +182,32 @@ against a synthetic project proposal. Chunking costs five calls for one
 additional span and is not the fix; the open question is what the extractor does
 differently on this sort of text.
 
-So for now: the anchored share is the warning light. If it sits far below what
+What did work was changing the question. Two passages of the extraction prompt
+were written for project proposals: seven of its twenty-one claim types describe
+a plan rather than an argument, and it asks to "decompose polished prose
+aggressively: an elegant sentence may contain several claims", which describes
+marketing copy and not a court subsuming facts in long clauses. Replacing just
+those two passages, same model, same document, one call:
+
+| Run | Calls | Claims | Recall @80% | Recall @50% | Anchored | Claims with no gold match |
+|---|---:|---:|---:|---:|---:|---:|
+| Production prompt | 1 | 43 | 16/24 | 18/24 | 0.68 | 30 |
+| Five segments | 5 | 52 | 17/24 | 21/24 | 0.75 | 40 |
+| Domain-neutral prompt | 1 | 40 | **20/24** | 21/24 | 0.76 | 23 |
+
+The claim count is the telling part: the neutral prompt produces *fewer* claims
+than the production one and still finds four more gold spans, with far fewer
+claims that match no gold span at all. The problem was never how much the
+extractor produced but where it aimed — which is also why segmenting, which
+raised the volume without improving the aim, bought so little.
+
+This is one document, 24 spans, one run, and a bundle of two edits whose
+individual contributions are unknown. It also does nothing about the truncation
+above 27,000 characters. Before it becomes the production prompt it has to clear
+the frozen controls, since a prompt that wins on legal texts and loses on
+proposals is not an improvement.
+
+Until then: the anchored share is the warning light. If it sits far below what
 the document plausibly supports, the graph is thin, whatever the findings say.
 
 ### Review profiles
@@ -502,6 +527,32 @@ Rechtsprosa mit langen, zitatgespickten Sätzen gegen einen synthetischen
 Projektantrag. Das Zerteilen kostet fünf Aufrufe für eine zusätzliche Spanne
 und ist nicht die Lösung; offen ist, was der Extraktor bei dieser Textsorte
 anders macht.
+
+Was gewirkt hat, war die geänderte Fragestellung. Zwei Stellen der
+Extraktionsprompt sind an Projektanträgen entstanden: Sieben ihrer 21
+Claim-Typen beschreiben einen Plan statt eines Arguments, und sie verlangt
+„decompose polished prose aggressively: an elegant sentence may contain several
+claims" — das beschreibt Werbetext, nicht ein Gericht, das in langen
+Gliedsätzen subsumiert. Ersetzt man genau diese zwei Stellen, gleiches Modell,
+gleiches Dokument, ein Aufruf:
+
+| Lauf | Aufrufe | Claims | Recall 80 % | Recall 50 % | Verankert | Claims ohne Gold |
+|---|---:|---:|---:|---:|---:|---:|
+| Produktionsprompt | 1 | 43 | 16/24 | 18/24 | 0,68 | 30 |
+| Fünf Segmente | 5 | 52 | 17/24 | 21/24 | 0,75 | 40 |
+| Neutrale Prompt | 1 | 40 | **20/24** | 21/24 | 0,76 | 23 |
+
+Die Claim-Zahl ist das Aufschlussreiche: Die neutrale Fassung erzeugt *weniger*
+Claims als die Produktionsfassung und findet trotzdem vier Gold-Spannen mehr,
+bei deutlich weniger Claims ohne jede Gold-Entsprechung. Es ging nie um die
+Menge, sondern um das Ziel — weshalb auch die Segmentierung so wenig brachte:
+Sie erhöhte die Menge, ohne die Treffsicherheit zu ändern.
+
+Das ist ein Dokument, 24 Spannen, ein Lauf, und ein Bündel aus zwei Eingriffen,
+deren Einzelbeiträge offen sind. Am Abbruch oberhalb von 27.000 Zeichen ändert
+es nichts. Bevor daraus die Produktionsprompt wird, muss es die eingefrorenen
+Gegenproben bestehen — eine Prompt, die auf Rechtstexten gewinnt und auf
+Anträgen verliert, ist kein Fortschritt.
 
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig

@@ -101,7 +101,7 @@ auf unverankerte. Das ist ein kurzes, konstruiertes Dokument und kein
 Benchmark; es zeigt aber auch, dass ein handgebautes Packet gegenüber dem
 Extraktor unterannotiert sein kann.
 
-### 3b. Recall und Dokumentlänge
+## 3b. Recall und Dokumentlänge
 
 Das 25-von-25-Ergebnis war eine Eigenschaft des kurzen Dokuments, nicht des
 Extraktors. Gemessen an den Argumentspannen des EGMR-Korpus (Habernal u. a.,
@@ -130,7 +130,7 @@ beiden Fehler und der Grund, warum eine abgeschnittene Antwort seit 0.2.0a3
 sofort als endgültig gilt: ein Wiederholungsversuch würde dasselbe Ergebnis
 bezahlen.
 
-### 3c. Zerteilen behebt es nicht
+## 3c. Zerteilen behebt es nicht
 
 Naheliegende Erklärung: zu viel Text je Aufruf. Sie trägt nicht. Dieselbe
 Entscheidung, in fünf Segmenten von je rund 2.000 Zeichen extrahiert — also in
@@ -159,7 +159,44 @@ müsse von einem einzelnen Claim abgedeckt werden. Gemessen wird die Vereinigung
 aller Anker, die eine Segmentgrenze überbrücken kann; G08 wurde genau so
 gefunden. Die Obergrenze war 24/24.
 
-## 3d. Die deterministische Hälfte
+## 3d. Es lag am Prompt
+
+Bleibt die Frage, ob der Extraktor diese Textsorte nicht kann oder ob er nach
+der falschen Sache gefragt wird. Zwei Stellen der Produktionsprompt sind an
+Projektanträgen entstanden: Sieben der 21 Claim-Typen — target, capacity,
+resource, baseline, forecast, delivery, budget — beschreiben einen Plan, kein
+Argument. Und „decompose polished prose aggressively: an elegant sentence may
+contain several claims" beschreibt Werbetext, nicht ein Gericht, das in langen
+Gliedsätzen subsumiert.
+
+Ein Lauf mit genau diesen zwei Stellen ersetzt, sonst unverändert, gleiches
+Modell, gleiches Dokument, ein Aufruf:
+
+| | Aufrufe | Claims | Recall 80 % | Recall 50 % | Abdeckung | Claims ohne Gold |
+|---|---:|---:|---:|---:|---:|---:|
+| Produktionsprompt | 1 | 43 | 16/24 | 18/24 | 0,68 | 30 |
+| fünf Segmente | 5 | 52 | 17/24 | 21/24 | 0,75 | 40 |
+| neutrale Prompt | 1 | **40** | **20/24** | 21/24 | 0,76 | **23** |
+
+Vorab festgelegt war ≥ 20/24. Erreicht, genau auf der Schwelle.
+
+Das Aufschlussreiche ist die Claim-Zahl: Die neutrale Fassung erzeugt **weniger**
+Claims als die Produktionsfassung (40 gegen 43) und findet trotzdem vier
+Gold-Spannen mehr, bei deutlich weniger Claims ohne Gold-Entsprechung (23 gegen
+30). Es ging also nie um die Menge, sondern um das Ziel. Das erklärt auch,
+warum die Segmentierung so wenig brachte: Sie erhöhte die Menge (52 Claims, 40
+ohne Entsprechung), ohne die Treffsicherheit zu ändern.
+
+Vorbehalte: ein Dokument, 24 Gold-Spannen, ein Lauf, und die Änderung ist ein
+Bündel aus zwei Eingriffen — welcher davon wirkt, ist offen. Am
+Abbruchverhalten oberhalb von 27.000 Zeichen ändert sie nichts.
+
+Bevor das in die Produktionsprompt wandert, muss die Gegenprobe laufen: Erreicht
+die Budget-Fixture weiterhin 25/25 und bleiben die eingefrorenen Kontrollen bei
+5/5/3, 4/4/0 und 25/15/10? Eine Promptänderung, die auf Rechtstexten gewinnt
+und auf Anträgen verliert, ist kein Fortschritt.
+
+## 3e. Die deterministische Hälfte
 
 Die deterministische Hälfte trägt die Länge dagegen problemlos. Speist man die
 Gold-Spannen als Packet ein, lässt das Gate alle 24 beziehungsweise 49 Claims

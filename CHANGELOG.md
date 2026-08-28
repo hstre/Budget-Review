@@ -75,6 +75,18 @@ says when it moves them. Their current values are `polished` 5 claims /
   explanation: segments the size of the fixture did not behave like the fixture,
   which points at the kind of text rather than its length. One document, one
   model, 24 spans. `scripts/segmented_extract.py` runs it.
+- **The extraction prompt, not the model, was the constraint.** Replacing two
+  proposal-specific passages — a claim-type vocabulary in which seven of
+  twenty-one values describe a plan rather than an argument, and "decompose
+  polished prose aggressively: an elegant sentence may contain several claims" —
+  raised recall on the same document, model and single call from 16/24 to 20/24
+  at 80% span overlap, meeting a mark of 20/24 fixed before the run. It did so
+  with *fewer* claims, 40 against 43, and 23 rather than 30 claims matching no
+  gold span: the problem was aim, not volume, which is why segmenting the
+  document bought so little. One document, 24 spans, one run, and a bundle of
+  two edits. It does not affect the truncation above 27,000 characters, and it
+  has to clear the frozen controls before it can become the production prompt.
+  `scripts/prompt_variant_extract.py` runs it against the production prompt.
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
