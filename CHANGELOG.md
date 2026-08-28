@@ -87,6 +87,19 @@ says when it moves them. Their current values are `polished` 5 claims /
   two edits. It does not affect the truncation above 27,000 characters, and it
   has to clear the frozen controls before it can become the production prompt.
   `scripts/prompt_variant_extract.py` runs it against the production prompt.
+- **One unsupported claim type can cost the whole extraction, and the repair
+  round does not reliably prevent it.** On a court decision the model reaches for
+  `claim_type: conclusion`, which the closed proposal-shaped vocabulary lacks.
+  `provider.extract` regenerates once with the schema error fed back, and that
+  round has been observed both to fix it and to fail with the same label twice —
+  temperature 0 is not a determinism guarantee. An earlier note here called this
+  a fault of the experiment rather than of the product; that was too confident,
+  since the production path runs the same loop and can end the same way after
+  two paid calls. `_reject_invalid_relations` only rescues malformed edges;
+  there is no equivalent for a claim type, so one label loses the whole packet.
+  Untested candidates: carry the neutral prompt's "use the closest value, or
+  'other'" note, which would also isolate half of that bundle, or reject the
+  single claim rather than the packet, as the gate already does for edges.
 - **The variants trade spans rather than adding them, and their union beats
   either.** Comparing which gold spans each run reaches: the neutral prompt is a
   strict improvement on 001-141170, where every span it misses the production

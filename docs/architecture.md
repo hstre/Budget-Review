@@ -249,7 +249,39 @@ gespeicherte Packets ab und rufen den Extraktor nie. Nur ein Live-Lauf gegen das
 eingefrorene Packet kann eine Prompt-Regression überhaupt sehen, und genau den
 führt der Workflow ohne Entscheidungs-ID aus.
 
-## 3e. Das Ausgabebudget
+## 3e. Ein Label, das die Extraktion kosten kann
+
+Auf der Gerichtsentscheidung greift das Modell zum Claim-Typ `conclusion`. Den
+gibt es im geschlossenen 21-Werte-Katalog nicht, und der Katalog ist an
+Projektanträgen entstanden: Für ein Urteil ist die Schlussfolgerung der
+wichtigste Satzsorte überhaupt.
+
+Entscheidend ist, was danach passiert. `provider.extract` erzeugt genau einmal
+neu und spielt dem Modell den Schema-Fehler zurück. Gemessen:
+
+| Lauf | Reparaturrunde | Ergebnis |
+|---|---|---|
+| 001-110144, Produktionsprompt | nein | `unknown claim_type: conclusion` |
+| 001-110144, Produktionsprompt | ja | durchgelaufen, 36/49 |
+| 001-110144, Doppellauf, Produktionsleg | ja | zweimal `conclusion`, Abbruch |
+
+Die Reparaturrunde hilft also **manchmal**. Bei Temperatur 0 ist das kein
+Widerspruch: Determinismus sichert kein Anbieter zu. Damit ist meine frühere
+Einordnung, das sei „ein Fehler des Experiments, nicht des Produkts", zu
+zuversichtlich gewesen — der Produktionspfad hat dieselbe Schleife und kann
+genauso scheitern, nach zwei bezahlten Aufrufen.
+
+Verschärfend: Der Fallback `_reject_invalid_relations` fängt nur fehlerhafte
+**Kanten** ab. Für einen fehlerhaften Claim-Typ gibt es keine Entsprechung, das
+ganze Packet geht an einem einzigen Label verloren.
+
+Zwei naheliegende Abhilfen, beide ungetestet: Der Prompt könnte den Hinweis der
+neutralen Variante übernehmen — „nimm den nächstliegenden Wert oder `other`" —,
+was zugleich die Hälfte des Prompt-Bündels isoliert testbar machen würde. Oder
+das Gate weist den einzelnen Claim ab statt des Packets, analog zu den Kanten,
+was der eigenen Linie entspricht: das Schlechte verwerfen, den Rest behalten.
+
+## 3f. Das Ausgabebudget
 
 Die 16.384 Token sind eine selbstgesetzte Grenze; deepseek-v4-flash lässt
 384.000 zu. Der Einwand gegen eine Erhöhung war, sie tausche einen lauten
@@ -278,7 +310,7 @@ Was hier nicht gemessen ist: erhöhtes Budget zusammen mit der neutralen Prompt.
 Der 73-Prozent-Lauf verwendet die Produktionsprompt, deren Passungsproblem
 Abschnitt 3d beschreibt.
 
-## 3f. Die deterministische Hälfte
+## 3g. Die deterministische Hälfte
 
 Die deterministische Hälfte trägt die Länge dagegen problemlos. Speist man die
 Gold-Spannen als Packet ein, lässt das Gate alle 24 beziehungsweise 49 Claims
