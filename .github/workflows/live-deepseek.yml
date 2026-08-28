@@ -58,13 +58,18 @@ on:
         required: false
         default: ""
         type: string
+      repeat_runs:
+        description: "Run one configuration N times on gold_decision to measure its spread"
+        required: false
+        default: "0"
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == ''
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -100,7 +105,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != ''
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -120,7 +125,7 @@ jobs:
             | tee gold-case-provenance.txt
 
       - name: Build the case
-        if: inputs.sweep_decisions == ''
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0'
         run: |
           mkdir -p gold-case
           mv gold-case-provenance.txt gold-case/
@@ -148,9 +153,22 @@ jobs:
             --edit "${{ inputs.prompt == 'production' && 'vocabulary' || inputs.prompt }}" \
             --max-tokens "${{ inputs.max_tokens }}" 2>&1 | tee gold-case/sweep.txt
 
+      - name: Repeat one configuration to measure its spread
+        if: inputs.repeat_runs != '0'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          mv gold-case-provenance.txt gold-case/
+          python scripts/variance_run.py corpus/gold_data gold-case \
+            "${{ inputs.gold_decision }}" \
+            --runs "${{ inputs.repeat_runs }}" \
+            --prompt "${{ inputs.prompt }}" \
+            --max-tokens "${{ inputs.max_tokens }}" 2>&1 | tee gold-case/variance.txt
+
       - name: Live extraction
         id: extract
-        if: inputs.sweep_decisions == ''
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0'
         continue-on-error: true
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
@@ -220,7 +238,7 @@ jobs:
             2>&1 | tee gold-case/drift.txt || true
 
       - name: Report an extraction that did not complete
-        if: inputs.sweep_decisions == '' && steps.extract.outcome != 'success'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && steps.extract.outcome != 'success'
         run: |
           echo "Extraction produced no dossier. That is a result, not an infrastructure fault."
           cat gold-case/extraction.log || true
