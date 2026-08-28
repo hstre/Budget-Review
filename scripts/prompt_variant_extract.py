@@ -46,7 +46,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from budget_review.gate import sha256_text  # noqa: E402
-from budget_review.models import SemanticPacket  # noqa: E402
+from budget_review.models import SchemaError, SemanticPacket  # noqa: E402
 from budget_review.prompts import extraction_prompt  # noqa: E402
 from budget_review.provider import DeepSeekProvider, ModelConfig  # noqa: E402
 
@@ -104,29 +104,53 @@ def main() -> int:
     )
 
     provider = DeepSeekProvider()
-    response, metadata = provider.complete_json(
-        system=system,
-        user=user,
-        config=ModelConfig(model_id="deepseek-v4-flash", thinking=False),
-        max_tokens=args.max_tokens,
-    )
-    packet_data = {
-        "schema_version": "content-review.semantic-packet/0.2",
-        "document_id": document_id,
-        "provenance": {
-            "provider": "deepseek",
-            "model_id": str(metadata["model"]),
-            "run_id": str(uuid.uuid4()),
-            "prompt_hash": sha256_text(system + "\n" + user),
-            "output_hash": str(metadata["output_hash"]),
-            "temperature": 0.0,
-        },
-        "claims": response.get("claims"),
-        "relations": response.get("relations", []),
-    }
-    # Validate against the same closed schema the production path uses, so a
-    # packet this experiment writes cannot be looser than a real one.
-    SemanticPacket.from_dict(packet_data)
+    # Mirror the production repair round: one regeneration with the schema error
+    # fed back. Without it the experiment would be more brittle than the path it
+    # is compared against, and a rejected label would read as a worse result
+    # rather than as one extra call. Legal prose reaches for labels the
+    # proposal-shaped vocabulary does not have — "conclusion" among them.
+    validation_error: SchemaError | None = None
+    packet_data: dict | None = None
+    for attempt in range(2):
+        active_system = system
+        if validation_error is not None:
+            active_system += (
+                "\n\nYour previous JSON was rejected by the local closed-schema gate: "
+                f"{validation_error}. Regenerate the complete JSON object. Correct the "
+                "schema violation; do not add new fields. Omit any uncertain relation."
+            )
+        response, metadata = provider.complete_json(
+            system=active_system,
+            user=user,
+            config=ModelConfig(model_id="deepseek-v4-flash", thinking=False),
+            max_tokens=args.max_tokens,
+        )
+        candidate = {
+            "schema_version": "content-review.semantic-packet/0.2",
+            "document_id": document_id,
+            "provenance": {
+                "provider": "deepseek",
+                "model_id": str(metadata["model"]),
+                "run_id": str(uuid.uuid4()),
+                "prompt_hash": sha256_text(active_system + "\n" + user),
+                "output_hash": str(metadata["output_hash"]),
+                "temperature": 0.0,
+            },
+            "claims": response.get("claims"),
+            "relations": response.get("relations", []),
+        }
+        try:
+            # The same closed schema the production path uses, so a packet this
+            # experiment writes cannot be looser than a real one.
+            SemanticPacket.from_dict(candidate)
+        except SchemaError as exc:
+            validation_error = exc
+            print(f"  Schema-Ablehnung in Versuch {attempt + 1}: {exc}", file=sys.stderr)
+            continue
+        packet_data = candidate
+        break
+    if packet_data is None:
+        raise SystemExit(f"packet failed the closed schema twice: {validation_error}")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(packet_data, ensure_ascii=False, indent=1), encoding="utf-8")
