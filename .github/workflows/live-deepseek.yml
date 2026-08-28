@@ -53,13 +53,18 @@ on:
         required: false
         default: false
         type: boolean
+      sweep_decisions:
+        description: "Space-separated ECHR ids: run production against one edit on each"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == ''
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -95,7 +100,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != ''
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -110,10 +115,12 @@ jobs:
       - name: Fetch the gold corpus
         run: |
           git clone --depth 1 https://github.com/trusthlt/mining-legal-arguments.git corpus
+          mkdir -p gold-case
           echo "trusthlt/mining-legal-arguments (Apache-2.0) at $(git -C corpus rev-parse HEAD)" \
             | tee gold-case-provenance.txt
 
       - name: Build the case
+        if: inputs.sweep_decisions == ''
         run: |
           mkdir -p gold-case
           mv gold-case-provenance.txt gold-case/
@@ -130,8 +137,20 @@ jobs:
             echo "Gegenprobe auf der eigenen Fixture" | tee -a gold-case/gold-case-provenance.txt
           fi
 
+      - name: Prompt sweep across several decisions
+        if: inputs.sweep_decisions != ''
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          python scripts/prompt_sweep.py corpus/gold_data gold-case \
+            ${{ inputs.sweep_decisions }} \
+            --edit "${{ inputs.prompt == 'production' && 'vocabulary' || inputs.prompt }}" \
+            --max-tokens "${{ inputs.max_tokens }}" 2>&1 | tee gold-case/sweep.txt
+
       - name: Live extraction
         id: extract
+        if: inputs.sweep_decisions == ''
         continue-on-error: true
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
@@ -181,7 +200,7 @@ jobs:
           fi
 
       - name: Measure recall
-        if: steps.extract.outcome == 'success'
+        if: inputs.sweep_decisions == '' && steps.extract.outcome == 'success'
         run: |
           set -o pipefail
           CASE=$(cat gold-case/case-name.txt)
@@ -191,7 +210,7 @@ jobs:
             "gold-case/$CASE.txt" 2>&1 | tee gold-case/recall.txt
 
       - name: Screen the graph for content its spans do not carry
-        if: steps.extract.outcome == 'success'
+        if: inputs.sweep_decisions == '' && steps.extract.outcome == 'success'
         run: |
           # Reported, not enforced: the word overlap is a ranking and the
           # number check has only ever been exercised against hand-built
@@ -201,7 +220,7 @@ jobs:
             2>&1 | tee gold-case/drift.txt || true
 
       - name: Report an extraction that did not complete
-        if: steps.extract.outcome != 'success'
+        if: inputs.sweep_decisions == '' && steps.extract.outcome != 'success'
         run: |
           echo "Extraction produced no dossier. That is a result, not an infrastructure fault."
           cat gold-case/extraction.log || true
