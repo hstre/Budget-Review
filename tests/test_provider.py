@@ -7,7 +7,12 @@ import urllib.error
 
 import pytest
 
-from budget_review.provider import DeepSeekProvider, ModelConfig, ProviderError
+from budget_review.provider import (
+    DeepSeekProvider,
+    ModelConfig,
+    ProviderError,
+    _reject_invalid_proposals,
+)
 
 
 class _Response:
@@ -291,3 +296,132 @@ def test_a_connection_dropped_mid_response_is_retried(monkeypatch, instant_sleep
     assert len(calls) == 3
     assert "IncompleteRead" in message
     assert "secret-key" not in message
+
+
+def _claim(proposal_id: str, claim_type: str, text: str) -> dict:
+    return {
+        "proposal_id": proposal_id,
+        "claim_type": claim_type,
+        "canonical_content": text,
+        "raw_span": text,
+        "confidence": 0.9,
+        "source_ref": "example",
+    }
+
+
+def _returns(payload: dict):
+    def fake_complete_json(**kwargs):
+        return payload, {"model": "deepseek-v4-flash", "output_hash": "1234567890abcdef"}
+
+    return fake_complete_json
+
+
+DOCUMENT = "A method is used. The Court so concludes."
+
+
+def test_one_unsupported_claim_type_no_longer_costs_the_packet(monkeypatch) -> None:
+    """The live failure: a court decision reaches for a label the vocabulary lacks."""
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+    monkeypatch.setattr(
+        provider,
+        "complete_json",
+        _returns(
+            {
+                "claims": [
+                    _claim("C01", "method", "A method is used."),
+                    _claim("C02", "conclusion", "The Court so concludes."),
+                ],
+                "relations": [],
+            }
+        ),
+    )
+
+    packet = provider.extract("example", DOCUMENT, profile="general")
+
+    assert [claim.proposal_id for claim in packet.claims] == ["C01"]
+    assert packet.claim_rejections[0].item_id == "C002"
+    assert "unknown claim_type: conclusion" in packet.claim_rejections[0].reason
+
+
+def test_a_packet_whose_every_claim_is_unusable_still_fails(monkeypatch) -> None:
+    """Recovering here would return a graph nobody proposed."""
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+    monkeypatch.setattr(
+        provider,
+        "complete_json",
+        _returns({"claims": [_claim("C01", "conclusion", "A method is used.")], "relations": []}),
+    )
+
+    with pytest.raises(ProviderError):
+        provider.extract("example", DOCUMENT, profile="general")
+
+
+def test_a_dropped_claim_and_a_bad_relation_are_both_recorded(monkeypatch) -> None:
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+    monkeypatch.setattr(
+        provider,
+        "complete_json",
+        _returns(
+            {
+                "claims": [
+                    _claim("C01", "method", "A method is used."),
+                    _claim("C02", "conclusion", "The Court so concludes."),
+                ],
+                "relations": [
+                    {
+                        "source_id": "C01",
+                        "relation_type": "CAUSAL",
+                        "target_id": "C01",
+                        "confidence": 0.8,
+                        "rationale": "Invalid model label.",
+                    }
+                ],
+            }
+        ),
+    )
+
+    packet = provider.extract("example", DOCUMENT, profile="general")
+
+    assert len(packet.claim_rejections) == 1
+    assert len(packet.relation_rejections) == 1
+
+
+def test_a_packet_the_schema_accepts_is_not_quietly_rewritten(monkeypatch) -> None:
+    """No rejections means no recovery path, so any other error still surfaces."""
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+    monkeypatch.setattr(
+        provider,
+        "complete_json",
+        _returns({"claims": [_claim("C01", "method", "A method is used.")], "relations": []}),
+    )
+
+    packet = provider.extract("example", DOCUMENT, profile="general")
+
+    assert packet.claim_rejections == ()
+    assert packet.relation_rejections == ()
+
+
+def test_recovery_declines_a_packet_it_had_nothing_to_drop() -> None:
+    """Only an actual drop justifies rebuilding the packet.
+
+    Without this, a packet failing for some unrelated reason would come back
+    quietly repaired, and the error that caused it would never be seen. The
+    guard is invisible through extract, which builds the surrounding fields
+    itself, so it is pinned on the function directly.
+    """
+    intact = {
+        "schema_version": "content-review.semantic-packet/0.2",
+        "document_id": "example",
+        "provenance": {
+            "provider": "deepseek",
+            "model_id": "deepseek-v4-flash",
+            "run_id": "r" * 16,
+            "prompt_hash": "a" * 64,
+            "output_hash": "b" * 64,
+            "temperature": 0.0,
+        },
+        "claims": [_claim("C01", "method", "A method is used.")],
+        "relations": [],
+    }
+
+    assert _reject_invalid_proposals(intact) is None

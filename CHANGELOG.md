@@ -148,6 +148,18 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Fixed
 
+- **One unsupported label no longer costs the whole extraction.** The provider's
+  last-resort recovery dropped malformed *edges* and kept the rest, but had no
+  equivalent for a claim, so a single unusable `claim_type` lost the packet
+  after two paid calls. It now partitions claims the same way: the offending
+  proposal is dropped, the rest is kept, and the loss is written into the audit
+  as a `claim_rejections` entry that the gate passes through to the dossier.
+  Recovery still declines when it had nothing to drop, so a packet failing for
+  an unrelated reason surfaces its own error instead of coming back quietly
+  repaired, and a packet whose every claim is unusable still fails — recovering
+  there would return a graph nobody proposed. A relation left pointing at a
+  dropped claim needs no special handling: the gate admits an edge only when
+  both endpoints were admitted.
 - **A connection dropped mid-response crashed the run.** The retry loop caught
   `URLError` and `TimeoutError`, but a body that ends early or a peer that
   resets after `urlopen` has already returned raises `http.client.IncompleteRead`

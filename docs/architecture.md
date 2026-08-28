@@ -282,11 +282,25 @@ Produktionsleg scheitert, bevor irgendetwas zusammengeführt werden kann, und
 zwei bezahlte Versuche haben daran nichts geändert. Die 39 von 49 aus der
 Spannenarithmetik bleiben damit gerechnet und ungefahren.
 
-Zwei naheliegende Abhilfen, beide ungetestet: Der Prompt könnte den Hinweis der
-neutralen Variante übernehmen — „nimm den nächstliegenden Wert oder `other`" —,
-was zugleich die Hälfte des Prompt-Bündels isoliert testbar machen würde. Oder
-das Gate weist den einzelnen Claim ab statt des Packets, analog zu den Kanten,
-was der eigenen Linie entspricht: das Schlechte verwerfen, den Rest behalten.
+**Behoben, und zwar an der Wurzel.** Die Rettungsstufe des Providers
+partitioniert jetzt auch die Claims: Der unbrauchbare Vorschlag fällt weg, der
+Rest bleibt, und der Verlust steht als `claim_rejections` im Audit, das das Gate
+in das Dossier durchreicht. Das entspricht der eigenen Linie — das Schlechte
+verwerfen, den Rest behalten — und ist genau das, was für Kanten schon galt.
+
+Drei Grenzen bleiben bewusst bestehen. Ohne tatsächliche Ablehnung greift die
+Rettung nicht, damit ein aus anderem Grund fehlerhaftes Packet seinen eigenen
+Fehler zeigt statt still repariert zurückzukommen. Ist *jeder* Claim
+unbrauchbar, scheitert der Lauf weiterhin: Dort zu retten hieße, einen Graphen
+zurückzugeben, den niemand vorgeschlagen hat. Und eine Relation, die auf einen
+entfernten Claim zeigt, braucht keine Sonderbehandlung — das Gate lässt eine
+Kante ohnehin nur zu, wenn beide Endpunkte zugelassen wurden.
+
+Die zweite Abhilfe bleibt offen: Der Prompt könnte den Hinweis der neutralen
+Variante übernehmen — „nimm den nächstliegenden Wert oder `other`" —, was
+zugleich die Hälfte des Prompt-Bündels isoliert testbar machen würde. Sie
+behebt allerdings nur diesen einen Fall, während die Partitionierung trägt,
+egal welches Label das Modell als Nächstes erfindet.
 
 ## 3f. Das Ausgabebudget
 
