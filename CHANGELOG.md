@@ -87,6 +87,13 @@ says when it moves them. Their current values are `polished` 5 claims /
   two edits. It does not affect the truncation above 27,000 characters, and it
   has to clear the frozen controls before it can become the production prompt.
   `scripts/prompt_variant_extract.py` runs it against the production prompt.
+- The same prompt loses nothing on the document type it was written for. On the
+  repo's own fixture it reaches the frozen packet's 25 of 25 gold claims, as the
+  production prompt does, with 23 claims instead of 29 and an anchored share of
+  0.98 against 0.93 — fewer claims, better placed, the same pattern the court
+  decision showed. The frozen offline controls cannot see this either way: they
+  replay stored packets and never call the extractor, so only a live run against
+  the frozen packet can catch a prompt regression.
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.

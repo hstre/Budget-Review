@@ -201,11 +201,14 @@ claims that match no gold span at all. The problem was never how much the
 extractor produced but where it aimed — which is also why segmenting, which
 raised the volume without improving the aim, bought so little.
 
-This is one document, 24 spans, one run, and a bundle of two edits whose
-individual contributions are unknown. It also does nothing about the truncation
-above 27,000 characters. Before it becomes the production prompt it has to clear
-the frozen controls, since a prompt that wins on legal texts and loses on
-proposals is not an improvement.
+It loses nothing on the text it was written for: on the repo's own fixture the
+neutral prompt still reaches all 25 gold claims, with 23 claims instead of 29
+and an anchored share of 0.98 against 0.93 — fewer claims, better placed, the
+same pattern again.
+
+This is still one legal document, 24 spans, one run, and a bundle of two edits
+whose individual contributions are unknown. It also does nothing about the
+truncation above 27,000 characters.
 
 Until then: the anchored share is the warning light. If it sits far below what
 the document plausibly supports, the graph is thin, whatever the findings say.
@@ -548,11 +551,14 @@ bei deutlich weniger Claims ohne jede Gold-Entsprechung. Es ging nie um die
 Menge, sondern um das Ziel — weshalb auch die Segmentierung so wenig brachte:
 Sie erhöhte die Menge, ohne die Treffsicherheit zu ändern.
 
-Das ist ein Dokument, 24 Spannen, ein Lauf, und ein Bündel aus zwei Eingriffen,
-deren Einzelbeiträge offen sind. Am Abbruch oberhalb von 27.000 Zeichen ändert
-es nichts. Bevor daraus die Produktionsprompt wird, muss es die eingefrorenen
-Gegenproben bestehen — eine Prompt, die auf Rechtstexten gewinnt und auf
-Anträgen verliert, ist kein Fortschritt.
+Auf dem Text, für den sie geschrieben wurde, verliert sie nichts: Auf der
+eigenen Fixture erreicht die neutrale Prompt weiterhin alle 25 Gold-Claims, mit
+23 statt 29 Claims und einem verankerten Anteil von 0,98 gegen 0,93 — wieder
+weniger Claims, besser platziert.
+
+Es bleibt ein Rechtsdokument, 24 Spannen, ein Lauf, und ein Bündel aus zwei
+Eingriffen, deren Einzelbeiträge offen sind. Am Abbruch oberhalb von 27.000
+Zeichen ändert es nichts.
 
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig

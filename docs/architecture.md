@@ -191,10 +191,21 @@ Vorbehalte: ein Dokument, 24 Gold-Spannen, ein Lauf, und die Änderung ist ein
 Bündel aus zwei Eingriffen — welcher davon wirkt, ist offen. Am
 Abbruchverhalten oberhalb von 27.000 Zeichen ändert sie nichts.
 
-Bevor das in die Produktionsprompt wandert, muss die Gegenprobe laufen: Erreicht
-die Budget-Fixture weiterhin 25/25 und bleiben die eingefrorenen Kontrollen bei
-5/5/3, 4/4/0 und 25/15/10? Eine Promptänderung, die auf Rechtstexten gewinnt
-und auf Anträgen verliert, ist kein Fortschritt.
+Die Gegenprobe auf der eigenen Fixture ist gelaufen und fällt eindeutig aus:
+
+| Fixture, 1.707 Zeichen, 25 Gold-Claims | Claims | Recall 80 % | Verankert | Lücken |
+|---|---:|---:|---:|---:|
+| Produktionsprompt | 29 | 25/25 | 0,93 | 0 |
+| neutrale Prompt | 23 | 25/25 | **0,98** | 0 |
+
+Dasselbe Muster wie auf der Gerichtsentscheidung: weniger Claims, gleiche
+Trefferquote, höherer verankerter Anteil. Die Änderung gewinnt auf Rechtstexten,
+ohne auf Anträgen zu verlieren.
+
+Die eingefrorenen Offline-Kontrollen sagen dazu nichts — sie spielen
+gespeicherte Packets ab und rufen den Extraktor nie. Nur ein Live-Lauf gegen das
+eingefrorene Packet kann eine Prompt-Regression überhaupt sehen, und genau den
+führt der Workflow ohne Entscheidungs-ID aus.
 
 ## 3e. Die deterministische Hälfte
 
