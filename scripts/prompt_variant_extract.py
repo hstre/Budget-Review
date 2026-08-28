@@ -69,15 +69,31 @@ TYPES_NOTE = (
 )
 
 
-def variant_prompt(document_id: str, document: str) -> tuple[str, str]:
+EDITS = ("decompose", "vocabulary")
+
+
+def variant_prompt(
+    document_id: str, document: str, edits: tuple[str, ...] = EDITS
+) -> tuple[str, str]:
+    """The production prompt with the named edits applied and nothing else.
+
+    Both together raised recall on one court decision from 16 of 24 to 20. That
+    told us the bundle works, not which half does, and the two edits address
+    different things: one asks for exhaustive decomposition in place of a
+    sentence about elegant prose, the other says a poorly fitting label is never
+    a reason to drop a claim. Applying them singly is what separates them.
+    """
     system, user = extraction_prompt(document_id, document, "general")
     if system.count(ORIGINAL_DECOMPOSE) != 1:
         raise SystemExit("production prompt no longer contains the decomposition sentence")
     if system.count(ORIGINAL_TYPES_LEAD) != 1:
         raise SystemExit("production prompt no longer contains the claim-type list")
-    system = system.replace(ORIGINAL_DECOMPOSE, NEUTRAL_DECOMPOSE)
-    line_end = system.index("\n", system.index(ORIGINAL_TYPES_LEAD))
-    system = system[:line_end] + TYPES_NOTE + system[line_end:]
+
+    if "decompose" in edits:
+        system = system.replace(ORIGINAL_DECOMPOSE, NEUTRAL_DECOMPOSE)
+    if "vocabulary" in edits:
+        line_end = system.index("\n", system.index(ORIGINAL_TYPES_LEAD))
+        system = system[:line_end] + TYPES_NOTE + system[line_end:]
     return system, user
 
 
@@ -136,7 +152,12 @@ def main() -> int:
     parser.add_argument("document", type=Path)
     parser.add_argument("document_id")
     parser.add_argument("out_path", type=Path)
-    parser.add_argument("--prompt", choices=("production", "neutral"), default="neutral")
+    parser.add_argument(
+        "--prompt",
+        choices=("production", "neutral", "decompose", "vocabulary"),
+        default="neutral",
+        help="neutral applies both edits; decompose and vocabulary apply one each",
+    )
     parser.add_argument("--max-tokens", type=int, default=16384)
     args = parser.parse_args()
 
@@ -144,10 +165,11 @@ def main() -> int:
     document_id = args.document_id
     out_path = args.out_path
 
-    if args.prompt == "neutral":
-        system, user = variant_prompt(document_id, document)
-    else:
+    if args.prompt == "production":
         system, user = extraction_prompt(document_id, document, "general")
+    else:
+        edits = EDITS if args.prompt == "neutral" else (args.prompt,)
+        system, user = variant_prompt(document_id, document, edits)
     print(
         f"Prompt: {args.prompt}, max_tokens {args.max_tokens}, "
         f"{len(system)} Zeichen System, {len(user)} Zeichen User"
