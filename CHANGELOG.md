@@ -91,8 +91,12 @@ says when it moves them. Their current values are `polished` 5 claims /
   round does not reliably prevent it.** On a court decision the model reaches for
   `claim_type: conclusion`, which the closed proposal-shaped vocabulary lacks.
   `provider.extract` regenerates once with the schema error fed back, and that
-  round has been observed both to fix it and to fail with the same label twice —
-  temperature 0 is not a determinism guarantee. An earlier note here called this
+  round has been observed to fix it once and to fail with the same label twice in
+  each of two further runs — one completion in three attempts on the same
+  document, prompt and budget, since temperature 0 is not a determinism
+  guarantee. The double run is blocked behind it: its production leg fails
+  before anything can be merged, so the union figure of 39 of 49 stays computed
+  rather than run. An earlier note here called this
   a fault of the experiment rather than of the product; that was too confident,
   since the production path runs the same loop and can end the same way after
   two paid calls. `_reject_invalid_relations` only rescues malformed edges;

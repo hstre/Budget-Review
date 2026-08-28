@@ -264,9 +264,11 @@ neu und spielt dem Modell den Schema-Fehler zurück. Gemessen:
 | 001-110144, Produktionsprompt | nein | `unknown claim_type: conclusion` |
 | 001-110144, Produktionsprompt | ja | durchgelaufen, 36/49 |
 | 001-110144, Doppellauf, Produktionsleg | ja | zweimal `conclusion`, Abbruch |
+| 001-110144, Doppellauf, Wiederholung | ja | zweimal `conclusion`, Abbruch |
 
-Die Reparaturrunde hilft also **manchmal**. Bei Temperatur 0 ist das kein
-Widerspruch: Determinismus sichert kein Anbieter zu. Damit ist meine frühere
+Gleicher Prompt, gleiches Dokument, gleiches Budget: **ein Durchlauf von
+dreien**. Die Reparaturrunde hilft also manchmal und ist keine Absicherung. Bei
+Temperatur 0 ist das kein Widerspruch: Determinismus sichert kein Anbieter zu. Damit ist meine frühere
 Einordnung, das sei „ein Fehler des Experiments, nicht des Produkts", zu
 zuversichtlich gewesen — der Produktionspfad hat dieselbe Schleife und kann
 genauso scheitern, nach zwei bezahlten Aufrufen.
@@ -274,6 +276,11 @@ genauso scheitern, nach zwei bezahlten Aufrufen.
 Verschärfend: Der Fallback `_reject_invalid_relations` fängt nur fehlerhafte
 **Kanten** ab. Für einen fehlerhaften Claim-Typ gibt es keine Entsprechung, das
 ganze Packet geht an einem einzigen Label verloren.
+
+Praktische Folge: Der Doppellauf ist an dieser Stelle blockiert. Sein
+Produktionsleg scheitert, bevor irgendetwas zusammengeführt werden kann, und
+zwei bezahlte Versuche haben daran nichts geändert. Die 39 von 49 aus der
+Spannenarithmetik bleiben damit gerechnet und ungefahren.
 
 Zwei naheliegende Abhilfen, beide ungetestet: Der Prompt könnte den Hinweis der
 neutralen Variante übernehmen — „nimm den nächstliegenden Wert oder `other`" —,
