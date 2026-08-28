@@ -105,11 +105,29 @@ def main() -> int:
     print()
 
     strict = set(results[max(OVERLAP_THRESHOLDS)])
-    missed = [(pid, raw) for pid, _, raw in gold if pid not in strict]
+    missed = [
+        (proposal_id, span, raw) for proposal_id, span, raw in gold if proposal_id not in strict
+    ]
     if missed:
+        # The covered fraction separates two different failures that the pass
+        # counts alone cannot tell apart: a passage the extraction never
+        # reached, and one it reached into without working through. The first
+        # is a missing claim, the second an unfinished one, and they call for
+        # different fixes.
         print(f"Nicht gefunden ({len(missed)}, bei {max(OVERLAP_THRESHOLDS):.0%}):")
-        for proposal_id, raw in missed:
-            print(f"  {proposal_id}  {raw[:96]}")
+        for proposal_id, span, raw in missed:
+            share = covered_characters(span, union) / max(1, span[1] - span[0])
+            print(f"  {proposal_id}  [{share:.0%} verankert]  {raw[:80]}")
+        untouched = sum(
+            1
+            for _, span, _ in missed
+            if covered_characters(span, union) / max(1, span[1] - span[0]) < 0.5
+        )
+        print()
+        print(
+            f"  davon gar nicht erreicht (unter 50 %): {untouched} von {len(missed)} — "
+            f"der Rest ist angefasst, aber nicht ausgeschöpft"
+        )
     else:
         print("Alle Gold-Claims erreicht.")
 
