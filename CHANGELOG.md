@@ -115,7 +115,22 @@ says when it moves them. Their current values are `polished` 5 claims /
   and five exclusive, so the independence is measured rather than assumed.
   Merging is cheap because the gate addresses claims by content, so a claim both
   runs found collapses to one node and its edges survive.
-  `scripts/compare_runs.py` computes it from two dossiers.
+  `scripts/compare_runs.py` computes it from two dossiers. Run through the whole
+  pipeline, the merged extraction reaches exactly the predicted 39 of 49 at 80%
+  overlap against 37 for the better single run, with 0.86 of the source anchored
+  against 0.84. The cost is legibility: 215 proposals become 186 admitted claims
+  after the gate collapses 29 by content address, and 141 of them match no gold
+  span, so the dossier is nearly twice the size of a single run's and carries
+  near-duplicate pairs — two prompts agree on a span far more readily than on its
+  wording.
+- The number check in `scripts/measure_drift.py` is a screen on legal text, not
+  hard evidence. Its first live run reported four claims, all of them correct
+  work: the span reads "this provision does not apply" and the claim reads
+  "Article 8 does not apply", since the contract asks for a standalone
+  proposition and resolving the reference is how one is produced. The digit comes
+  from the document rather than the quoted span. Citation numbers behave this way
+  generally, so the check needs to tell a quantity from a reference before it can
+  be trusted outside the budget domain, where the controls stay silent.
 - The prompt gain does not replicate on a second legal document. With the
   budget raised and everything else equal, the neutral prompt moves 001-110144
   from 36 to 37 of 49 gold spans at 80% overlap, against a mark of 42 fixed

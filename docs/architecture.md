@@ -233,6 +233,31 @@ und die Kanten bleiben erhalten.
 
 `scripts/compare_runs.py` rechnet das aus zwei Dossiers nach.
 
+**Gefahren, nicht nur gerechnet.** Der Doppellauf durch die volle Pipeline —
+zwei Extraktionen, zusammengeführt, dann Gate, Regeln, Abdeckung:
+
+| 001-110144, Budget 65.536 | Claims | Recall 80 % | Recall 50 % | Verankert |
+|---|---:|---:|---:|---:|
+| Produktionsprompt | 108 | 36/49 | 46/49 | 0,82 |
+| neutrale Prompt | 107 | 37/49 | 47/49 | 0,84 |
+| **zusammengeführt** | **186** | **39/49** | 47/49 | 0,86 |
+
+Vorab festgelegt war ≥ 39/49, und genau das kommt heraus: Die Arithmetik über
+die Spannenmengen sagt den gemessenen Wert exakt voraus.
+
+Der Preis steht in der Claim-Spalte. Aus 215 Vorschlägen werden 186
+zugelassene Claims — das Gate verwirft 29 über die Inhaltsadresse —, und 141
+davon haben keine Gold-Entsprechung. Für den Recall ist das gleichgültig, für
+einen Menschen, der das Dossier liest, nicht: Der Graph ist fast doppelt so
+groß wie der eines Einzellaufs und trägt Beinahe-Dubletten, weil zwei Prompts
+sich viel eher auf eine Textstelle einigen als auf deren Formulierung. Wer den
+Doppellauf einsetzt, kauft zehn Prozentpunkte Recall mit einem doppelten
+Aufruf und einem deutlich unübersichtlicheren Dossier.
+
+Die Claim-Partitionierung aus Abschnitt 3e hat sich dabei bewährt: Derselbe
+Lauf war zuvor zweimal an `conclusion` gestorben, diesmal fiel der Vorschlag
+weg und der Rest kam durch.
+
 Die Gegenprobe auf der eigenen Fixture ist gelaufen und fällt eindeutig aus:
 
 | Fixture, 1.707 Zeichen, 25 Gold-Claims | Claims | Recall 80 % | Verankert | Lücken |

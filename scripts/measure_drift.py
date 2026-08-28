@@ -9,9 +9,20 @@ reviewer arms alike.
 
 Two checks, of very different strength.
 
-The numeric check is hard evidence. A digit sequence in canonical_content that
-does not occur in the quoted span cannot have come from it, and for a tool that
-reasons about quantities that is the worst silent error available.
+The numeric check was meant as hard evidence: a digit sequence in
+canonical_content that does not occur in the quoted span cannot have come from
+it, and for a tool that reasons about quantities that is the worst silent error
+available. On the domain it was built for it behaves that way — the hand-built
+budget packets are silent and a planted 1100 against a span saying 110 is named.
+
+On a court decision it reported four claims and all four are correct work. The
+span says "this provision does not apply" and the claim says "Article 8 does not
+apply", because the contract asks for a standalone proposition and resolving the
+reference is how you get one. The number comes from the surrounding document
+rather than from the quoted span, which is exactly what the check looks for and
+exactly not what it means to find. Citation numbers behave this way generally,
+so on legal text the numeric half is a screen like the other one until it can
+tell a quantity from a reference.
 
 Spelled-out numbers have to be folded in on both sides or the check reports
 correct work: the frozen budget packet writes "twelve" in the span and 12 in
