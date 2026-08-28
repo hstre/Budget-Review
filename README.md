@@ -216,9 +216,16 @@ neutral prompt still reaches all 25 gold claims, with 23 claims instead of 29
 and an anchored share of 0.98 against 0.93 — fewer claims, better placed, the
 same pattern again.
 
-This is still one legal document, 24 spans, one run, and a bundle of two edits
-whose individual contributions are unknown. It also does nothing about the
-truncation above 27,000 characters.
+On a second court decision the gain nearly disappears. With the budget raised
+and everything else equal, the neutral prompt moves 001-110144 from 36 to 37 of
+49 gold spans at 80% overlap — two percentage points, where the first decision
+gained seventeen, and short of the 42 fixed before the run.
+
+So the finding is narrower than it first reads. The change helps markedly on one
+document, barely on another, and is unnecessary on the fixture. That it never
+hurts is measured; how much it helps depends on the document and is not settled
+by two of them. It is also a bundle of two edits whose individual contributions
+are unknown, and it does nothing about the truncation above 27,000 characters.
 
 Until then: the anchored share is the warning light. If it sits far below what
 the document plausibly supports, the graph is thin, whatever the findings say.
@@ -577,9 +584,18 @@ eigenen Fixture erreicht die neutrale Prompt weiterhin alle 25 Gold-Claims, mit
 23 statt 29 Claims und einem verankerten Anteil von 0,98 gegen 0,93 — wieder
 weniger Claims, besser platziert.
 
-Es bleibt ein Rechtsdokument, 24 Spannen, ein Lauf, und ein Bündel aus zwei
-Eingriffen, deren Einzelbeiträge offen sind. Am Abbruch oberhalb von 27.000
-Zeichen ändert es nichts.
+Auf einer zweiten Entscheidung verschwindet der Gewinn fast. Mit erhöhtem
+Budget und sonst gleichen Bedingungen bringt die neutrale Prompt bei 001-110144
+statt 36 nun 37 von 49 Gold-Spannen bei 80 Prozent Überlappung — zwei
+Prozentpunkte, wo die erste Entscheidung siebzehn gewann, und unter den vorab
+festgelegten 42.
+
+Der Befund ist damit enger als er zunächst klingt. Die Änderung hilft auf einem
+Dokument deutlich, auf einem zweiten kaum, und auf der Fixture ist sie
+entbehrlich. Dass sie nirgends schadet, ist gemessen; wie groß ihr Nutzen ist,
+hängt vom Dokument ab und ist mit zweien nicht entschieden. Sie ist zudem ein
+Bündel aus zwei Eingriffen, deren Einzelbeiträge offen sind, und am Abbruch
+oberhalb von 27.000 Zeichen ändert sie nichts.
 
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig

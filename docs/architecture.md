@@ -159,7 +159,7 @@ müsse von einem einzelnen Claim abgedeckt werden. Gemessen wird die Vereinigung
 aller Anker, die eine Segmentgrenze überbrücken kann; G08 wurde genau so
 gefunden. Die Obergrenze war 24/24.
 
-## 3d. Es lag am Prompt
+## 3d. Der Prompt wirkt, aber ungleichmäßig
 
 Bleibt die Frage, ob der Extraktor diese Textsorte nicht kann oder ob er nach
 der falschen Sache gefragt wird. Zwei Stellen der Produktionsprompt sind an
@@ -187,9 +187,26 @@ Gold-Spannen mehr, bei deutlich weniger Claims ohne Gold-Entsprechung (23 gegen
 warum die Segmentierung so wenig brachte: Sie erhöhte die Menge (52 Claims, 40
 ohne Entsprechung), ohne die Treffsicherheit zu ändern.
 
-Vorbehalte: ein Dokument, 24 Gold-Spannen, ein Lauf, und die Änderung ist ein
-Bündel aus zwei Eingriffen — welcher davon wirkt, ist offen. Am
-Abbruchverhalten oberhalb von 27.000 Zeichen ändert sie nichts.
+Auf dem zweiten Dokument trägt das aber kaum. Mit erhöhtem Budget, sonst
+identisch:
+
+| 001-110144, Budget 65.536 | Claims | Recall 80 % | Recall 50 % | Verankert |
+|---|---:|---:|---:|---:|
+| Produktionsprompt | 108 | 36/49 (73 %) | 46/49 (94 %) | 0,82 |
+| neutrale Prompt | 107 | 37/49 (76 %) | 47/49 (96 %) | 0,84 |
+
+Vorab festgelegt war ≥ 42/49. Verfehlt. Aus +4 Spannen auf 001-141170 werden
+hier +1 — aus 17 Prozentpunkten werden 2.
+
+Damit ist der Prompt-Befund kein allgemeiner mehr. Er lautet jetzt: Die
+Änderung hilft auf einem Dokument deutlich, auf einem zweiten kaum, und auf der
+Fixture ist sie nicht nötig, weil dort ohnehin alles gefunden wird. Dass sie
+nirgends schadet, ist gemessen; wie groß ihr Nutzen ist, hängt vom Dokument ab
+und ist mit zwei Dokumenten nicht bestimmt.
+
+Weitere Vorbehalte: je ein Lauf, und die Änderung ist ein Bündel aus zwei
+Eingriffen, deren Einzelbeiträge offen bleiben. Am Abbruchverhalten oberhalb
+von 27.000 Zeichen ändert sie nichts.
 
 Die Gegenprobe auf der eigenen Fixture ist gelaufen und fällt eindeutig aus:
 

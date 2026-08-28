@@ -87,6 +87,14 @@ says when it moves them. Their current values are `polished` 5 claims /
   two edits. It does not affect the truncation above 27,000 characters, and it
   has to clear the frozen controls before it can become the production prompt.
   `scripts/prompt_variant_extract.py` runs it against the production prompt.
+- The prompt gain does not replicate on a second legal document. With the
+  budget raised and everything else equal, the neutral prompt moves 001-110144
+  from 36 to 37 of 49 gold spans at 80% overlap, against a mark of 42 fixed
+  before the run — 2 percentage points where the first decision gained 17. The
+  finding is therefore narrower than it first read: the change helps markedly on
+  one document, barely on another, and is unnecessary on the fixture. That it
+  never hurts is measured; how much it helps is document-dependent and not
+  established by two documents.
 - The same prompt loses nothing on the document type it was written for. On the
   repo's own fixture it reaches the frozen packet's 25 of 25 gold claims, as the
   production prompt does, with 23 claims instead of 29 and an anchored share of
