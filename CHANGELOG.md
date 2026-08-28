@@ -94,6 +94,17 @@ says when it moves them. Their current values are `polished` 5 claims /
   decision showed. The frozen offline controls cannot see this either way: they
   replay stored packets and never call the extractor, so only a live run against
   the frozen packet can catch a prompt regression.
+- **Raising the output budget helps, against expectation.** The 16,384-token cap
+  is self-imposed; the model allows 384,000. The argument against raising it was
+  that a document which fails loudly today would instead return a thin dossier
+  nobody notices. It does not: at 65,536 tokens the 26,715-character decision
+  that previously truncated produces 108 claims and reaches 36 of 49 gold spans
+  at 80% span overlap and 46 of 49 at 50%, a *better* strict recall than the
+  10,308-character decision manages with the same prompt. The coverage
+  measurement still flags the shortfall — 0.82 against the gold answer's 0.977,
+  with 13 named passages — so the warning survives the larger budget. The cap is
+  left unchanged here; the measurement is what changes, and raising it is now a
+  decision with evidence behind it rather than a guess.
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.

@@ -166,6 +166,16 @@ outgrows the output budget. A refusal is the better failure of the two, and it
 is why truncation counts as fatal on the first response rather than being
 retried.
 
+That budget is self-imposed — the model allows 384,000 tokens — and raising it
+turns out to help more than expected. At 65,536 tokens the same 26,715-character
+decision produces 108 claims and reaches 36 of 49 gold spans at 80% overlap and
+46 of 49 at 50%: a better strict recall than the shorter decision manages with
+the same prompt, and not the thin dossier a bigger budget was feared to produce.
+The anchored share still reports the shortfall, 0.82 against the gold answer's
+0.98, so the warning survives the larger budget. It only moves the cliff
+proportionally, though: 64k tokens reach roughly 110,000 characters, and the
+longest decision in the corpus has 447,000.
+
 Splitting the document does not repair it. Extracting the same decision in five
 pieces of about 2,000 characters each — comparable to the fixture the extractor
 handles perfectly — moved recall from 16/24 to 17/24 at 80% overlap, against a
@@ -512,6 +522,17 @@ abgeschnittene Modellantwort, weil zu jedem Claim die wörtliche Textstelle
 zurückkommen muss und die Antwort das Ausgabebudget übersteigt. Von beiden
 Fehlern ist der Abbruch der bessere — und der Grund, warum eine abgeschnittene
 Antwort sofort als endgültig gilt und nicht wiederholt wird.
+
+Dieses Budget ist selbstgesetzt — das Modell lässt 384.000 Token zu — und eine
+Erhöhung hilft mehr als erwartet. Mit 65.536 Token liefert dieselbe Entscheidung
+108 Claims und erreicht 36 von 49 Gold-Spannen bei 80 Prozent Überlappung und
+46 von 49 bei 50 Prozent: ein besserer strenger Recall als bei der kürzeren
+Entscheidung mit derselben Prompt — und nicht das dünne Dossier, das von einem
+größeren Budget befürchtet wurde. Der verankerte Anteil meldet die Lücke
+weiterhin, 0,82 gegen 0,98 der Gold-Antwort; die Warnleuchte überlebt das
+größere Budget also. Sie verschiebt die Abbruchgrenze allerdings nur
+proportional: 64k Token reichen grob bis 110.000 Zeichen, die längste
+Entscheidung im Korpus hat 447.000.
 
 Das Dokument zu teilen behebt es nicht. Dieselbe Entscheidung in fünf Stücken
 von je rund 2.000 Zeichen extrahiert — vergleichbar mit der Fixture, die der

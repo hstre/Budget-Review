@@ -207,7 +207,36 @@ gespeicherte Packets ab und rufen den Extraktor nie. Nur ein Live-Lauf gegen das
 eingefrorene Packet kann eine Prompt-Regression überhaupt sehen, und genau den
 führt der Workflow ohne Entscheidungs-ID aus.
 
-## 3e. Die deterministische Hälfte
+## 3e. Das Ausgabebudget
+
+Die 16.384 Token sind eine selbstgesetzte Grenze; deepseek-v4-flash lässt
+384.000 zu. Der Einwand gegen eine Erhöhung war, sie tausche einen lauten
+Fehler gegen einen leisen: Ein Dokument, das heute sichtbar abbricht, lieferte
+dann ein Dossier, dessen Dünne niemand bemerkt.
+
+Die Messung widerlegt das.
+
+| Dokument | Budget | Claims | Recall 80 % | Recall 50 % | Verankert | Lücken |
+|---|---:|---:|---:|---:|---:|---:|
+| 001-141170, 10.308 Zeichen | 16.384 | 43 | 16/24 (67 %) | 18/24 | 0,68 | 8 |
+| 001-110144, 26.715 Zeichen | 16.384 | — | Abbruch | — | — | — |
+| 001-110144, 26.715 Zeichen | 65.536 | 108 | **36/49 (73 %)** | 46/49 (94 %) | 0,82 | 13 |
+
+Der Lauf mit erhöhtem Budget ist nicht dünn: 108 Claims, 0,82 verankert, und
+bei der strengen Schwelle ein *besserer* Recall als die kürzere Entscheidung
+mit demselben Prompt erreicht. Die erwartete Verschlechterung tritt nicht ein.
+
+Zwei Dinge bleiben trotzdem richtig. Die Abdeckungsmessung zeigt die Lücke
+weiterhin an — 0,82 gegen 0,977 für die Gold-Antwort, mit 13 benannten Passagen
+—, die Warnleuchte funktioniert also auch im erhöhten Budget. Und die Erhöhung
+verschiebt die Abbruchgrenze nur proportional: 64k Token reichen grob bis
+110.000 Zeichen, die längste Entscheidung im Korpus hat 447.000.
+
+Was hier nicht gemessen ist: erhöhtes Budget zusammen mit der neutralen Prompt.
+Der 73-Prozent-Lauf verwendet die Produktionsprompt, deren Passungsproblem
+Abschnitt 3d beschreibt.
+
+## 3f. Die deterministische Hälfte
 
 Die deterministische Hälfte trägt die Länge dagegen problemlos. Speist man die
 Gold-Spannen als Packet ein, lässt das Gate alle 24 beziehungsweise 49 Claims
