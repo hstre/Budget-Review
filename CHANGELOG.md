@@ -64,6 +64,17 @@ says when it moves them. Their current values are `polished` 5 claims /
   anchored share, 0.68 against the gold answer's 0.95 on the same document.
   `scripts/echr_gold.py` builds the document and the gold packet; the paid
   workflow runs the measurement as a second job.
+- **Segmenting the document does not repair recall.** Extracting the same
+  10,308-character decision in five pieces of about 2,000 characters — the size
+  the extractor handles perfectly on the fixture — moved recall from 16/24 to
+  17/24 at 80% span overlap, against a success mark of 20/24 fixed before the
+  run. It produced 52 claims instead of 43 and raised the anchored share from
+  0.68 to 0.75, and at 50% overlap it reached 21/24 against 18/24. So less text
+  per call makes the extractor touch more of the argument without decomposing it
+  more thoroughly, at five times the calls. The result disconfirms the length
+  explanation: segments the size of the fixture did not behave like the fixture,
+  which points at the kind of text rather than its length. One document, one
+  model, 24 spans. `scripts/segmented_extract.py` runs it.
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.

@@ -166,10 +166,24 @@ outgrows the output budget. A refusal is the better failure of the two, and it
 is why truncation counts as fatal on the first response rather than being
 retried.
 
-So a document beyond a few thousand characters should be split before review,
-and until section-wise extraction exists that is manual work. The anchored share
-is the warning light: if it sits far below what the document plausibly supports,
-the graph is thin, whatever the findings say.
+Splitting the document does not repair it. Extracting the same decision in five
+pieces of about 2,000 characters each — comparable to the fixture the extractor
+handles perfectly — moved recall from 16/24 to 17/24 at 80% overlap, against a
+pre-registered success mark of 20/24. It produced 52 claims instead of 43 and
+raised the anchored share from 0.68 to 0.75, and at the looser 50% threshold it
+did clearly better, 21/24 against 18/24: with less text per call the extractor
+touches more of the argument, but still does not decompose it thoroughly.
+
+That is the useful result, because it disconfirms the obvious explanation. If
+context length were the cause, segments the size of the fixture should have
+behaved like the fixture, and they did not. What separates the two documents is
+not length but kind — dense legal prose with long citation-laden sentences
+against a synthetic project proposal. Chunking costs five calls for one
+additional span and is not the fix; the open question is what the extractor does
+differently on this sort of text.
+
+So for now: the anchored share is the warning light. If it sits far below what
+the document plausibly supports, the graph is thin, whatever the findings say.
 
 ### Review profiles
 
@@ -471,11 +485,27 @@ zurückkommen muss und die Antwort das Ausgabebudget übersteigt. Von beiden
 Fehlern ist der Abbruch der bessere — und der Grund, warum eine abgeschnittene
 Antwort sofort als endgültig gilt und nicht wiederholt wird.
 
-Ein Dokument jenseits weniger tausend Zeichen sollte also vor der Prüfung
-geteilt werden; solange es keine abschnittsweise Extraktion gibt, ist das
-Handarbeit. Der verankerte Anteil ist die Warnleuchte: Liegt er deutlich unter
-dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig davon,
-was die Befunde sagen.
+Das Dokument zu teilen behebt es nicht. Dieselbe Entscheidung in fünf Stücken
+von je rund 2.000 Zeichen extrahiert — vergleichbar mit der Fixture, die der
+Extraktor vollständig zerlegt — bringt 17/24 statt 16/24 bei 80 % Überlappung,
+gegen ein vorab festgelegtes Erfolgsmaß von 20/24. Es entstanden 52 statt 43
+Claims, der verankerte Anteil stieg von 0,68 auf 0,75, und bei der lockereren
+50-%-Schwelle war der Gewinn deutlich: 21/24 gegen 18/24. Mit weniger Text je
+Aufruf berührt der Extraktor also mehr von der Argumentation, zerlegt sie aber
+weiterhin nicht gründlich.
+
+Genau das ist der brauchbare Befund, weil er die naheliegende Erklärung
+widerlegt. Wäre die Kontextlänge die Ursache, hätten sich Segmente in
+Fixture-Größe wie die Fixture verhalten müssen — haben sie nicht. Die beiden
+Dokumente unterscheiden sich nicht in der Länge, sondern in der Art: dichte
+Rechtsprosa mit langen, zitatgespickten Sätzen gegen einen synthetischen
+Projektantrag. Das Zerteilen kostet fünf Aufrufe für eine zusätzliche Spanne
+und ist nicht die Lösung; offen ist, was der Extraktor bei dieser Textsorte
+anders macht.
+
+Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
+unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig
+davon, was die Befunde sagen.
 
 ### Prüfprofile
 

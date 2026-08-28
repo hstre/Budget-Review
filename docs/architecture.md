@@ -130,6 +130,37 @@ beiden Fehler und der Grund, warum eine abgeschnittene Antwort seit 0.2.0a3
 sofort als endgültig gilt: ein Wiederholungsversuch würde dasselbe Ergebnis
 bezahlen.
 
+### 3c. Zerteilen behebt es nicht
+
+Naheliegende Erklärung: zu viel Text je Aufruf. Sie trägt nicht. Dieselbe
+Entscheidung, in fünf Segmenten von je rund 2.000 Zeichen extrahiert — also in
+Fixture-Größe, die der Extraktor vollständig zerlegt —, ergibt:
+
+| | Claims | Recall 80 % | Recall 50 % | Abdeckung | Aufrufe |
+|---|---:|---:|---:|---:|---:|
+| ein Aufruf | 43 | 16/24 | 18/24 | 0,68 | 1 |
+| fünf Segmente | 52 | **17/24** | **21/24** | 0,75 | 5 |
+
+Vorab festgelegt war ein Erfolgsmaß von 20/24 bei 80 %. Es wurde verfehlt. Der
+Zuwachs bei 80 % liegt bei einer einzigen Spanne und ist bei n = 24 nicht von
+Rauschen zu unterscheiden; der Zuwachs bei 50 % (18 auf 21) ist deutlicher und
+heißt: Mit weniger Text je Aufruf berührt der Extraktor mehr Passagen, deckt
+sie aber nicht gründlicher ab.
+
+Damit ist die Längen-Hypothese weitgehend widerlegt. Segmente in Fixture-Größe
+hätten sich wie die Fixture verhalten müssen (25/25) und tun es nicht. Der
+Unterschied zwischen beiden Dokumenten ist nicht die Länge, sondern die
+Textsorte. Fünf Aufrufe für eine zusätzliche Spanne sind zudem ein schlechtes
+Geschäft.
+
+Zwei Vorbehalte: ein Dokument, ein Modell, 24 Gold-Spannen. Und die vorab
+genannte Obergrenze von 22/24 war falsch — sie unterstellte, eine Gold-Spanne
+müsse von einem einzelnen Claim abgedeckt werden. Gemessen wird die Vereinigung
+aller Anker, die eine Segmentgrenze überbrücken kann; G08 wurde genau so
+gefunden. Die Obergrenze war 24/24.
+
+## 3d. Die deterministische Hälfte
+
 Die deterministische Hälfte trägt die Länge dagegen problemlos. Speist man die
 Gold-Spannen als Packet ein, lässt das Gate alle 24 beziehungsweise 49 Claims
 ohne Rejection zu, und die Abdeckungsmessung liefert 0,946 und 0,977. Die
