@@ -28,6 +28,11 @@ on:
         required: false
         default: ""
         type: string
+      segment_budget:
+        description: "Characters per extraction call. 0 sends the document in one call."
+        required: false
+        default: "0"
+        type: string
 
 permissions:
   contents: read
@@ -102,10 +107,21 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
           set -o pipefail
-          content-review review "gold-case/${{ inputs.gold_decision }}.txt" \
-            --profile "${{ inputs.profile }}" \
-            --provider deepseek \
-            --output review-output/gold 2>&1 | tee gold-case/extraction.log
+          DOC="gold-case/${{ inputs.gold_decision }}.txt"
+          BUDGET="${{ inputs.segment_budget }}"
+          if [ "$BUDGET" = "0" ]; then
+            content-review review "$DOC" \
+              --profile "${{ inputs.profile }}" \
+              --provider deepseek \
+              --output review-output/gold 2>&1 | tee gold-case/extraction.log
+          else
+            python scripts/segmented_extract.py "$DOC" "${{ inputs.gold_decision }}" \
+              gold-case/merged-packet.json "$BUDGET" 2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/merged-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          fi
 
       - name: Measure recall
         if: steps.extract.outcome == 'success'
