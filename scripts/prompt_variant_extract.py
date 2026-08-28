@@ -48,7 +48,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from budget_review.gate import sha256_text  # noqa: E402
 from budget_review.models import SchemaError, SemanticPacket  # noqa: E402
 from budget_review.prompts import extraction_prompt  # noqa: E402
-from budget_review.provider import DeepSeekProvider, ModelConfig  # noqa: E402
+from budget_review.provider import (  # noqa: E402
+    DeepSeekProvider,
+    ModelConfig,
+    _reject_invalid_proposals,
+)
 
 ORIGINAL_DECOMPOSE = (
     "Decompose polished prose aggressively: an elegant sentence may contain several claims."
@@ -142,6 +146,22 @@ def extract_packet(document_id: str, system: str, user: str, max_tokens: int) ->
         except SchemaError as exc:
             validation_error = exc
             print(f"  Schema-Ablehnung in Versuch {attempt + 1}: {exc}", file=sys.stderr)
+            if attempt == 0:
+                continue
+            # And not stricter than a real one either. Production drops the
+            # single malformed proposal and keeps the packet; an experiment that
+            # dies here instead would score the prompt on a document the product
+            # handles, which is how the sweep lost 001-77936 over one unknown
+            # relation_type.
+            recovered = _reject_invalid_proposals(candidate)
+            if recovered is not None:
+                print(
+                    f"  {len(recovered.claim_rejections)} Claims, "
+                    f"{len(recovered.relation_rejections)} Relationen abgelehnt, "
+                    "Paket behalten",
+                    file=sys.stderr,
+                )
+                return recovered.to_dict()
             continue
         return candidate
     raise SystemExit(f"packet failed the closed schema twice: {validation_error}")

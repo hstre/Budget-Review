@@ -77,3 +77,50 @@ def test_a_prompt_that_moved_on_fails_the_run_instead_of_testing_nothing(monkeyp
 
     with pytest.raises(SystemExit):
         variant.variant_prompt("d", DOCUMENT, ("decompose",))
+
+
+class _StubProvider:
+    """Answers with the same malformed relation twice, as the model did."""
+
+    calls = 0
+
+    def complete_json(self, system, user, config, max_tokens):  # noqa: ANN001, D102
+        type(self).calls += 1
+        response = {
+            "claims": [
+                {
+                    "proposal_id": "C01",
+                    "claim_type": "fact",
+                    "canonical_content": "A short document.",
+                    "raw_span": "A short document.",
+                    "confidence": 0.9,
+                    "source_ref": "d",
+                }
+            ],
+            "relations": [
+                {
+                    "source_id": "C01",
+                    "relation_type": "DIFFERENTIATES",
+                    "target_id": "C01",
+                    "confidence": 0.9,
+                    "rationale": "x",
+                }
+            ],
+        }
+        return response, {"model": "deepseek-v4-flash", "output_hash": "o" * 64}
+
+
+def test_a_malformed_relation_keeps_the_packet_as_production_does(monkeypatch) -> None:
+    """The experiment may not be stricter than the path it measures.
+
+    Production drops the single bad proposal and keeps the extraction; a script
+    that raises instead loses the document and reports it as unmeasurable.
+    """
+    _StubProvider.calls = 0
+    monkeypatch.setattr(variant, "DeepSeekProvider", _StubProvider)
+    packet = variant.extract_packet("d", "system", "user", 128)
+
+    assert _StubProvider.calls == 2, "the repair round must still be spent first"
+    assert packet["relations"] == []
+    assert [r["item_id"] for r in packet["relation_rejections"]] == ["R001"]
+    assert len(packet["claims"]) == 1

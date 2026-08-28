@@ -6,6 +6,14 @@ property of that document. The vocabulary note lifted recall on 001-141170 from
 does, a per-domain note is a sound design, and if it does not, tuning on one
 decision was never an optimisation at all.
 
+It does not repeat. Across five decisions the note scores 44 gold spans against
+the production prompt's 55, collapsing from 17/23 to 7/23 on one of them. The
+sweep also answered a question nobody had asked it: the production arm reached
+20 of 24 on 001-141170, where the earlier run of that same configuration reached
+16. The extractor's run-to-run spread is the size of the effect being measured,
+so one call per arm settles nothing — including here. Repeats per arm are what
+this script should grow next.
+
 Everything is held constant except the prompt and the document. Each decision
 runs twice, production first, and both packets go through the real gate so the
 anchors are the ones the product would compute.
@@ -92,21 +100,30 @@ def main() -> int:
             print(f"  {decision}: uebersprungen ({type(error).__name__}: {error})", file=sys.stderr)
 
     print()
-    print(f"{'Entscheidung':16} {'Gold':>5} {'Produktion':>12} {args.edit:>14} {'Differenz':>10}")
+    print(
+        f"{'Entscheidung':16} {'Gold':>5} {'Produktion':>12} {args.edit:>14} "
+        f"{'Differenz':>10} {'Claims':>14}"
+    )
     total_before = total_after = 0
     for decision, gold_count, results in rows:
-        before, _ = results["production"]
-        after, _ = results[args.edit]
+        before, claims_before = results["production"]
+        after, claims_after = results[args.edit]
         total_before += before
         total_after += after
         print(
             f"{decision:16} {gold_count:>5} {before:>8}/{gold_count:<3} "
-            f"{after:>10}/{gold_count:<3} {after - before:>+10}"
+            f"{after:>10}/{gold_count:<3} {after - before:>+10} "
+            # A collapse in recall reads very differently depending on whether
+            # the arm proposed fewer claims or aimed them elsewhere, and the
+            # first sweep could not tell the two apart.
+            f"{claims_before:>8} -> {claims_after:<4}"
         )
     if rows:
         print()
-        print(f"{'Summe':16} {'':>5} {total_before:>8}     {total_after:>10}     "
-              f"{total_after - total_before:>+10}")
+        print(
+            f"{'Summe':16} {'':>5} {total_before:>8}     {total_after:>10}     "
+            f"{total_after - total_before:>+10}"
+        )
     return 0 if rows else 1
 
 

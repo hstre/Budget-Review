@@ -161,6 +161,13 @@ gefunden. Die Obergrenze war 24/24.
 
 ## 3d. Der Prompt wirkt, aber ungleichmäßig
 
+> **Nachtrag, siehe Abschnitt 3h:** Der Befund dieses Abschnitts hält der
+> Wiederholung nicht stand. Ein späterer Lauf derselben Konfiguration —
+> Produktionsprompt, gleiches Dokument, gleiches Budget — liefert 20/24 statt
+> der hier berichteten 16/24. Die Lauf-zu-Lauf-Streuung ist damit so groß wie
+> der gemessene Effekt. Alle Zahlen dieses Abschnitts beruhen auf je einem
+> Aufruf pro Arm und sind als eine Ziehung zu lesen, nicht als Messung.
+
 Bleibt die Frage, ob der Extraktor diese Textsorte nicht kann oder ob er nach
 der falschen Sache gefragt wird. Zwei Stellen der Produktionsprompt sind an
 Projektanträgen entstanden: Sieben der 21 Claim-Typen — target, capacity,
@@ -391,6 +398,53 @@ Gold-Spannen als Packet ein, lässt das Gate alle 24 beziehungsweise 49 Claims
 ohne Rejection zu, und die Abdeckungsmessung liefert 0,946 und 0,977. Die
 Begrenzung liegt allein bei der Extraktion, was den offenen Fahrplanpunkt
 abschnittsweise Extraktion bestätigt.
+
+## 3h. Fünf Entscheidungen: der Befund fällt
+
+Die Prompt-Änderung war auf **einem** Dokument abgeleitet. Ist der Gewinn
+juristik-typisch, wäre ein Vokabular-Satz pro Fachbereich eine tragfähige
+Bauform; ist er es nicht, war die Optimierung auf 001-141170 eine Optimierung
+auf dieses Dokument. Vorab festgelegt: **Gewinn ≥ 3 Spannen bei mindestens 3
+von 5 Entscheidungen.** Gleiches Modell, Budget 16.384, ein Aufruf pro Arm,
+beide Pakete durch das echte Gate.
+
+| Entscheidung | Gold | Produktion | `vocabulary` | Differenz |
+|---|---:|---:|---:|---:|
+| 001-141170 | 24 | 20/24 | 20/24 | ±0 |
+| 001-172073 | 21 | 18/21 | 17/21 | −1 |
+| 001-61247 | 23 | 17/23 | 7/23 | **−10** |
+| 001-60917 | 24 | — | — | Produktionslauf bei 16.384 abgeschnitten |
+| 001-77936 | 23 | — | — | Fehler im Messskript, siehe unten |
+| Summe (gemessen) | | 55 | 44 | **−11** |
+
+Das Erfolgsmaß ist in die andere Richtung verfehlt. Der Vokabular-Hinweis ist
+in der Summe schlechter und bricht auf einer Entscheidung ein. Er geht **nicht**
+in die Produktion, und das fachbereichsweise Vokabular, das er begründen
+sollte, hat keine Grundlage.
+
+**Die wichtigere Zahl steht in der ersten Zeile.** Der Produktionsprompt
+erreicht hier 20/24 auf 001-141170 — derselbe Prompt, dasselbe Modell, dasselbe
+Dokument, dasselbe Budget, Temperatur 0 — und in Abschnitt 3d 16/24. Vier
+Spannen Streuung zwischen zwei Läufen einer Konfiguration sind genau die Größe
+des dort berichteten „Prompt-Effekts".
+
+Daraus folgt nicht, dass die neutrale Prompt nichts bringt, und auch nicht,
+dass sie etwas bringt. Es folgt, dass **ein Aufruf pro Arm den Effekt nicht von
+der Eigenstreuung des Extraktors trennen kann**. Das betrifft jeden
+Einzellauf-Vergleich der Abschnitte 3c bis 3f — Segmentierung (+1), Budget,
+Bündel-Zerlegung, Doppellauf. Die Zahlen bleiben stehen, ihr Status ändert
+sich: eine Ziehung, keine Messung. Zu entscheiden wäre das mit Wiederholungen
+pro Arm; bezahlt hat sie bisher niemand. Bis dahin bleibt die Produktionsprompt
+unverändert, weil eine ungemessene Änderung keine Verbesserung ist.
+
+**Die letzte Tabellenzeile war unser eigener Fehler.** Das Experimentskript
+brach bei `unknown relation_type: DIFFERENTIATES` ab, während die Produktion
+genau diese eine Relation ablehnt und das Paket behält (Abschnitt 3e). Ein
+Messinstrument, das strenger ist als der gemessene Pfad, meldet ein Dokument
+als unmessbar, das das Produkt verarbeitet — und verschweigt dabei nicht
+einmal etwas, es fehlt einfach eine Zeile. Das Skript nimmt jetzt denselben
+Rückfallpfad. Der Abbruch bei 001-60917 ist dagegen echt: Bei 16.384 Tokens
+reicht die Ausgabe nicht, was Abschnitt 3f beschreibt.
 
 ## 4. ClaimGraph
 

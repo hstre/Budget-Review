@@ -152,7 +152,8 @@ ECHR legal corpus:
 | Court decision 001-141170 | 10,308 | 24 | 16/24 at 80%, 18/24 at 50% |
 | Court decision 001-110144 | 26,715 | 49 | no extraction: output truncated |
 
-The middle row is the one to worry about. That run did not fail: it returned 43
+The middle row is the one to worry about, though the 16/24 itself is not firm:
+a later run of the identical configuration read 20/24, which is discussed below. That run did not fail: it returned 43
 claims, 27 relations and 13 findings, and nothing in the dossier announced that
 a third of the expert-annotated argument had never entered the graph. The only
 signal was the anchored share, 0.68 against the 0.95 the gold answer reaches on
@@ -205,6 +206,10 @@ those two passages, same model, same document, one call:
 | Five segments | 5 | 52 | 17/24 | 21/24 | 0.75 | 40 |
 | Domain-neutral prompt | 1 | 40 | **20/24** | 21/24 | 0.76 | 23 |
 
+Each row is one call. A later run of the production row read 20/24 on the same
+document, so read the sweep below before taking a difference of this size for an
+effect.
+
 The claim count is the telling part: the neutral prompt produces *fewer* claims
 than the production one and still finds four more gold spans, with far fewer
 claims that match no gold span at all. The problem was never how much the
@@ -222,14 +227,47 @@ and everything else equal, the neutral prompt moves 001-110144 from 36 to 37 of
 gained seventeen, and short of the 42 fixed before the run.
 
 So the finding is narrower than it first reads. The change helps markedly on one
-document, barely on another, and is unnecessary on the fixture. That it never
-hurts is measured; how much it helps depends on the document and is not settled
-by two of them. Taking the bundle apart shows the two edits are redundant rather than additive:
-each alone reaches the same 20 of 24, and all three variants miss exactly the
-same four spans while the production prompt misses those four plus four more.
-The change works as a switch, not as incremental care. The vocabulary note is
-the one to prefer — it adds a sentence rather than replacing an instruction, and
-it also removes the cause of the aborted run described below. None of it touches
+document, barely on another, and is unnecessary on the fixture. Taking the
+bundle apart shows the two edits are redundant rather than additive: each alone
+reaches the same 20 of 24, and all three variants miss exactly the same four
+spans while the production prompt misses those four plus four more.
+
+Then a sweep across five decisions took the finding away again. Same model, same
+16,384-token budget, one call per arm, both packets through the real gate — the
+vocabulary note against the production prompt:
+
+| Decision | Gold spans | Production | Vocabulary note | Difference |
+|---|---:|---:|---:|---:|
+| 001-141170 | 24 | 20/24 | 20/24 | ±0 |
+| 001-172073 | 21 | 18/21 | 17/21 | −1 |
+| 001-61247 | 23 | 17/23 | 7/23 | **−10** |
+| 001-60917 | 24 | — | — | production response truncated at 16,384 tokens |
+| 001-77936 | 23 | — | — | a defect in the sweep script, since fixed |
+| Sum (measured) | | 55 | 44 | **−11** |
+
+The mark fixed before the run was a gain of at least 3 spans on at least 3 of
+the 5. It was missed in the other direction: the note is worse in sum and
+collapses on one decision. It does not go into production, and the per-domain
+vocabulary it was meant to justify has nothing to stand on.
+
+The first row matters more than the verdict. The production prompt reads 20/24
+on 001-141170 here, and the run reported above — same prompt, same model, same
+document, same budget, temperature 0 — read 16/24. Four spans of spread between
+two runs of one configuration is the entire size of the "prompt effect" this
+section describes. That does not make the neutral prompt useless, and it does
+not make it useful: it means one call per arm cannot separate an effect from the
+extractor's own run-to-run spread. Every single-run comparison above —
+segmentation, budget, the bundle taken apart, the double run — is one draw
+rather than a measurement. The numbers stand; their status changes. Settling it
+needs repeats per arm, which nothing here has paid for yet, so the production
+prompt stays as it is: an unmeasured change is not an improvement.
+
+The last row of the table was our own doing. The experiment script raised on an
+unknown relation type where production rejects that one relation and keeps the
+packet, so it reported a document unmeasurable that the product handles. An
+instrument stricter than the path it measures produces exactly this: not a wrong
+number, a missing one. It now takes the same fallback. The truncation at
+001-60917 is real and is the budget limit described above; none of this touches
 the truncation above 27,000 characters.
 
 Until then: the anchored share is the warning light. If it sits far below what
@@ -520,7 +558,8 @@ EGMR-Rechtskorpus:
 | Entscheidung 001-141170 | 10.308 | 24 | 16/24 bei 80 %, 18/24 bei 50 % |
 | Entscheidung 001-110144 | 26.715 | 49 | keine Extraktion: Ausgabe abgeschnitten |
 
-Die mittlere Zeile ist die gefährliche. Dieser Lauf ist nicht gescheitert: Er
+Die mittlere Zeile ist die gefährliche — wobei die 16/24 selbst nicht fest sind:
+Ein späterer Lauf derselben Konfiguration ergab 20/24, siehe unten. Dieser Lauf ist nicht gescheitert: Er
 lieferte 43 Claims, 27 Relationen und 13 Befunde, und nichts im Dossier wies
 darauf hin, dass ein Drittel der fachlich annotierten Argumentation nie in den
 Graphen gelangt war. Das einzige Signal war der verankerte Anteil: 0,68 gegen
@@ -578,6 +617,10 @@ gleiches Dokument, ein Aufruf:
 | Fünf Segmente | 5 | 52 | 17/24 | 21/24 | 0,75 | 40 |
 | Neutrale Prompt | 1 | 40 | **20/24** | 21/24 | 0,76 | 23 |
 
+Jede Zeile ist ein Aufruf. Ein späterer Lauf der Produktionszeile ergab auf
+demselben Dokument 20/24 — vor einer Deutung dieser Differenz gehört der
+Durchlauf weiter unten gelesen.
+
 Die Claim-Zahl ist das Aufschlussreiche: Die neutrale Fassung erzeugt *weniger*
 Claims als die Produktionsfassung und findet trotzdem vier Gold-Spannen mehr,
 bei deutlich weniger Claims ohne jede Gold-Entsprechung. Es ging nie um die
@@ -597,15 +640,51 @@ festgelegten 42.
 
 Der Befund ist damit enger als er zunächst klingt. Die Änderung hilft auf einem
 Dokument deutlich, auf einem zweiten kaum, und auf der Fixture ist sie
-entbehrlich. Dass sie nirgends schadet, ist gemessen; wie groß ihr Nutzen ist,
-hängt vom Dokument ab und ist mit zweien nicht entschieden. Zerlegt man das Bündel, zeigt sich: Die
-beiden Eingriffe sind redundant, nicht additiv. Jeder allein erreicht dieselben
-20 von 24, und alle drei Varianten verfehlen exakt dieselben vier Spannen,
-während die Produktionsfassung diese vier plus vier weitere verfehlt. Die
-Änderung wirkt als Schalter, nicht als graduelle Sorgfalt. Vorzuziehen ist der
-Vokabular-Hinweis — er ergänzt einen Satz, statt eine Anweisung zu ersetzen, und
-beseitigt zugleich die Ursache des unten beschriebenen Laufabbruchs. Am Abbruch
-oberhalb von 27.000 Zeichen ändert nichts davon etwas.
+entbehrlich. Zerlegt man das Bündel, zeigt sich: Die beiden Eingriffe sind
+redundant, nicht additiv. Jeder allein erreicht dieselben 20 von 24, und alle
+drei Varianten verfehlen exakt dieselben vier Spannen, während die
+Produktionsfassung diese vier plus vier weitere verfehlt.
+
+Dann hat ein Durchlauf über fünf Entscheidungen den Befund wieder eingerissen.
+Gleiches Modell, Budget 16.384, ein Aufruf pro Arm, beide Pakete durch das echte
+Gate — der Vokabular-Hinweis gegen die Produktionsfassung:
+
+| Entscheidung | Gold | Produktion | Vokabular-Hinweis | Differenz |
+|---|---:|---:|---:|---:|
+| 001-141170 | 24 | 20/24 | 20/24 | ±0 |
+| 001-172073 | 21 | 18/21 | 17/21 | −1 |
+| 001-61247 | 23 | 17/23 | 7/23 | **−10** |
+| 001-60917 | 24 | — | — | Produktionsantwort bei 16.384 abgeschnitten |
+| 001-77936 | 23 | — | — | Fehler im Messskript, inzwischen behoben |
+| Summe (gemessen) | | 55 | 44 | **−11** |
+
+Vorab festgelegt war ein Gewinn von mindestens 3 Spannen bei mindestens 3 der
+5. Verfehlt, und zwar in die andere Richtung: Der Hinweis ist in der Summe
+schlechter und bricht auf einer Entscheidung ein. Er geht nicht in die
+Produktion, und das fachbereichsweise Vokabular, das er begründen sollte, hat
+keine Grundlage.
+
+Wichtiger als dieses Urteil ist die erste Zeile. Der Produktionsprompt erreicht
+hier 20/24 auf 001-141170 — und im oben berichteten Lauf, gleicher Prompt,
+gleiches Modell, gleiches Dokument, gleiches Budget, Temperatur 0, waren es
+16/24. Vier Spannen Streuung zwischen zwei Läufen einer Konfiguration sind genau
+die Größe des „Prompt-Effekts", den dieser Abschnitt beschreibt. Das macht die
+neutrale Prompt weder nutzlos noch nützlich; es heißt, dass **ein Aufruf pro Arm
+den Effekt nicht von der Eigenstreuung des Extraktors trennen kann**. Jeder
+Einzellauf-Vergleich oben — Segmentierung, Budget, Bündel-Zerlegung, Doppellauf
+— ist damit eine Ziehung, keine Messung. Die Zahlen bleiben stehen, ihr Status
+ändert sich. Entscheiden ließe sich das mit Wiederholungen pro Arm, die bisher
+niemand bezahlt hat; bis dahin bleibt die Produktionsprompt unverändert, denn
+eine ungemessene Änderung ist keine Verbesserung.
+
+Die letzte Tabellenzeile war unser eigener Fehler: Das Experimentskript brach
+bei einem unbekannten Relationstyp ab, während die Produktion genau diese eine
+Relation ablehnt und das Paket behält. Ein Messinstrument, das strenger ist als
+der gemessene Pfad, meldet ein Dokument als unmessbar, das das Produkt
+verarbeitet — keine falsche Zahl, eine fehlende. Das Skript nimmt jetzt denselben
+Rückfallpfad. Der Abbruch bei 001-60917 ist dagegen echt und die oben
+beschriebene Budgetgrenze. Am Abbruch oberhalb von 27.000 Zeichen ändert nichts
+davon etwas.
 
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig

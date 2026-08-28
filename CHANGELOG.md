@@ -75,7 +75,7 @@ says when it moves them. Their current values are `polished` 5 claims /
   explanation: segments the size of the fixture did not behave like the fixture,
   which points at the kind of text rather than its length. One document, one
   model, 24 spans. `scripts/segmented_extract.py` runs it.
-- **The extraction prompt, not the model, was the constraint.** Replacing two
+- **The extraction prompt looked like the constraint; a repeat run withdrew that.** Replacing two
   proposal-specific passages — a claim-type vocabulary in which seven of
   twenty-one values describe a plan rather than an argument, and "decompose
   polished prose aggressively: an elegant sentence may contain several claims" —
@@ -87,6 +87,10 @@ says when it moves them. Their current values are `polished` 5 claims /
   two edits. It does not affect the truncation above 27,000 characters, and it
   has to clear the frozen controls before it can become the production prompt.
   `scripts/prompt_variant_extract.py` runs it against the production prompt.
+  **Superseded by the sweep below:** a later run of the production arm on the
+  same document, prompt, model and budget read 20/24, so the 16-to-20 gain
+  claimed here is the size of the extractor's own run-to-run spread. The prompt
+  change is neither confirmed nor refuted; it is unmeasured.
 - **One unsupported claim type can cost the whole extraction, and the repair
   round does not reliably prevent it.** On a court decision the model reaches for
   `claim_type: conclusion`, which the closed proposal-shaped vocabulary lacks.
@@ -169,6 +173,23 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **A sweep across five court decisions refutes the prompt optimisation and,
+  with it, the evidential value of every single-run comparison here.** Same
+  model, same 16,384-token budget, one call per arm, both packets scored through
+  the real gate: the vocabulary note reaches 20/24, 17/21 and 7/23 where the
+  production prompt reaches 20/24, 18/21 and 17/23 — 44 against 55 gold spans in
+  sum, against a mark of at least 3 spans gained on at least 3 of the 5 fixed
+  before the run. The note does not go into production, and the per-domain
+  vocabulary it was meant to justify has nothing behind it. The more consequential
+  reading is the production arm itself: 20/24 here against 16/24 in the earlier
+  run of the identical configuration at temperature 0. A four-span spread between
+  two draws is the whole effect the prompt work reported, so segmentation (+1),
+  the budget comparison, the bundle taken apart and the double run are each one
+  draw rather than a measurement. Their numbers stand; their status does not.
+  Settling any of it needs repeats per arm, which no run here has paid for.
+  Two of the five produced no row: 001-60917 truncated at 16,384 tokens, which is
+  the documented budget limit, and 001-77936 was lost to the script defect fixed
+  below. `scripts/prompt_sweep.py` runs it.
 
 ### Fixed
 
@@ -184,6 +205,14 @@ says when it moves them. Their current values are `polished` 5 claims /
   there would return a graph nobody proposed. A relation left pointing at a
   dropped claim needs no special handling: the gate admits an edge only when
   both endpoints were admitted.
+- **The prompt experiment was stricter than the path it measured.**
+  `extract_packet` raised after the second schema rejection, where production
+  drops the single malformed proposal and keeps the packet, so a court decision
+  the product handles was reported as unmeasurable and silently left the sweep's
+  table one row short. It now takes the same recovery path, and the rejections
+  are printed rather than swallowed. An instrument that fails where the measured
+  path succeeds does not produce a wrong number, it produces a missing one,
+  which is harder to notice.
 - **A connection dropped mid-response crashed the run.** The retry loop caught
   `URLError` and `TimeoutError`, but a body that ends early or a peer that
   resets after `urlopen` has already returned raises `http.client.IncompleteRead`
