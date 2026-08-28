@@ -23,12 +23,21 @@ takes the production prompt and replaces those two passages, asserting first
 that each is present, so a prompt that has since changed fails the run instead
 of quietly testing nothing.
 
+The same harness answers a second question. The output budget of 16,384 tokens
+is self-imposed: the model accepts up to 384,000. Raising it is therefore
+possible, and --max-tokens measures what that buys — whether a document past
+the truncation point completes, and what the resulting graph is worth. A larger
+budget that turns a loud failure into a quiet, thin dossier would be a loss for
+this tool, so the number to watch is recall, not whether the run finishes.
+
 Usage:
     prompt_variant_extract.py <document> <document-id> <output-packet.json>
+                              [--prompt production|neutral] [--max-tokens N]
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import uuid
@@ -73,22 +82,33 @@ def variant_prompt(document_id: str, document: str) -> tuple[str, str]:
 
 
 def main() -> int:
-    if len(sys.argv) != 4:
-        print(__doc__, file=sys.stderr)
-        return 2
-    document = Path(sys.argv[1]).read_text(encoding="utf-8")
-    document_id = sys.argv[2]
-    out_path = Path(sys.argv[3])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("document", type=Path)
+    parser.add_argument("document_id")
+    parser.add_argument("out_path", type=Path)
+    parser.add_argument("--prompt", choices=("production", "neutral"), default="neutral")
+    parser.add_argument("--max-tokens", type=int, default=16384)
+    args = parser.parse_args()
 
-    system, user = variant_prompt(document_id, document)
-    print(f"Prompt-Variante: {len(system)} Zeichen System, {len(user)} Zeichen User")
+    document = args.document.read_text(encoding="utf-8")
+    document_id = args.document_id
+    out_path = args.out_path
+
+    if args.prompt == "neutral":
+        system, user = variant_prompt(document_id, document)
+    else:
+        system, user = extraction_prompt(document_id, document, "general")
+    print(
+        f"Prompt: {args.prompt}, max_tokens {args.max_tokens}, "
+        f"{len(system)} Zeichen System, {len(user)} Zeichen User"
+    )
 
     provider = DeepSeekProvider()
     response, metadata = provider.complete_json(
         system=system,
         user=user,
         config=ModelConfig(model_id="deepseek-v4-flash", thinking=False),
-        max_tokens=16384,
+        max_tokens=args.max_tokens,
     )
     packet_data = {
         "schema_version": "content-review.semantic-packet/0.2",

@@ -38,13 +38,18 @@ on:
         required: false
         default: false
         type: boolean
+      max_tokens:
+        description: "Extraction output budget. The model allows up to 384000."
+        required: false
+        default: "16384"
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == ''
+    if: inputs.gold_decision == '' && inputs.prompt_variant != true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -80,7 +85,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != ''
+    if: inputs.gold_decision != '' || inputs.prompt_variant == true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -102,8 +107,18 @@ jobs:
         run: |
           mkdir -p gold-case
           mv gold-case-provenance.txt gold-case/
-          python scripts/echr_gold.py corpus/gold_data "${{ inputs.gold_decision }}" gold-case \
-            | tee -a gold-case/gold-case-provenance.txt
+          if [ -n "${{ inputs.gold_decision }}" ]; then
+            python scripts/echr_gold.py corpus/gold_data "${{ inputs.gold_decision }}" gold-case \
+              | tee -a gold-case/gold-case-provenance.txt
+          else
+            # Regression control: the repo's own fixture, whose frozen packet the
+            # production prompt reaches in full. A prompt that wins on legal
+            # prose and loses here is not an improvement.
+            FIX=src/budget_review/fixtures/coherence_theatre
+            cp "$FIX/proposal.md" gold-case/fixture.txt
+            cp "$FIX/semantic_packet.json" gold-case/fixture.gold.json
+            echo "Gegenprobe auf der eigenen Fixture" | tee -a gold-case/gold-case-provenance.txt
+          fi
 
       - name: Live extraction
         id: extract
@@ -112,24 +127,38 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
           set -o pipefail
-          DOC="gold-case/${{ inputs.gold_decision }}.txt"
+          if [ -n "${{ inputs.gold_decision }}" ]; then
+            CASE="${{ inputs.gold_decision }}"
+            DOC="gold-case/$CASE.txt"
+            DOCID="$CASE"
+          else
+            CASE=fixture
+            DOC=gold-case/fixture.txt
+            DOCID=regional-skills-bridge
+          fi
+          echo "$CASE" > gold-case/case-name.txt
           BUDGET="${{ inputs.segment_budget }}"
-          if [ "${{ inputs.prompt_variant }}" = "true" ]; then
-            python scripts/prompt_variant_extract.py "$DOC" "${{ inputs.gold_decision }}" \
-              gold-case/variant-packet.json 2>&1 | tee gold-case/extraction.log
-            content-review review "$DOC" \
+          if [ "${{ inputs.prompt_variant }}" = "true" ] || \
+             [ "${{ inputs.max_tokens }}" != "16384" ]; then
+            PROMPT=production
+            [ "${{ inputs.prompt_variant }}" = "true" ] && PROMPT=neutral
+            python scripts/prompt_variant_extract.py "$DOC" "$DOCID" \
+              gold-case/variant-packet.json \
+              --prompt "$PROMPT" --max-tokens "${{ inputs.max_tokens }}" \
+              2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
               --profile "${{ inputs.profile }}" \
               --packet gold-case/variant-packet.json \
               --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
           elif [ "$BUDGET" = "0" ]; then
-            content-review review "$DOC" \
+            content-review review "$DOC" --document-id "$DOCID" \
               --profile "${{ inputs.profile }}" \
               --provider deepseek \
               --output review-output/gold 2>&1 | tee gold-case/extraction.log
           else
-            python scripts/segmented_extract.py "$DOC" "${{ inputs.gold_decision }}" \
+            python scripts/segmented_extract.py "$DOC" "$DOCID" \
               gold-case/merged-packet.json "$BUDGET" 2>&1 | tee gold-case/extraction.log
-            content-review review "$DOC" \
+            content-review review "$DOC" --document-id "$DOCID" \
               --profile "${{ inputs.profile }}" \
               --packet gold-case/merged-packet.json \
               --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
@@ -139,10 +168,11 @@ jobs:
         if: steps.extract.outcome == 'success'
         run: |
           set -o pipefail
+          CASE=$(cat gold-case/case-name.txt)
           python scripts/measure_recall.py \
             review-output/gold/dossier.json \
-            "gold-case/${{ inputs.gold_decision }}.gold.json" \
-            "gold-case/${{ inputs.gold_decision }}.txt" 2>&1 | tee gold-case/recall.txt
+            "gold-case/$CASE.gold.json" \
+            "gold-case/$CASE.txt" 2>&1 | tee gold-case/recall.txt
 
       - name: Report an extraction that did not complete
         if: steps.extract.outcome != 'success'
@@ -153,7 +183,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: gold-recall-${{ inputs.gold_decision }}
+          name: gold-recall-${{ inputs.gold_decision || 'fixture' }}-${{ github.run_id }}
           path: |
             gold-case/
             review-output/gold/
