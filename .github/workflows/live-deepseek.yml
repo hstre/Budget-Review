@@ -43,13 +43,18 @@ on:
         required: false
         default: "16384"
         type: string
+      double_run:
+        description: "Extract twice, once per prompt, and merge before the gate"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt_variant != true
+    if: inputs.gold_decision == '' && inputs.prompt_variant != true && inputs.double_run != true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -85,7 +90,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt_variant == true
+    if: inputs.gold_decision != '' || inputs.prompt_variant == true || inputs.double_run == true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -138,7 +143,15 @@ jobs:
           fi
           echo "$CASE" > gold-case/case-name.txt
           BUDGET="${{ inputs.segment_budget }}"
-          if [ "${{ inputs.prompt_variant }}" = "true" ] || \
+          if [ "${{ inputs.double_run }}" = "true" ]; then
+            python scripts/double_run_extract.py "$DOC" "$DOCID" \
+              gold-case/merged-packet.json --max-tokens "${{ inputs.max_tokens }}" \
+              2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/merged-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          elif [ "${{ inputs.prompt_variant }}" = "true" ] || \
              [ "${{ inputs.max_tokens }}" != "16384" ]; then
             PROMPT=production
             [ "${{ inputs.prompt_variant }}" = "true" ] && PROMPT=neutral

@@ -81,36 +81,16 @@ def variant_prompt(document_id: str, document: str) -> tuple[str, str]:
     return system, user
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("document", type=Path)
-    parser.add_argument("document_id")
-    parser.add_argument("out_path", type=Path)
-    parser.add_argument("--prompt", choices=("production", "neutral"), default="neutral")
-    parser.add_argument("--max-tokens", type=int, default=16384)
-    args = parser.parse_args()
+def extract_packet(document_id: str, system: str, user: str, max_tokens: int) -> dict:
+    """One extraction, with the production path's single schema repair round.
 
-    document = args.document.read_text(encoding="utf-8")
-    document_id = args.document_id
-    out_path = args.out_path
-
-    if args.prompt == "neutral":
-        system, user = variant_prompt(document_id, document)
-    else:
-        system, user = extraction_prompt(document_id, document, "general")
-    print(
-        f"Prompt: {args.prompt}, max_tokens {args.max_tokens}, "
-        f"{len(system)} Zeichen System, {len(user)} Zeichen User"
-    )
-
+    Without that round the experiment is more brittle than the path it is
+    compared against, and a rejected label would read as a worse result rather
+    than as one extra call. Legal prose reaches for labels the proposal-shaped
+    vocabulary does not have — "conclusion" among them.
+    """
     provider = DeepSeekProvider()
-    # Mirror the production repair round: one regeneration with the schema error
-    # fed back. Without it the experiment would be more brittle than the path it
-    # is compared against, and a rejected label would read as a worse result
-    # rather than as one extra call. Legal prose reaches for labels the
-    # proposal-shaped vocabulary does not have — "conclusion" among them.
     validation_error: SchemaError | None = None
-    packet_data: dict | None = None
     for attempt in range(2):
         active_system = system
         if validation_error is not None:
@@ -123,7 +103,7 @@ def main() -> int:
             system=active_system,
             user=user,
             config=ModelConfig(model_id="deepseek-v4-flash", thinking=False),
-            max_tokens=args.max_tokens,
+            max_tokens=max_tokens,
         )
         candidate = {
             "schema_version": "content-review.semantic-packet/0.2",
@@ -147,10 +127,33 @@ def main() -> int:
             validation_error = exc
             print(f"  Schema-Ablehnung in Versuch {attempt + 1}: {exc}", file=sys.stderr)
             continue
-        packet_data = candidate
-        break
-    if packet_data is None:
-        raise SystemExit(f"packet failed the closed schema twice: {validation_error}")
+        return candidate
+    raise SystemExit(f"packet failed the closed schema twice: {validation_error}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("document", type=Path)
+    parser.add_argument("document_id")
+    parser.add_argument("out_path", type=Path)
+    parser.add_argument("--prompt", choices=("production", "neutral"), default="neutral")
+    parser.add_argument("--max-tokens", type=int, default=16384)
+    args = parser.parse_args()
+
+    document = args.document.read_text(encoding="utf-8")
+    document_id = args.document_id
+    out_path = args.out_path
+
+    if args.prompt == "neutral":
+        system, user = variant_prompt(document_id, document)
+    else:
+        system, user = extraction_prompt(document_id, document, "general")
+    print(
+        f"Prompt: {args.prompt}, max_tokens {args.max_tokens}, "
+        f"{len(system)} Zeichen System, {len(user)} Zeichen User"
+    )
+
+    packet_data = extract_packet(document_id, system, user, args.max_tokens)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(packet_data, ensure_ascii=False, indent=1), encoding="utf-8")
