@@ -446,6 +446,77 @@ einmal etwas, es fehlt einfach eine Zeile. Das Skript nimmt jetzt denselben
 Rückfallpfad. Der Abbruch bei 001-60917 ist dagegen echt: Bei 16.384 Tokens
 reicht die Ausgabe nicht, was Abschnitt 3f beschreibt.
 
+## 3i. Die Streuung eines einzelnen Laufs
+
+Abschnitt 3h stellte zwei Läufe derselben Konfiguration nebeneinander, 16/24
+und 20/24, und ließ offen, ob das Rauschen ist. Vorab festgelegt: Streuung ≥ 4
+Spannen ⇒ Einzellauf-Vergleiche sind wertlos; Streuung ≤ 1 ⇒ Stichprobenrauschen
+erklärt die Differenz nicht und die Ursache liegt woanders. Fünf Läufe,
+001-141170, Produktionsprompt, 16.384 Tokens, Temperatur 0:
+
+| Lauf | Recall 80 % | Claims |
+|---|---:|---:|
+| 1 | 20/24 | 40 |
+| 2 | 20/24 | 40 |
+| 3 | 20/24 | 38 |
+| 4 | 19/24 | 41 |
+| 5 | 20/24 | 40 |
+
+**Streuung 1 Spanne** (Mittel 19,8; Claims 38–41), fünf von fünf Läufen
+geglückt. Der Extraktor ist auf dieser Konfiguration also nicht wackelig — die
+bequeme Erklärung „alles Rauschen" ist widerlegt, und zwar gegen meine eigene
+Vermutung.
+
+Damit ist die Frage verschoben, nicht beantwortet: Die 16/24 mit 43 Claims
+liegen außerhalb von allem, was fünf Wiederholungen zeigen. Was ich ausschließen
+kann, steht im Code — `prompts.py` ist auf diesem Branch unverändert, die
+Zulassungslogik des Gates ebenso, und `ingest` liest eine `.txt` unverändert
+ein, sodass Anker und Gold-Offsets auf denselben Zeichen sitzen. Die beiden
+Änderungen an `provider.py` (Retry-Klassifikation, Claim-Partitionierung)
+greifen nur in Fehlerfällen. Bleiben zwei Möglichkeiten, die ich mit diesen
+Daten **nicht** trennen kann: ein seltener Ausreißer jenseits von fünf
+Ziehungen, oder eine Änderung auf Anbieterseite zwischen den Läufen. Wer
+`deepseek-v4-flash` sagt, benennt einen Alias, keine Prüfsumme.
+
+**Was das für den Prompt-Befund heißt.** Der Produktionsprompt verfehlt heute
+genau G03, G08, G09 und G19 — dieselben vier Spannen, die in Abschnitt 3d alle
+drei Prompt-Varianten verfehlten, während die Produktionsfassung dort diese vier
+*plus vier weitere* verfehlte. Die Produktionsfassung verhält sich heute also
+wie die „neutrale" Prompt von gestern. Der Vorteil der Prompt-Änderung ist
+damit nicht widerlegt, sondern verschwunden: Es gibt nichts mehr, wogegen er
+gemessen wäre. Zusammen mit Abschnitt 3h bleibt: keine Prompt-Änderung geht in
+die Produktion.
+
+**Der belastbare neue Befund ist das Verfehlungsmuster.** Vier Spannen werden
+in *keinem* der fünf Läufe erreicht, eine einzige schwankt (G18, 4 von 5), 19
+sind in jedem Lauf da. Die Vereinigung aller fünf Läufe ist wieder **20/24**.
+Wiederholtes Ziehen kauft auf diesem Dokument also nichts — die Verfehlungen
+sind systematisch, nicht zufällig. Das ist zugleich die Grenze des
+Doppellauf-Arguments aus Abschnitt 3d: Es trägt dort, wo zwei *verschiedene*
+Konfigurationen verschiedene Spannen treffen, und nicht bei bloßer Wiederholung.
+
+Was die vier verbindet, ist überwiegend die Länge:
+
+| Spanne | Zeichen | Längenrang | Akteur / Typ |
+|---|---:|---:|---|
+| G19 | 1.145 | 24/24 | EGMR, Subsumtion |
+| G08 | 1.068 | 23/24 | EGMR, Subsumtion |
+| G09 | 483 | 18/24 | EGMR, Subsumtion |
+| G03 | 267 | 10/24 | Staat, frühere Rechtsprechung |
+
+Median der gefundenen Spannen 309 Zeichen, der verfehlten 1.068. Bei einer
+Schwelle von 80 Prozent Überlappung muss eine 1.145-Zeichen-Passage fast
+vollständig zerlegt werden, damit sie als gefunden zählt; das ist zum Teil eine
+Eigenschaft der Messung und nicht nur des Extraktors. Deterministisch ist die
+Länge trotzdem nicht: Fünf Spannen über 450 Zeichen werden zuverlässig
+gefunden, G03 mit 267 Zeichen nie. Der Akteur-Typ trennt nicht — sechs
+EGMR-Subsumtionen werden gefunden, drei nicht.
+
+Nebenbefund zur Kostenseite: In drei der fünf Läufe wurde der erste Versuch mit
+`unknown claim_type: conclusion` abgelehnt und im zweiten korrigiert. Das Label
+aus Abschnitt 3e kostet also in gut der Hälfte der Läufe einen zweiten
+bezahlten Aufruf, ohne dass ein Paket verloren geht.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

@@ -173,6 +173,28 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **Five repeats of one configuration: the spread is one span, so the 16/24 is
+  not sampling noise.** Production prompt, 001-141170, 16,384 tokens,
+  temperature 0, five runs: 20, 20, 20, 19, 20 of 24 gold spans with 38 to 41
+  claims, five of five completing. Pre-registered: a spread of 4 or more would
+  have made every single-run comparison here uninformative, a spread of 1 or
+  less means sampling does not explain the earlier 16/24 and the cause lies
+  elsewhere. The prompt file, the gate's admission logic and text ingestion are
+  unchanged between the runs, so what remains is a rare outlier beyond five
+  draws or a provider-side change, which these data cannot separate. The prompt
+  conclusion is unaffected: the production prompt now misses exactly the four
+  spans all three variants missed, where it used to miss those four plus four
+  more, so the variants' advantage is gone rather than refuted. The lasting
+  result is the miss pattern — four spans reached in none of the five runs, one
+  flickering, nineteen always found, and a five-run union of 20/24: repeated
+  sampling buys nothing here because the misses are systematic. Three of the
+  four are among the six longest spans (median 1,068 characters against 309 for
+  the found ones), which at an 80% overlap threshold is partly a property of the
+  measurement; length does not decide it alone, since five spans above 450
+  characters are found reliably and the 267-character one never is. Also
+  measured in passing: three of five runs spent a second paid call on the
+  `conclusion` label before the repair round corrected it, with no packet lost.
+  `scripts/variance_run.py` runs it.
 - **A sweep across five court decisions refutes the prompt optimisation and,
   with it, the evidential value of every single-run comparison here.** Same
   model, same 16,384-token budget, one call per arm, both packets scored through

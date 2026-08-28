@@ -159,7 +159,8 @@ a third of the expert-annotated argument had never entered the graph. The only
 signal was the anchored share, 0.68 against the 0.95 the gold answer reaches on
 the same document. The eight missed spans were not the long ones — missed and
 found spans have the same median length — but mostly the Court's own reasoning
-steps and its concluding finding.
+steps and its concluding finding. That holds for this run's eight; the four
+that five later runs miss consistently are length-skewed, and both appear below.
 
 Past roughly 27,000 characters the run stops instead, naming a truncated model
 response, because a claim must be returned with its verbatim span and the reply
@@ -262,7 +263,38 @@ rather than a measurement. The numbers stand; their status changes. Settling it
 needs repeats per arm, which nothing here has paid for yet, so the production
 prompt stays as it is: an unmeasured change is not an improvement.
 
-The last row of the table was our own doing. The experiment script raised on an
+Five repeats then settled what that spread is. Same document, same production
+prompt, same budget, temperature 0: 20, 20, 20, 19, 20 of 24 gold spans, with 38
+to 41 claims — a **spread of one span**, five runs of five completing. So the
+extractor is not noisy here, and the comfortable reading ("it was all sampling")
+is wrong. What the repeats do not explain is the 16/24 with 43 claims, which
+lies outside everything five draws show. The prompt file, the gate's admission
+logic and the text ingestion are unchanged between the two runs, so what remains
+is either a rare outlier beyond five draws or a change on the provider's side,
+and these data cannot separate the two.
+
+For the prompt the consequence is the same either way. The production prompt now
+misses exactly the four spans — G03, G08, G09, G19 — that all three prompt
+variants missed, where it used to miss those four plus four more. It behaves
+today like the "domain-neutral" prompt of yesterday, so the advantage is not
+refuted, it is gone: there is nothing left for it to improve on. No prompt
+change goes into production.
+
+The durable result is the miss pattern. Four spans are reached in none of the
+five runs, one flickers (G18, four of five), nineteen are found every time, and
+the union of all five runs is again 20/24 — repeated sampling buys nothing on
+this document, because the misses are systematic rather than random. That is
+also the limit of the double-run argument above: it works where two *different*
+configurations reach different spans, not on repetition. What the four have in
+common is mostly length. They rank 24th, 23rd, 18th and 10th of 24 by
+character count; the found spans have a median of 309 characters, the missed
+ones 1,068. At an 80% overlap threshold a 1,145-character passage has to be
+decomposed almost completely before it counts as found, which is partly a
+property of the measurement and not only of the extractor — though length does
+not decide it alone: five spans above 450 characters are found reliably, and the
+267-character G03 never is.
+
+The last row of the sweep table was our own doing. The experiment script raised on an
 unknown relation type where production rejects that one relation and keeps the
 packet, so it reported a document unmeasurable that the product handles. An
 instrument stricter than the path it measures produces exactly this: not a wrong
@@ -566,7 +598,9 @@ Graphen gelangt war. Das einzige Signal war der verankerte Anteil: 0,68 gegen
 die 0,95, die die Gold-Antwort auf demselben Dokument erreicht. Die acht
 verfehlten Spannen waren nicht die langen — gefundene und verfehlte haben
 dieselbe Medianlänge —, sondern überwiegend die Subsumtionsschritte des
-Gerichts und seine Schlussfolgerung.
+Gerichts und seine Schlussfolgerung. Das gilt für die acht dieses Laufs; die
+vier, die fünf spätere Läufe durchgängig verfehlen, sind längenlastig. Beides
+steht unten.
 
 Ab etwa 27.000 Zeichen bricht der Lauf stattdessen ab und benennt eine
 abgeschnittene Modellantwort, weil zu jedem Claim die wörtliche Textstelle
@@ -677,7 +711,39 @@ Einzellauf-Vergleich oben — Segmentierung, Budget, Bündel-Zerlegung, Doppella
 niemand bezahlt hat; bis dahin bleibt die Produktionsprompt unverändert, denn
 eine ungemessene Änderung ist keine Verbesserung.
 
-Die letzte Tabellenzeile war unser eigener Fehler: Das Experimentskript brach
+Fünf Wiederholungen haben diese Streuung dann bestimmt. Gleiches Dokument,
+Produktionsprompt, gleiches Budget, Temperatur 0: 20, 20, 20, 19, 20 von 24
+Gold-Spannen bei 38 bis 41 Claims — **Streuung eine Spanne**, fünf von fünf
+Läufen geglückt. Der Extraktor ist hier also nicht wackelig, und die bequeme
+Lesart („alles Rauschen") ist falsch. Was die Wiederholungen nicht erklären,
+sind die 16/24 mit 43 Claims: Sie liegen außerhalb von allem, was fünf
+Ziehungen zeigen. Prompt-Datei, Zulassungslogik des Gates und Text-Einlesung
+sind zwischen beiden Läufen unverändert; es bleibt ein seltener Ausreißer
+jenseits von fünf Ziehungen oder eine Änderung auf Anbieterseite, und diese
+Daten trennen das nicht.
+
+Für den Prompt ist die Folge in beiden Fällen dieselbe. Die Produktionsfassung
+verfehlt heute genau die vier Spannen — G03, G08, G09, G19 —, die auch alle drei
+Varianten verfehlten, während sie früher diese vier plus vier weitere verfehlte.
+Sie verhält sich heute wie die „neutrale" Prompt von gestern. Der Vorteil ist
+damit nicht widerlegt, sondern verschwunden: Es gibt nichts mehr, was er
+verbessern würde. Keine Prompt-Änderung geht in die Produktion.
+
+Der belastbare Befund ist das Verfehlungsmuster. Vier Spannen werden in keinem
+der fünf Läufe erreicht, eine schwankt (G18, vier von fünf), neunzehn sind immer
+da, und die Vereinigung aller fünf Läufe ist wieder 20/24 — wiederholtes Ziehen
+bringt auf diesem Dokument nichts, weil die Verfehlungen systematisch sind und
+nicht zufällig. Das ist zugleich die Grenze des Doppellauf-Arguments oben: Es
+trägt, wo zwei *verschiedene* Konfigurationen verschiedene Spannen treffen,
+nicht bei bloßer Wiederholung. Gemeinsam ist den vieren überwiegend die Länge:
+Sie belegen die Längenränge 24, 23, 18 und 10 von 24; der Median der gefundenen
+Spannen liegt bei 309 Zeichen, der der verfehlten bei 1.068. Bei 80 Prozent
+Überlappung muss eine Passage von 1.145 Zeichen fast vollständig zerlegt sein,
+um als gefunden zu zählen — das ist zum Teil eine Eigenschaft der Messung, nicht
+nur des Extraktors. Allein entscheidet die Länge aber nicht: Fünf Spannen über
+450 Zeichen werden zuverlässig gefunden, das 267 Zeichen kurze G03 nie.
+
+Die letzte Zeile der Durchlauf-Tabelle war unser eigener Fehler: Das Experimentskript brach
 bei einem unbekannten Relationstyp ab, während die Produktion genau diese eine
 Relation ablehnt und das Paket behält. Ein Messinstrument, das strenger ist als
 der gemessene Pfad, meldet ein Dokument als unmessbar, das das Produkt
