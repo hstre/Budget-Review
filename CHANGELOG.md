@@ -87,6 +87,18 @@ says when it moves them. Their current values are `polished` 5 claims /
   two edits. It does not affect the truncation above 27,000 characters, and it
   has to clear the frozen controls before it can become the production prompt.
   `scripts/prompt_variant_extract.py` runs it against the production prompt.
+- **The variants trade spans rather than adding them, and their union beats
+  either.** Comparing which gold spans each run reaches: the neutral prompt is a
+  strict improvement on 001-141170, where every span it misses the production
+  prompt missed too, but a trade on 001-110144, where it gains three spans and
+  loses two. Segmentation trades as well, gaining three and losing two. That is
+  why budget and prompt do not add up — they move the extractor's attention
+  instead of deepening it. On 001-110144 the union of the two prompt runs
+  reaches 39 of 49 against 37 for the better single run, with ten misses shared
+  and five exclusive, so the independence is measured rather than assumed.
+  Merging is cheap because the gate addresses claims by content, so a claim both
+  runs found collapses to one node and its edges survive.
+  `scripts/compare_runs.py` computes it from two dossiers.
 - The prompt gain does not replicate on a second legal document. With the
   budget raised and everything else equal, the neutral prompt moves 001-110144
   from 36 to 37 of 49 gold spans at 80% overlap, against a mark of 42 fixed

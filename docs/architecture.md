@@ -208,6 +208,31 @@ Weitere Vorbehalte: je ein Lauf, und die Änderung ist ein Bündel aus zwei
 Eingriffen, deren Einzelbeiträge offen bleiben. Am Abbruchverhalten oberhalb
 von 27.000 Zeichen ändert sie nichts.
 
+Warum sich die Effekte nicht addieren, zeigt der Vergleich auf Spannenebene:
+
+| Vergleich | A findet | B findet | nur B | nur A | Vereinigung |
+|---|---:|---:|---:|---:|---:|
+| Fall A: Produktionsprompt gegen neutral | 16 | 20 | 4 | 0 | 20/24 |
+| Fall A: ein Aufruf gegen fünf Segmente | 16 | 17 | 3 | 2 | 19/24 |
+| Fall B: Produktionsprompt gegen neutral | 36 | 37 | 3 | 2 | **39/49** |
+
+Nur der erste Fall ist eine echte Verbesserung: Was die neutrale Prompt dort
+verfehlt, verfehlt die Produktionsfassung auch. Die anderen beiden sind
+**Tausch** — die Variante gewinnt Spannen und verliert andere. Deshalb
+summieren sich Budget und Prompt nicht: Sie verschieben die Aufmerksamkeit des
+Extraktors, statt sie zu vertiefen.
+
+Daraus folgt ein Befund, den keine der Einzelmessungen hergibt: Auf Fall B
+erreicht die **Vereinigung zweier Läufe 39 von 49**, gegenüber 37 beim besseren
+einzelnen. Das ist das Anti-Delphi-Argument eine Schicht tiefer, und hier trägt
+es aus einem Grund, der bei der Abdeckung fehlte — die Unabhängigkeit ist
+gemessen, nicht unterstellt: Von den Verfehlungen sind zehn gemeinsam und fünf
+exklusiv. Das Zusammenführen ist zudem billig, weil das Gate Claims über ihre
+Inhaltsadresse führt: Was beide Läufe finden, fällt zu einem Knoten zusammen,
+und die Kanten bleiben erhalten.
+
+`scripts/compare_runs.py` rechnet das aus zwei Dossiers nach.
+
 Die Gegenprobe auf der eigenen Fixture ist gelaufen und fällt eindeutig aus:
 
 | Fixture, 1.707 Zeichen, 25 Gold-Claims | Claims | Recall 80 % | Verankert | Lücken |
