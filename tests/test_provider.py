@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import http.client
 import io
 import json
 import urllib.error
@@ -255,3 +256,38 @@ def test_rate_limit_and_upstream_errors_are_retried(monkeypatch, instant_sleep) 
 
         assert len(calls) == 3, f"HTTP {code} should be retried"
         assert f"HTTP {code}" in message
+
+
+def _drops_connection(calls: list[int]):
+    """A response whose body ends early — the real failure seen against DeepSeek."""
+
+    class _Response:
+        def read(self):
+            raise http.client.IncompleteRead(b"partial")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def respond(request, timeout=None):
+        calls.append(0)
+        return _Response()
+
+    return respond
+
+
+def test_a_connection_dropped_mid_response_is_retried(monkeypatch, instant_sleep) -> None:
+    """The body arrives incomplete, which a retry can fix — unlike a token limit.
+
+    Before this was handled the exception escaped the retry loop as a traceback
+    and killed the run, so a transient drop looked like a crash.
+    """
+    calls: list[int] = []
+
+    message = _complete(monkeypatch, _drops_connection(calls))
+
+    assert len(calls) == 3
+    assert "IncompleteRead" in message
+    assert "secret-key" not in message

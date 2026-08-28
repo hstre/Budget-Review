@@ -91,6 +91,16 @@ says when it moves them. Their current values are `polished` 5 claims /
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
 
+### Fixed
+
+- **A connection dropped mid-response crashed the run.** The retry loop caught
+  `URLError` and `TimeoutError`, but a body that ends early or a peer that
+  resets after `urlopen` has already returned raises `http.client.IncompleteRead`
+  or `ConnectionError`, neither of which is a `URLError`. Those escaped as a
+  traceback and killed the run, so a transient drop looked like a crash. Both
+  are now retried, since unlike a token limit a retry can end differently. Found
+  by a live gold-recall run that failed this way against DeepSeek.
+
 ### Changed
 
 - **The gap list decomposes the ratio only on short documents.** The 98% figure

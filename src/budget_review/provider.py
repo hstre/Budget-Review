@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import time
@@ -134,6 +135,11 @@ class DeepSeekProvider:
             except (
                 urllib.error.URLError,
                 TimeoutError,
+                # The body can end early or the peer can reset after urlopen has
+                # already returned. Those escape URLError, and unlike a token
+                # limit they are transient, so they belong in the retry.
+                http.client.HTTPException,
+                ConnectionError,
                 json.JSONDecodeError,
                 KeyError,
                 ProviderError,
