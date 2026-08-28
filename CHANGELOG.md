@@ -131,6 +131,15 @@ says when it moves them. Their current values are `polished` 5 claims /
   from the document rather than the quoted span. Citation numbers behave this way
   generally, so the check needs to tell a quantity from a reference before it can
   be trusted outside the budget domain, where the controls stay silent.
+- **The two prompt edits are redundant, not additive.** Each alone reaches the
+  bundle's 20 of 24 on 001-141170, against 16 for the production prompt, and all
+  three variants miss exactly the same four spans while the production prompt
+  misses those four plus four more. So neither edit is necessary and either is
+  sufficient: the change acts as a switch — the extractor either treats the text
+  as a proposal or it does not — rather than as incremental care. The vocabulary
+  note is the one to prefer, since it adds a sentence instead of replacing an
+  existing instruction, and it also removes the cause of the `conclusion`
+  abort. One run per arm on one document.
 - The prompt gain does not replicate on a second legal document. With the
   budget raised and everything else equal, the neutral prompt moves 001-110144
   from 36 to 37 of 49 gold spans at 80% overlap, against a mark of 42 fixed

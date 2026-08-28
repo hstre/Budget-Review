@@ -204,8 +204,36 @@ Fixture ist sie nicht nötig, weil dort ohnehin alles gefunden wird. Dass sie
 nirgends schadet, ist gemessen; wie groß ihr Nutzen ist, hängt vom Dokument ab
 und ist mit zwei Dokumenten nicht bestimmt.
 
-Weitere Vorbehalte: je ein Lauf, und die Änderung ist ein Bündel aus zwei
-Eingriffen, deren Einzelbeiträge offen bleiben. Am Abbruchverhalten oberhalb
+**Welcher Eingriff wirkt?** Beide, und zwar jeder für sich. Gleiches Dokument,
+gleiches Budget, ein Aufruf:
+
+| Prompt | Claims | Recall 80 % | Recall 50 % | Verankert | Lücken |
+|---|---:|---:|---:|---:|---:|
+| Produktionsprompt | 43 | 16/24 | 18/24 | 0,68 | 8 |
+| nur `decompose` | 45 | 20/24 | 21/24 | 0,76 | 5 |
+| nur `vocabulary` | 40 | 20/24 | 21/24 | 0,76 | 5 |
+| beide | 40 | 20/24 | 21/24 | 0,76 | 5 |
+
+Die Eingriffe sind also **redundant**, nicht additiv: Keiner ist notwendig,
+jeder allein genügt. Und die vier verfehlten Spannen sind in allen drei
+Varianten dieselben — G03, G08, G09, G19 —, während die Produktionsfassung
+genau diese vier plus vier weitere verfehlt. Was die Änderung bewirkt, ist
+demnach nicht ein bisschen mehr Sorgfalt, sondern ein Schalter: Entweder der
+Extraktor behandelt den Text als Antrag, oder er tut es nicht.
+
+Eine Erklärung, ausdrücklich als Vermutung: Beide Sätze sagen dasselbe auf
+verschiedenen Wegen — dass die antragsförmige Rahmung der Prompt die Extraktion
+nicht begrenzen soll. Ein Signal davon reicht.
+
+Praktisch heißt das: Der Vokabular-Hinweis allein genügt. Er ist der kleinere
+Eingriff, weil er nur einen Satz *ergänzt*, statt eine bestehende Anweisung zu
+*ersetzen* — und er behebt zusätzlich den `conclusion`-Abbruch aus Abschnitt 3e
+an dessen Ursache.
+
+Weitere Vorbehalte: je ein Lauf pro Arm, ein Dokument, 24 Spannen. Dass drei
+verschiedene Prompts auf dieselben vier Verfehlungen und dieselbe Abdeckung
+kommen, deutet darauf hin, dass die Lauf-zu-Lauf-Schwankung hier klein ist —
+belegt ist das mit je einem Lauf aber nicht. Am Abbruchverhalten oberhalb
 von 27.000 Zeichen ändert sie nichts.
 
 Warum sich die Effekte nicht addieren, zeigt der Vergleich auf Spannenebene:

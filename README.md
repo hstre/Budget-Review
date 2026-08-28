@@ -224,8 +224,13 @@ gained seventeen, and short of the 42 fixed before the run.
 So the finding is narrower than it first reads. The change helps markedly on one
 document, barely on another, and is unnecessary on the fixture. That it never
 hurts is measured; how much it helps depends on the document and is not settled
-by two of them. It is also a bundle of two edits whose individual contributions
-are unknown, and it does nothing about the truncation above 27,000 characters.
+by two of them. Taking the bundle apart shows the two edits are redundant rather than additive:
+each alone reaches the same 20 of 24, and all three variants miss exactly the
+same four spans while the production prompt misses those four plus four more.
+The change works as a switch, not as incremental care. The vocabulary note is
+the one to prefer — it adds a sentence rather than replacing an instruction, and
+it also removes the cause of the aborted run described below. None of it touches
+the truncation above 27,000 characters.
 
 Until then: the anchored share is the warning light. If it sits far below what
 the document plausibly supports, the graph is thin, whatever the findings say.
@@ -593,9 +598,14 @@ festgelegten 42.
 Der Befund ist damit enger als er zunächst klingt. Die Änderung hilft auf einem
 Dokument deutlich, auf einem zweiten kaum, und auf der Fixture ist sie
 entbehrlich. Dass sie nirgends schadet, ist gemessen; wie groß ihr Nutzen ist,
-hängt vom Dokument ab und ist mit zweien nicht entschieden. Sie ist zudem ein
-Bündel aus zwei Eingriffen, deren Einzelbeiträge offen sind, und am Abbruch
-oberhalb von 27.000 Zeichen ändert sie nichts.
+hängt vom Dokument ab und ist mit zweien nicht entschieden. Zerlegt man das Bündel, zeigt sich: Die
+beiden Eingriffe sind redundant, nicht additiv. Jeder allein erreicht dieselben
+20 von 24, und alle drei Varianten verfehlen exakt dieselben vier Spannen,
+während die Produktionsfassung diese vier plus vier weitere verfehlt. Die
+Änderung wirkt als Schalter, nicht als graduelle Sorgfalt. Vorzuziehen ist der
+Vokabular-Hinweis — er ergänzt einen Satz, statt eine Anweisung zu ersetzen, und
+beseitigt zugleich die Ursache des unten beschriebenen Laufabbruchs. Am Abbruch
+oberhalb von 27.000 Zeichen ändert nichts davon etwas.
 
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig
