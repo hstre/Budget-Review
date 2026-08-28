@@ -33,11 +33,16 @@ on:
         required: false
         default: "0"
         type: string
-      prompt_variant:
-        description: "Use the domain-neutral extraction prompt instead of the production one"
+      prompt:
+        description: "Extraction prompt: production, neutral (both edits), or one edit alone"
         required: false
-        default: false
-        type: boolean
+        default: production
+        type: choice
+        options:
+          - production
+          - neutral
+          - decompose
+          - vocabulary
       max_tokens:
         description: "Extraction output budget. The model allows up to 384000."
         required: false
@@ -54,7 +59,7 @@ permissions:
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt_variant != true && inputs.double_run != true
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -90,7 +95,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt_variant == true || inputs.double_run == true
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -151,13 +156,11 @@ jobs:
               --profile "${{ inputs.profile }}" \
               --packet gold-case/merged-packet.json \
               --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
-          elif [ "${{ inputs.prompt_variant }}" = "true" ] || \
+          elif [ "${{ inputs.prompt }}" != "production" ] || \
              [ "${{ inputs.max_tokens }}" != "16384" ]; then
-            PROMPT=production
-            [ "${{ inputs.prompt_variant }}" = "true" ] && PROMPT=neutral
             python scripts/prompt_variant_extract.py "$DOC" "$DOCID" \
               gold-case/variant-packet.json \
-              --prompt "$PROMPT" --max-tokens "${{ inputs.max_tokens }}" \
+              --prompt "${{ inputs.prompt }}" --max-tokens "${{ inputs.max_tokens }}" \
               2>&1 | tee gold-case/extraction.log
             content-review review "$DOC" --document-id "$DOCID" \
               --profile "${{ inputs.profile }}" \
