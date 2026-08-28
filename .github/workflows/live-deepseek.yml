@@ -33,6 +33,11 @@ on:
         required: false
         default: "0"
         type: string
+      prompt_variant:
+        description: "Use the domain-neutral extraction prompt instead of the production one"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -109,7 +114,14 @@ jobs:
           set -o pipefail
           DOC="gold-case/${{ inputs.gold_decision }}.txt"
           BUDGET="${{ inputs.segment_budget }}"
-          if [ "$BUDGET" = "0" ]; then
+          if [ "${{ inputs.prompt_variant }}" = "true" ]; then
+            python scripts/prompt_variant_extract.py "$DOC" "${{ inputs.gold_decision }}" \
+              gold-case/variant-packet.json 2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/variant-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          elif [ "$BUDGET" = "0" ]; then
             content-review review "$DOC" \
               --profile "${{ inputs.profile }}" \
               --provider deepseek \
