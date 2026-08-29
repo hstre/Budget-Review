@@ -173,6 +173,12 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **A research log in the README**, in both languages: every paid experiment on
+  this branch with the success mark that was fixed before it ran, its result and
+  its current status — including the five that were met at the time and are now
+  withdrawn, listed as withdrawn rather than quietly dropped. It separates what
+  survived repetition from what rests on one call per arm, records what the
+  detours cost, and names what is still open.
 - **The covered share per gold span: the misses are real, the threshold is not
   doing the work.** Measured on one production run of 001-141170: three spans
   anchored at 0%, 19% and 20%, two at 38% and 66%, one at 77% just below the

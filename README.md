@@ -330,6 +330,74 @@ located by offset and never by searching for their text.
 Until then: the anchored share is the warning light. If it sits far below what
 the document plausibly supports, the graph is thin, whatever the findings say.
 
+### Research log
+
+Everything below was run against a paid API on real documents, each with a
+success mark fixed *before* dispatch. The status column is the point of the
+table: several results that read well at the time did not survive being
+repeated, and they are listed as withdrawn rather than quietly dropped. Full
+detail per experiment is in `docs/architecture.md` §3a–§3j.
+
+| # | Experiment | Mark fixed beforehand | Result | Status |
+|---|---|---|---|---|
+| 1 | Coverage calibration against AbstRCT (293 clinical abstracts, expert-annotated) | none — a calibration, not a test | Gap threshold insensitive between 60 and 300 characters; named gaps cover 98% of the unanchored text; the same corpus measures 0.48 or 0.14 depending on what counts as a claim | Holds, for short documents |
+| 2 | The same gap list on 10k–40k-character court decisions | — | Named gaps cover a median 72% of unanchored text, 77% below 15k and 63% above 30k | Holds; corrects the 98% above |
+| 3 | Recall against ECHR gold spans, three document sizes | — | Fixture (1.7k): 25/25. Decision (10.3k): 16–20/24. Decision (26.7k): no extraction, output truncated | Holds qualitatively: recall falls with length, truncation is real |
+| 4 | Segmentation into five ~2,000-character pieces | ≥ 20/24 at 80% overlap | 17/24, 52 claims instead of 43, five calls instead of one | Missed. Disconfirms length as the cause — but one call per arm |
+| 5 | Two proposal-specific prompt passages replaced | ≥ 20/24 | 20/24 with *fewer* claims | Met at the time — **withdrawn**, see 12 and 13 |
+| 6 | The same prompt on the repo's own fixture (regression control) | must not lose | 25/25, anchored share 0.98 against 0.93 | Holds; one run |
+| 7 | Output budget raised to 65,536 on the document that truncated | the graph must not be thin | 108 claims, 36/49 at 80% and 46/49 at 50%, anchored 0.82 against the gold answer's 0.98 | The objection to raising the budget is **refuted**; the cliff only moves in proportion |
+| 8 | Prompt and budget together on that document | ≥ 42/49 | 37/49 against 36/49 | Missed. The gain does not transfer between documents |
+| 9 | The prompt bundle taken apart | — | Each edit alone reaches 20/24, all three variants miss the same four spans | Redundant, not additive — one call per arm, so **uncertain** |
+| 10 | Drift check without dependencies (word overlap + numbers) | must not fire on the frozen controls | Four false positives on the controls (fixed), then four on live legal text from anaphora | Reported, never enforced; the "hard evidence" framing was **retracted** |
+| 11 | Two extractions merged before the gate | union of 39/49, as computed | 39/49 exactly, at 186 claims and 141 without a gold match | Arithmetic confirmed; the dossier is much harder to read |
+| 12 | The prompt edit swept across five decisions | ≥ 3 spans gained on ≥ 3 of 5 | 44 against 55 gold spans in sum, collapsing from 17/23 to 7/23 on one | **Refuted.** The per-domain vocabulary has nothing behind it |
+| 13 | Five repeats of one configuration | spread ≥ 4 ⇒ single runs are uninformative; ≤ 1 ⇒ the cause lies elsewhere | Spread 1 within a five-minute window — but 16–20 spans and 38–47 claims across sessions | The first branch holds; the "spread is 1" reading is **withdrawn** as a window artefact |
+| 14 | Covered share per gold span | 60–80% ⇒ threshold artefact; < 30% ⇒ real gap | Three spans at 0%, 19%, 20%; two at 38% and 66%; one at 77%; the rest at 86–100% | The misses are **real**, and only 2 of 24 spans sit near the threshold |
+| 15 | Gold spans fed to the gate as a packet | — | All 24 and 49 claims admitted, no rejections, coverage 0.946 and 0.977 | The deterministic half is unaffected by length |
+
+#### What we believe we know
+
+Firm, in the sense that it survived repetition or needs no model at all: the
+deterministic half scales with document length, while extraction does not.
+Truncation above roughly 27,000 characters at a 16k budget is real, raising the
+budget genuinely helps and does not produce the thin dossier that was feared,
+and the cliff then moves in proportion rather than disappearing. The anchored
+share is a usable warning light — it read 0.68 where the gold answer reaches
+0.95. On the one decision measured repeatedly, the misses are systematic rather
+than random, and mostly genuine gaps rather than artefacts of the 80% threshold.
+
+Uncertain, because it rests on one call per arm: segmentation, the prompt
+variants, prompt and budget combined, and the double run. Their numbers stand as
+recorded; their status is one draw each. An arm's spread has to be measured
+across sessions before any of them can be read as an effect.
+
+Refuted: that a domain-specific claim-type vocabulary lifts recall on legal
+prose; that raising the output budget trades a loud failure for a quiet, thin
+one; and — our own methodological error — that five calls in a row estimate a
+configuration's run-to-run spread. They estimate the server.
+
+#### What the detours taught
+
+Four of them cost real money and are worth naming. A frozen offline control
+cannot see a prompt regression, because it replays a stored packet and never
+calls the extractor. An experiment script that is *stricter* than the production
+path does not produce a wrong number, it produces a missing one — ours died on a
+relation type production drops per item, and quietly left a document out of a
+comparison table. Optimising on a single document measures that document: the
+gain vanished on the second and reversed on the third. And a result that
+reproduces within five minutes has not reproduced.
+
+#### Open
+
+Why one gold span is anchored at 0% while the graph clearly contains a claim
+about it — the anchor sits on the Court's later restatement instead of the
+Government's submission. That is an anchoring problem, not a recall problem, and
+it touches auditability directly. Also open: a per-arm spread measured across
+days rather than minutes; relations across segment boundaries, which the
+segmented path currently loses; and a provenance schema with one entry per call,
+which multi-call extraction needs before it could ever be the production path.
+
 ### Review profiles
 
 | Profile | Inspects | Explicitly does not inspect |
@@ -806,6 +874,81 @@ und nie über Textsuche lokalisiert werden.
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig
 davon, was die Befunde sagen.
+
+### Forschung
+
+Alles Folgende lief gegen eine kostenpflichtige API auf echten Dokumenten, jedes
+Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
+Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
+aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
+zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
+stehen in `docs/architecture.md` §3a–§3j.
+
+| # | Versuch | Vorab festgelegt | Ergebnis | Status |
+|---|---|---|---|---|
+| 1 | Kalibrierung der Abdeckung gegen AbstRCT (293 klinische Abstracts, fachlich annotiert) | keines — Kalibrierung, kein Test | Lückenschwelle unempfindlich zwischen 60 und 300 Zeichen; benannte Lücken decken 98 % des unverankerten Textes; dasselbe Korpus misst 0,48 oder 0,14, je nachdem was als Claim zählt | Gilt, für kurze Dokumente |
+| 2 | Dieselbe Lückenliste auf Entscheidungen von 10.000–40.000 Zeichen | — | Benannte Lücken decken im Median 72 % des unverankerten Textes, 77 % unter 15k, 63 % über 30k | Gilt; korrigiert die 98 % oben |
+| 3 | Recall gegen EGMR-Gold-Spannen, drei Dokumentgrößen | — | Fixture (1,7k): 25/25. Entscheidung (10,3k): 16–20/24. Entscheidung (26,7k): keine Extraktion, Ausgabe abgeschnitten | Gilt der Richtung nach: Recall fällt mit der Länge, der Abbruch ist echt |
+| 4 | Zerteilen in fünf Stücke à ~2.000 Zeichen | ≥ 20/24 bei 80 % Überlappung | 17/24, 52 statt 43 Claims, fünf statt einem Aufruf | Verfehlt. Widerlegt die Länge als Ursache — aber ein Aufruf pro Arm |
+| 5 | Zwei antragsspezifische Prompt-Stellen ersetzt | ≥ 20/24 | 20/24 mit *weniger* Claims | Damals erreicht — **zurückgezogen**, siehe 12 und 13 |
+| 6 | Dieselbe Prompt auf der eigenen Fixture (Gegenprobe) | darf nichts verlieren | 25/25, verankerter Anteil 0,98 gegen 0,93 | Gilt; ein Lauf |
+| 7 | Ausgabebudget auf 65.536 erhöht, auf dem abgebrochenen Dokument | der Graph darf nicht dünn werden | 108 Claims, 36/49 bei 80 % und 46/49 bei 50 %, verankert 0,82 gegen 0,98 der Gold-Antwort | Der Einwand gegen ein höheres Budget ist **widerlegt**; die Abbruchgrenze verschiebt sich nur proportional |
+| 8 | Prompt und Budget zusammen auf diesem Dokument | ≥ 42/49 | 37/49 gegen 36/49 | Verfehlt. Der Gewinn überträgt sich nicht zwischen Dokumenten |
+| 9 | Das Prompt-Bündel zerlegt | — | Jeder Eingriff allein erreicht 20/24, alle drei Varianten verfehlen dieselben vier Spannen | Redundant, nicht additiv — je ein Aufruf, also **unsicher** |
+| 10 | Drift-Prüfung ohne Abhängigkeiten (Wortdeckung + Zahlen) | darf auf den eingefrorenen Kontrollen nicht anschlagen | Vier Fehlalarme auf den Kontrollen (behoben), dann vier auf echtem Rechtstext durch Anaphern | Wird berichtet, nie erzwungen; die Formulierung „harter Beleg" wurde **zurückgenommen** |
+| 11 | Zwei Extraktionen vor dem Gate zusammengeführt | Vereinigung von 39/49, wie berechnet | Genau 39/49, bei 186 Claims und 141 ohne Gold-Entsprechung | Arithmetik bestätigt; das Dossier ist deutlich unübersichtlicher |
+| 12 | Der Prompt-Eingriff über fünf Entscheidungen | Gewinn ≥ 3 Spannen bei ≥ 3 von 5 | 44 gegen 55 Gold-Spannen in Summe, auf einer von 17/23 auf 7/23 eingebrochen | **Widerlegt.** Das fachbereichsweise Vokabular hat keine Grundlage |
+| 13 | Fünf Wiederholungen einer Konfiguration | Streuung ≥ 4 ⇒ Einzelläufe sind wertlos; ≤ 1 ⇒ die Ursache liegt woanders | Streuung 1 innerhalb eines Fünf-Minuten-Fensters — über Sitzungen hinweg aber 16–20 Spannen und 38–47 Claims | Der erste Zweig gilt; die Lesart „Streuung ist 1" ist als Fensterartefakt **zurückgezogen** |
+| 14 | Deckungsanteil je Gold-Spanne | 60–80 % ⇒ Schwellenartefakt; < 30 % ⇒ echte Lücke | Drei Spannen bei 0 %, 19 %, 20 %; zwei bei 38 % und 66 %; eine bei 77 %; der Rest bei 86–100 % | Die Verfehlungen sind **echt**, und nur 2 von 24 Spannen liegen nahe der Schwelle |
+| 15 | Gold-Spannen als Packet ins Gate gegeben | — | Alle 24 bzw. 49 Claims zugelassen, keine Rejections, Abdeckung 0,946 und 0,977 | Die deterministische Hälfte ist von der Länge unberührt |
+
+#### Was wir zu wissen glauben
+
+Belastbar, weil es die Wiederholung überstanden hat oder gar kein Modell
+braucht: Die deterministische Hälfte skaliert mit der Dokumentlänge, die
+Extraktion nicht. Der Abbruch oberhalb von etwa 27.000 Zeichen bei 16k Budget
+ist echt, ein höheres Budget hilft tatsächlich und erzeugt nicht das befürchtete
+dünne Dossier, und die Grenze verschiebt sich danach proportional, statt zu
+verschwinden. Der verankerte Anteil ist eine brauchbare Warnleuchte — er stand
+bei 0,68, wo die Gold-Antwort 0,95 erreicht. Auf der einen mehrfach gemessenen
+Entscheidung sind die Verfehlungen systematisch und nicht zufällig, und
+überwiegend echte Lücken statt Artefakte der 80-%-Schwelle.
+
+Unsicher, weil auf je einem Aufruf pro Arm beruhend: Segmentierung, die
+Prompt-Varianten, Prompt und Budget zusammen, der Doppellauf. Ihre Zahlen
+bleiben so stehen, wie sie gemessen wurden; ihr Status ist je eine Ziehung. Die
+Streuung eines Arms muss über Sitzungen bestimmt werden, bevor eine davon als
+Effekt gelesen werden darf.
+
+Widerlegt: dass ein fachbereichsspezifisches Claim-Typ-Vokabular den Recall auf
+Rechtsprosa hebt; dass ein höheres Ausgabebudget einen lauten Fehlschlag gegen
+einen leisen, dünnen eintauscht; und — unser eigener Methodenfehler — dass fünf
+Aufrufe hintereinander die Lauf-zu-Lauf-Streuung einer Konfiguration schätzen.
+Sie schätzen den Server.
+
+#### Was die Umwege gelehrt haben
+
+Vier davon haben echtes Geld gekostet und gehören benannt. Eine eingefrorene
+Offline-Kontrolle kann eine Prompt-Regression nicht sehen, weil sie ein
+gespeichertes Packet abspielt und den Extraktor nie aufruft. Ein
+Experimentskript, das *strenger* ist als der Produktionspfad, liefert keine
+falsche Zahl, sondern eine fehlende — unseres brach bei einem Relationstyp ab,
+den die Produktion einzeln ablehnt, und ließ ein Dokument stillschweigend aus
+einer Vergleichstabelle fallen. Wer auf einem Dokument optimiert, misst dieses
+Dokument: Der Gewinn verschwand beim zweiten und kehrte sich beim dritten um.
+Und ein Ergebnis, das sich innerhalb von fünf Minuten reproduziert, hat sich
+nicht reproduziert.
+
+#### Offen
+
+Warum eine Gold-Spanne bei 0 % verankert ist, obwohl der Graph erkennbar einen
+Claim dazu enthält — der Anker sitzt auf der späteren Wiedergabe durch den
+Gerichtshof statt auf der Einlassung der Regierung. Das ist ein Anker-Problem,
+kein Recall-Problem, und es trifft die Auditierbarkeit unmittelbar. Ebenfalls
+offen: eine Streuung pro Arm, gemessen über Tage statt Minuten; Relationen über
+Segmentgrenzen hinweg, die der zerteilte Pfad derzeit verliert; und ein
+Provenance-Schema mit einem Eintrag je Aufruf, das eine mehrteilige Extraktion
+bräuchte, bevor sie je der Produktionspfad sein könnte.
 
 ### Prüfprofile
 
