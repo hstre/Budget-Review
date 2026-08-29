@@ -69,6 +69,42 @@ def gold_spans(packet: dict, document: str) -> list[tuple[str, tuple[int, int], 
     return located
 
 
+def shares(
+    gold: list[tuple[str, tuple[int, int], str]], union: list[list[int]]
+) -> list[tuple[str, float, int]]:
+    """Covered share and length per gold span, most covered first."""
+    return sorted(
+        (
+            (
+                proposal_id,
+                covered_characters(span, union) / max(1, span[1] - span[0]),
+                span[1] - span[0],
+            )
+            for proposal_id, span, _ in gold
+        ),
+        key=lambda row: -row[1],
+    )
+
+
+def knife_edge(
+    rows: list[tuple[str, float, int]], threshold: float, margin: float = 0.05
+) -> list[tuple[str, float]]:
+    """Spans whose verdict a small change in coverage would flip.
+
+    A pass count is only worth as much as its distance from the threshold. If
+    the spans cluster just above and just below it, the number moves with any
+    change to how the extractor splits a sentence, and comparing two runs by it
+    measures the splitting rather than what reached the graph.
+    """
+    # The tolerance is for binary floats, not for the band: 0.8 - 0.75 is
+    # 0.05000000000000004, so an exact edge would fall out of its own band.
+    return [
+        (proposal_id, share)
+        for proposal_id, share, _ in rows
+        if abs(share - threshold) <= margin + 1e-9
+    ]
+
+
 def main() -> int:
     if len(sys.argv) != 4:
         print(__doc__, file=sys.stderr)
@@ -100,8 +136,10 @@ def main() -> int:
             if covered_characters(span, union) / max(1, span[1] - span[0]) >= threshold
         ]
         results[threshold] = found
-        print(f"Recall @ {threshold:.0%} Span-Überlappung: "
-              f"{len(found)}/{len(gold)} = {len(found) / len(gold):.0%}")
+        print(
+            f"Recall @ {threshold:.0%} Span-Überlappung: "
+            f"{len(found)}/{len(gold)} = {len(found) / len(gold):.0%}"
+        )
     print()
 
     strict = set(results[max(OVERLAP_THRESHOLDS)])
@@ -131,6 +169,20 @@ def main() -> int:
     else:
         print("Alle Gold-Claims erreicht.")
 
+    strict_threshold = max(OVERLAP_THRESHOLDS)
+    rows = shares(gold, union)
+    print()
+    print("Deckungsanteil je Gold-Spanne (Zeichen):")
+    for proposal_id, share, length in rows:
+        mark = "+" if share >= strict_threshold else " "
+        print(f"  {mark} {proposal_id}  {share:6.0%}  {length:>5}")
+    edge = knife_edge(rows, strict_threshold)
+    print()
+    print(
+        f"  im Grenzband um {strict_threshold:.0%} (+/- 5 Punkte): {len(edge)} von {len(rows)}"
+        f"{'  ' + ' '.join(pid for pid, _ in edge) if edge else ''}"
+    )
+
     unmatched = sum(
         1
         for span in live
@@ -140,8 +192,10 @@ def main() -> int:
         )
     )
     print()
-    print(f"Live-Claims ohne Gold-Entsprechung: {unmatched} "
-          f"(nicht zwingend falsch — das Gold-Packet ist nicht erschöpfend)")
+    print(
+        f"Live-Claims ohne Gold-Entsprechung: {unmatched} "
+        f"(nicht zwingend falsch — das Gold-Packet ist nicht erschöpfend)"
+    )
     return 0
 
 

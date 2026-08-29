@@ -158,3 +158,31 @@ def test_a_packet_without_offsets_still_falls_back_to_searching(source, gold) ->
     }
 
     assert len(recall.gold_spans(stripped, source)) == len(gold["claims"])
+
+
+def _gold(*spans: tuple[str, int, int]) -> list[tuple[str, tuple[int, int], str]]:
+    return [(proposal_id, (start, end), "x") for proposal_id, start, end in spans]
+
+
+def test_the_share_per_span_is_ranked_by_coverage_not_by_id() -> None:
+    gold = _gold(("G01", 0, 100), ("G02", 200, 300))
+    union = [[0, 50], [200, 290]]
+
+    assert recall.shares(gold, union) == [("G02", 0.9, 100), ("G01", 0.5, 100)]
+
+
+def test_a_span_no_anchor_reaches_has_a_share_of_zero() -> None:
+    assert recall.shares(_gold(("G01", 0, 100)), [[500, 600]]) == [("G01", 0.0, 100)]
+
+
+def test_the_border_band_includes_the_threshold_and_both_its_edges() -> None:
+    """A span on the threshold is the most fragile there is, and 5 points is 5."""
+    rows = [("G01", 0.80, 100), ("G02", 0.85, 100), ("G03", 0.75, 100)]
+
+    assert recall.knife_edge(rows, 0.8) == [("G01", 0.80), ("G02", 0.85), ("G03", 0.75)]
+
+
+def test_a_span_far_from_the_threshold_is_not_in_the_border_band() -> None:
+    rows = [("G01", 0.99, 100), ("G02", 0.10, 100), ("G03", 0.86, 100)]
+
+    assert recall.knife_edge(rows, 0.8) == []
