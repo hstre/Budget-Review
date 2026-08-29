@@ -280,10 +280,24 @@ today like the "domain-neutral" prompt of yesterday, so the advantage is not
 refuted, it is gone: there is nothing left for it to improve on. No prompt
 change goes into production.
 
+Those five runs, however, sit inside a five-minute window, and a later run of
+the same configuration returned 47 claims and 18/24 — outside both ranges. All
+measurements of this configuration, in order, read 43 claims/16 spans, 20 spans,
+then 38–41 claims/19–20 spans, then 47 claims/18 spans. The two paths issue the
+same prompt, budget and model, so what the repeats measured is the spread inside
+one window, not between runs, and it underestimates it: across sessions the
+spread is 16 to 20 spans and 38 to 47 claims. Four spans — the size of the
+"prompt effect" again. So the first pre-registered branch holds after all:
+single-run comparisons of this kind are uninformative, and the sentence above
+that sampling does not explain the 16/24 is withdrawn. Estimating an arm's
+spread needs runs spread across sessions; five calls in a row measure the
+server.
+
 The durable result is the miss pattern. Four spans are reached in none of the
 five runs, one flickers (G18, four of five), nineteen are found every time, and
-the union of all five runs is again 20/24 — repeated sampling buys nothing on
-this document, because the misses are systematic rather than random. That is
+the union of all five runs is again 20/24 — repeated sampling within one window
+buys nothing on this document, because the misses are systematic rather than
+random. That is
 also the limit of the double-run argument above: it works where two *different*
 configurations reach different spans, not on repetition. What the four have in
 common is mostly length. They rank 24th, 23rd, 18th and 10th of 24 by
@@ -301,6 +315,17 @@ instrument stricter than the path it measures produces exactly this: not a wrong
 number, a missing one. It now takes the same fallback. The truncation at
 001-60917 is real and is the budget limit described above; none of this touches
 the truncation above 27,000 characters.
+
+And the misses are mostly real, not an artefact of the 80% threshold. Measured
+per gold span on one production run: three spans sit at 0%, 19% and 20% —
+passages the extraction never worked — two at 38% and 66%, one at 77% just under
+the line, and everything else at 86% or above, ten of them at 100%. Only two of
+24 spans fall within five points of the threshold, so the recall figure does not
+turn on how the extractor happens to split a sentence. The 0% one is instructive:
+the graph does contain a claim about that very passage, but anchored to the
+Court's later restatement rather than to the Government's submission the gold
+annotates — legal prose repeats whole formulas, which is why gold spans are
+located by offset and never by searching for their text.
 
 Until then: the anchored share is the warning light. If it sits far below what
 the document plausibly supports, the graph is thin, whatever the findings say.
@@ -729,11 +754,25 @@ Sie verhält sich heute wie die „neutrale" Prompt von gestern. Der Vorteil ist
 damit nicht widerlegt, sondern verschwunden: Es gibt nichts mehr, was er
 verbessern würde. Keine Prompt-Änderung geht in die Produktion.
 
+Diese fünf Läufe liegen allerdings in einem Fünf-Minuten-Fenster, und ein
+späterer Lauf derselben Konfiguration lieferte 47 Claims und 18/24 — außerhalb
+beider Bereiche. Alle Messungen dieser Konfiguration der Reihe nach: 43
+Claims/16 Spannen, dann 20 Spannen, dann 38–41 Claims/19–20 Spannen, dann 47
+Claims/18 Spannen. Beide Pfade schicken dieselbe Prompt, dasselbe Budget und
+dasselbe Modell; die Wiederholungen haben also die Streuung *innerhalb eines
+Fensters* gemessen, nicht die zwischen Läufen, und sie unterschätzen sie: über
+Sitzungen hinweg sind es 16 bis 20 Spannen und 38 bis 47 Claims. Vier Spannen —
+wieder die Größe des „Prompt-Effekts". Damit gilt doch der erste vorab
+festgelegte Zweig: Einzellauf-Vergleiche dieser Art sind nicht aussagekräftig,
+und der Satz oben, Stichprobenrauschen erkläre die 16/24 nicht, ist
+zurückgenommen. Wer die Streuung eines Arms bestimmen will, muss die Läufe über
+Sitzungen verteilen; fünf Aufrufe hintereinander messen den Server.
+
 Der belastbare Befund ist das Verfehlungsmuster. Vier Spannen werden in keinem
 der fünf Läufe erreicht, eine schwankt (G18, vier von fünf), neunzehn sind immer
 da, und die Vereinigung aller fünf Läufe ist wieder 20/24 — wiederholtes Ziehen
-bringt auf diesem Dokument nichts, weil die Verfehlungen systematisch sind und
-nicht zufällig. Das ist zugleich die Grenze des Doppellauf-Arguments oben: Es
+innerhalb eines Fensters bringt auf diesem Dokument nichts, weil die
+Verfehlungen systematisch sind und nicht zufällig. Das ist zugleich die Grenze des Doppellauf-Arguments oben: Es
 trägt, wo zwei *verschiedene* Konfigurationen verschiedene Spannen treffen,
 nicht bei bloßer Wiederholung. Gemeinsam ist den vieren überwiegend die Länge:
 Sie belegen die Längenränge 24, 23, 18 und 10 von 24; der Median der gefundenen
@@ -751,6 +790,18 @@ verarbeitet — keine falsche Zahl, eine fehlende. Das Skript nimmt jetzt densel
 Rückfallpfad. Der Abbruch bei 001-60917 ist dagegen echt und die oben
 beschriebene Budgetgrenze. Am Abbruch oberhalb von 27.000 Zeichen ändert nichts
 davon etwas.
+
+Und die Verfehlungen sind überwiegend echt, kein Artefakt der 80-%-Schwelle. Je
+Gold-Spanne gemessen, ein Produktionslauf: Drei Spannen liegen bei 0, 19 und 20
+Prozent — Passagen, die die Extraktion nicht bearbeitet hat —, zwei bei 38 und
+66, eine bei 77 knapp unter der Linie, alle übrigen bei 86 Prozent oder mehr,
+zehn davon bei 100. Nur zwei von 24 Spannen liegen im Band von ±5 Punkten um die
+Schwelle; die Recall-Zahl hängt also nicht daran, wie der Extraktor einen Satz
+schneidet. Die 0-Prozent-Spanne ist lehrreich: Der Graph enthält sehr wohl einen
+Claim zu dieser Passage, verankert ihn aber an der späteren Wiedergabe durch den
+Gerichtshof statt an der Einlassung der Regierung, die das Gold annotiert —
+Rechtsprosa wiederholt ganze Formulierungen, weshalb Gold-Spannen über Offsets
+und nie über Textsuche lokalisiert werden.
 
 Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
 unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig

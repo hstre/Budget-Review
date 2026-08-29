@@ -173,6 +173,28 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **The covered share per gold span: the misses are real, the threshold is not
+  doing the work.** Measured on one production run of 001-141170: three spans
+  anchored at 0%, 19% and 20%, two at 38% and 66%, one at 77% just below the
+  line, and the remaining seventeen at 86% or above with ten at 100%. The
+  distribution is bimodal — the extraction reaches a span almost entirely or
+  misses it badly — and only two of 24 spans lie within five points of the 80%
+  threshold, so the recall figure does not turn on how a sentence happens to be
+  split. Length explains the misses only partly: 1,145 characters at 38% against
+  1,068 at 81%. The 0% span is probably not a hole but a misplaced anchor: the
+  graph carries a claim about that passage, attached to the Court's later
+  restatement rather than to the Government's submission the gold annotates,
+  which is why gold spans are located by offset and never by text search.
+- **Correction to the entry below: the five repeats measured a five-minute
+  window, not run-to-run spread.** The same configuration later returned 47
+  claims and 18/24, outside both ranges those repeats showed. In order, the
+  measurements read 43 claims/16 spans, 20 spans, 38–41 claims/19–20 spans, 47
+  claims/18 spans; both code paths issue the same prompt, budget and model. The
+  across-session spread is therefore 16 to 20 spans and 38 to 47 claims — four
+  spans, the size of the reported prompt effect — so the first pre-registered
+  branch holds after all: single-run comparisons of this kind are uninformative,
+  and the claim that sampling does not explain the 16/24 is withdrawn.
+  Estimating an arm's spread needs runs spread across sessions.
 - **Five repeats of one configuration: the spread is one span, so the 16/24 is
   not sampling noise.** Production prompt, 001-141170, 16,384 tokens,
   temperature 0, five runs: 20, 20, 20, 19, 20 of 24 gold spans with 38 to 41

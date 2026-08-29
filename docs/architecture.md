@@ -463,7 +463,9 @@ erklärt die Differenz nicht und die Ursache liegt woanders. Fünf Läufe,
 | 5 | 20/24 | 40 |
 
 **Streuung 1 Spanne** (Mittel 19,8; Claims 38–41), fünf von fünf Läufen
-geglückt. Der Extraktor ist auf dieser Konfiguration also nicht wackelig — die
+geglückt. — *Nachtrag, siehe Abschnitt 3j: Diese fünf Läufe liegen in einem
+Fünf-Minuten-Fenster und unterschätzen die Streuung. Über Sitzungen hinweg sind
+es vier Spannen, und der Schluss dieses Abschnitts ist damit zurückgenommen.* Der Extraktor ist auf dieser Konfiguration also nicht wackelig — die
 bequeme Erklärung „alles Rauschen" ist widerlegt, und zwar gegen meine eigene
 Vermutung.
 
@@ -516,6 +518,66 @@ Nebenbefund zur Kostenseite: In drei der fünf Läufe wurde der erste Versuch mi
 `unknown claim_type: conclusion` abgelehnt und im zweiten korrigiert. Das Label
 aus Abschnitt 3e kostet also in gut der Hälfte der Läufe einen zweiten
 bezahlten Aufruf, ohne dass ein Paket verloren geht.
+
+## 3j. Die Verteilung, und was sie über die Streuung von 3i sagt
+
+Vier Spannen werden in fünf Läufen nie erreicht. Eine Trefferzahl sagt nicht,
+ob der Extraktor diese Passagen nie berührt oder sie berührt und nicht
+ausschöpft. Vorab festgelegt: 60–80 Prozent verankert ⇒ Schwellenfrage, die
+Messung untertreibt; unter 30 ⇒ echte Extraktionslücke; dazwischen ⇒ angefasst,
+nicht zerlegt. Ein Lauf über den Produktionspfad, 001-141170, 16.384 Tokens:
+
+| Spanne | verankert | Zeichen | Lesart |
+|---|---:|---:|---|
+| G03 | **0 %** | 267 | nie berührt |
+| G22 | 19 % | 325 | nie berührt |
+| G09 | 20 % | 483 | nie berührt |
+| G19 | 38 % | 1.145 | angefasst, nicht zerlegt |
+| G18 | 66 % | 319 | angefasst, nicht zerlegt |
+| G05 | 77 % | 461 | Grenzfall |
+| G08 | 81 % | 1.068 | knapp gefunden |
+
+Die übrigen 17 Spannen liegen bei 86 bis 100 Prozent, zehn davon bei 100. Die
+Verteilung ist also **zweigipflig**: Der Extraktor trifft eine Spanne fast ganz
+oder er verfehlt sie deutlich. Im Grenzband um 80 Prozent (±5 Punkte) liegen
+**2 von 24**. Damit ist die Recall-Zahl belastbarer als befürchtet — sie kippt
+nicht mit der Frage, wie der Extraktor einen Satz schneidet — und die
+Verfehlungen sind überwiegend echte Lücken, keine Messartefakte. Die Länge
+erklärt sie nur teilweise: G19 mit 1.145 Zeichen kommt auf 38 Prozent, G08 mit
+1.068 auf 81.
+
+G03 mit 0 Prozent ist der auffälligste Fall und vermutlich kein Loch, sondern
+eine Verwechslung der Fundstelle: Der Graph enthält einen Claim zu genau diesem
+Sachverhalt (`Lazzarini and Ghiacci`), verankert ihn aber an der späteren
+Wiedergabe durch den Gerichtshof statt an der Einlassung der Regierung. Das ist
+der Grund, warum `gold_spans` Gold-Spannen niemals per Textsuche lokalisiert:
+Rechtsprosa wiederholt ganze Formulierungen, und die erste Fundstelle ist nicht
+die annotierte. Als Vermutung notiert, nicht als Befund.
+
+**Und ein Nachtrag zu Abschnitt 3i, der dessen Schluss zurücknimmt.** Dieser
+Lauf liefert 47 Claims und 18/24 — außerhalb von beidem, was die fünf
+Wiederholungen zeigten (38–41 Claims, 19–20/24). Alle Messungen derselben
+Konfiguration, chronologisch:
+
+| Zeitpunkt | Pfad | Claims | Recall 80 % |
+|---|---|---:|---:|
+| 28.08., vormittags | CLI | 43 | 16/24 |
+| 28.08., 21:22 | Skript | — | 20/24 |
+| 28.08., 22:09–22:14 (5 Läufe) | Skript | 38–41 | 19–20/24 |
+| 29.08., 11:52 | CLI | 47 | 18/24 |
+
+Beide Pfade schicken dieselbe Prompt, dasselbe Budget und dasselbe Modell; die
+Anfragen sind identisch aufgebaut. Was die fünf Wiederholungen gemessen haben,
+ist deshalb nicht die Lauf-zu-Lauf-Streuung, sondern die Streuung **innerhalb
+eines Fünf-Minuten-Fensters** — und die unterschätzt sie. Über alle Sitzungen
+hinweg liegt die Spannweite bei **16 bis 20 Spannen und 38 bis 47 Claims**,
+also bei vier Spannen, genau der Größe des früher berichteten „Prompt-Effekts".
+
+Damit gilt doch der erste vorab festgelegte Zweig aus 3i: Einzellauf-Vergleiche
+dieser Art sind nicht aussagekräftig, und der Satz aus 3i, Stichprobenrauschen
+erkläre die 16/24 nicht, ist zurückgenommen. Wer die Streuung eines Arms
+bestimmen will, muss die Läufe über Sitzungen verteilen; fünf Aufrufe
+hintereinander messen den Server, nicht das Modell.
 
 ## 4. ClaimGraph
 
