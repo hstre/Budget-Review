@@ -1,0 +1,40 @@
+name: Embedding RAG baseline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - experiment/embedding-rag-baseline
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    environment: alpha-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project and embedding model runtime
+        run: |
+          python -m pip install -e .
+          python -m pip install sentence-transformers
+      - name: Fetch public ECHR gold corpus
+        run: git clone --depth 1 https://github.com/trusthlt/mining-legal-arguments.git /tmp/mining-legal-arguments
+      - name: Run matched-budget comparison
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          python scripts/embedding_rag_baseline.py \
+            /tmp/mining-legal-arguments/article_3_data \
+            benchmark-output/embedding-rag-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: embedding-rag-baseline
+          path: benchmark-output/
+          if-no-files-found: warn
