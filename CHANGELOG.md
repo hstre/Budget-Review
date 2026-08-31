@@ -187,6 +187,25 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **The repair pass repeated three times per mode: the first large, replicated
+  win.** On A24, uncovered targeting ran 76→215, 176→203 and 80→206 of 219 gold
+  spans; thin targeting 85→147, 80→140, 81→118. Mean gain +97 against +53, a
+  44-span difference against a pre-registered mark of 20, so the targeting is the
+  lever — and against the assumption the thin mode was built on. On papers the
+  gold units are clause-sized and sit in the unanchored stretches *between*
+  claims rather than inside thinly anchored blocks, so the gap list the gate
+  already computes asks about more of the right text. Thin stays in the
+  repository but goes no further. The mean end state is 208 of 219, about 95 per
+  cent, from a first pass around 35. And the second call compresses the
+  run-to-run spread that made every prompt comparison on this branch unreadable:
+  the three first passes have a standard deviation of 46 spans, the three end
+  states of 5. On A40, whose first pass was the thinnest graph measured here (33
+  claims, 54 of 250, anchored share 0.25), the repair pass reached 132 and 171 —
+  both above the mark of +40 — which also shows A40 is not a hard document but
+  was a thin draw, so the anchored-share correlation holds per run rather than
+  per document, which is what a warning light needs. What still fails is
+  bounded and now named: verbatim quoting of formula passages and spaced citation
+  markers, three to five per round.
 - **Four papers, two repair runs, and a retraction.** The "ceiling" reported in
   the previous entry is withdrawn: a repair run reached 210 of 219 on A24 where
   the gold answer scores 186 against itself. Feeding gold spans back as claims is

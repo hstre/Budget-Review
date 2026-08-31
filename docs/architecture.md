@@ -914,6 +914,84 @@ Labels vor, die der geschlossene Katalog nicht kennt (`claim`, `RESOURCE`). Die
 Claim-Partitionierung aus 3e hat das Paket beide Male gerettet — fünf Claims und
 eine Relation abgelehnt, der Rest kam durch.
 
+## 3q. Der Reparaturlauf, dreifach wiederholt: der erste große Gewinn
+
+Sechs Runden auf A24 (219 Gold-Spannen), drei je Zielmodus, dazu zwei Runden auf
+A40. Vorab festgelegt: Ausgewertet wird der **Zugewinn innerhalb einer Runde**,
+weil jede Runde ihren eigenen Erstlauf hat und die Differenz damit gepaart ist —
+genau daran war der Vergleich in 3p gescheitert. Unterschied der mittleren
+Zugewinne ≥ 20 Spannen ⇒ die Zielwahl ist der Hebel; < 20 ⇒ gleichwertig, dann
+gewinnt die einfachere Lückenliste.
+
+| Runde | `uncovered` | `thin` |
+|---|---|---|
+| 1 | 76 → **215** (+139) | 85 → 147 (+62) |
+| 2 | 176 → **203** (+27) | 80 → 140 (+60) |
+| 3 | 80 → **206** (+126) | 81 → 118 (+37) |
+| Mittlerer Zugewinn | **+97,3** | +53,0 |
+| Mittlerer Endstand | **208/219 (95 %)** | 135/219 (62 %) |
+
+**Unterschied 44 Spannen — das Kriterium ist klar erfüllt, und zwar gegen meine
+eigene Konstruktionsannahme.** Ich hatte `thin` gebaut, weil die Lückenliste
+teilabgedeckte Passagen nicht sieht (Abschnitt 3m). Auf Papern ist genau das kein
+Nachteil: Die Gold-Einheiten sind klauselgroß und liegen in den **unverankerten
+Strecken zwischen** den Claims, nicht in dünn verankerten Blöcken. Die
+Lückenliste fragt deshalb mehr relevanten Text ab — 13,6k gegen 7,5k Zeichen in
+Runde 1 —, und der Block-Filter „unter 50 Prozent verankert" schließt Absätze
+aus, die zu 60 Prozent abgedeckt sind und trotzdem ungefundene Spannen tragen.
+`thin` bleibt im Repository, geht aber nicht weiter; die Produktionsrichtung ist
+die Lückenliste, die das Gate ohnehin berechnet.
+
+**Der Endstand ist das eigentliche Ergebnis: 203 bis 215 von 219, im Mittel
+95 Prozent.** Ein zweiter Aufruf hebt die Trefferquote auf A24 von rund 35 auf
+rund 95 Prozent.
+
+**Und er macht das Ergebnis vom Zufall unabhängig.** Die Erstläufe streuen
+massiv — 76, 176, 80 —, die Endstände nicht: 215, 203, 206.
+
+| | Streuung (SD) |
+|---|---:|
+| Erstläufe, `uncovered` | 46,2 |
+| Endstände, `uncovered` | **5,1** |
+
+Das ist die praktisch wichtigste Eigenschaft, die dieser Branch gemessen hat.
+Die Lauf-zu-Lauf-Streuung, die jeden Prompt-Vergleich hier unlesbar gemacht hat,
+wird vom Reparaturlauf zusammengezogen: Was der Erstlauf verpasst, holt der
+zweite Aufruf nach, weil er nach genau den Stellen gefragt wird, die der erste
+nicht berührt hat.
+
+### Der harte Fall
+
+A40 hatte in 3p den dünnsten Graphen: 33 Claims, 54 von 250 Spannen, verankerter
+Anteil 0,25. Vorab festgelegt war +40 Spannen.
+
+| Runde | Erstlauf | nach Reparatur |
+|---|---|---|
+| 1 | 54/250 (33 Claims) | **132/250** (107 Claims), +78 |
+| 2 | 122/250 (119 Claims) | **171/250** (150 Claims), +49 |
+
+Beide Male erfüllt. Runde 1 ist die aussagekräftige: ein wirklich dünner Lauf —
+der Fall, in dem die Warnleuchte anschlägt — wird auf mehr als das Doppelte
+gehoben. Nebenbei zeigt Runde 2, dass A40 kein schwieriges Dokument ist; der
+Einzellauf aus 3p war eine dünne Ziehung, nicht eine Dokumenteigenschaft. Die
+Korrelation aus 3p gilt also **pro Lauf** — der verankerte Anteil sagt die
+Trefferquote *dieses* Laufs voraus —, und nicht als Aussage über das Dokument.
+Für eine Warnleuchte ist genau das die richtige Eigenschaft.
+
+### Was noch scheitert
+
+`source_span_not_found` trat in jeder `uncovered`-Runde drei- bis fünfmal auf,
+und die abgelehnten Spannen sagen jetzt warum: Es sind Formelpassagen und
+Zitatmarken mit ungewöhnlichem Abstand — `φ n+1 = L u, φ n + 1 φ n − φ ̄ 2`,
+`[ HK03 ]`. Das Modell normalisiert die Zwischenräume und trifft das Zitat nicht
+mehr wörtlich. Das ist ein umgrenztes, benennbares Problem und keine allgemeine
+Zitierschwäche — auf gewöhnlicher Prosa lag die Wortdeckung bei 1,00.
+
+Der Schema-Katalog bleibt der zweite Reibungspunkt: `claim`, `condition`,
+`DEFINES`, `RESOURCE` wurden vorgeschlagen und abgelehnt. Die
+Claim-Partitionierung hat jedes Paket gerettet (bis zu 21 Claims und 6
+Relationen verworfen), aber sie kostet jedes Mal einen zweiten bezahlten Aufruf.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
