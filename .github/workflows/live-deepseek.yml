@@ -228,8 +228,14 @@ jobs:
         run: |
           set -o pipefail
           mv gold-case-provenance.txt gold-case/
-          python scripts/repair_extract.py corpus/gold_data gold-case \
+          if [ "${{ inputs.corpus }}" = "sciarg" ]; then
+            GOLD_DATA=corpus-sciarg/compiled_corpus
+          else
+            GOLD_DATA=corpus/gold_data
+          fi
+          python scripts/repair_extract.py "$GOLD_DATA" gold-case \
             "${{ inputs.gold_decision }}" \
+            --corpus "${{ inputs.corpus }}" \
             --repeats "${{ inputs.repair_rounds }}" \
             --max-tokens "${{ inputs.max_tokens }}" \
             --target "${{ inputs.repair_target }}" \

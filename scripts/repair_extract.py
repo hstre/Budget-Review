@@ -30,7 +30,7 @@ whose anchored share is low, which is the same question one level coarser.
 Usage:
     repair_extract.py <gold_data-directory> <output-directory> <decision-id>
                       [--repeats N] [--max-tokens N] [--watch G03,G09,G19]
-                      [--target uncovered|thin]
+                      [--target uncovered|thin] [--corpus echr|sciarg]
 """
 
 from __future__ import annotations
@@ -54,6 +54,7 @@ def _load(name: str):
 
 
 echr = _load("echr_gold")
+sciarg = _load("sciarg_gold")
 segmented = _load("segmented_extract")
 variant = _load("prompt_variant_extract")
 recall = _load("measure_recall")
@@ -257,6 +258,12 @@ def main() -> int:
     parser.add_argument("--max-tokens", type=int, default=16384)
     parser.add_argument("--watch", default="G03,G09,G19")
     parser.add_argument(
+        "--corpus",
+        choices=("echr", "sciarg"),
+        default="echr",
+        help="which gold builder the document and its reference come from",
+    )
+    parser.add_argument(
         "--target",
         choices=("uncovered", "thin"),
         default="uncovered",
@@ -264,7 +271,8 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    echr.build(args.gold_data, args.decision, args.out_dir)
+    builder = sciarg if args.corpus == "sciarg" else echr
+    builder.build(args.gold_data, args.decision, args.out_dir)
     document = (args.out_dir / f"{args.decision}.txt").read_text(encoding="utf-8")
     gold_packet = json.loads(
         (args.out_dir / f"{args.decision}.gold.json").read_text(encoding="utf-8")
