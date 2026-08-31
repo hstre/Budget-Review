@@ -173,6 +173,17 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **Two measurements ahead of the next change: hard cases by covered share, and
+  speaker boundaries.** `measure_recall.py --watch` reports named gold spans by
+  the share of them the anchors cover rather than as passed or failed, since
+  four binary items move with any run while the share shows whether a change
+  reached the passage at all. And because each ECHR gold span names its actor,
+  the script now counts live anchors that reach into two speakers' text: a claim
+  spanning the Government's submission and the Court's reply merges two
+  epistemic positions into one node, and the anchor is the only record of who
+  said it. Both are deterministic and free at run time. Six tests, six
+  mutations, run with bytecode caching disabled after a length-preserving
+  mutation was found to be scored against a stale `.pyc`.
 - **A research log in the README**, in both languages: every paid experiment on
   this branch with the success mark that was fixed before it ran, its result and
   its current status — including the five that were met at the time and are now

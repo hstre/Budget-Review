@@ -19,6 +19,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -105,13 +106,64 @@ def knife_edge(
     ]
 
 
+def actor_spans(packet: dict, document: str) -> list[tuple[str, tuple[int, int]]]:
+    """The gold spans that name who is speaking, with their offsets.
+
+    The ECHR annotation records an actor per span — applicant, Government,
+    Court. That makes a property testable that the claim contract never asked
+    for: whether an anchor stays inside one speaker.
+    """
+    located = []
+    for claim in packet["claims"]:
+        actor = claim.get("actor")
+        begin, end = claim.get("begin"), claim.get("end")
+        if not actor or begin is None or end is None:
+            continue
+        if document[begin:end] != claim["raw_span"]:
+            continue
+        located.append((actor, (begin, end)))
+    return located
+
+
+def boundary_crossings(
+    live: list[tuple[int, int]],
+    actors: list[tuple[str, tuple[int, int]]],
+    tolerance: int = 10,
+) -> list[tuple[tuple[int, int], list[str]]]:
+    """Live anchors that reach into more than one speaker's text.
+
+    A claim spanning the Government's submission and the Court's reply merges
+    two epistemic positions into one node, and no downstream check can take
+    them apart again — the anchor is the only record of who said it. Overlaps
+    below the tolerance are ignored: a few characters of a neighbouring span
+    are an off-by-a-clause, not a merged speaker.
+    """
+    crossings = []
+    for span in live:
+        reached = {
+            actor
+            for actor, actor_span in actors
+            if covered_characters(actor_span, [list(span)]) >= tolerance
+        }
+        if len(reached) > 1:
+            crossings.append((span, sorted(reached)))
+    return crossings
+
+
 def main() -> int:
-    if len(sys.argv) != 4:
-        print(__doc__, file=sys.stderr)
-        return 2
-    dossier = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    packet = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-    document = Path(sys.argv[3]).read_text(encoding="utf-8")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("dossier", type=Path)
+    parser.add_argument("gold_packet", type=Path)
+    parser.add_argument("document", type=Path)
+    parser.add_argument(
+        "--watch",
+        default="",
+        help="comma-separated gold ids to report separately, e.g. the hard cases",
+    )
+    args = parser.parse_args()
+    dossier = json.loads(args.dossier.read_text(encoding="utf-8"))
+    packet = json.loads(args.gold_packet.read_text(encoding="utf-8"))
+    document = args.document.read_text(encoding="utf-8")
 
     semantic = dossier["semantic"] if "semantic" in dossier else dossier
     live = [(c["anchor_start"], c["anchor_end"]) for c in semantic["claims"]]
@@ -182,6 +234,26 @@ def main() -> int:
         f"  im Grenzband um {strict_threshold:.0%} (+/- 5 Punkte): {len(edge)} von {len(rows)}"
         f"{'  ' + ' '.join(pid for pid, _ in edge) if edge else ''}"
     )
+
+    watched = [name.strip() for name in args.watch.split(",") if name.strip()]
+    if watched:
+        by_id = {proposal_id: share for proposal_id, share, _ in rows}
+        print()
+        print("Beobachtete Spannen (Anteil, nicht bestanden/verfehlt):")
+        for name in watched:
+            # A hard case is scored by its covered share rather than by the
+            # threshold it fails: four binary items move with any run, while
+            # the share shows whether a change reached the passage at all.
+            share = by_id.get(name)
+            print(f"  {name}  {'--' if share is None else format(share, '.0%')}")
+
+    actors = actor_spans(packet, document)
+    if actors:
+        crossings = boundary_crossings(live, actors)
+        print()
+        print(f"Anker über eine Sprechergrenze hinweg: {len(crossings)} von {len(live)}")
+        for span, reached in crossings[:5]:
+            print(f"  [{span[0]}:{span[1]}]  {' + '.join(reached)}")
 
     unmatched = sum(
         1

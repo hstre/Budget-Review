@@ -388,6 +388,20 @@ comparison table. Optimising on a single document measures that document: the
 gain vanished on the second and reversed on the third. And a result that
 reproduces within five minutes has not reproduced.
 
+#### The next measurements
+
+Two instruments were added before the next round of changes, because the effects
+in question are about the size of the run-to-run spread and would otherwise be
+invisible. A **hard-case list** — the spans missed in every repeat — is reported
+by its covered share rather than as passed or failed: four binary items move
+with any run, while the share shows whether a change reached the passage at all.
+And a **speaker-boundary count**, which the ECHR annotation makes possible for
+free: each gold span names its actor, so an anchor reaching into two speakers'
+text can be counted. A claim that spans the Government's submission and the
+Court's reply merges two epistemic positions into one node, and the anchor is
+the only record of who said it. Both are deterministic, replay-stable and cost
+nothing at run time.
+
 #### Open
 
 Why one gold span is anchored at 0% while the graph clearly contains a claim
@@ -938,6 +952,22 @@ einer Vergleichstabelle fallen. Wer auf einem Dokument optimiert, misst dieses
 Dokument: Der Gewinn verschwand beim zweiten und kehrte sich beim dritten um.
 Und ein Ergebnis, das sich innerhalb von fünf Minuten reproduziert, hat sich
 nicht reproduziert.
+
+#### Die nächsten Messungen
+
+Vor der nächsten Änderungsrunde sind zwei Messgeräte dazugekommen, weil die
+fraglichen Effekte etwa so groß sind wie die Lauf-zu-Lauf-Streuung und sonst
+unsichtbar blieben. Eine **Liste harter Fälle** — die in jeder Wiederholung
+verfehlten Spannen — wird über ihren Deckungsanteil berichtet statt über
+bestanden/verfehlt: Vier binäre Punkte wandern mit jedem Lauf, der Anteil zeigt
+dagegen, ob eine Änderung die Passage überhaupt erreicht hat. Und eine
+**Zählung der Sprechergrenzen**, die die EGMR-Annotation kostenlos ermöglicht:
+Jede Gold-Spanne nennt ihren Akteur, also lässt sich zählen, wie viele Anker in
+den Text zweier Sprecher hineinreichen. Ein Claim, der die Einlassung der
+Regierung und die Antwort des Gerichtshofs überspannt, verschmilzt zwei
+epistemische Positionen zu einem Knoten — und der Anker ist der einzige
+Nachweis, wer es gesagt hat. Beides ist deterministisch, replay-stabil und
+kostet zur Laufzeit nichts.
 
 #### Offen
 

@@ -63,6 +63,11 @@ on:
         required: false
         default: "0"
         type: string
+      watch_spans:
+        description: "Gold ids to report by covered share, e.g. the hard cases G03,G08,G09,G19"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -225,7 +230,8 @@ jobs:
           python scripts/measure_recall.py \
             review-output/gold/dossier.json \
             "gold-case/$CASE.gold.json" \
-            "gold-case/$CASE.txt" 2>&1 | tee gold-case/recall.txt
+            "gold-case/$CASE.txt" \
+            --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/recall.txt
 
       - name: Screen the graph for content its spans do not carry
         if: inputs.sweep_decisions == '' && steps.extract.outcome == 'success'

@@ -186,3 +186,45 @@ def test_a_span_far_from_the_threshold_is_not_in_the_border_band() -> None:
     rows = [("G01", 0.99, 100), ("G02", 0.10, 100), ("G03", 0.86, 100)]
 
     assert recall.knife_edge(rows, 0.8) == []
+
+
+def test_an_anchor_inside_one_speaker_is_not_a_crossing() -> None:
+    actors = [("Staat", (0, 100)), ("EGMR", (100, 200))]
+
+    assert recall.boundary_crossings([(10, 90)], actors) == []
+
+
+def test_an_anchor_reaching_into_two_speakers_is_reported_with_both() -> None:
+    """The anchor is the only record of who said it; merged, nothing recovers it."""
+    actors = [("Staat", (0, 100)), ("EGMR", (100, 200))]
+
+    assert recall.boundary_crossings([(50, 150)], actors) == [((50, 150), ["EGMR", "Staat"])]
+
+
+def test_a_few_characters_of_the_neighbour_are_not_a_merged_speaker() -> None:
+    actors = [("Staat", (0, 100)), ("EGMR", (100, 200))]
+
+    assert recall.boundary_crossings([(50, 105)], actors) == []
+
+
+def test_two_spans_of_the_same_speaker_are_not_a_crossing() -> None:
+    actors = [("EGMR", (0, 100)), ("EGMR", (100, 200))]
+
+    assert recall.boundary_crossings([(50, 150)], actors) == []
+
+
+def test_actor_spans_drop_offsets_that_do_not_quote_the_span() -> None:
+    packet = {
+        "claims": [
+            {"proposal_id": "G01", "raw_span": "alpha", "begin": 0, "end": 5, "actor": "EGMR"},
+            {"proposal_id": "G02", "raw_span": "beta", "begin": 0, "end": 4, "actor": "Staat"},
+        ]
+    }
+
+    assert recall.actor_spans(packet, "alpha beta") == [("EGMR", (0, 5))]
+
+
+def test_a_gold_packet_without_actors_yields_nothing_to_check() -> None:
+    packet = {"claims": [{"proposal_id": "G01", "raw_span": "alpha", "begin": 0, "end": 5}]}
+
+    assert recall.actor_spans(packet, "alpha") == []
