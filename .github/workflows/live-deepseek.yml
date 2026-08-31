@@ -68,13 +68,18 @@ on:
         required: false
         default: ""
         type: string
+      repair_rounds:
+        description: "Coverage-repair second pass on gold_decision, N rounds. 0 disables it."
+        required: false
+        default: "0"
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0'
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -110,7 +115,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0'
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -130,7 +135,7 @@ jobs:
             | tee gold-case-provenance.txt
 
       - name: Build the case
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
         run: |
           mkdir -p gold-case
           mv gold-case-provenance.txt gold-case/
@@ -171,9 +176,22 @@ jobs:
             --prompt "${{ inputs.prompt }}" \
             --max-tokens "${{ inputs.max_tokens }}" 2>&1 | tee gold-case/variance.txt
 
+      - name: Coverage-repair second pass
+        if: inputs.repair_rounds != '0'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          mv gold-case-provenance.txt gold-case/
+          python scripts/repair_extract.py corpus/gold_data gold-case \
+            "${{ inputs.gold_decision }}" \
+            --repeats "${{ inputs.repair_rounds }}" \
+            --max-tokens "${{ inputs.max_tokens }}" \
+            --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/repair.txt
+
       - name: Live extraction
         id: extract
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
         continue-on-error: true
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
@@ -244,7 +262,7 @@ jobs:
             2>&1 | tee gold-case/drift.txt || true
 
       - name: Report an extraction that did not complete
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && steps.extract.outcome != 'success'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && steps.extract.outcome != 'success'
         run: |
           echo "Extraction produced no dossier. That is a result, not an infrastructure fault."
           cat gold-case/extraction.log || true
