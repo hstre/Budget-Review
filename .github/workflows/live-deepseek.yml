@@ -23,8 +23,16 @@ on:
         required: true
         default: true
         type: boolean
+      corpus:
+        description: "Gold corpus: echr court decisions, or sciarg scientific papers"
+        required: false
+        default: echr
+        type: choice
+        options:
+          - echr
+          - sciarg
       gold_decision:
-        description: "ECHR decision id, e.g. 001-141170. Set to measure recall instead."
+        description: "Document id: an ECHR decision (001-141170) or a Sci-Arg paper (A24)."
         required: false
         default: ""
         type: string
@@ -142,10 +150,21 @@ jobs:
 
       - name: Fetch the gold corpus
         run: |
-          git clone --depth 1 https://github.com/trusthlt/mining-legal-arguments.git corpus
           mkdir -p gold-case
-          echo "trusthlt/mining-legal-arguments (Apache-2.0) at $(git -C corpus rev-parse HEAD)" \
-            | tee gold-case-provenance.txt
+          if [ "${{ inputs.corpus }}" = "sciarg" ]; then
+            # Fetched at run time and never vendored, as with every external
+            # reference here. The mirror states no licence, so it is treated as
+            # measurement input only.
+            curl -sSfL --max-time 300 -o sciarg.zip \
+              https://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip
+            unzip -q sciarg.zip -d corpus-sciarg
+            echo "sci-arg compiled_corpus, sha256 $(sha256sum sciarg.zip | cut -d' ' -f1)" \
+              | tee gold-case-provenance.txt
+          else
+            git clone --depth 1 https://github.com/trusthlt/mining-legal-arguments.git corpus
+            echo "trusthlt/mining-legal-arguments (Apache-2.0) at $(git -C corpus rev-parse HEAD)" \
+              | tee gold-case-provenance.txt
+          fi
 
       - name: Build the case
         if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
@@ -153,7 +172,20 @@ jobs:
           mkdir -p gold-case
           mv gold-case-provenance.txt gold-case/
           if [ -n "${{ inputs.gold_decision }}" ]; then
-            python scripts/echr_gold.py corpus/gold_data "${{ inputs.gold_decision }}" gold-case \
+            if [ "${{ inputs.corpus }}" = "sciarg" ]; then
+              python scripts/sciarg_gold.py corpus-sciarg/compiled_corpus \
+                "${{ inputs.gold_decision }}" gold-case \
+                | tee -a gold-case/gold-case-provenance.txt
+            else
+              python scripts/echr_gold.py corpus/gold_data "${{ inputs.gold_decision }}" gold-case \
+                | tee -a gold-case/gold-case-provenance.txt
+            fi
+            # What a perfect extraction could score here: on clause-sized
+            # annotations the gate collapses repeated fragments, so the reference
+            # is not fully reachable and the run must be read against this.
+            python scripts/gold_ceiling.py \
+              "gold-case/${{ inputs.gold_decision }}.gold.json" \
+              "gold-case/${{ inputs.gold_decision }}.txt" \
               | tee -a gold-case/gold-case-provenance.txt
           else
             # Regression control: the repo's own fixture, whose frozen packet the
