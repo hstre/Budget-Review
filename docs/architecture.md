@@ -791,7 +791,7 @@ Paper; < 30 Prozent ⇒ er überträgt sich nicht; dazwischen ⇒ Teilübertrag.
 | Gold-Spannen | 219 |
 | Decke der Messung | 186 (85 %) |
 | erreicht bei 80 % Überlappung | **80 (37 %)** |
-| davon gemessen an der Decke | **43 %** |
+| davon gemessen an der Decke | 43 % *(Angabe zurückgezogen, siehe 3p)* |
 | Live-Claims | 70 |
 | Claims ohne Gold-Entsprechung | 28 |
 | Wortdeckung Claim gegen Zitat | Median 1,00, Minimum 1,00 |
@@ -836,6 +836,83 @@ nicht eine Strecke ohne jeden Anker.
 
 Vorbehalte: ein Paper, ein Lauf. Die Streuung ist auf diesem Korpus zwar
 weniger lähmend — 219 statt 24 Spannen —, gemessen ist sie hier aber nicht.
+
+## 3p. Vier Paper, zwei Reparaturläufe — und ein Fehler in meiner Decke
+
+### Die Decke war keine Decke
+
+Abschnitt 3o berichtete Recall „gemessen an der Decke", wobei die Decke die
+Punktzahl der Gold-Antwort gegen sich selbst war: 186 von 219 auf A24. Ein
+Reparaturlauf hat dann **210 von 219** erreicht — deutlich darüber. Damit ist die
+Zahl widerlegt als das, wofür ich sie ausgegeben habe.
+
+Der Fehler ist erklärbar und rückblickend offensichtlich. Die Gold-Antwort als
+Extraktion einzuspeisen ist für ein inhaltsadressiertes Gate ein pathologischer
+Eingang: Klauselgroße Fragmente wiederholen sich wörtlich, fallen zu einem
+Knoten zusammen, und die Gold-Antwort verliert Spannen an sich selbst. Eine
+*echte* Extraktion formuliert satzweise, deckt mit einem Claim mehrere kurze
+Gold-Fragmente ab und leidet nicht unter dieser Kollision. `gold_ceiling` misst
+also, was ein bestimmtes Paket erreicht, nicht was erreichbar ist.
+
+Die Zahl bleibt nützlich als Diagnose — sie zeigt, wie stark die Referenz aus
+wiederholten Fragmenten besteht —, aber sie ist **keine obere Schranke**, und
+alle „Prozent der Decke"-Angaben aus 3o sind zurückgezogen. Es gelten die rohen
+Trefferquoten.
+
+### Vier Paper, gleiche Konfiguration
+
+Produktionsprompt, 65.536 Tokens, ein Aufruf, Regionen von 21,5k bis 24,3k
+Zeichen — also praktisch gleich lang.
+
+| Paper | Gold | Recall 80 % | verankerter Anteil | Live-Claims |
+|---|---:|---:|---:|---:|
+| A40 | 250 | 50 (20 %) | 0,25 | 33 |
+| A24 | 219 | 80 (37 %) | 0,37 | 70 |
+| A21 | 257 | 112 (44 %) | 0,39 | 67 |
+| A34 | 267 | 184 (69 %) | 0,75 | 130 |
+
+Vorab festgelegt war: alle drei neuen Paper innerhalb ±10 Punkten um den
+A24-Wert ⇒ die Zahl ist eine Korpus-Eigenschaft. **Klar verfehlt**: 20 bis 69
+Prozent, ein Faktor von dreieinhalb, bei nahezu identischer Dokumentlänge.
+Extraktionsqualität ist also auch auf Papern eine Eigenschaft des einzelnen
+Dokuments, und eine Kennzahl aus einem Paper sagt über das nächste nichts.
+
+**Der verankerte Anteil sagt es aber voraus.** Die Reihenfolge der vier
+Dokumente ist nach beiden Spalten dieselbe, und die Werte laufen monoton
+miteinander. Das ist der erste Beleg dafür, dass die Warnleuchte des Produkts —
+eine Zahl, die ohne jede Gold-Antwort auskommt — den Recall-Einbruch anzeigt,
+und zwar auf Dokumenten, gegen die nichts optimiert wurde. Ein Dossier mit 0,25
+ist dünn, und das Produkt sagt das von sich aus.
+
+### Der Reparaturlauf trägt auf Papern
+
+| | `uncovered` | `thin` |
+|---|---|---|
+| Zielpassagen | 19 (9.494 Zeichen) | 22 (9.239 Zeichen) |
+| Vorschläge | 51 | 38 |
+| davon zugelassen | **51** | **38** |
+| `source_span_not_found` | 0 | 0 |
+| Recall 80 % | 124 → **210**/219 | 80 → **133**/219 |
+| Claims | 102 → 153 | 62 → 100 |
+
+Beide Modi gewinnen massiv, +86 und +53 Spannen, und **jeder einzelne Vorschlag
+war wörtlich verankerbar und wurde zugelassen**. Auf der Gerichtsentscheidung
+scheiterten vier von sieben und fünf von sechs Vorschlägen am Zitat (Abschnitt
+3m) — das war also kein Fehler des Reparaturprompts, sondern eine Eigenschaft
+des Rechtstextes oder jenes Laufs.
+
+**Was der Vergleich nicht hergibt: welcher Zielmodus besser ist.** Die beiden
+Erstläufe sind verschieden ausgefallen — 124 gegen 80 Spannen bei identischer
+Konfiguration —, und das ist wieder die Lauf-zu-Lauf-Streuung aus Abschnitt 3i,
+diesmal auf einem Paper und in einer Größe, die den Armunterschied überdeckt.
+Der A/B-Vergleich ist damit **konfundiert und nicht auswertbar**; er müsste mit
+mehreren Wiederholungen je Modus wiederholt werden. Was er zeigt, ist etwas
+anderes und Wichtigeres: Der Reparaturgedanke trägt hier, unabhängig vom Modus.
+
+Ein Nebenbefund zur Schema-Robustheit: In beiden Läufen schlug das Modell
+Labels vor, die der geschlossene Katalog nicht kennt (`claim`, `RESOURCE`). Die
+Claim-Partitionierung aus 3e hat das Paket beide Male gerettet — fünf Claims und
+eine Relation abgelehnt, der Rest kam durch.
 
 ## 4. ClaimGraph
 

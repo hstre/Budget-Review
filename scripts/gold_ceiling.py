@@ -1,4 +1,4 @@
-"""What a perfect extraction would score against a gold reference.
+"""What the gold answer scores against itself, and why that is not a ceiling.
 
 Recall is measured against the union of the live anchors, so the reference can
 only be reached as far as the gate can anchor it. On the legal corpus that
@@ -10,10 +10,18 @@ collapses two gold spans with identical wording into one content address, and
 anchors an ambiguous span at its first occurrence, so the gold answer scores 85
 per cent against itself.
 
-That ceiling is a property of the reference, not of the extractor. Reporting a
-raw recall figure against such a corpus would understate the extraction by
-whatever the ceiling withholds, which is why this runs before the paid call and
-prints the number the run should be read against.
+**It is not an upper bound, and calling it a ceiling was wrong.** A repair run
+later reached 210 of 219 on A24 where this reports 186. Feeding the gold spans
+back as claims is a pathological input for a content-addressed gate: identical
+short fragments collapse into one node, so the gold answer loses spans to
+itself. A real extraction writes sentence-sized claims, covers several short
+gold fragments with one of them, and never hits that collision.
+
+What the number does say is how much of a reference consists of repeated
+fragments — a diagnostic worth printing before a paid run, and the reason recall
+on such a corpus is not comparable to recall on one whose spans are unique. Read
+it as a property of the reference, never as the score an extraction could not
+exceed.
 
 Usage:
     gold_ceiling.py <gold-packet.json> <document>

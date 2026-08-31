@@ -187,6 +187,24 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **Four papers, two repair runs, and a retraction.** The "ceiling" reported in
+  the previous entry is withdrawn: a repair run reached 210 of 219 on A24 where
+  the gold answer scores 186 against itself. Feeding gold spans back as claims is
+  a pathological input for a content-addressed gate — identical short fragments
+  collapse into one node — so the figure measures the reference, not an upper
+  bound, and every "per cent of ceiling" is retracted in favour of raw recall.
+  Four papers of near-identical length under one configuration: 50/250, 80/219,
+  112/257, 184/267 — 20 to 69 per cent, against a mark that all three new papers
+  land within ten points of A24. Missed decisively: extraction quality is a
+  property of the document here too. **But the anchored share orders them
+  identically** — 0.25, 0.37, 0.39, 0.75 — which is the first evidence that the
+  product's own warning light, computed without any gold answer, tracks the
+  recall it cannot see, on documents nothing was tuned against. And the repair
+  pass carries on papers: 124→210 spans with uncovered targeting, 80→133 with
+  thin, every one of 51 and 38 proposals verbatim-anchorable and admitted, where
+  four of seven failed to quote on the court decision. Which targeting mode is
+  better the run cannot say — the two first passes came out at 124 and 80 spans
+  under identical settings, so the arms are confounded by the run-to-run spread.
 - **First run against a scientific paper: a partial transfer.** A24, 21,518
   characters, 219 gold spans, production prompt at 65,536 tokens, one call: 70
   claims, 80 spans reached at 80% overlap against a measured ceiling of 186 — 43%
