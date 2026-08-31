@@ -62,36 +62,66 @@ NUMBER_WORDS = {
     # as the quantity 1 reported a correct claim in the rough control. The cost
     # is that a claim writing 1 against a span writing "one" is still reported;
     # that is the rarer direction, and the report is a question, not a verdict.
-    "zero": 0, "null": 0,
-    "two": 2, "zwei": 2,
-    "three": 3, "drei": 3,
-    "four": 4, "vier": 4,
-    "five": 5, "fünf": 5,
-    "six": 6, "sechs": 6,
-    "seven": 7, "sieben": 7,
-    "eight": 8, "acht": 8,
-    "nine": 9, "neun": 9,
-    "ten": 10, "zehn": 10,
-    "eleven": 11, "elf": 11,
-    "twelve": 12, "zwölf": 12,
-    "thirteen": 13, "dreizehn": 13,
-    "fourteen": 14, "vierzehn": 14,
-    "fifteen": 15, "fünfzehn": 15,
-    "sixteen": 16, "sechzehn": 16,
-    "seventeen": 17, "siebzehn": 17,
-    "eighteen": 18, "achtzehn": 18,
-    "nineteen": 19, "neunzehn": 19,
-    "twenty": 20, "zwanzig": 20,
-    "thirty": 30, "dreißig": 30,
-    "forty": 40, "vierzig": 40,
-    "fifty": 50, "fünfzig": 50,
-    "sixty": 60, "sechzig": 60,
-    "seventy": 70, "siebzig": 70,
-    "eighty": 80, "achtzig": 80,
-    "ninety": 90, "neunzig": 90,
-    "hundred": 100, "hundert": 100,
-    "thousand": 1000, "tausend": 1000,
-    "million": 1000000, "millionen": 1000000,
+    "zero": 0,
+    "null": 0,
+    "two": 2,
+    "zwei": 2,
+    "three": 3,
+    "drei": 3,
+    "four": 4,
+    "vier": 4,
+    "five": 5,
+    "fünf": 5,
+    "six": 6,
+    "sechs": 6,
+    "seven": 7,
+    "sieben": 7,
+    "eight": 8,
+    "acht": 8,
+    "nine": 9,
+    "neun": 9,
+    "ten": 10,
+    "zehn": 10,
+    "eleven": 11,
+    "elf": 11,
+    "twelve": 12,
+    "zwölf": 12,
+    "thirteen": 13,
+    "dreizehn": 13,
+    "fourteen": 14,
+    "vierzehn": 14,
+    "fifteen": 15,
+    "fünfzehn": 15,
+    "sixteen": 16,
+    "sechzehn": 16,
+    "seventeen": 17,
+    "siebzehn": 17,
+    "eighteen": 18,
+    "achtzehn": 18,
+    "nineteen": 19,
+    "neunzehn": 19,
+    "twenty": 20,
+    "zwanzig": 20,
+    "thirty": 30,
+    "dreißig": 30,
+    "forty": 40,
+    "vierzig": 40,
+    "fifty": 50,
+    "fünfzig": 50,
+    "sixty": 60,
+    "sechzig": 60,
+    "seventy": 70,
+    "siebzig": 70,
+    "eighty": 80,
+    "achtzig": 80,
+    "ninety": 90,
+    "neunzig": 90,
+    "hundred": 100,
+    "hundert": 100,
+    "thousand": 1000,
+    "tausend": 1000,
+    "million": 1000000,
+    "millionen": 1000000,
 }
 
 # Function words carry no evidence either way, and keeping them would flatter
@@ -135,6 +165,48 @@ def claims_of(data: dict) -> list[dict]:
     return data["claims"]
 
 
+def near_duplicates(claims: list[dict], threshold: float = 0.8) -> list[tuple[str, str, float]]:
+    """Claims that say nearly the same thing at disjoint places in the source.
+
+    The gate collapses two proposals only when type, wording and quoted span
+    match exactly, so a pair like "the Government contended X" and the Court's
+    later restatement of X arrives as two nodes. That is right — they are two
+    speech acts — but it is indistinguishable in a dossier from the near
+    duplicate a second extraction pass would produce, and the difference decides
+    whether a repair pass may admit such a claim at all.
+
+    Reported, never enforced: a court decision restates its own findings, and
+    counting those is a measurement, not a finding.
+    """
+    pairs = []
+    anchored = [
+        claim
+        for claim in claims
+        if claim.get("anchor_start") is not None and claim.get("anchor_end") is not None
+    ]
+    for index, first in enumerate(anchored):
+        for second in anchored[index + 1 :]:
+            if first["anchor_start"] < second["anchor_end"] and (
+                second["anchor_start"] < first["anchor_end"]
+            ):
+                continue  # overlapping anchors are the ordinary case, not this one
+            words_first = content_words(first["canonical_content"])
+            words_second = content_words(second["canonical_content"])
+            union = words_first | words_second
+            if not union:
+                continue
+            share = len(words_first & words_second) / len(union)
+            if share >= threshold:
+                pairs.append(
+                    (
+                        first.get("claim_node_id") or first.get("proposal_id", "?"),
+                        second.get("claim_node_id") or second.get("proposal_id", "?"),
+                        share,
+                    )
+                )
+    return sorted(pairs, key=lambda row: -row[2])
+
+
 def report(path: Path) -> int:
     data = json.loads(path.read_text(encoding="utf-8"))
     claims = claims_of(data)
@@ -168,6 +240,11 @@ def report(path: Path) -> int:
             print(f"    [{share:.0%}] {identifier}")
             print(f"        Claim: {' '.join(content.split())[:100]}")
             print(f"        Stelle: {' '.join(span.split())[:100]}")
+
+    duplicates = near_duplicates(claims)
+    print(f"  Fast gleiche Claims an getrennten Stellen: {len(duplicates)}")
+    for first, second, share in duplicates[:3]:
+        print(f"    [{share:.0%}] {first} / {second}")
 
     print()
     if invented:

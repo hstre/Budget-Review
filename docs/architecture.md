@@ -579,6 +579,55 @@ erkläre die 16/24 nicht, ist zurückgenommen. Wer die Streuung eines Arms
 bestimmen will, muss die Läufe über Sitzungen verteilen; fünf Aufrufe
 hintereinander messen den Server, nicht das Modell.
 
+## 3k. Entwurf: das Merge-Gate eines Reparaturlaufs
+
+Noch nicht gebaut, aber entschieden — die Regel steht als geprüfte Funktion in
+`scripts/repair_merge.py`, damit der bezahlte Lauf sie nicht nebenbei erfindet.
+
+Der gemessene Anlass ist eng: Auf 001-141170 liegen drei Gold-Spannen bei 0, 19
+und 20 Prozent Deckung (Abschnitt 3j). Ein zweiter LLM-Aufruf über genau diese
+Passagen, mit dem vorhandenen Graphen als Negativkontext, ist der naheliegende
+Reparaturweg. Wie er schiefgeht, ist ebenfalls gemessen: Der Doppellauf aus 3d
+brachte zwei zusätzliche Gold-Spannen und kostete 186 Claims mit 141 ohne
+Gold-Entsprechung.
+
+Vier Fälle, in dieser Reihenfolge entschieden:
+
+| Fall | Entscheidung | Grund |
+|---|---|---|
+| Anker außerhalb der angefragten Lücken | `reject: outside_requested_gap` | Der Lauf war nach bestimmten Passagen gefragt; anderswo schreibt er eine Zweitmeinung zu Text, der schon eine hat |
+| Anker fügt keine unverankerten Zeichen hinzu | `reject: adds_no_uncovered_text` | Die Beinahe-Dublette des Doppellaufs, unter einem Mindestanteil neuer Zeichen (Vorgabe 50 %) |
+| Inhalt bereits zugelassen, Anker neu | `admit: duplicate_content_other_anchor` | Zwei Sprechakte, kein Claim mit zwei Ankern — und markiert, damit das Dossier das Paar zeigen kann |
+| sonst | `admit: new_claim` | Wofür der Lauf da ist |
+
+Zwei Dinge daran folgen aus dem bestehenden Gate und nicht aus Geschmack.
+
+**Die Inhaltsadresse trägt den Wortlaut, nicht den Offset.** Ein Knoten wird
+über `document_id`, `claim_type`, `canonical_content` und `raw_span` gebildet.
+Zwei Vorschläge mit identischem Wortlaut *und* identischem Zitat fallen deshalb
+schon heute zu einem Knoten zusammen; unterscheidet sich das Zitat, entstehen
+zwei. Der dritte Fall oben ist also kein neues Verhalten, sondern die Frage, ob
+der Reparaturlauf ihn erzeugen darf — und er darf, weil „die Regierung trug X
+vor" und die spätere Wiedergabe desselben X durch den Gerichtshof zwei
+Sprechakte sind. Genau dieses Paar wird jetzt gemessen: `measure_drift.py`
+meldet fast gleiche Claims an getrennten Stellen, damit vor dem Bau bekannt
+ist, wie oft der Fall real vorkommt.
+
+**Ein doppelt vorkommendes Zitat ist bereits geregelt.** Findet das Gate den
+`raw_span` mehrfach im Dokument, verankert es an der ersten Fundstelle und
+setzt `anchor_ambiguous` sowie `human_review_required`. Der Reparaturlauf ändert
+daran nichts und darf es nicht: Ein Anker, den die Maschine nicht eindeutig
+bestimmen kann, gehört vor einen Menschen und nicht in eine Heuristik.
+
+Was die Regel ausdrücklich nicht tut: Sie fügt keinen Claim hinzu, sie bewertet
+keinen als wahr, und sie beschneidet keine Spanne, damit sie in eine Lücke
+passt — ein Claim wird mit dem Zitat zugelassen, das er führt, oder gar nicht.
+Jede Ablehnung trägt ihren Grund in der Form, die der Audit schon kennt.
+
+Offen bleibt die Messung: Ein Reparaturlauf muss an den Deckungsanteilen der
+harten Fälle gemessen werden, mit Wiederholungen über Sitzungen, sonst gilt für
+ihn dieselbe Unsichtbarkeit wie für die Prompt-Änderungen aus 3d.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

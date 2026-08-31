@@ -173,6 +173,17 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **The admission rule for a coverage-repair pass, decided before the pass
+  exists.** `scripts/repair_merge.py` holds it as a tested function: a claim
+  whose anchor lies outside the passages the pass was asked about is rejected, so
+  is one that adds no uncovered characters (the near-duplicate the double run
+  produced 141 times), while known content at a genuinely new anchor is admitted
+  and flagged — "the Government contended X" and the Court's later restatement
+  are two speech acts, not one claim with two anchors. Nothing in the rule adds a
+  claim, marks one true, or trims a span to fit a gap. `measure_drift.py` now
+  counts near-identical claims at disjoint anchors, so how often that third case
+  occurs is known before anything is built. Eight plus four tests, nine
+  mutations.
 - **Two measurements ahead of the next change: hard cases by covered share, and
   speaker boundaries.** `measure_recall.py --watch` reports named gold spans by
   the share of them the anchors cover rather than as passed or failed, since
