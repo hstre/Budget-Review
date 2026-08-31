@@ -119,3 +119,32 @@ def test_partial_coverage_is_reported_as_a_fraction_not_as_asked() -> None:
     gold = [("G01", (0, 100), "x")]
 
     assert repair.gap_share(gold, [(0, 20), (90, 100)]) == {"G01": 0.3}
+
+
+BLOCKS = "A" * 200 + "\n" + "B" * 200 + "\n" + "C" * 50 + "\n"
+
+
+def test_a_block_no_anchor_touches_is_thin() -> None:
+    assert repair.thin_blocks(BLOCKS, [(0, 200)]) == [(201, 402)]
+
+
+def test_a_block_anchored_past_the_share_is_not_thin() -> None:
+    """The case the coverage gaps miss: partly covered, and still mostly empty."""
+    assert repair.thin_blocks(BLOCKS, [(0, 200), (201, 350)]) == []
+
+
+def test_a_block_anchored_below_the_share_is_thin() -> None:
+    assert repair.thin_blocks(BLOCKS, [(0, 200), (201, 260)]) == [(201, 402)]
+
+
+def test_a_short_block_is_not_reported_however_empty() -> None:
+    """A heading carries no claim and naming it every time is noise."""
+    assert (402, 453) not in repair.thin_blocks(BLOCKS, [(0, 402)])
+
+
+def test_an_anchor_over_whitespace_does_not_count_as_coverage() -> None:
+    """Counting indentation as anchored would hide a block that is nearly empty."""
+    padded = " " * 300 + "D" * 200 + "\n"
+
+    assert repair.thin_blocks(padded, [(0, 350)]) == [(0, 501)]
+    assert repair.thin_blocks(padded, [(300, 500)]) == []

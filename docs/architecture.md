@@ -735,6 +735,51 @@ deterministisch und braucht keinen weiteren Modellaufruf, um entworfen zu werden
 Vorbehalt wie immer: zwei Runden in einem Fenster, ein Dokument. Der G19-Zuwachs
 ist in beiden Runden da, seine Größe schwankt aber um mehr als das Doppelte.
 
+## 3n. Gebaut, noch nicht gemessen
+
+Zwei Änderungen liegen fertig und ungemessen im Repository. Beide folgen aus
+Abschnitt 3m, keine geht in die Produktion, bevor sie gegen **neue Dokumente**
+gemessen ist — auf 001-141170 allein wäre jedes Ergebnis wieder eine Eigenschaft
+dieses Dokuments.
+
+**`--target thin`: unterdeckte Blöcke statt unberührter Lücken.** Eine
+Abdeckungslücke entsteht nur, wo *kein* Claim verankert ist, ab 120 Zeichen; eine
+zu 20 Prozent abgedeckte Passage zerfällt in Reststücke unter der Schwelle und
+kommt nie auf die Liste. Der neue Zielmodus bewertet stattdessen **Blöcke** —
+Absätze, oder den nummerierten Absatz auf eigener Zeile, dieselbe Einheit, die
+der zerteilte Lauf nie schneidet — und meldet die, deren verankerter Anteil unter
+0,5 liegt. Leerraum zählt nicht mit, sonst wäre ein eingerückter Block schon
+wegen seiner Einrückung dünn. Wie die Lückenliste benennt auch das nur Passagen
+und entscheidet nichts: Ein dünner Block kann eine Überschrift sein.
+
+Der Unterschied zur Lückenliste ist die Frage, nicht die Schwelle: „Welche
+Strecke berührt kein Anker?" gegen „Welcher Absatz ist kaum bearbeitet?". Nur die
+zweite kann G09 finden, das zu einem Fünftel verankert ist.
+
+**Zweistufige Extraktion (`two_stage`).** Ein Aufruf muss heute gleichzeitig
+atomisieren, typisieren, verankern und verknüpfen. Stufe eins fragt den
+Produktionsvertrag ohne seine Relationshälfte — die drei Passagen werden entfernt,
+nachdem ihr Vorhandensein geprüft wurde, sonst vergliche das Experiment die
+Produktionsprompt mit sich selbst. Stufe zwei bekommt die fertige Claim-Liste mit
+Id, Typ, Proposition und Zitat und schlägt Kanten dazwischen vor, über das ganze
+Dokument statt innerhalb eines Segments.
+
+Zwei Grenzen sind fest verdrahtet: Stufe zwei darf keine Claims vorschlagen, und
+eine Kante, die eine Id nennt, die Stufe eins nicht erzeugt hat, wird mit Grund
+verworfen, bevor das Paket entsteht — dasselbe Geschäft, das das Gate für
+unauflösbare Endpunkte macht, nur eine Ebene früher, damit der Grund bei dem Lauf
+bleibt, der ihn verursacht hat.
+
+Zwei Fragen hängen daran: ob der Claim-Recall steigt, wenn ein Aufruf weniger zu
+tun hat, und ob die Segmentierung damit brauchbar wird — sie verliert heute jede
+Relation über eine Segmentgrenze, weil Kanten nur dort entstehen, wo ein Aufruf
+beide Enden gesehen hat.
+
+**Was die Messung braucht.** Nicht 001-141170: neue Entscheidungen, mehrere
+davon, und Wiederholungen über Sitzungen, weil die Streuung über Sitzungen bei
+vier Spannen liegt. Und für die Zweistufigkeit gehört die eigene Fixture als
+Gegenprobe dazu, deren Relationszahl in den eingefrorenen Kontrollen steht.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

@@ -73,13 +73,26 @@ on:
         required: false
         default: "0"
         type: string
+      repair_target:
+        description: "What the repair pass asks about: uncovered gaps, or thinly anchored blocks"
+        required: false
+        default: uncovered
+        type: choice
+        options:
+          - uncovered
+          - thin
+      two_stage:
+        description: "Extract claims and relations in separate calls"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -115,7 +128,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0'
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -187,6 +200,7 @@ jobs:
             "${{ inputs.gold_decision }}" \
             --repeats "${{ inputs.repair_rounds }}" \
             --max-tokens "${{ inputs.max_tokens }}" \
+            --target "${{ inputs.repair_target }}" \
             --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/repair.txt
 
       - name: Live extraction
@@ -208,7 +222,15 @@ jobs:
           fi
           echo "$CASE" > gold-case/case-name.txt
           BUDGET="${{ inputs.segment_budget }}"
-          if [ "${{ inputs.double_run }}" = "true" ]; then
+          if [ "${{ inputs.two_stage }}" = "true" ]; then
+            python scripts/two_stage_extract.py "$DOC" "$DOCID" \
+              gold-case/two-stage-packet.json --max-tokens "${{ inputs.max_tokens }}" \
+              2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/two-stage-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          elif [ "${{ inputs.double_run }}" = "true" ]; then
             python scripts/double_run_extract.py "$DOC" "$DOCID" \
               gold-case/merged-packet.json --max-tokens "${{ inputs.max_tokens }}" \
               2>&1 | tee gold-case/extraction.log

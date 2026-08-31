@@ -187,6 +187,22 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **Two follow-ups built and left unmeasured, deliberately.** `--target thin`
+  points the repair pass at blocks whose anchored share is below half rather than
+  only at stretches no claim touches — the paragraph is the unit an argument is
+  written in, whitespace does not count towards the share, and unlike the gap
+  list it can name a passage that is anchored at twenty per cent. And
+  `two_stage_extract.py` asks for claims and relations in separate calls: stage
+  one is the production contract with its relation half removed, after asserting
+  the removed passages were there, and stage two receives the finished claim list
+  and proposes edges over the whole document. Stage two may not propose claims,
+  and an edge naming an id stage one did not produce is dropped with a reason
+  before the packet exists. Neither goes into production before it is measured
+  against new documents with repeats across sessions — on the one decision this
+  branch has been tuning, any result would again be a property of that document.
+  Twelve tests, ten mutations, two of which initially survived: a whitespace-only
+  anchor counted as coverage, and the claims-only prompt kept its relation
+  template because the test looked for a string the appended note also carries.
 - **The repair pass, measured: one passage repaired, two never asked about.**
   Two rounds on 001-141170 against a mark fixed beforehand — two of the three
   stable hard cases rising by 20 points or more. One did: G19 went from 23% to
