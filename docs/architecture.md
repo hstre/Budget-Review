@@ -780,6 +780,63 @@ davon, und Wiederholungen über Sitzungen, weil die Streuung über Sitzungen bei
 vier Spannen liegt. Und für die Zweistufigkeit gehört die eigene Fixture als
 Gegenprobe dazu, deren Relationszahl in den eingefrorenen Kontrollen steht.
 
+## 3o. Erster Lauf auf Papern: Teilübertrag
+
+A24, 21.518 Zeichen, 219 Gold-Spannen, Produktionsprompt, 65.536 Tokens, ein
+Aufruf. Vorab festgelegt: ≥ 60 Prozent der Decke ⇒ der Befund überträgt sich auf
+Paper; < 30 Prozent ⇒ er überträgt sich nicht; dazwischen ⇒ Teilübertrag.
+
+| | |
+|---|---:|
+| Gold-Spannen | 219 |
+| Decke der Messung | 186 (85 %) |
+| erreicht bei 80 % Überlappung | **80 (37 %)** |
+| davon gemessen an der Decke | **43 %** |
+| Live-Claims | 70 |
+| Claims ohne Gold-Entsprechung | 28 |
+| Wortdeckung Claim gegen Zitat | Median 1,00, Minimum 1,00 |
+
+**Teilübertrag.** Kein Abbruch, kein Schema-Fehler, keine Beinahe-Dubletten, und
+die Zitattreue ist auf diesem Korpus makellos — jeder Claim gibt seinen Beleg
+wörtlich wieder. Die Trefferquote liegt aber deutlich unter dem, was die
+Gerichtsentscheidungen zeigen (83 Prozent der Decke).
+
+**Die Verteilung ist binär.** Jede gefundene Spanne steht bei 100 Prozent, jede
+verfehlte bei 0, im Grenzband um 80 Prozent liegen **0 von 219**. Das ist eine
+Eigenschaft der Annotation: Klauselgroße Einheiten werden von einem Claim
+entweder ganz eingeschlossen oder gar nicht berührt. Die Schwellendiskussion aus
+Abschnitt 3j entfällt hier vollständig.
+
+**Ein Teil der Lücke ist Vertragsunterschied, kein Extraktionsfehler.**
+
+| Länge der Gold-Spanne | gefunden |
+|---|---:|
+| ≤ 10 Zeichen | 11/63 = 17 % |
+| 11–30 | 18/39 = 46 % |
+| 31–80 | 41/97 = 42 % |
+| > 80 | 10/20 = 50 % |
+
+51 der 63 kurzen Spannen sind **Zitatschlüssel** wie `DL03`, `Sta99`, `ELF05` —
+im Sci-Arg-Schema als `data`, also als Evidenz annotiert. Unser Vertrag verlangt
+atomare Propositionen mit wörtlichem Beleg; ein Claim, dessen `raw_span` „DL03"
+lautet, wäre nach diesem Vertrag falsch. Drei von 51 werden zufällig mitgedeckt.
+Ohne diese Klasse: **77/168 = 46 Prozent.**
+
+Nach Komponententyp: `background_claim` 48 Prozent, `own_claim` 41 Prozent,
+`data` 26 Prozent. Der Abstand von `data` zu den beiden Claim-Typen ist zum
+großen Teil derselbe Zitat-Effekt.
+
+**Was bleibt.** Auch bereinigt findet der Extraktor knapp die Hälfte der
+propositionalen Argumenteinheiten eines Papers. Die verfehlten Spannen liegen in
+langen zusammenhängenden Blöcken von Gold-Ids — ganze Abschnitte werden nicht
+bearbeitet, während andere vollständig erfasst sind. Das ist dasselbe Muster wie
+auf der Gerichtsentscheidung, nur ausgeprägter, und es ist genau der Fall, für
+den `--target thin` gebaut wurde: ein Absatz mit niedrigem verankerten Anteil,
+nicht eine Strecke ohne jeden Anker.
+
+Vorbehalte: ein Paper, ein Lauf. Die Streuung ist auf diesem Korpus zwar
+weniger lähmend — 219 statt 24 Spannen —, gemessen ist sie hier aber nicht.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

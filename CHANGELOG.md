@@ -187,6 +187,20 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **First run against a scientific paper: a partial transfer.** A24, 21,518
+  characters, 219 gold spans, production prompt at 65,536 tokens, one call: 70
+  claims, 80 spans reached at 80% overlap against a measured ceiling of 186 — 43%
+  of what the reference can give, against a mark of 60% fixed before the run. No
+  truncation, no schema failure, no near-duplicates, and every claim quotes its
+  span exactly. The coverage distribution is binary here, 100% or 0% with nothing
+  within five points of the threshold, because the annotation is clause-sized.
+  Part of the shortfall is a difference of contract rather than a miss: 51 of the
+  63 spans under ten characters are citation keys like "DL03", annotated as
+  evidence by this corpus and something our contract could not propose without
+  breaking its own rule about atomic propositions. Excluding them, 77 of 168 =
+  46%. By component: background_claim 48%, own_claim 41%, data 26%. The misses
+  fall in long contiguous runs of gold ids — whole sections untouched while
+  others are complete — which is the case `--target thin` was built for.
 - **Two follow-ups built and left unmeasured, deliberately.** `--target thin`
   points the repair pass at blocks whose anchored share is below half rather than
   only at stretches no claim touches — the paragraph is the unit an argument is
