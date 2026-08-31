@@ -29,8 +29,12 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
+          GOLD_FILE="$(find /tmp/mining-legal-arguments -name '001-141170.xmi' -print -quit)"
+          test -n "$GOLD_FILE"
+          GOLD_DIR="$(dirname "$GOLD_FILE")"
+          echo "Gold directory: $GOLD_DIR"
           python scripts/embedding_rag_baseline.py \
-            /tmp/mining-legal-arguments/article_3_data \
+            "$GOLD_DIR" \
             benchmark-output/embedding-rag-results.json
       - uses: actions/upload-artifact@v4
         if: always()
