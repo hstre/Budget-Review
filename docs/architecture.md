@@ -680,6 +680,61 @@ Median 1,00 und Minimum 0,89, gegen 0,67 zwei Tage zuvor. Und 40 Claims mit
 vom 29.08. mit 47 Claims und 18/24 eher der Ausreißer ist als die Regel. Die
 Spannweite über Sitzungen bleibt 16 bis 20 Spannen.
 
+## 3m. Der Reparaturlauf: eine Passage repariert, zwei nicht erfragt
+
+Zwei Runden, 001-141170, Produktionsprompt, 16.384 Tokens, je ein Erst- und ein
+Reparaturaufruf. Vorab festgelegt: **Erfolg**, wenn mindestens zwei der drei
+stabilen harten Fälle (G03, G09, G19) um ≥ 20 Punkte im Deckungsanteil steigen
+und der Recall nicht fällt; **Teilerfolg** bei genau einem; **Fehlschlag**, wenn
+keiner steigt oder der Zuwachs mit über einem Viertel zusätzlicher Claims ohne
+Gold-Entsprechung erkauft ist.
+
+| | Runde 1 | Runde 2 |
+|---|---|---|
+| Lücken | 5 (2.362 Zeichen) | 5 (2.362 Zeichen) |
+| Vorschläge | 7 | 6 |
+| davon zugelassen | 3 | 1 |
+| `source_span_not_found` | 4 | 5 |
+| Recall 80 % | 19/24 → 19/24 | 20/24 → 20/24 |
+| Claims | 41 → 44 | 40 → 41 |
+| **G19** | 23 % → **71 %** | 23 % → **43 %** |
+| G03 | 0 % → 0 % | 0 % → 0 % |
+| G09 | 20 % → 20 % | 20 % → 20 % |
+
+**Teilerfolg, in beiden Runden.** G19 steigt um 48 beziehungsweise 20 Punkte —
+die Passage, auf die der Lauf gezeigt wurde, wird tatsächlich bearbeitet —, ohne
+die 80-Prozent-Schwelle zu überschreiten, weshalb der Recall unverändert bleibt.
+Aufgebläht wird nichts: drei und ein zugelassener Claim.
+
+Zwei Befunde sind wichtiger als das Urteil.
+
+**Die Merge-Regel aus 3k hat kein einziges Mal gegriffen.** Weder
+`outside_requested_gap` noch `adds_no_uncovered_text` kam vor. Die bindende
+Beschränkung ist eine andere: Vier von sieben und fünf von sechs Vorschlägen
+scheitern am **wortgetreuen Zitat** — der Reparaturlauf gibt einen `raw_span` an,
+den das Dokument so nicht enthält, und das Gate lehnt ihn ab, bevor die Regel
+überhaupt gefragt wird. Die Vorsichtsmaßnahme, die ich für nötig hielt, war
+nicht die, die nötig war. Warum das Zitieren hier häufiger misslingt als im
+Erstlauf, ist offen; der Lauf druckt die abgelehnten Spannen jetzt mit, damit
+die nächste Messung es sagen kann.
+
+**G03 und G09 wurden nie erfragt.** Der Reparaturlauf wird von den
+Abdeckungslücken getrieben, und eine Lücke entsteht nur dort, wo *kein* Claim
+verankert ist, ab 120 Zeichen Länge. Eine zu 20 Prozent abgedeckte Passage
+zerfällt in Reststücke, die einzeln unter der Schwelle bleiben — sie kommt nie
+auf die Liste. Das ist keine Schwäche des zweiten Aufrufs, sondern eine des
+Zielmechanismus: **Teilabdeckung ist blind.** Der Lauf berichtet deshalb jetzt
+je Gold-Spanne, wie viel davon überhaupt erfragt wurde.
+
+Daraus folgt die nächste Fassung, nicht ein weiterer Versuch derselben: Der
+Reparaturlauf muss auf *unterdeckte* Passagen zielen, nicht nur auf unberührte —
+also entweder mit niedrigerer Lückenschwelle oder mit einem zweiten Kriterium,
+das eine lange, dünn verankerte Strecke als Lücke führt. Beides ist
+deterministisch und braucht keinen weiteren Modellaufruf, um entworfen zu werden.
+
+Vorbehalt wie immer: zwei Runden in einem Fenster, ein Dokument. Der G19-Zuwachs
+ist in beiden Runden da, seine Größe schwankt aber um mehr als das Doppelte.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

@@ -68,7 +68,7 @@ def test_the_prompt_carries_the_passages_and_the_claims_not_to_repeat() -> None:
     assert "[1] Beta is a gap nobody reached." in user
     assert "- Alpha carries one claim." in user
     assert "repair pass" in system
-    assert 'Allowed claim_type values' in system, "the production contract must still apply"
+    assert "Allowed claim_type values" in system, "the production contract must still apply"
 
 
 def test_the_merge_keeps_the_first_pass_claims() -> None:
@@ -104,3 +104,18 @@ def test_scoring_runs_the_merged_packet_through_the_real_gate() -> None:
 
     assert (found, claims) == (1, 1)
     assert shares["G01"] == 1.0
+
+
+def test_a_span_the_gaps_do_not_name_is_reported_as_not_asked_about() -> None:
+    """A pass driven by coverage gaps cannot repair what they never named."""
+    gold = [("G01", (0, 100), "x"), ("G02", (200, 300), "y")]
+
+    shares = repair.gap_share(gold, [(0, 100)])
+
+    assert shares == {"G01": 1.0, "G02": 0.0}
+
+
+def test_partial_coverage_is_reported_as_a_fraction_not_as_asked() -> None:
+    gold = [("G01", (0, 100), "x")]
+
+    assert repair.gap_share(gold, [(0, 20), (90, 100)]) == {"G01": 0.3}

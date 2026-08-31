@@ -110,6 +110,21 @@ def scored(packet_data: dict, document: str, gold: list) -> tuple[int, int, dict
     return found, len(semantic.claims), shares
 
 
+def gap_share(gold: list, gaps: list[tuple[int, int]]) -> dict[str, float]:
+    """How much of each gold span the pass was actually asked about.
+
+    A span the coverage gaps do not name cannot be repaired by a pass driven by
+    them, however good the second call is. Partial coverage is the case to watch:
+    the remainder of a half-anchored passage can fall below the gap threshold and
+    then never reaches the list.
+    """
+    union = recall.merged(list(gaps))
+    return {
+        proposal_id: recall.covered_characters(span, union) / max(1, span[1] - span[0])
+        for proposal_id, span, _ in gold
+    }
+
+
 def one_round(decision: str, document: str, gold: list, max_tokens: int, watch: list[str]) -> dict:
     system, user = variant.extraction_prompt(decision, document, "general")
     first = variant.extract_packet(decision, system, user, max_tokens)
@@ -128,10 +143,15 @@ def one_round(decision: str, document: str, gold: list, max_tokens: int, watch: 
     admitted_contents = set(existing)
     kept: list[dict] = []
     reasons: dict[str, int] = {}
+    # A rejected proposal is only useful if it says why. The first run lost most
+    # of them to verbatim quoting rather than to the merge rule, which is not
+    # visible from a count.
+    rejected: list[tuple[str, str]] = []
     for index, proposal in enumerate(second.get("claims", []), start=1):
         offset = document.find(proposal["raw_span"])
         if offset < 0:
             reasons["source_span_not_found"] = reasons.get("source_span_not_found", 0) + 1
+            rejected.append(("source_span_not_found", proposal["raw_span"]))
             continue
         span = (offset, offset + len(proposal["raw_span"]))
         decision_, reason = repair_rule.verdict(
@@ -140,6 +160,8 @@ def one_round(decision: str, document: str, gold: list, max_tokens: int, watch: 
         reasons[reason] = reasons.get(reason, 0) + 1
         if decision_ == "admit":
             kept.append({**proposal, "proposal_id": f"Q{index:02d}"})
+        else:
+            rejected.append((reason, proposal["raw_span"]))
 
     merged_packet = merge(
         first,
@@ -149,6 +171,8 @@ def one_round(decision: str, document: str, gold: list, max_tokens: int, watch: 
     )
     after_found, after_claims, after_shares = scored(merged_packet, document, gold)
     return {
+        "gap_share": gap_share(gold, gaps),
+        "rejected": rejected,
         "gaps": len(gaps),
         "gap_characters": sum(end - start for start, end in gaps),
         "proposed": len(second.get("claims", [])),
@@ -205,7 +229,10 @@ def main() -> int:
             after = after_shares.get(name)
             if before is None:
                 continue
-            print(f"    {name}: {before:.0%} -> {after:.0%}")
+            asked = result["gap_share"].get(name, 0.0)
+            print(f"    {name}: {before:.0%} -> {after:.0%}   (davon erfragt: {asked:.0%})")
+        for reason, span in result["rejected"][:3]:
+            print(f"    abgelehnt [{reason}]: {' '.join(span.split())[:90]}")
         (args.out_dir / f"{args.decision}.repaired.{round_index}.json").write_text(
             json.dumps(result["packet"], ensure_ascii=False, indent=1), encoding="utf-8"
         )

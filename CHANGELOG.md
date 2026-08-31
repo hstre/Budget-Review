@@ -187,6 +187,19 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **The repair pass, measured: one passage repaired, two never asked about.**
+  Two rounds on 001-141170 against a mark fixed beforehand — two of the three
+  stable hard cases rising by 20 points or more. One did: G19 went from 23% to
+  71% and, in the second round, to 43%, without crossing the 80% threshold, so
+  recall stayed at 19/24 and 20/24 and the graph grew by three claims and by one.
+  A partial success, and two findings that matter more. The merge rule never
+  fired: four of seven and five of six proposals failed on verbatim quoting, so
+  the binding constraint is the anchor, not the guard I built. And G03 and G09
+  were never asked about — a coverage gap exists only where no claim is anchored
+  at all and only above 120 characters, so a passage anchored at 20% breaks into
+  remainders that each fall under the threshold. Partial coverage is blind to the
+  targeting mechanism. The pass now prints the rejected spans and, per gold span,
+  how much of it was actually in the request.
 - **The admission rule for a coverage-repair pass, decided before the pass
   exists.** `scripts/repair_merge.py` holds it as a tested function: a claim
   whose anchor lies outside the passages the pass was asked about is rejected, so
