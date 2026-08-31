@@ -173,6 +173,20 @@ says when it moves them. Their current values are `polished` 5 claims /
 - The deterministic half is unaffected by length: fed the gold spans as a
   packet, the gate admits all 24 and 49 claims with no rejections and the
   coverage measurement reports 0.946 and 0.977. The limit is extraction alone.
+- **Measured: no anchor of forty reaches into two speakers' text, and no two
+  claims say near-identical things at disjoint places.** On 001-141170 with the
+  production prompt: 40 claims, 20 of 24 gold spans at 80% overlap, anchored
+  share 0.76, zero speaker-boundary crossings and zero near-duplicates. The
+  first number tests a property the claim contract never asked for and holds on
+  this document; the second is narrower than it reads, since the check needs 80%
+  word overlap and the earlier differently-worded case would not have shown up.
+  Nothing of the 24 spans now falls within five points of the threshold — twenty
+  sit at 86% or above, seventeen of them at 100%, then 71%, 23%, 20% and 0% —
+  so the recall figure does no arbitrary work here. The hard-case list shrinks to
+  three: G03 and G09 are stable at 0% and 20%, G19 fell from 38% to 23%, while
+  G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
+  would look two spans better while two spans were getting worse, which is why
+  they are tracked by share.
 - **The admission rule for a coverage-repair pass, decided before the pass
   exists.** `scripts/repair_merge.py` holds it as a tested function: a claim
   whose anchor lies outside the passages the pass was asked about is rejected, so

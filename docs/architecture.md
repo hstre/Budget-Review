@@ -628,6 +628,58 @@ Offen bleibt die Messung: Ein Reparaturlauf muss an den Deckungsanteilen der
 harten Fälle gemessen werden, mit Wiederholungen über Sitzungen, sonst gilt für
 ihn dieselbe Unsichtbarkeit wie für die Prompt-Änderungen aus 3d.
 
+## 3l. Sprechergrenzen, Dubletten, und was von den harten Fällen bleibt
+
+Der erste Lauf mit den neuen Messgeräten, 001-141170, Produktionsprompt,
+16.384 Tokens: 40 Claims, 20/24 bei 80 Prozent, 21/24 bei 50, verankerter
+Anteil 0,76.
+
+**Anker über eine Sprechergrenze hinweg: 0 von 40.** Kein einziger Claim reicht
+in den Text zweier Sprecher. Die Vermutung, die Spannengrenzen trennten die
+Akteure sauber, ist damit an unseren Daten gemessen und nicht nur behauptet —
+und zwar, ohne dass der Claim-Vertrag je danach gefragt hätte. Ein Vorbehalt
+bleibt: ein Dokument, ein Lauf, und die EGMR-Annotation legt Akteurswechsel auf
+Absatzgrenzen, was die Aufgabe erleichtert.
+
+**Fast gleiche Claims an getrennten Stellen: 0.** Der dritte Fall des
+Merge-Gates aus 3k kommt in einem einzelnen Lauf also nicht vor. Das ist genau
+so zu lesen und nicht weiter: Die Prüfung verlangt 80 Prozent Wortüberlappung,
+und die frühere Beobachtung zu G03 — ein Claim zur selben Sache, an der
+Wiedergabe des Gerichtshofs verankert — war *anders formuliert* und wäre hier
+nie aufgefallen. Die starke Form meiner Vermutung ist unbelegt, die schwache
+ungeprüft. Für das Merge-Gate ändert das nichts: Die Regel greift dort, wo der
+Reparaturlauf den Graphen als Negativkontext bekommt und deshalb ähnlich
+formulieren *wird*.
+
+**Im Grenzband um 80 Prozent: 0 von 24.** Zwanzig Spannen liegen bei 86 bis 100
+Prozent, siebzehn davon bei genau 100; dann folgen 71, 23, 20 und 0. Die
+Verteilung ist noch schärfer zweigipflig als in 3j, und die Schwelle leistet auf
+diesem Dokument keine willkürliche Arbeit.
+
+**Von den harten Fällen bleiben drei.** Über die beiden Läufe mit
+Deckungsmessung:
+
+| Spanne | 29.08. | 31.08. | Lesart |
+|---|---:|---:|---|
+| G03 | 0 % | 0 % | nie berührt, stabil |
+| G09 | 20 % | 20 % | nie berührt, stabil |
+| G19 | 38 % | 23 % | angefasst, nie ausgeschöpft |
+| G08 | 81 % | 71 % | Grenzfall, kippt |
+| G18 | 66 % | 100 % | schwankt stark |
+| G22 | 19 % | 100 % | schwankt stark |
+
+Die Suite harter Fälle schrumpft damit auf **G03, G09 und G19** — der Rest
+schwankt zwischen Läufen und misst kein Verfahren. Genau das war der Grund, sie
+über den Deckungsanteil statt über bestanden/verfehlt zu führen: Mit einer
+binären Zählung sähe der Lauf vom 31.08. wie eine Verbesserung um zwei Spannen
+aus, obwohl G19 und G08 gleichzeitig schlechter geworden sind.
+
+Nebenbefund: Die Wortdeckung der Claims gegen ihr Zitat liegt in diesem Lauf bei
+Median 1,00 und Minimum 0,89, gegen 0,67 zwei Tage zuvor. Und 40 Claims mit
+20/24 liegen genau im Bereich der fünf Wiederholungen aus 3i — womit der Lauf
+vom 29.08. mit 47 Claims und 18/24 eher der Ausreißer ist als die Regel. Die
+Spannweite über Sitzungen bleibt 16 bis 20 Spannen.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

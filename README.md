@@ -355,6 +355,8 @@ detail per experiment is in `docs/architecture.md` §3a–§3j.
 | 13 | Five repeats of one configuration | spread ≥ 4 ⇒ single runs are uninformative; ≤ 1 ⇒ the cause lies elsewhere | Spread 1 within a five-minute window — but 16–20 spans and 38–47 claims across sessions | The first branch holds; the "spread is 1" reading is **withdrawn** as a window artefact |
 | 14 | Covered share per gold span | 60–80% ⇒ threshold artefact; < 30% ⇒ real gap | Three spans at 0%, 19%, 20%; two at 38% and 66%; one at 77%; the rest at 86–100% | The misses are **real**, and only 2 of 24 spans sit near the threshold |
 | 15 | Gold spans fed to the gate as a packet | — | All 24 and 49 claims admitted, no rejections, coverage 0.946 and 0.977 | The deterministic half is unaffected by length |
+| 16 | Anchors reaching into two speakers, counted against the corpus's actor labels | none — a first measurement | **0 of 40** | Holds; one document, one run |
+| 17 | Near-identical claims at disjoint anchors | none — a first measurement | 0 of 40 | The repair rule's third case does not occur in a single run |
 
 #### What we believe we know
 
@@ -401,6 +403,19 @@ text can be counted. A claim that spans the Government's submission and the
 Court's reply merges two epistemic positions into one node, and the anchor is
 the only record of who said it. Both are deterministic, replay-stable and cost
 nothing at run time.
+
+The first run with both reads: **no anchor of the forty reaches into two
+speakers' text**, and no two claims say near-identical things at disjoint
+places. The first number measures what the claim contract never asked for and
+is the sharper result of the two — though it is one document and one run, and
+this corpus puts its speaker changes on paragraph boundaries. The second is
+narrower than it looks: the check needs 80% word overlap, and the earlier
+observation about a claim anchored at the Court's restatement was differently
+worded, so it would never have shown up here. The hard-case list also shrank to
+three: G03 at 0% and G09 at 20% in both runs, G19 at 38% then 23%, while G18 and
+G22 went from 66% and 19% to 100% — which is exactly why they are tracked by
+share. Counted as passed or failed, that run would read as two spans better
+while two other spans were quietly getting worse.
 
 #### Open
 
@@ -915,6 +930,8 @@ stehen in `docs/architecture.md` §3a–§3j.
 | 13 | Fünf Wiederholungen einer Konfiguration | Streuung ≥ 4 ⇒ Einzelläufe sind wertlos; ≤ 1 ⇒ die Ursache liegt woanders | Streuung 1 innerhalb eines Fünf-Minuten-Fensters — über Sitzungen hinweg aber 16–20 Spannen und 38–47 Claims | Der erste Zweig gilt; die Lesart „Streuung ist 1" ist als Fensterartefakt **zurückgezogen** |
 | 14 | Deckungsanteil je Gold-Spanne | 60–80 % ⇒ Schwellenartefakt; < 30 % ⇒ echte Lücke | Drei Spannen bei 0 %, 19 %, 20 %; zwei bei 38 % und 66 %; eine bei 77 %; der Rest bei 86–100 % | Die Verfehlungen sind **echt**, und nur 2 von 24 Spannen liegen nahe der Schwelle |
 | 15 | Gold-Spannen als Packet ins Gate gegeben | — | Alle 24 bzw. 49 Claims zugelassen, keine Rejections, Abdeckung 0,946 und 0,977 | Die deterministische Hälfte ist von der Länge unberührt |
+| 16 | Anker, die in zwei Sprecher hineinreichen, gegen die Akteursangaben des Korpus | keines — Erstmessung | **0 von 40** | Gilt; ein Dokument, ein Lauf |
+| 17 | Fast gleiche Claims an getrennten Ankern | keines — Erstmessung | 0 von 40 | Der dritte Fall der Reparaturregel kommt in einem Lauf nicht vor |
 
 #### Was wir zu wissen glauben
 
@@ -968,6 +985,20 @@ Regierung und die Antwort des Gerichtshofs überspannt, verschmilzt zwei
 epistemische Positionen zu einem Knoten — und der Anker ist der einzige
 Nachweis, wer es gesagt hat. Beides ist deterministisch, replay-stabil und
 kostet zur Laufzeit nichts.
+
+Der erste Lauf mit beiden ergibt: **kein Anker von vierzig reicht in den Text
+zweier Sprecher**, und keine zwei Claims sagen an getrennten Stellen fast
+dasselbe. Die erste Zahl misst etwas, wonach der Claim-Vertrag nie gefragt hat,
+und ist das schärfere der beiden Ergebnisse — bei einem Dokument, einem Lauf,
+und einem Korpus, das Sprecherwechsel auf Absatzgrenzen legt. Die zweite ist
+enger, als sie klingt: Die Prüfung verlangt 80 Prozent Wortüberlappung, und die
+frühere Beobachtung zu einem Claim, der an der Wiedergabe des Gerichtshofs
+verankert war, war anders formuliert und wäre hier nie aufgefallen. Die Liste
+harter Fälle ist zudem auf drei geschrumpft: G03 bei 0 % und G09 bei 20 % in
+beiden Läufen, G19 bei 38 % und dann 23 %, während G18 und G22 von 66 % und
+19 % auf 100 % sprangen. Genau deshalb werden sie über den Anteil geführt: Als
+bestanden/verfehlt gezählt, läse sich dieser Lauf als zwei Spannen besser,
+während zwei andere still schlechter wurden.
 
 #### Offen
 
