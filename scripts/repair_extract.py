@@ -186,6 +186,29 @@ class _FixtureBuilder:
         print(f"{document_id}: {len(document)} Zeichen, eigene Fixture")
 
 
+def divergence(document: str, span: str, window: int = 30) -> tuple[int, str, str]:
+    """Where a quoted span stops matching the document, and what stands there.
+
+    A rejected proposal is only actionable if it says which character broke it.
+    Most of the repair pass's losses on the court decision are spans the document
+    does not contain, and a truncated 90-character preview cannot tell a dropped
+    footnote marker from a rewritten quotation. This binary-searches the longest
+    prefix that still occurs, then shows both continuations.
+
+    Returns the prefix length and the two continuations, the document's first.
+    """
+    low, high = 0, len(span)
+    while low < high:
+        middle = (low + high + 1) // 2
+        if document.find(span[:middle]) >= 0:
+            low = middle
+        else:
+            high = middle - 1
+    offset = document.find(span[:low]) if low else -1
+    expected = document[offset + low : offset + low + window] if offset >= 0 else ""
+    return low, expected, span[low : low + window]
+
+
 def gap_share(gold: list, gaps: list[tuple[int, int]]) -> dict[str, float]:
     """How much of each gold span the pass was actually asked about.
 
@@ -338,6 +361,11 @@ def main() -> int:
             print(f"    {name}: {before:.0%} -> {after:.0%}   (davon erfragt: {asked:.0%})")
         for reason, span in result["rejected"][:3]:
             print(f"    abgelehnt [{reason}]: {' '.join(span.split())[:90]}")
+            if reason == "source_span_not_found":
+                matched, expected, got = divergence(document, span)
+                print(f"      passt bis Zeichen {matched}")
+                print(f"      Dokument: {expected!r}")
+                print(f"      Vorschlag: {got!r}")
         (args.out_dir / f"{args.decision}.repaired.{round_index}.json").write_text(
             json.dumps(result["packet"], ensure_ascii=False, indent=1), encoding="utf-8"
         )

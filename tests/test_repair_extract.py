@@ -148,3 +148,37 @@ def test_an_anchor_over_whitespace_does_not_count_as_coverage() -> None:
 
     assert repair.thin_blocks(padded, [(0, 350)]) == [(0, 501)]
     assert repair.thin_blocks(padded, [(300, 500)]) == []
+
+
+def test_the_divergence_points_at_the_first_character_that_differs() -> None:
+    """A truncated preview cannot tell a dropped marker from a rewritten quote."""
+    document = "The Court held that the remedy was effective in law."
+    span = "The Court held that the remedy was adequate"
+
+    matched, expected, got = divergence_of(document, span)
+
+    assert span[:matched] == "The Court held that the remedy was "
+    assert expected.startswith("effective")
+    assert got.startswith("adequate")
+
+
+def test_a_span_the_document_contains_diverges_nowhere() -> None:
+    document = "The Court held that the remedy was effective."
+    span = "the remedy was effective"
+
+    matched, _, got = divergence_of(document, span)
+
+    assert matched == len(span)
+    assert got == ""
+
+
+def test_a_span_that_never_matches_reports_a_zero_prefix() -> None:
+    matched, expected, got = divergence_of("Nothing alike here.", "Zeta")
+
+    assert matched == 0
+    assert expected == ""
+    assert got == "Zeta"
+
+
+def divergence_of(document: str, span: str):
+    return repair.divergence(document, span)

@@ -992,6 +992,77 @@ Der Schema-Katalog bleibt der zweite Reibungspunkt: `claim`, `condition`,
 Claim-Partitionierung hat jedes Paket gerettet (bis zu 21 Claims und 6
 Relationen verworfen), aber sie kostet jedes Mal einen zweiten bezahlten Aufruf.
 
+## 3r. Die Gegenproben: unschädlich auf der Fixture, wirkungslos auf Rechtstext
+
+### Eigene Fixture, zwei Runden
+
+Der Fall ohne Reparaturbedarf: 2.009 Zeichen, 25 Gold-Claims, die der
+Produktionsprompt vollständig erreicht. Vorab festgelegt: Recall bleibt 25/25
+und der Graph wächst um weniger als ein Viertel.
+
+| Runde | Ziel | Recall | Claims |
+|---|---|---|---|
+| 1 | **keine Lücken** | 25/25 | 22 (kein zweiter Aufruf) |
+| 2 | 1 Passage (179 Zeichen) | 24/25 → **25/25** | 21 → 23 |
+
+Erfüllt, und besser als das Kriterium verlangte. In Runde 1 fand die
+Abdeckungsmessung **gar keine Lücke**, also unterblieb der zweite Aufruf
+vollständig — der Mechanismus ist **selbstbegrenzend**: Wo nichts fehlt, gibt es
+nichts zu fragen, und es entstehen keine Kosten. In Runde 2 fehlte eine Spanne,
+eine Passage wurde erfragt, zwei Claims kamen dazu, und die fehlende Spanne war
+drin. Kein Aufblähen, kein Verlust.
+
+Das ist die Einschaltbedingung, die ich noch bauen wollte: Sie ist bereits
+eingebaut.
+
+### Gerichtsentscheidung, drei Runden
+
+001-141170, 16.384 Tokens, wo der Erstlauf schon bei 18 bis 20 von 24 liegt.
+Vorab festgelegt: mittlerer Zugewinn ≥ 2 Spannen.
+
+| Runde | Vorschläge | zugelassen | Recall | G19 |
+|---|---:|---:|---|---|
+| 1 | 6 | **0** | 20 → 20 | 23 % → 23 % |
+| 2 | 6 | 2 | 18 → 18 | 19 % → **67 %** |
+| 3 | 6 | 2 | 20 → 20 | 23 % → **71 %** |
+
+**Mittlerer Zugewinn 0 — verfehlt.** Der Gewinn ist damit papierspezifisch, wie
+vor dem Lauf vermutet: Er entsteht, wo der Erstlauf ganze Abschnitte liegen
+lässt, nicht dort, wo er nahe an seiner Grenze arbeitet.
+
+Zwei Dinge sind trotzdem sichtbar geworden.
+
+**Der Reparaturlauf zielt richtig.** G03 wurde in jeder Runde zu 100 Prozent
+erfragt, G09 zu 80, G19 zu 77–79. Die Passagen, die dieser Branch seit Wochen
+verfolgt, standen also in der Anfrage. G19 wird auch bearbeitet — 23 auf 71
+Prozent —, überschreitet die Schwelle aber nicht.
+
+**Der Engpass ist die wörtliche Verankerung, und zwar dramatisch.** Von 18
+Vorschlägen scheiterten **14** an `source_span_not_found`, in Runde 1 alle
+sechs. Auf den Papern waren es rund 7 Prozent. Dieselben drei Passagen
+scheitern in jeder Runde, darunter genau die G03-Einlassung.
+
+Eine naheliegende Erklärung habe ich geprüft und **verworfen**: Auf den Papern
+sind gesperrte Zitatmarken (`[ HK03 ]`) und Formelsatz plausibel, aber das
+EGMR-Dokument enthält **kein einziges** Mehrfach-Leerzeichen, und alle 24
+Gold-Spannen sind wörtlich auffindbar. Die Ursache der Abweichung ist damit
+offen. Der Lauf druckt die abgelehnten Spannen bisher auf 90 Zeichen gekürzt,
+was zwischen einer weggelassenen Fußnotenmarke und einem umformulierten Zitat
+nicht unterscheidet; `divergence` binärsucht deshalb jetzt das längste noch
+auffindbare Präfix und zeigt beide Fortsetzungen. Die nächste Messung sagt, an
+welchem Zeichen es bricht.
+
+### Was daraus für die Produktion folgt
+
+Der Reparaturlauf ist einschaltbar, weil er sich selbst begrenzt: Er kostet
+nichts, wo nichts fehlt (Fixture), er hebt dünn geratene Läufe massiv (Paper,
+Abschnitt 3q), und er schadet auch dort nicht, wo er nichts ausrichtet
+(Rechtstext) — zwei zusätzliche Claims je Runde, kein Recall-Verlust. Vor einer
+Produktionsentscheidung fehlt die Ursache der Zitat-Abweichung: Solange 78
+Prozent der Vorschläge auf Rechtstext daran scheitern, ist das Verfahren dort
+wirkungslos, und der Grund dafür ist ein benanntes, offenes Problem statt einer
+Vermutung.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

@@ -187,6 +187,21 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **The two controls: harmless where it cannot help, ineffective on legal text.**
+  On the repo's own fixture, where the production prompt already reaches all 25
+  gold claims, the coverage measurement found no gap at all in one round — so no
+  second call was made — and one 179-character gap in the other, which two added
+  claims filled to 25/25. The mechanism is self-limiting: the trigger condition
+  is built in, not something still to be designed. On the court decision, three
+  rounds with a first pass already at 18–20 of 24: mean gain **zero**, against a
+  mark of 2, so the paper result is paper-specific. The targeting is right — G03
+  was 100% inside the request every round, G09 80%, G19 77–79%, and G19 rises
+  from 23% to 71% covered without crossing the threshold — but 14 of 18 proposals
+  died on verbatim anchoring, against about 7% on papers. The obvious explanation
+  is refuted: the ECHR document contains no multiple whitespace at all and every
+  gold span is findable verbatim, so the cause is open. `divergence` now binary-
+  searches the longest still-findable prefix of a rejected span and prints both
+  continuations, which names the breaking character instead of guessing at it.
 - **The repair pass repeated three times per mode: the first large, replicated
   win.** On A24, uncovered targeting ran 76→215, 176→203 and 80→206 of 219 gold
   spans; thin targeting 85→147, 80→140, 81→118. Mean gain +97 against +53, a
