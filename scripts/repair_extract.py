@@ -162,6 +162,30 @@ def thin_blocks(
     return thin
 
 
+FIXTURE = Path("src/budget_review/fixtures/coherence_theatre")
+
+
+class _FixtureBuilder:
+    """The repo's own fixture as a gold case, for the regression control.
+
+    The paper runs show the repair pass adding fifty to a hundred and forty
+    claims. On a 1,700-character proposal the production prompt already reaches
+    every gold claim, so there is nothing to repair — and what the pass does
+    there is the question the frozen controls exist for: a second call that
+    cannot help must at least not bloat the dossier.
+    """
+
+    @staticmethod
+    def build(_gold_data: Path, document_id: str, out_dir: Path) -> None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        document = (FIXTURE / "proposal.md").read_text(encoding="utf-8")
+        (out_dir / f"{document_id}.txt").write_text(document, encoding="utf-8")
+        (out_dir / f"{document_id}.gold.json").write_text(
+            (FIXTURE / "semantic_packet.json").read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        print(f"{document_id}: {len(document)} Zeichen, eigene Fixture")
+
+
 def gap_share(gold: list, gaps: list[tuple[int, int]]) -> dict[str, float]:
     """How much of each gold span the pass was actually asked about.
 
@@ -259,7 +283,7 @@ def main() -> int:
     parser.add_argument("--watch", default="G03,G09,G19")
     parser.add_argument(
         "--corpus",
-        choices=("echr", "sciarg"),
+        choices=("echr", "sciarg", "fixture"),
         default="echr",
         help="which gold builder the document and its reference come from",
     )
@@ -271,7 +295,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    builder = sciarg if args.corpus == "sciarg" else echr
+    builder = {"sciarg": sciarg, "fixture": _FixtureBuilder}.get(args.corpus, echr)
     builder.build(args.gold_data, args.decision, args.out_dir)
     document = (args.out_dir / f"{args.decision}.txt").read_text(encoding="utf-8")
     gold_packet = json.loads(

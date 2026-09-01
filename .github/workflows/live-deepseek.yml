@@ -24,13 +24,14 @@ on:
         default: true
         type: boolean
       corpus:
-        description: "Gold corpus: echr court decisions, or sciarg scientific papers"
+        description: "Gold corpus: echr decisions, sciarg papers, or the repo's own fixture"
         required: false
         default: echr
         type: choice
         options:
           - echr
           - sciarg
+          - fixture
       gold_decision:
         description: "Document id: an ECHR decision (001-141170) or a Sci-Arg paper (A24)."
         required: false
@@ -149,6 +150,7 @@ jobs:
         run: python -m pip install -e .
 
       - name: Fetch the gold corpus
+        if: inputs.corpus != 'fixture'
         run: |
           mkdir -p gold-case
           if [ "${{ inputs.corpus }}" = "sciarg" ]; then
@@ -227,14 +229,17 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
         run: |
           set -o pipefail
-          mv gold-case-provenance.txt gold-case/
+          mkdir -p gold-case
+          mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
           if [ "${{ inputs.corpus }}" = "sciarg" ]; then
             GOLD_DATA=corpus-sciarg/compiled_corpus
           else
             GOLD_DATA=corpus/gold_data
           fi
+          CASE="${{ inputs.gold_decision }}"
+          if [ "${{ inputs.corpus }}" = "fixture" ]; then CASE=fixture; fi
           python scripts/repair_extract.py "$GOLD_DATA" gold-case \
-            "${{ inputs.gold_decision }}" \
+            "$CASE" \
             --corpus "${{ inputs.corpus }}" \
             --repeats "${{ inputs.repair_rounds }}" \
             --max-tokens "${{ inputs.max_tokens }}" \
