@@ -186,6 +186,49 @@ class _FixtureBuilder:
         print(f"{document_id}: {len(document)} Zeichen, eigene Fixture")
 
 
+def _collapsed(text: str) -> tuple[str, list[int]]:
+    """The text with whitespace runs squeezed to one space, and an index map."""
+    out: list[str] = []
+    origin: list[int] = []
+    previous_space = False
+    for index, character in enumerate(text):
+        if character.isspace():
+            if not previous_space:
+                out.append(" ")
+                origin.append(index)
+            previous_space = True
+            continue
+        out.append(character)
+        origin.append(index)
+        previous_space = False
+    return "".join(out), origin
+
+
+def relaxed_span(document: str, span: str) -> str | None:
+    """The document's own text for a span that differs only in whitespace.
+
+    The court decision is hard-wrapped: 28 lines for 10,308 characters, with
+    line breaks inside sentences. A repair proposal quoting such a passage
+    writes it as flowing prose — the newline becomes a space or disappears — and
+    the exact-substring lookup then fails on a passage the document plainly
+    contains. Measured on 001-141170: fourteen of eighteen proposals died this
+    way, and the diagnostic put every one of them at a line break.
+
+    What comes back is the **document's** slice, never the model's wording, so
+    the claim still quotes the source exactly and the audit is unchanged. A span
+    the document does not contain, whitespace aside, still returns None: this
+    tolerates typesetting, not paraphrase.
+    """
+    needle = " ".join(span.split())
+    if not needle:
+        return None
+    haystack, origin = _collapsed(document)
+    position = haystack.find(needle)
+    if position < 0:
+        return None
+    return document[origin[position] : origin[position + len(needle) - 1] + 1]
+
+
 def divergence(document: str, span: str, window: int = 30) -> tuple[int, str, str]:
     """Where a quoted span stops matching the document, and what stands there.
 
@@ -231,6 +274,7 @@ def one_round(
     max_tokens: int,
     watch: list[str],
     target: str = "uncovered",
+    relax: bool = False,
 ) -> dict:
     system, user = variant.extraction_prompt(decision, document, "general")
     first = variant.extract_packet(decision, system, user, max_tokens)
@@ -259,8 +303,16 @@ def one_round(
     # of them to verbatim quoting rather than to the merge rule, which is not
     # visible from a count.
     rejected: list[tuple[str, str]] = []
+    rescued = 0
     for index, proposal in enumerate(second.get("claims", []), start=1):
         offset = document.find(proposal["raw_span"])
+        if offset < 0 and relax:
+            # Only the typesetting differed; quote the document, not the model.
+            recovered = relaxed_span(document, proposal["raw_span"])
+            if recovered is not None:
+                proposal = {**proposal, "raw_span": recovered}
+                offset = document.find(recovered)
+                rescued += 1
         if offset < 0:
             reasons["source_span_not_found"] = reasons.get("source_span_not_found", 0) + 1
             rejected.append(("source_span_not_found", proposal["raw_span"]))
@@ -283,6 +335,7 @@ def one_round(
     )
     after_found, after_claims, after_shares = scored(merged_packet, document, gold)
     return {
+        "rescued": rescued,
         "gap_share": gap_share(gold, gaps),
         "rejected": rejected,
         "gaps": len(gaps),
@@ -311,6 +364,11 @@ def main() -> int:
         help="which gold builder the document and its reference come from",
     )
     parser.add_argument(
+        "--relax-whitespace",
+        action="store_true",
+        help="anchor a span that differs from the document only in whitespace",
+    )
+    parser.add_argument(
         "--target",
         choices=("uncovered", "thin"),
         default="uncovered",
@@ -329,7 +387,15 @@ def main() -> int:
 
     for round_index in range(1, args.repeats + 1):
         try:
-            result = one_round(args.decision, document, gold, args.max_tokens, watch, args.target)
+            result = one_round(
+                args.decision,
+                document,
+                gold,
+                args.max_tokens,
+                watch,
+                args.target,
+                args.relax_whitespace,
+            )
         except (SystemExit, Exception) as error:  # noqa: BLE001
             print(
                 f"Runde {round_index}: gescheitert ({type(error).__name__}: {error})",
@@ -350,6 +416,8 @@ def main() -> int:
         print(f"  Vorschläge:    {result['proposed']}")
         for reason, count in sorted(result["reasons"].items()):
             print(f"    {reason}: {count}")
+        if result["rescued"]:
+            print(f"    davon über Leerraum gerettet: {result['rescued']}")
         print(f"  Recall 80 %:   {before_found}/{len(gold)} -> {after_found}/{len(gold)}")
         print(f"  Claims:        {before_claims} -> {after_claims}")
         for name in watch:

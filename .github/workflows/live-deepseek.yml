@@ -90,6 +90,11 @@ on:
         options:
           - uncovered
           - thin
+      relax_whitespace:
+        description: "Anchor a repair span that differs from the document only in whitespace"
+        required: false
+        default: false
+        type: boolean
       two_stage:
         description: "Extract claims and relations in separate calls"
         required: false
@@ -244,6 +249,7 @@ jobs:
             --repeats "${{ inputs.repair_rounds }}" \
             --max-tokens "${{ inputs.max_tokens }}" \
             --target "${{ inputs.repair_target }}" \
+            ${{ inputs.relax_whitespace == true && '--relax-whitespace' || '' }} \
             --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/repair.txt
 
       - name: Live extraction

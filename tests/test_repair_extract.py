@@ -182,3 +182,35 @@ def test_a_span_that_never_matches_reports_a_zero_prefix() -> None:
 
 def divergence_of(document: str, span: str):
     return repair.divergence(document, span)
+
+
+HARD_WRAPPED = "The Court held that in the case Lazzarini and Ghiacci \nv. Italy the remedy failed."
+
+
+def test_a_span_broken_only_by_a_line_break_is_anchored_to_the_document() -> None:
+    """The court decision wraps inside sentences; the model quotes flowing prose."""
+    span = "in the case Lazzarini and Ghiacci v. Italy the remedy failed"
+
+    recovered = repair.relaxed_span(HARD_WRAPPED, span)
+
+    assert recovered == "in the case Lazzarini and Ghiacci \nv. Italy the remedy failed"
+    assert recovered in HARD_WRAPPED
+
+
+def test_the_document_wording_comes_back_never_the_proposal_wording() -> None:
+    recovered = repair.relaxed_span(HARD_WRAPPED, "Lazzarini and Ghiacci  v.  Italy")
+
+    assert recovered == "Lazzarini and Ghiacci \nv. Italy"
+
+
+def test_a_paraphrase_is_still_refused() -> None:
+    """This tolerates typesetting, not rewriting."""
+    assert repair.relaxed_span(HARD_WRAPPED, "in the matter of Lazzarini the remedy failed") is None
+
+
+def test_an_empty_span_anchors_nothing() -> None:
+    assert repair.relaxed_span(HARD_WRAPPED, "   ") is None
+
+
+def test_a_span_the_document_contains_verbatim_is_returned_unchanged() -> None:
+    assert repair.relaxed_span(HARD_WRAPPED, "The Court held") == "The Court held"
