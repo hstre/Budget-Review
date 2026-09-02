@@ -1063,6 +1063,67 @@ Prozent der Vorschläge auf Rechtstext daran scheitern, ist das Verfahren dort
 wirkungslos, und der Grund dafür ist ein benanntes, offenes Problem statt einer
 Vermutung.
 
+## 3s. Der Zeilenumbruch war der Engpass
+
+Die Diagnose aus 3r hat die Bruchstelle benannt: Der Vorschlag passt bis Zeichen
+58, 62 beziehungsweise 206, und dort steht im Dokument ein Zeilenumbruch, wo der
+Vorschlag ein Leerzeichen oder nichts hat. Die Entscheidung ist hart umbrochen —
+28 Zeilen auf 10.308 Zeichen, Median 323 —, also fallen Umbrüche mitten in Sätze,
+und ein Vorschlag, der so eine Passage zitiert, schreibt sie als Fließtext.
+
+Meine Prüfung in 3r war die falsche Sonde: Ich habe auf Mehrfach-Leerzeichen
+getestet, nicht auf Zeilenumbrüche innerhalb einer Spanne, und daraufhin die
+Ursache als offen gemeldet. Vier der 24 Gold-Spannen tragen einen Umbruch.
+
+`relaxed_span` sucht den Anker auf einer leerraum-normalisierten Kopie des
+Dokuments und gibt **die Textstelle des Dokuments** zurück, nie den Wortlaut des
+Modells. Der Claim zitiert also weiterhin exakt die Quelle. Eine Passage, die das
+Dokument abseits von Leerraum nicht enthält, wird weiter abgelehnt: Das toleriert
+Satzspiegel, keine Umformulierung.
+
+Drei Runden, 001-141170, sonst unverändert. Vorab festgelegt: `source_span_not_found`
+unter 3 von 18 **und** mittlerer Recall-Gewinn ≥ 2 Spannen.
+
+| Runde | Vorschläge | zugelassen | über Leerraum gerettet | Recall | G03 | G09 | G19 |
+|---|---:|---:|---:|---|---|---|---|
+| 1 | 7 | **7** | 4 | 20 → **23**/24 | 0 → **100 %** | 20 → **90 %** | 23 → 71 % |
+| 2 | 8 | **8** | 3 | 18 → **20**/24 | 0 → **100 %** | 20 → **90 %** | 19 → 67 % |
+| 3 | 7 | **7** | 4 | 20 → **23**/24 | 0 → **100 %** | 20 → **90 %** | 23 → 71 % |
+
+**Beide Bedingungen erfüllt, dreimal von drei.** Keine einzige Ablehnung wegen
+fehlender Verankerung mehr, gegen 14 von 18 zuvor. Mittlerer Zugewinn +2,7
+Spannen, wo derselbe Lauf ohne die Toleranz 0 brachte.
+
+**G03 ist drin.** Die Regierungseinlassung, die dieser Branch seit dem ersten
+Recall-Lauf in *jedem* Lauf verfehlt hat, erreicht in allen drei Runden 100
+Prozent. G09 steigt von 20 auf 90 und damit über die Schwelle; G19 bleibt bei
+67–71 Prozent darunter. Der Endstand 23/24 ist der höchste je auf diesem Dokument
+gemessene Wert — das bisherige Maximum war 20/24.
+
+Der Graph wächst dabei moderat: 40→47, 45→53, 41→48 Claims.
+
+Dasselbe Prinzip erklärt auch die Ausfälle auf den Papern — `[ HK03 ]` mit
+gesperrten Klammern und der Formelsatz sind ebenfalls Leerraum-Unterschiede,
+dort in kleinerer Zahl (rund 7 Prozent statt 78).
+
+### Was das für die Produktion bedeutet, und was noch zu entscheiden ist
+
+Die Toleranz steckt bisher nur im Experiment (`--relax-whitespace`, Vorgabe aus).
+In die Produktion gehört sie ins Gate, in `_all_offsets` — und dort ist sie
+**keine reine Erweiterung**, sondern eine neue Befugnis: Das Gate müsste den
+`raw_span` eines Vorschlags durch die Textstelle des Dokuments **ersetzen**.
+Bisher lässt es zu oder lehnt ab, es verändert keinen Vorschlag.
+
+Dafür spricht, dass die Alternative schlechter ist: Verankerte man den Claim mit
+dem Wortlaut des Modells, zitierte das Dossier Text, den das Dokument so nicht
+enthält, und genau das soll der wörtliche Beleg verhindern. Dagegen spricht, dass
+jede stille Veränderung eines Vorschlags die Prüfbarkeit angreift.
+
+Der saubere Weg ist deshalb: ersetzen, aber **protokollieren** — ein Eintrag im
+Audit, der sagt, dass der Anker über Leerraum gefunden und der Wortlaut auf die
+Quelle gesetzt wurde. Das ist eine Schemafrage (0.2 → 0.3) und eine Entscheidung,
+die nicht nebenbei fällt. Gemessen ist sie; gebaut ist sie nicht.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

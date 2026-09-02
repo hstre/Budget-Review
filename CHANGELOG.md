@@ -187,6 +187,22 @@ says when it moves them. Their current values are `polished` 5 claims /
   G18 and G22 rose from 66% and 19% to 100%. Read as passed or failed, that run
   would look two spans better while two spans were getting worse, which is why
   they are tracked by share.
+- **The line break was the bottleneck, and the repair pass now works on legal
+  text.** With whitespace-tolerant anchoring, three rounds on 001-141170: not one
+  `source_span_not_found` in 22 proposals, against 14 of 18 before, and a mean
+  gain of 2.7 spans where the same run without it gained nothing. Both marks
+  fixed beforehand were met, three times of three. G03 — the Government
+  submission this branch has missed in every run since the first recall
+  measurement — reaches 100% in all three rounds, G09 rises from 20% to 90%, and
+  the end state of 23 of 24 is the highest ever measured on this document against
+  a previous maximum of 20. The graph grows moderately, seven to eight claims.
+  The same mechanism explains the paper losses: spaced citation brackets and
+  formula setting are whitespace differences too, at about 7% instead of 78%.
+  The tolerance lives in the experiment only. Putting it in the gate means giving
+  the gate a power it does not have — replacing a proposal's raw_span with the
+  document's own slice — which is right (quoting the model instead would put text
+  in the dossier the document does not contain) but has to be recorded in the
+  audit, and that is a schema decision rather than a patch.
 - **The two controls: harmless where it cannot help, ineffective on legal text.**
   On the repo's own fixture, where the production prompt already reaches all 25
   gold claims, the coverage measurement found no gap at all in one round — so no
