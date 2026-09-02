@@ -222,6 +222,7 @@ class SemanticPacket:
     claims: tuple[ClaimProposal, ...]
     relations: tuple[RelationProposal, ...] = ()
     relation_rejections: tuple[Rejection, ...] = ()
+    claim_rejections: tuple[Rejection, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SemanticPacket:
@@ -234,6 +235,7 @@ class SemanticPacket:
                 "claims",
                 "relations",
                 "relation_rejections",
+                "claim_rejections",
             },
             "semantic packet",
         )
@@ -249,6 +251,9 @@ class SemanticPacket:
         raw_rejections = data.get("relation_rejections", [])
         if not isinstance(raw_rejections, list):
             raise SchemaError("relation_rejections must be a list")
+        raw_claim_rejections = data.get("claim_rejections", [])
+        if not isinstance(raw_claim_rejections, list):
+            raise SchemaError("claim_rejections must be a list")
         if not raw_claims:
             raise SchemaError("semantic packet must contain at least one claim")
         return cls(
@@ -258,6 +263,9 @@ class SemanticPacket:
             claims=tuple(ClaimProposal.from_dict(item) for item in raw_claims),
             relations=tuple(RelationProposal.from_dict(item) for item in raw_relations),
             relation_rejections=tuple(Rejection.from_dict(item) for item in raw_rejections),
+            claim_rejections=tuple(
+                Rejection.from_dict(item) for item in raw_claim_rejections
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:

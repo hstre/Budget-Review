@@ -1,5 +1,12 @@
 name: Live DeepSeek smoke test
 
+# Two paid modes, both manual. Empty gold_decision runs the smoke test on a
+# frozen fixture. A decision id instead measures extraction recall against an
+# external gold standard on a document far longer than any fixture: the corpus
+# is cloned at run time and never vendored, and the artifact is uploaded even
+# when extraction does not complete, because a run that does not complete is
+# itself the result.
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,9 +19,86 @@ on:
           - general
           - budget
       run_reviewers:
-        description: "Also run both Anti-Delphi LLM arms"
+        description: "Also run both Anti-Delphi LLM arms (smoke mode only)"
         required: true
         default: true
+        type: boolean
+      corpus:
+        description: "Gold corpus: echr decisions, sciarg papers, or the repo's own fixture"
+        required: false
+        default: echr
+        type: choice
+        options:
+          - echr
+          - sciarg
+          - fixture
+      gold_decision:
+        description: "Document id: an ECHR decision (001-141170) or a Sci-Arg paper (A24)."
+        required: false
+        default: ""
+        type: string
+      segment_budget:
+        description: "Characters per extraction call. 0 sends the document in one call."
+        required: false
+        default: "0"
+        type: string
+      prompt:
+        description: "Extraction prompt: production, neutral (both edits), or one edit alone"
+        required: false
+        default: production
+        type: choice
+        options:
+          - production
+          - neutral
+          - decompose
+          - vocabulary
+      max_tokens:
+        description: "Extraction output budget. The model allows up to 384000."
+        required: false
+        default: "16384"
+        type: string
+      double_run:
+        description: "Extract twice, once per prompt, and merge before the gate"
+        required: false
+        default: false
+        type: boolean
+      sweep_decisions:
+        description: "Space-separated ECHR ids: run production against one edit on each"
+        required: false
+        default: ""
+        type: string
+      repeat_runs:
+        description: "Run one configuration N times on gold_decision to measure its spread"
+        required: false
+        default: "0"
+        type: string
+      watch_spans:
+        description: "Gold ids to report by covered share, e.g. the hard cases G03,G08,G09,G19"
+        required: false
+        default: ""
+        type: string
+      repair_rounds:
+        description: "Coverage-repair second pass on gold_decision, N rounds. 0 disables it."
+        required: false
+        default: "0"
+        type: string
+      repair_target:
+        description: "What the repair pass asks about: uncovered gaps, or thinly anchored blocks"
+        required: false
+        default: uncovered
+        type: choice
+        options:
+          - uncovered
+          - thin
+      relax_whitespace:
+        description: "Anchor a repair span that differs from the document only in whitespace"
+        required: false
+        default: false
+        type: boolean
+      two_stage:
+        description: "Extract claims and relations in separate calls"
+        required: false
+        default: false
         type: boolean
 
 permissions:
@@ -22,6 +106,7 @@ permissions:
 
 jobs:
   live-smoke:
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -54,4 +139,210 @@ jobs:
         with:
           name: live-deepseek-dossier
           path: review-output/live/
+          if-no-files-found: warn
+
+  gold-recall:
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true
+    runs-on: ubuntu-latest
+    environment: alpha-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+
+      - name: Fetch the gold corpus
+        if: inputs.corpus != 'fixture'
+        run: |
+          mkdir -p gold-case
+          if [ "${{ inputs.corpus }}" = "sciarg" ]; then
+            # Fetched at run time and never vendored, as with every external
+            # reference here. The mirror states no licence, so it is treated as
+            # measurement input only.
+            curl -sSfL --max-time 300 -o sciarg.zip \
+              https://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip
+            unzip -q sciarg.zip -d corpus-sciarg
+            echo "sci-arg compiled_corpus, sha256 $(sha256sum sciarg.zip | cut -d' ' -f1)" \
+              | tee gold-case-provenance.txt
+          else
+            git clone --depth 1 https://github.com/trusthlt/mining-legal-arguments.git corpus
+            echo "trusthlt/mining-legal-arguments (Apache-2.0) at $(git -C corpus rev-parse HEAD)" \
+              | tee gold-case-provenance.txt
+          fi
+
+      - name: Build the case
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
+        run: |
+          mkdir -p gold-case
+          mv gold-case-provenance.txt gold-case/
+          if [ -n "${{ inputs.gold_decision }}" ]; then
+            if [ "${{ inputs.corpus }}" = "sciarg" ]; then
+              python scripts/sciarg_gold.py corpus-sciarg/compiled_corpus \
+                "${{ inputs.gold_decision }}" gold-case \
+                | tee -a gold-case/gold-case-provenance.txt
+            else
+              python scripts/echr_gold.py corpus/gold_data "${{ inputs.gold_decision }}" gold-case \
+                | tee -a gold-case/gold-case-provenance.txt
+            fi
+            # What a perfect extraction could score here: on clause-sized
+            # annotations the gate collapses repeated fragments, so the reference
+            # is not fully reachable and the run must be read against this.
+            python scripts/gold_ceiling.py \
+              "gold-case/${{ inputs.gold_decision }}.gold.json" \
+              "gold-case/${{ inputs.gold_decision }}.txt" \
+              | tee -a gold-case/gold-case-provenance.txt
+          else
+            # Regression control: the repo's own fixture, whose frozen packet the
+            # production prompt reaches in full. A prompt that wins on legal
+            # prose and loses here is not an improvement.
+            FIX=src/budget_review/fixtures/coherence_theatre
+            cp "$FIX/proposal.md" gold-case/fixture.txt
+            cp "$FIX/semantic_packet.json" gold-case/fixture.gold.json
+            echo "Gegenprobe auf der eigenen Fixture" | tee -a gold-case/gold-case-provenance.txt
+          fi
+
+      - name: Prompt sweep across several decisions
+        if: inputs.sweep_decisions != ''
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          python scripts/prompt_sweep.py corpus/gold_data gold-case \
+            ${{ inputs.sweep_decisions }} \
+            --edit "${{ inputs.prompt == 'production' && 'vocabulary' || inputs.prompt }}" \
+            --max-tokens "${{ inputs.max_tokens }}" 2>&1 | tee gold-case/sweep.txt
+
+      - name: Repeat one configuration to measure its spread
+        if: inputs.repeat_runs != '0'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          mv gold-case-provenance.txt gold-case/
+          python scripts/variance_run.py corpus/gold_data gold-case \
+            "${{ inputs.gold_decision }}" \
+            --runs "${{ inputs.repeat_runs }}" \
+            --prompt "${{ inputs.prompt }}" \
+            --max-tokens "${{ inputs.max_tokens }}" 2>&1 | tee gold-case/variance.txt
+
+      - name: Coverage-repair second pass
+        if: inputs.repair_rounds != '0'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          mkdir -p gold-case
+          mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
+          if [ "${{ inputs.corpus }}" = "sciarg" ]; then
+            GOLD_DATA=corpus-sciarg/compiled_corpus
+          else
+            GOLD_DATA=corpus/gold_data
+          fi
+          CASE="${{ inputs.gold_decision }}"
+          if [ "${{ inputs.corpus }}" = "fixture" ]; then CASE=fixture; fi
+          python scripts/repair_extract.py "$GOLD_DATA" gold-case \
+            "$CASE" \
+            --corpus "${{ inputs.corpus }}" \
+            --repeats "${{ inputs.repair_rounds }}" \
+            --max-tokens "${{ inputs.max_tokens }}" \
+            --target "${{ inputs.repair_target }}" \
+            ${{ inputs.relax_whitespace == true && '--relax-whitespace' || '' }} \
+            --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/repair.txt
+
+      - name: Live extraction
+        id: extract
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
+        continue-on-error: true
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          if [ -n "${{ inputs.gold_decision }}" ]; then
+            CASE="${{ inputs.gold_decision }}"
+            DOC="gold-case/$CASE.txt"
+            DOCID="$CASE"
+          else
+            CASE=fixture
+            DOC=gold-case/fixture.txt
+            DOCID=regional-skills-bridge
+          fi
+          echo "$CASE" > gold-case/case-name.txt
+          BUDGET="${{ inputs.segment_budget }}"
+          if [ "${{ inputs.two_stage }}" = "true" ]; then
+            python scripts/two_stage_extract.py "$DOC" "$DOCID" \
+              gold-case/two-stage-packet.json --max-tokens "${{ inputs.max_tokens }}" \
+              2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/two-stage-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          elif [ "${{ inputs.double_run }}" = "true" ]; then
+            python scripts/double_run_extract.py "$DOC" "$DOCID" \
+              gold-case/merged-packet.json --max-tokens "${{ inputs.max_tokens }}" \
+              2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/merged-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          elif [ "${{ inputs.prompt }}" != "production" ] || \
+             [ "${{ inputs.max_tokens }}" != "16384" ]; then
+            python scripts/prompt_variant_extract.py "$DOC" "$DOCID" \
+              gold-case/variant-packet.json \
+              --prompt "${{ inputs.prompt }}" --max-tokens "${{ inputs.max_tokens }}" \
+              2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/variant-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          elif [ "$BUDGET" = "0" ]; then
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --provider deepseek \
+              --output review-output/gold 2>&1 | tee gold-case/extraction.log
+          else
+            python scripts/segmented_extract.py "$DOC" "$DOCID" \
+              gold-case/merged-packet.json "$BUDGET" 2>&1 | tee gold-case/extraction.log
+            content-review review "$DOC" --document-id "$DOCID" \
+              --profile "${{ inputs.profile }}" \
+              --packet gold-case/merged-packet.json \
+              --output review-output/gold 2>&1 | tee -a gold-case/extraction.log
+          fi
+
+      - name: Measure recall
+        if: inputs.sweep_decisions == '' && steps.extract.outcome == 'success'
+        run: |
+          set -o pipefail
+          CASE=$(cat gold-case/case-name.txt)
+          python scripts/measure_recall.py \
+            review-output/gold/dossier.json \
+            "gold-case/$CASE.gold.json" \
+            "gold-case/$CASE.txt" \
+            --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/recall.txt
+
+      - name: Screen the graph for content its spans do not carry
+        if: inputs.sweep_decisions == '' && steps.extract.outcome == 'success'
+        run: |
+          # Reported, not enforced: the word overlap is a ranking and the
+          # number check has only ever been exercised against hand-built
+          # packets. The exit code is left available for a stricter use once
+          # live text has been seen.
+          python scripts/measure_drift.py review-output/gold/dossier.json \
+            2>&1 | tee gold-case/drift.txt || true
+
+      - name: Report an extraction that did not complete
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && steps.extract.outcome != 'success'
+        run: |
+          echo "Extraction produced no dossier. That is a result, not an infrastructure fault."
+          cat gold-case/extraction.log || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gold-recall-${{ inputs.gold_decision || 'fixture' }}-${{ github.run_id }}
+          path: |
+            gold-case/
+            review-output/gold/
           if-no-files-found: warn

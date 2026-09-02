@@ -130,8 +130,302 @@ extractor worked. Measured against AbstRCT, a corpus of clinical abstracts with
 expert-annotated argument spans, the same documents read 0.48 when every
 annotated component counts and 0.14 when only conclusions do. A share is
 comparable between runs of one contract and meaningless across different ones.
-The dependable part is the list of gaps: it accounts for 98% of the unanchored
-text on average, so it decomposes the share rather than sampling it.
+The gap list is the more dependable half, but it is not scale-free either. On
+AbstRCT's 1700-character abstracts it accounts for 98% of the unanchored text,
+so it decomposes the share rather than sampling it. On the 10k-to-40k-character
+argumentation of court decisions it accounts for a median 72%, falling from 77%
+below 15k characters to 63% above 30k, because 94% of the untouched stretches
+between anchors fall under the 120-character threshold and their total mass
+grows with the document. Read the list as a decomposition on short documents
+and as the largest gaps only on long ones.
+
+### What recall does with length
+
+Coverage says how much of a document the claims touch. Whether the claims that
+matter were among them needs a reference, and the answer turns out to depend
+sharply on how long the document is. Measured against the argument spans of the
+ECHR legal corpus:
+
+| Document | Characters | Gold spans | Result |
+|---|---:|---:|---|
+| Frozen budget fixture | 1,707 | 25 | 25/25 found at 80% span overlap |
+| Court decision 001-141170 | 10,308 | 24 | 16/24 at 80%, 18/24 at 50% |
+| Court decision 001-110144 | 26,715 | 49 | no extraction: output truncated |
+
+The middle row is the one to worry about, though the 16/24 itself is not firm:
+a later run of the identical configuration read 20/24, which is discussed below. That run did not fail: it returned 43
+claims, 27 relations and 13 findings, and nothing in the dossier announced that
+a third of the expert-annotated argument had never entered the graph. The only
+signal was the anchored share, 0.68 against the 0.95 the gold answer reaches on
+the same document. The eight missed spans were not the long ones — missed and
+found spans have the same median length — but mostly the Court's own reasoning
+steps and its concluding finding. That holds for this run's eight; the four
+that five later runs miss consistently are length-skewed, and both appear below.
+
+Past roughly 27,000 characters the run stops instead, naming a truncated model
+response, because a claim must be returned with its verbatim span and the reply
+outgrows the output budget. A refusal is the better failure of the two, and it
+is why truncation counts as fatal on the first response rather than being
+retried.
+
+That budget is self-imposed — the model allows 384,000 tokens — and raising it
+turns out to help more than expected. At 65,536 tokens the same 26,715-character
+decision produces 108 claims and reaches 36 of 49 gold spans at 80% overlap and
+46 of 49 at 50%: a better strict recall than the shorter decision manages with
+the same prompt, and not the thin dossier a bigger budget was feared to produce.
+The anchored share still reports the shortfall, 0.82 against the gold answer's
+0.98, so the warning survives the larger budget. It only moves the cliff
+proportionally, though: 64k tokens reach roughly 110,000 characters, and the
+longest decision in the corpus has 447,000.
+
+Splitting the document does not repair it. Extracting the same decision in five
+pieces of about 2,000 characters each — comparable to the fixture the extractor
+handles perfectly — moved recall from 16/24 to 17/24 at 80% overlap, against a
+pre-registered success mark of 20/24. It produced 52 claims instead of 43 and
+raised the anchored share from 0.68 to 0.75, and at the looser 50% threshold it
+did clearly better, 21/24 against 18/24: with less text per call the extractor
+touches more of the argument, but still does not decompose it thoroughly.
+
+That is the useful result, because it disconfirms the obvious explanation. If
+context length were the cause, segments the size of the fixture should have
+behaved like the fixture, and they did not. What separates the two documents is
+not length but kind — dense legal prose with long citation-laden sentences
+against a synthetic project proposal. Chunking costs five calls for one
+additional span and is not the fix; the open question is what the extractor does
+differently on this sort of text.
+
+What did work was changing the question. Two passages of the extraction prompt
+were written for project proposals: seven of its twenty-one claim types describe
+a plan rather than an argument, and it asks to "decompose polished prose
+aggressively: an elegant sentence may contain several claims", which describes
+marketing copy and not a court subsuming facts in long clauses. Replacing just
+those two passages, same model, same document, one call:
+
+| Run | Calls | Claims | Recall @80% | Recall @50% | Anchored | Claims with no gold match |
+|---|---:|---:|---:|---:|---:|---:|
+| Production prompt | 1 | 43 | 16/24 | 18/24 | 0.68 | 30 |
+| Five segments | 5 | 52 | 17/24 | 21/24 | 0.75 | 40 |
+| Domain-neutral prompt | 1 | 40 | **20/24** | 21/24 | 0.76 | 23 |
+
+Each row is one call. A later run of the production row read 20/24 on the same
+document, so read the sweep below before taking a difference of this size for an
+effect.
+
+The claim count is the telling part: the neutral prompt produces *fewer* claims
+than the production one and still finds four more gold spans, with far fewer
+claims that match no gold span at all. The problem was never how much the
+extractor produced but where it aimed — which is also why segmenting, which
+raised the volume without improving the aim, bought so little.
+
+It loses nothing on the text it was written for: on the repo's own fixture the
+neutral prompt still reaches all 25 gold claims, with 23 claims instead of 29
+and an anchored share of 0.98 against 0.93 — fewer claims, better placed, the
+same pattern again.
+
+On a second court decision the gain nearly disappears. With the budget raised
+and everything else equal, the neutral prompt moves 001-110144 from 36 to 37 of
+49 gold spans at 80% overlap — two percentage points, where the first decision
+gained seventeen, and short of the 42 fixed before the run.
+
+So the finding is narrower than it first reads. The change helps markedly on one
+document, barely on another, and is unnecessary on the fixture. Taking the
+bundle apart shows the two edits are redundant rather than additive: each alone
+reaches the same 20 of 24, and all three variants miss exactly the same four
+spans while the production prompt misses those four plus four more.
+
+Then a sweep across five decisions took the finding away again. Same model, same
+16,384-token budget, one call per arm, both packets through the real gate — the
+vocabulary note against the production prompt:
+
+| Decision | Gold spans | Production | Vocabulary note | Difference |
+|---|---:|---:|---:|---:|
+| 001-141170 | 24 | 20/24 | 20/24 | ±0 |
+| 001-172073 | 21 | 18/21 | 17/21 | −1 |
+| 001-61247 | 23 | 17/23 | 7/23 | **−10** |
+| 001-60917 | 24 | — | — | production response truncated at 16,384 tokens |
+| 001-77936 | 23 | — | — | a defect in the sweep script, since fixed |
+| Sum (measured) | | 55 | 44 | **−11** |
+
+The mark fixed before the run was a gain of at least 3 spans on at least 3 of
+the 5. It was missed in the other direction: the note is worse in sum and
+collapses on one decision. It does not go into production, and the per-domain
+vocabulary it was meant to justify has nothing to stand on.
+
+The first row matters more than the verdict. The production prompt reads 20/24
+on 001-141170 here, and the run reported above — same prompt, same model, same
+document, same budget, temperature 0 — read 16/24. Four spans of spread between
+two runs of one configuration is the entire size of the "prompt effect" this
+section describes. That does not make the neutral prompt useless, and it does
+not make it useful: it means one call per arm cannot separate an effect from the
+extractor's own run-to-run spread. Every single-run comparison above —
+segmentation, budget, the bundle taken apart, the double run — is one draw
+rather than a measurement. The numbers stand; their status changes. Settling it
+needs repeats per arm, which nothing here has paid for yet, so the production
+prompt stays as it is: an unmeasured change is not an improvement.
+
+Five repeats then settled what that spread is. Same document, same production
+prompt, same budget, temperature 0: 20, 20, 20, 19, 20 of 24 gold spans, with 38
+to 41 claims — a **spread of one span**, five runs of five completing. So the
+extractor is not noisy here, and the comfortable reading ("it was all sampling")
+is wrong. What the repeats do not explain is the 16/24 with 43 claims, which
+lies outside everything five draws show. The prompt file, the gate's admission
+logic and the text ingestion are unchanged between the two runs, so what remains
+is either a rare outlier beyond five draws or a change on the provider's side,
+and these data cannot separate the two.
+
+For the prompt the consequence is the same either way. The production prompt now
+misses exactly the four spans — G03, G08, G09, G19 — that all three prompt
+variants missed, where it used to miss those four plus four more. It behaves
+today like the "domain-neutral" prompt of yesterday, so the advantage is not
+refuted, it is gone: there is nothing left for it to improve on. No prompt
+change goes into production.
+
+Those five runs, however, sit inside a five-minute window, and a later run of
+the same configuration returned 47 claims and 18/24 — outside both ranges. All
+measurements of this configuration, in order, read 43 claims/16 spans, 20 spans,
+then 38–41 claims/19–20 spans, then 47 claims/18 spans. The two paths issue the
+same prompt, budget and model, so what the repeats measured is the spread inside
+one window, not between runs, and it underestimates it: across sessions the
+spread is 16 to 20 spans and 38 to 47 claims. Four spans — the size of the
+"prompt effect" again. So the first pre-registered branch holds after all:
+single-run comparisons of this kind are uninformative, and the sentence above
+that sampling does not explain the 16/24 is withdrawn. Estimating an arm's
+spread needs runs spread across sessions; five calls in a row measure the
+server.
+
+The durable result is the miss pattern. Four spans are reached in none of the
+five runs, one flickers (G18, four of five), nineteen are found every time, and
+the union of all five runs is again 20/24 — repeated sampling within one window
+buys nothing on this document, because the misses are systematic rather than
+random. That is
+also the limit of the double-run argument above: it works where two *different*
+configurations reach different spans, not on repetition. What the four have in
+common is mostly length. They rank 24th, 23rd, 18th and 10th of 24 by
+character count; the found spans have a median of 309 characters, the missed
+ones 1,068. At an 80% overlap threshold a 1,145-character passage has to be
+decomposed almost completely before it counts as found, which is partly a
+property of the measurement and not only of the extractor — though length does
+not decide it alone: five spans above 450 characters are found reliably, and the
+267-character G03 never is.
+
+The last row of the sweep table was our own doing. The experiment script raised on an
+unknown relation type where production rejects that one relation and keeps the
+packet, so it reported a document unmeasurable that the product handles. An
+instrument stricter than the path it measures produces exactly this: not a wrong
+number, a missing one. It now takes the same fallback. The truncation at
+001-60917 is real and is the budget limit described above; none of this touches
+the truncation above 27,000 characters.
+
+And the misses are mostly real, not an artefact of the 80% threshold. Measured
+per gold span on one production run: three spans sit at 0%, 19% and 20% —
+passages the extraction never worked — two at 38% and 66%, one at 77% just under
+the line, and everything else at 86% or above, ten of them at 100%. Only two of
+24 spans fall within five points of the threshold, so the recall figure does not
+turn on how the extractor happens to split a sentence. The 0% one is instructive:
+the graph does contain a claim about that very passage, but anchored to the
+Court's later restatement rather than to the Government's submission the gold
+annotates — legal prose repeats whole formulas, which is why gold spans are
+located by offset and never by searching for their text.
+
+Until then: the anchored share is the warning light. If it sits far below what
+the document plausibly supports, the graph is thin, whatever the findings say.
+
+### Research log
+
+Everything below was run against a paid API on real documents, each with a
+success mark fixed *before* dispatch. The status column is the point of the
+table: several results that read well at the time did not survive being
+repeated, and they are listed as withdrawn rather than quietly dropped. Full
+detail per experiment is in `docs/architecture.md` §3a–§3j.
+
+| # | Experiment | Mark fixed beforehand | Result | Status |
+|---|---|---|---|---|
+| 1 | Coverage calibration against AbstRCT (293 clinical abstracts, expert-annotated) | none — a calibration, not a test | Gap threshold insensitive between 60 and 300 characters; named gaps cover 98% of the unanchored text; the same corpus measures 0.48 or 0.14 depending on what counts as a claim | Holds, for short documents |
+| 2 | The same gap list on 10k–40k-character court decisions | — | Named gaps cover a median 72% of unanchored text, 77% below 15k and 63% above 30k | Holds; corrects the 98% above |
+| 3 | Recall against ECHR gold spans, three document sizes | — | Fixture (1.7k): 25/25. Decision (10.3k): 16–20/24. Decision (26.7k): no extraction, output truncated | Holds qualitatively: recall falls with length, truncation is real |
+| 4 | Segmentation into five ~2,000-character pieces | ≥ 20/24 at 80% overlap | 17/24, 52 claims instead of 43, five calls instead of one | Missed. Disconfirms length as the cause — but one call per arm |
+| 5 | Two proposal-specific prompt passages replaced | ≥ 20/24 | 20/24 with *fewer* claims | Met at the time — **withdrawn**, see 12 and 13 |
+| 6 | The same prompt on the repo's own fixture (regression control) | must not lose | 25/25, anchored share 0.98 against 0.93 | Holds; one run |
+| 7 | Output budget raised to 65,536 on the document that truncated | the graph must not be thin | 108 claims, 36/49 at 80% and 46/49 at 50%, anchored 0.82 against the gold answer's 0.98 | The objection to raising the budget is **refuted**; the cliff only moves in proportion |
+| 8 | Prompt and budget together on that document | ≥ 42/49 | 37/49 against 36/49 | Missed. The gain does not transfer between documents |
+| 9 | The prompt bundle taken apart | — | Each edit alone reaches 20/24, all three variants miss the same four spans | Redundant, not additive — one call per arm, so **uncertain** |
+| 10 | Drift check without dependencies (word overlap + numbers) | must not fire on the frozen controls | Four false positives on the controls (fixed), then four on live legal text from anaphora | Reported, never enforced; the "hard evidence" framing was **retracted** |
+| 11 | Two extractions merged before the gate | union of 39/49, as computed | 39/49 exactly, at 186 claims and 141 without a gold match | Arithmetic confirmed; the dossier is much harder to read |
+| 12 | The prompt edit swept across five decisions | ≥ 3 spans gained on ≥ 3 of 5 | 44 against 55 gold spans in sum, collapsing from 17/23 to 7/23 on one | **Refuted.** The per-domain vocabulary has nothing behind it |
+| 13 | Five repeats of one configuration | spread ≥ 4 ⇒ single runs are uninformative; ≤ 1 ⇒ the cause lies elsewhere | Spread 1 within a five-minute window — but 16–20 spans and 38–47 claims across sessions | The first branch holds; the "spread is 1" reading is **withdrawn** as a window artefact |
+| 14 | Covered share per gold span | 60–80% ⇒ threshold artefact; < 30% ⇒ real gap | Three spans at 0%, 19%, 20%; two at 38% and 66%; one at 77%; the rest at 86–100% | The misses are **real**, and only 2 of 24 spans sit near the threshold |
+| 15 | Gold spans fed to the gate as a packet | — | All 24 and 49 claims admitted, no rejections, coverage 0.946 and 0.977 | The deterministic half is unaffected by length |
+| 16 | Anchors reaching into two speakers, counted against the corpus's actor labels | none — a first measurement | **0 of 40** | Holds; one document, one run |
+| 17 | Near-identical claims at disjoint anchors | none — a first measurement | 0 of 40 | The repair rule's third case does not occur in a single run |
+
+#### What we believe we know
+
+Firm, in the sense that it survived repetition or needs no model at all: the
+deterministic half scales with document length, while extraction does not.
+Truncation above roughly 27,000 characters at a 16k budget is real, raising the
+budget genuinely helps and does not produce the thin dossier that was feared,
+and the cliff then moves in proportion rather than disappearing. The anchored
+share is a usable warning light — it read 0.68 where the gold answer reaches
+0.95. On the one decision measured repeatedly, the misses are systematic rather
+than random, and mostly genuine gaps rather than artefacts of the 80% threshold.
+
+Uncertain, because it rests on one call per arm: segmentation, the prompt
+variants, prompt and budget combined, and the double run. Their numbers stand as
+recorded; their status is one draw each. An arm's spread has to be measured
+across sessions before any of them can be read as an effect.
+
+Refuted: that a domain-specific claim-type vocabulary lifts recall on legal
+prose; that raising the output budget trades a loud failure for a quiet, thin
+one; and — our own methodological error — that five calls in a row estimate a
+configuration's run-to-run spread. They estimate the server.
+
+#### What the detours taught
+
+Four of them cost real money and are worth naming. A frozen offline control
+cannot see a prompt regression, because it replays a stored packet and never
+calls the extractor. An experiment script that is *stricter* than the production
+path does not produce a wrong number, it produces a missing one — ours died on a
+relation type production drops per item, and quietly left a document out of a
+comparison table. Optimising on a single document measures that document: the
+gain vanished on the second and reversed on the third. And a result that
+reproduces within five minutes has not reproduced.
+
+#### The next measurements
+
+Two instruments were added before the next round of changes, because the effects
+in question are about the size of the run-to-run spread and would otherwise be
+invisible. A **hard-case list** — the spans missed in every repeat — is reported
+by its covered share rather than as passed or failed: four binary items move
+with any run, while the share shows whether a change reached the passage at all.
+And a **speaker-boundary count**, which the ECHR annotation makes possible for
+free: each gold span names its actor, so an anchor reaching into two speakers'
+text can be counted. A claim that spans the Government's submission and the
+Court's reply merges two epistemic positions into one node, and the anchor is
+the only record of who said it. Both are deterministic, replay-stable and cost
+nothing at run time.
+
+The first run with both reads: **no anchor of the forty reaches into two
+speakers' text**, and no two claims say near-identical things at disjoint
+places. The first number measures what the claim contract never asked for and
+is the sharper result of the two — though it is one document and one run, and
+this corpus puts its speaker changes on paragraph boundaries. The second is
+narrower than it looks: the check needs 80% word overlap, and the earlier
+observation about a claim anchored at the Court's restatement was differently
+worded, so it would never have shown up here. The hard-case list also shrank to
+three: G03 at 0% and G09 at 20% in both runs, G19 at 38% then 23%, while G18 and
+G22 went from 66% and 19% to 100% — which is exactly why they are tracked by
+share. Counted as passed or failed, that run would read as two spans better
+while two other spans were quietly getting worse.
+
+#### Open
+
+Why one gold span is anchored at 0% while the graph clearly contains a claim
+about it — the anchor sits on the Court's later restatement instead of the
+Government's submission. That is an anchoring problem, not a recall problem, and
+it touches auditability directly. Also open: a per-arm spread measured across
+days rather than minutes; relations across segment boundaries, which the
+segmented path currently loses; and a provenance schema with one entry per call,
+which multi-call extraction needs before it could ever be the production path.
 
 ### Review profiles
 
@@ -251,7 +545,11 @@ python scripts/measure_recall.py review-output/live/dossier.json \
 
 The frozen packets serve as the reference because they were hand-built for this
 extraction contract, so their scope matches what the extractor is asked for —
-which a general argument-mining corpus cannot offer.
+which a general argument-mining corpus cannot offer. For documents longer than
+a packet covers, `scripts/echr_gold.py` builds a document and a gold packet
+from the ECHR legal corpus, and `scripts/calibrate_coverage.py` re-derives the
+two calibration figures quoted above from it. Both read a corpus checkout and
+copy nothing into this repository.
 
 ### Alpha limitations
 
@@ -391,9 +689,327 @@ gut extrahiert wurde. Gemessen an AbstRCT, einem Korpus medizinischer Abstracts
 mit fachlich annotierten Argument-Spans, liegen dieselben Dokumente bei 0,48,
 wenn alle annotierten Komponenten zählen, und bei 0,14, wenn nur
 Schlussfolgerungen zählen. Anteile sind zwischen Läufen desselben Vertrags
-vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Belastbar ist
-die Liste der Lücken: sie deckt im Mittel 98 % des unverankerten Textes ab,
-zerlegt den Anteil also, statt Stichproben daraus zu ziehen.
+vergleichbar und über verschiedene Verträge hinweg bedeutungslos. Die
+Lückenliste ist die belastbarere Hälfte, aber ebenfalls nicht längenunabhängig:
+Bei den rund 1700 Zeichen langen AbstRCT-Abstracts deckt sie 98 % des
+unverankerten Textes ab, zerlegt den Anteil also. Bei der 10.000 bis 40.000
+Zeichen langen Argumentation von Gerichtsentscheidungen sind es im Median 72 %
+— 77 % unterhalb von 15.000 Zeichen, 63 % oberhalb von 30.000 —, weil 94 % der
+Zwischenräume unter der 120-Zeichen-Schwelle liegen und ihre Summe mit der
+Dokumentlänge wächst. Auf kurzen Dokumenten ist die Liste eine Zerlegung, auf
+langen nur noch die Aufzählung der größten Lücken.
+
+### Was die Länge mit dem Recall macht
+
+Die Abdeckung sagt, wie viel eines Dokuments die Claims berühren. Ob die
+wichtigen Claims darunter waren, braucht eine Referenz — und die Antwort hängt
+stark von der Dokumentlänge ab. Gemessen an den Argumentspannen des
+EGMR-Rechtskorpus:
+
+| Dokument | Zeichen | Gold-Spannen | Ergebnis |
+|---|---:|---:|---|
+| Eingefrorene Budget-Fixture | 1.707 | 25 | 25/25 bei 80 % Span-Überlappung |
+| Entscheidung 001-141170 | 10.308 | 24 | 16/24 bei 80 %, 18/24 bei 50 % |
+| Entscheidung 001-110144 | 26.715 | 49 | keine Extraktion: Ausgabe abgeschnitten |
+
+Die mittlere Zeile ist die gefährliche — wobei die 16/24 selbst nicht fest sind:
+Ein späterer Lauf derselben Konfiguration ergab 20/24, siehe unten. Dieser Lauf ist nicht gescheitert: Er
+lieferte 43 Claims, 27 Relationen und 13 Befunde, und nichts im Dossier wies
+darauf hin, dass ein Drittel der fachlich annotierten Argumentation nie in den
+Graphen gelangt war. Das einzige Signal war der verankerte Anteil: 0,68 gegen
+die 0,95, die die Gold-Antwort auf demselben Dokument erreicht. Die acht
+verfehlten Spannen waren nicht die langen — gefundene und verfehlte haben
+dieselbe Medianlänge —, sondern überwiegend die Subsumtionsschritte des
+Gerichts und seine Schlussfolgerung. Das gilt für die acht dieses Laufs; die
+vier, die fünf spätere Läufe durchgängig verfehlen, sind längenlastig. Beides
+steht unten.
+
+Ab etwa 27.000 Zeichen bricht der Lauf stattdessen ab und benennt eine
+abgeschnittene Modellantwort, weil zu jedem Claim die wörtliche Textstelle
+zurückkommen muss und die Antwort das Ausgabebudget übersteigt. Von beiden
+Fehlern ist der Abbruch der bessere — und der Grund, warum eine abgeschnittene
+Antwort sofort als endgültig gilt und nicht wiederholt wird.
+
+Dieses Budget ist selbstgesetzt — das Modell lässt 384.000 Token zu — und eine
+Erhöhung hilft mehr als erwartet. Mit 65.536 Token liefert dieselbe Entscheidung
+108 Claims und erreicht 36 von 49 Gold-Spannen bei 80 Prozent Überlappung und
+46 von 49 bei 50 Prozent: ein besserer strenger Recall als bei der kürzeren
+Entscheidung mit derselben Prompt — und nicht das dünne Dossier, das von einem
+größeren Budget befürchtet wurde. Der verankerte Anteil meldet die Lücke
+weiterhin, 0,82 gegen 0,98 der Gold-Antwort; die Warnleuchte überlebt das
+größere Budget also. Sie verschiebt die Abbruchgrenze allerdings nur
+proportional: 64k Token reichen grob bis 110.000 Zeichen, die längste
+Entscheidung im Korpus hat 447.000.
+
+Das Dokument zu teilen behebt es nicht. Dieselbe Entscheidung in fünf Stücken
+von je rund 2.000 Zeichen extrahiert — vergleichbar mit der Fixture, die der
+Extraktor vollständig zerlegt — bringt 17/24 statt 16/24 bei 80 % Überlappung,
+gegen ein vorab festgelegtes Erfolgsmaß von 20/24. Es entstanden 52 statt 43
+Claims, der verankerte Anteil stieg von 0,68 auf 0,75, und bei der lockereren
+50-%-Schwelle war der Gewinn deutlich: 21/24 gegen 18/24. Mit weniger Text je
+Aufruf berührt der Extraktor also mehr von der Argumentation, zerlegt sie aber
+weiterhin nicht gründlich.
+
+Genau das ist der brauchbare Befund, weil er die naheliegende Erklärung
+widerlegt. Wäre die Kontextlänge die Ursache, hätten sich Segmente in
+Fixture-Größe wie die Fixture verhalten müssen — haben sie nicht. Die beiden
+Dokumente unterscheiden sich nicht in der Länge, sondern in der Art: dichte
+Rechtsprosa mit langen, zitatgespickten Sätzen gegen einen synthetischen
+Projektantrag. Das Zerteilen kostet fünf Aufrufe für eine zusätzliche Spanne
+und ist nicht die Lösung; offen ist, was der Extraktor bei dieser Textsorte
+anders macht.
+
+Was gewirkt hat, war die geänderte Fragestellung. Zwei Stellen der
+Extraktionsprompt sind an Projektanträgen entstanden: Sieben ihrer 21
+Claim-Typen beschreiben einen Plan statt eines Arguments, und sie verlangt
+„decompose polished prose aggressively: an elegant sentence may contain several
+claims" — das beschreibt Werbetext, nicht ein Gericht, das in langen
+Gliedsätzen subsumiert. Ersetzt man genau diese zwei Stellen, gleiches Modell,
+gleiches Dokument, ein Aufruf:
+
+| Lauf | Aufrufe | Claims | Recall 80 % | Recall 50 % | Verankert | Claims ohne Gold |
+|---|---:|---:|---:|---:|---:|---:|
+| Produktionsprompt | 1 | 43 | 16/24 | 18/24 | 0,68 | 30 |
+| Fünf Segmente | 5 | 52 | 17/24 | 21/24 | 0,75 | 40 |
+| Neutrale Prompt | 1 | 40 | **20/24** | 21/24 | 0,76 | 23 |
+
+Jede Zeile ist ein Aufruf. Ein späterer Lauf der Produktionszeile ergab auf
+demselben Dokument 20/24 — vor einer Deutung dieser Differenz gehört der
+Durchlauf weiter unten gelesen.
+
+Die Claim-Zahl ist das Aufschlussreiche: Die neutrale Fassung erzeugt *weniger*
+Claims als die Produktionsfassung und findet trotzdem vier Gold-Spannen mehr,
+bei deutlich weniger Claims ohne jede Gold-Entsprechung. Es ging nie um die
+Menge, sondern um das Ziel — weshalb auch die Segmentierung so wenig brachte:
+Sie erhöhte die Menge, ohne die Treffsicherheit zu ändern.
+
+Auf dem Text, für den sie geschrieben wurde, verliert sie nichts: Auf der
+eigenen Fixture erreicht die neutrale Prompt weiterhin alle 25 Gold-Claims, mit
+23 statt 29 Claims und einem verankerten Anteil von 0,98 gegen 0,93 — wieder
+weniger Claims, besser platziert.
+
+Auf einer zweiten Entscheidung verschwindet der Gewinn fast. Mit erhöhtem
+Budget und sonst gleichen Bedingungen bringt die neutrale Prompt bei 001-110144
+statt 36 nun 37 von 49 Gold-Spannen bei 80 Prozent Überlappung — zwei
+Prozentpunkte, wo die erste Entscheidung siebzehn gewann, und unter den vorab
+festgelegten 42.
+
+Der Befund ist damit enger als er zunächst klingt. Die Änderung hilft auf einem
+Dokument deutlich, auf einem zweiten kaum, und auf der Fixture ist sie
+entbehrlich. Zerlegt man das Bündel, zeigt sich: Die beiden Eingriffe sind
+redundant, nicht additiv. Jeder allein erreicht dieselben 20 von 24, und alle
+drei Varianten verfehlen exakt dieselben vier Spannen, während die
+Produktionsfassung diese vier plus vier weitere verfehlt.
+
+Dann hat ein Durchlauf über fünf Entscheidungen den Befund wieder eingerissen.
+Gleiches Modell, Budget 16.384, ein Aufruf pro Arm, beide Pakete durch das echte
+Gate — der Vokabular-Hinweis gegen die Produktionsfassung:
+
+| Entscheidung | Gold | Produktion | Vokabular-Hinweis | Differenz |
+|---|---:|---:|---:|---:|
+| 001-141170 | 24 | 20/24 | 20/24 | ±0 |
+| 001-172073 | 21 | 18/21 | 17/21 | −1 |
+| 001-61247 | 23 | 17/23 | 7/23 | **−10** |
+| 001-60917 | 24 | — | — | Produktionsantwort bei 16.384 abgeschnitten |
+| 001-77936 | 23 | — | — | Fehler im Messskript, inzwischen behoben |
+| Summe (gemessen) | | 55 | 44 | **−11** |
+
+Vorab festgelegt war ein Gewinn von mindestens 3 Spannen bei mindestens 3 der
+5. Verfehlt, und zwar in die andere Richtung: Der Hinweis ist in der Summe
+schlechter und bricht auf einer Entscheidung ein. Er geht nicht in die
+Produktion, und das fachbereichsweise Vokabular, das er begründen sollte, hat
+keine Grundlage.
+
+Wichtiger als dieses Urteil ist die erste Zeile. Der Produktionsprompt erreicht
+hier 20/24 auf 001-141170 — und im oben berichteten Lauf, gleicher Prompt,
+gleiches Modell, gleiches Dokument, gleiches Budget, Temperatur 0, waren es
+16/24. Vier Spannen Streuung zwischen zwei Läufen einer Konfiguration sind genau
+die Größe des „Prompt-Effekts", den dieser Abschnitt beschreibt. Das macht die
+neutrale Prompt weder nutzlos noch nützlich; es heißt, dass **ein Aufruf pro Arm
+den Effekt nicht von der Eigenstreuung des Extraktors trennen kann**. Jeder
+Einzellauf-Vergleich oben — Segmentierung, Budget, Bündel-Zerlegung, Doppellauf
+— ist damit eine Ziehung, keine Messung. Die Zahlen bleiben stehen, ihr Status
+ändert sich. Entscheiden ließe sich das mit Wiederholungen pro Arm, die bisher
+niemand bezahlt hat; bis dahin bleibt die Produktionsprompt unverändert, denn
+eine ungemessene Änderung ist keine Verbesserung.
+
+Fünf Wiederholungen haben diese Streuung dann bestimmt. Gleiches Dokument,
+Produktionsprompt, gleiches Budget, Temperatur 0: 20, 20, 20, 19, 20 von 24
+Gold-Spannen bei 38 bis 41 Claims — **Streuung eine Spanne**, fünf von fünf
+Läufen geglückt. Der Extraktor ist hier also nicht wackelig, und die bequeme
+Lesart („alles Rauschen") ist falsch. Was die Wiederholungen nicht erklären,
+sind die 16/24 mit 43 Claims: Sie liegen außerhalb von allem, was fünf
+Ziehungen zeigen. Prompt-Datei, Zulassungslogik des Gates und Text-Einlesung
+sind zwischen beiden Läufen unverändert; es bleibt ein seltener Ausreißer
+jenseits von fünf Ziehungen oder eine Änderung auf Anbieterseite, und diese
+Daten trennen das nicht.
+
+Für den Prompt ist die Folge in beiden Fällen dieselbe. Die Produktionsfassung
+verfehlt heute genau die vier Spannen — G03, G08, G09, G19 —, die auch alle drei
+Varianten verfehlten, während sie früher diese vier plus vier weitere verfehlte.
+Sie verhält sich heute wie die „neutrale" Prompt von gestern. Der Vorteil ist
+damit nicht widerlegt, sondern verschwunden: Es gibt nichts mehr, was er
+verbessern würde. Keine Prompt-Änderung geht in die Produktion.
+
+Diese fünf Läufe liegen allerdings in einem Fünf-Minuten-Fenster, und ein
+späterer Lauf derselben Konfiguration lieferte 47 Claims und 18/24 — außerhalb
+beider Bereiche. Alle Messungen dieser Konfiguration der Reihe nach: 43
+Claims/16 Spannen, dann 20 Spannen, dann 38–41 Claims/19–20 Spannen, dann 47
+Claims/18 Spannen. Beide Pfade schicken dieselbe Prompt, dasselbe Budget und
+dasselbe Modell; die Wiederholungen haben also die Streuung *innerhalb eines
+Fensters* gemessen, nicht die zwischen Läufen, und sie unterschätzen sie: über
+Sitzungen hinweg sind es 16 bis 20 Spannen und 38 bis 47 Claims. Vier Spannen —
+wieder die Größe des „Prompt-Effekts". Damit gilt doch der erste vorab
+festgelegte Zweig: Einzellauf-Vergleiche dieser Art sind nicht aussagekräftig,
+und der Satz oben, Stichprobenrauschen erkläre die 16/24 nicht, ist
+zurückgenommen. Wer die Streuung eines Arms bestimmen will, muss die Läufe über
+Sitzungen verteilen; fünf Aufrufe hintereinander messen den Server.
+
+Der belastbare Befund ist das Verfehlungsmuster. Vier Spannen werden in keinem
+der fünf Läufe erreicht, eine schwankt (G18, vier von fünf), neunzehn sind immer
+da, und die Vereinigung aller fünf Läufe ist wieder 20/24 — wiederholtes Ziehen
+innerhalb eines Fensters bringt auf diesem Dokument nichts, weil die
+Verfehlungen systematisch sind und nicht zufällig. Das ist zugleich die Grenze des Doppellauf-Arguments oben: Es
+trägt, wo zwei *verschiedene* Konfigurationen verschiedene Spannen treffen,
+nicht bei bloßer Wiederholung. Gemeinsam ist den vieren überwiegend die Länge:
+Sie belegen die Längenränge 24, 23, 18 und 10 von 24; der Median der gefundenen
+Spannen liegt bei 309 Zeichen, der der verfehlten bei 1.068. Bei 80 Prozent
+Überlappung muss eine Passage von 1.145 Zeichen fast vollständig zerlegt sein,
+um als gefunden zu zählen — das ist zum Teil eine Eigenschaft der Messung, nicht
+nur des Extraktors. Allein entscheidet die Länge aber nicht: Fünf Spannen über
+450 Zeichen werden zuverlässig gefunden, das 267 Zeichen kurze G03 nie.
+
+Die letzte Zeile der Durchlauf-Tabelle war unser eigener Fehler: Das Experimentskript brach
+bei einem unbekannten Relationstyp ab, während die Produktion genau diese eine
+Relation ablehnt und das Paket behält. Ein Messinstrument, das strenger ist als
+der gemessene Pfad, meldet ein Dokument als unmessbar, das das Produkt
+verarbeitet — keine falsche Zahl, eine fehlende. Das Skript nimmt jetzt denselben
+Rückfallpfad. Der Abbruch bei 001-60917 ist dagegen echt und die oben
+beschriebene Budgetgrenze. Am Abbruch oberhalb von 27.000 Zeichen ändert nichts
+davon etwas.
+
+Und die Verfehlungen sind überwiegend echt, kein Artefakt der 80-%-Schwelle. Je
+Gold-Spanne gemessen, ein Produktionslauf: Drei Spannen liegen bei 0, 19 und 20
+Prozent — Passagen, die die Extraktion nicht bearbeitet hat —, zwei bei 38 und
+66, eine bei 77 knapp unter der Linie, alle übrigen bei 86 Prozent oder mehr,
+zehn davon bei 100. Nur zwei von 24 Spannen liegen im Band von ±5 Punkten um die
+Schwelle; die Recall-Zahl hängt also nicht daran, wie der Extraktor einen Satz
+schneidet. Die 0-Prozent-Spanne ist lehrreich: Der Graph enthält sehr wohl einen
+Claim zu dieser Passage, verankert ihn aber an der späteren Wiedergabe durch den
+Gerichtshof statt an der Einlassung der Regierung, die das Gold annotiert —
+Rechtsprosa wiederholt ganze Formulierungen, weshalb Gold-Spannen über Offsets
+und nie über Textsuche lokalisiert werden.
+
+Bis dahin gilt: Der verankerte Anteil ist die Warnleuchte. Liegt er deutlich
+unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhängig
+davon, was die Befunde sagen.
+
+### Forschung
+
+Alles Folgende lief gegen eine kostenpflichtige API auf echten Dokumenten, jedes
+Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
+Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
+aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
+zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
+stehen in `docs/architecture.md` §3a–§3j.
+
+| # | Versuch | Vorab festgelegt | Ergebnis | Status |
+|---|---|---|---|---|
+| 1 | Kalibrierung der Abdeckung gegen AbstRCT (293 klinische Abstracts, fachlich annotiert) | keines — Kalibrierung, kein Test | Lückenschwelle unempfindlich zwischen 60 und 300 Zeichen; benannte Lücken decken 98 % des unverankerten Textes; dasselbe Korpus misst 0,48 oder 0,14, je nachdem was als Claim zählt | Gilt, für kurze Dokumente |
+| 2 | Dieselbe Lückenliste auf Entscheidungen von 10.000–40.000 Zeichen | — | Benannte Lücken decken im Median 72 % des unverankerten Textes, 77 % unter 15k, 63 % über 30k | Gilt; korrigiert die 98 % oben |
+| 3 | Recall gegen EGMR-Gold-Spannen, drei Dokumentgrößen | — | Fixture (1,7k): 25/25. Entscheidung (10,3k): 16–20/24. Entscheidung (26,7k): keine Extraktion, Ausgabe abgeschnitten | Gilt der Richtung nach: Recall fällt mit der Länge, der Abbruch ist echt |
+| 4 | Zerteilen in fünf Stücke à ~2.000 Zeichen | ≥ 20/24 bei 80 % Überlappung | 17/24, 52 statt 43 Claims, fünf statt einem Aufruf | Verfehlt. Widerlegt die Länge als Ursache — aber ein Aufruf pro Arm |
+| 5 | Zwei antragsspezifische Prompt-Stellen ersetzt | ≥ 20/24 | 20/24 mit *weniger* Claims | Damals erreicht — **zurückgezogen**, siehe 12 und 13 |
+| 6 | Dieselbe Prompt auf der eigenen Fixture (Gegenprobe) | darf nichts verlieren | 25/25, verankerter Anteil 0,98 gegen 0,93 | Gilt; ein Lauf |
+| 7 | Ausgabebudget auf 65.536 erhöht, auf dem abgebrochenen Dokument | der Graph darf nicht dünn werden | 108 Claims, 36/49 bei 80 % und 46/49 bei 50 %, verankert 0,82 gegen 0,98 der Gold-Antwort | Der Einwand gegen ein höheres Budget ist **widerlegt**; die Abbruchgrenze verschiebt sich nur proportional |
+| 8 | Prompt und Budget zusammen auf diesem Dokument | ≥ 42/49 | 37/49 gegen 36/49 | Verfehlt. Der Gewinn überträgt sich nicht zwischen Dokumenten |
+| 9 | Das Prompt-Bündel zerlegt | — | Jeder Eingriff allein erreicht 20/24, alle drei Varianten verfehlen dieselben vier Spannen | Redundant, nicht additiv — je ein Aufruf, also **unsicher** |
+| 10 | Drift-Prüfung ohne Abhängigkeiten (Wortdeckung + Zahlen) | darf auf den eingefrorenen Kontrollen nicht anschlagen | Vier Fehlalarme auf den Kontrollen (behoben), dann vier auf echtem Rechtstext durch Anaphern | Wird berichtet, nie erzwungen; die Formulierung „harter Beleg" wurde **zurückgenommen** |
+| 11 | Zwei Extraktionen vor dem Gate zusammengeführt | Vereinigung von 39/49, wie berechnet | Genau 39/49, bei 186 Claims und 141 ohne Gold-Entsprechung | Arithmetik bestätigt; das Dossier ist deutlich unübersichtlicher |
+| 12 | Der Prompt-Eingriff über fünf Entscheidungen | Gewinn ≥ 3 Spannen bei ≥ 3 von 5 | 44 gegen 55 Gold-Spannen in Summe, auf einer von 17/23 auf 7/23 eingebrochen | **Widerlegt.** Das fachbereichsweise Vokabular hat keine Grundlage |
+| 13 | Fünf Wiederholungen einer Konfiguration | Streuung ≥ 4 ⇒ Einzelläufe sind wertlos; ≤ 1 ⇒ die Ursache liegt woanders | Streuung 1 innerhalb eines Fünf-Minuten-Fensters — über Sitzungen hinweg aber 16–20 Spannen und 38–47 Claims | Der erste Zweig gilt; die Lesart „Streuung ist 1" ist als Fensterartefakt **zurückgezogen** |
+| 14 | Deckungsanteil je Gold-Spanne | 60–80 % ⇒ Schwellenartefakt; < 30 % ⇒ echte Lücke | Drei Spannen bei 0 %, 19 %, 20 %; zwei bei 38 % und 66 %; eine bei 77 %; der Rest bei 86–100 % | Die Verfehlungen sind **echt**, und nur 2 von 24 Spannen liegen nahe der Schwelle |
+| 15 | Gold-Spannen als Packet ins Gate gegeben | — | Alle 24 bzw. 49 Claims zugelassen, keine Rejections, Abdeckung 0,946 und 0,977 | Die deterministische Hälfte ist von der Länge unberührt |
+| 16 | Anker, die in zwei Sprecher hineinreichen, gegen die Akteursangaben des Korpus | keines — Erstmessung | **0 von 40** | Gilt; ein Dokument, ein Lauf |
+| 17 | Fast gleiche Claims an getrennten Ankern | keines — Erstmessung | 0 von 40 | Der dritte Fall der Reparaturregel kommt in einem Lauf nicht vor |
+
+#### Was wir zu wissen glauben
+
+Belastbar, weil es die Wiederholung überstanden hat oder gar kein Modell
+braucht: Die deterministische Hälfte skaliert mit der Dokumentlänge, die
+Extraktion nicht. Der Abbruch oberhalb von etwa 27.000 Zeichen bei 16k Budget
+ist echt, ein höheres Budget hilft tatsächlich und erzeugt nicht das befürchtete
+dünne Dossier, und die Grenze verschiebt sich danach proportional, statt zu
+verschwinden. Der verankerte Anteil ist eine brauchbare Warnleuchte — er stand
+bei 0,68, wo die Gold-Antwort 0,95 erreicht. Auf der einen mehrfach gemessenen
+Entscheidung sind die Verfehlungen systematisch und nicht zufällig, und
+überwiegend echte Lücken statt Artefakte der 80-%-Schwelle.
+
+Unsicher, weil auf je einem Aufruf pro Arm beruhend: Segmentierung, die
+Prompt-Varianten, Prompt und Budget zusammen, der Doppellauf. Ihre Zahlen
+bleiben so stehen, wie sie gemessen wurden; ihr Status ist je eine Ziehung. Die
+Streuung eines Arms muss über Sitzungen bestimmt werden, bevor eine davon als
+Effekt gelesen werden darf.
+
+Widerlegt: dass ein fachbereichsspezifisches Claim-Typ-Vokabular den Recall auf
+Rechtsprosa hebt; dass ein höheres Ausgabebudget einen lauten Fehlschlag gegen
+einen leisen, dünnen eintauscht; und — unser eigener Methodenfehler — dass fünf
+Aufrufe hintereinander die Lauf-zu-Lauf-Streuung einer Konfiguration schätzen.
+Sie schätzen den Server.
+
+#### Was die Umwege gelehrt haben
+
+Vier davon haben echtes Geld gekostet und gehören benannt. Eine eingefrorene
+Offline-Kontrolle kann eine Prompt-Regression nicht sehen, weil sie ein
+gespeichertes Packet abspielt und den Extraktor nie aufruft. Ein
+Experimentskript, das *strenger* ist als der Produktionspfad, liefert keine
+falsche Zahl, sondern eine fehlende — unseres brach bei einem Relationstyp ab,
+den die Produktion einzeln ablehnt, und ließ ein Dokument stillschweigend aus
+einer Vergleichstabelle fallen. Wer auf einem Dokument optimiert, misst dieses
+Dokument: Der Gewinn verschwand beim zweiten und kehrte sich beim dritten um.
+Und ein Ergebnis, das sich innerhalb von fünf Minuten reproduziert, hat sich
+nicht reproduziert.
+
+#### Die nächsten Messungen
+
+Vor der nächsten Änderungsrunde sind zwei Messgeräte dazugekommen, weil die
+fraglichen Effekte etwa so groß sind wie die Lauf-zu-Lauf-Streuung und sonst
+unsichtbar blieben. Eine **Liste harter Fälle** — die in jeder Wiederholung
+verfehlten Spannen — wird über ihren Deckungsanteil berichtet statt über
+bestanden/verfehlt: Vier binäre Punkte wandern mit jedem Lauf, der Anteil zeigt
+dagegen, ob eine Änderung die Passage überhaupt erreicht hat. Und eine
+**Zählung der Sprechergrenzen**, die die EGMR-Annotation kostenlos ermöglicht:
+Jede Gold-Spanne nennt ihren Akteur, also lässt sich zählen, wie viele Anker in
+den Text zweier Sprecher hineinreichen. Ein Claim, der die Einlassung der
+Regierung und die Antwort des Gerichtshofs überspannt, verschmilzt zwei
+epistemische Positionen zu einem Knoten — und der Anker ist der einzige
+Nachweis, wer es gesagt hat. Beides ist deterministisch, replay-stabil und
+kostet zur Laufzeit nichts.
+
+Der erste Lauf mit beiden ergibt: **kein Anker von vierzig reicht in den Text
+zweier Sprecher**, und keine zwei Claims sagen an getrennten Stellen fast
+dasselbe. Die erste Zahl misst etwas, wonach der Claim-Vertrag nie gefragt hat,
+und ist das schärfere der beiden Ergebnisse — bei einem Dokument, einem Lauf,
+und einem Korpus, das Sprecherwechsel auf Absatzgrenzen legt. Die zweite ist
+enger, als sie klingt: Die Prüfung verlangt 80 Prozent Wortüberlappung, und die
+frühere Beobachtung zu einem Claim, der an der Wiedergabe des Gerichtshofs
+verankert war, war anders formuliert und wäre hier nie aufgefallen. Die Liste
+harter Fälle ist zudem auf drei geschrumpft: G03 bei 0 % und G09 bei 20 % in
+beiden Läufen, G19 bei 38 % und dann 23 %, während G18 und G22 von 66 % und
+19 % auf 100 % sprangen. Genau deshalb werden sie über den Anteil geführt: Als
+bestanden/verfehlt gezählt, läse sich dieser Lauf als zwei Spannen besser,
+während zwei andere still schlechter wurden.
+
+#### Offen
+
+Warum eine Gold-Spanne bei 0 % verankert ist, obwohl der Graph erkennbar einen
+Claim dazu enthält — der Anker sitzt auf der späteren Wiedergabe durch den
+Gerichtshof statt auf der Einlassung der Regierung. Das ist ein Anker-Problem,
+kein Recall-Problem, und es trifft die Auditierbarkeit unmittelbar. Ebenfalls
+offen: eine Streuung pro Arm, gemessen über Tage statt Minuten; Relationen über
+Segmentgrenzen hinweg, die der zerteilte Pfad derzeit verliert; und ein
+Provenance-Schema mit einem Eintrag je Aufruf, das eine mehrteilige Extraktion
+bräuchte, bevor sie je der Produktionspfad sein könnte.
 
 ### Prüfprofile
 
@@ -518,7 +1134,11 @@ python scripts/measure_recall.py review-output/live/dossier.json \
 Die eingefrorenen Packets dienen als Referenz, weil sie für genau diesen
 Extraktionsvertrag von Hand gebaut wurden — ihr Umfang passt also zu dem, was
 der Extraktor liefern soll. Ein allgemeiner Argument-Mining-Korpus kann das
-nicht bieten.
+nicht bieten. Für Dokumente jenseits der Packet-Länge baut
+`scripts/echr_gold.py` ein Dokument samt Gold-Packet aus dem EGMR-Rechtskorpus,
+und `scripts/calibrate_coverage.py` leitet die beiden oben genannten
+Kalibrierungswerte daraus neu her. Beide lesen einen Korpus-Checkout und
+kopieren nichts in dieses Repository.
 
 ### Grenzen der Alpha
 

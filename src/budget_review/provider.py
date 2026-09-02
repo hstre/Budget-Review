@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import time
@@ -12,7 +13,13 @@ from dataclasses import dataclass, replace
 from typing import Any
 
 from .gate import sha256_text
-from .models import Rejection, RelationProposal, SchemaError, SemanticPacket
+from .models import (
+    ClaimProposal,
+    Rejection,
+    RelationProposal,
+    SchemaError,
+    SemanticPacket,
+)
 from .prompts import extraction_prompt
 from .settings import effective_api_key
 
@@ -134,6 +141,11 @@ class DeepSeekProvider:
             except (
                 urllib.error.URLError,
                 TimeoutError,
+                # The body can end early or the peer can reset after urlopen has
+                # already returned. Those escape URLError, and unlike a token
+                # limit they are transient, so they belong in the retry.
+                http.client.HTTPException,
+                ConnectionError,
                 json.JSONDecodeError,
                 KeyError,
                 ProviderError,
@@ -190,7 +202,7 @@ class DeepSeekProvider:
                 validation_error = exc
                 if validation_attempt == 0:
                     continue
-                recovered = _reject_invalid_relations(packet_data)
+                recovered = _reject_invalid_proposals(packet_data)
                 if recovered is not None:
                     return recovered
                 raise ProviderError(
@@ -200,33 +212,71 @@ class DeepSeekProvider:
         raise AssertionError("unreachable")
 
 
-def _reject_invalid_relations(packet_data: dict[str, Any]) -> SemanticPacket | None:
-    """Fail closed per malformed edge while preserving an auditable rejection."""
-    raw_relations = packet_data.get("relations")
-    if not isinstance(raw_relations, list):
+def _reject_invalid_proposals(packet_data: dict[str, Any]) -> SemanticPacket | None:
+    """Fail closed per malformed proposal while preserving an auditable rejection.
+
+    One bad label used to cost the whole extraction. A court decision reaches
+    for claim_type "conclusion", which the closed vocabulary does not carry, and
+    the regeneration round talked the model out of it in one run of three — so
+    the packet was lost, after two paid calls, over a single field. Dropping the
+    offending proposal and keeping the rest is what the gate already does for
+    edges, and it is the same bargain: the run survives, and the loss is written
+    into the audit rather than hidden.
+
+    A relation left pointing at a dropped claim needs no handling here. The gate
+    admits an edge only when both endpoints were admitted, so it becomes an
+    ordinary unresolved-endpoint rejection there.
+
+    Returns None when nothing was dropped, so a packet that fails for some other
+    reason still surfaces its original error rather than a silent recovery.
+    """
+    claims, claim_rejections = _partition(
+        packet_data.get("claims"), ClaimProposal, "claim", "C"
+    )
+    relations, relation_rejections = _partition(
+        packet_data.get("relations", []), RelationProposal, "relation", "R"
+    )
+    if claims is None or relations is None:
         return None
-    valid_relations: list[dict[str, Any]] = []
-    rejections: list[Rejection] = []
-    for index, item in enumerate(raw_relations, start=1):
-        try:
-            if not isinstance(item, dict):
-                raise SchemaError("relation must be object")
-            RelationProposal.from_dict(item)
-        except SchemaError as exc:
-            rejections.append(
-                Rejection("relation", f"R{index:03d}", f"closed_schema_rejection: {exc}")
-            )
-        else:
-            valid_relations.append(item)
-    if not rejections:
+    if not claim_rejections and not relation_rejections:
         return None
+
     sanitized = dict(packet_data)
-    sanitized["relations"] = valid_relations
+    sanitized["claims"] = claims
+    sanitized["relations"] = relations
     try:
         packet = SemanticPacket.from_dict(sanitized)
     except SchemaError:
+        # Everything worth keeping is gone, or the packet is broken elsewhere.
+        # Recovering here would mean returning a graph nobody proposed.
         return None
-    return replace(packet, relation_rejections=tuple(rejections))
+    return replace(
+        packet,
+        relation_rejections=tuple(relation_rejections),
+        claim_rejections=tuple(claim_rejections),
+    )
+
+
+def _partition(
+    raw: Any, model: type, kind: str, prefix: str
+) -> tuple[list[dict[str, Any]] | None, list[Rejection]]:
+    """Split proposals into the ones the closed schema accepts and the rest."""
+    if not isinstance(raw, list):
+        return None, []
+    kept: list[dict[str, Any]] = []
+    rejections: list[Rejection] = []
+    for index, item in enumerate(raw, start=1):
+        try:
+            if not isinstance(item, dict):
+                raise SchemaError(f"{kind} must be object")
+            model.from_dict(item)
+        except SchemaError as exc:
+            rejections.append(
+                Rejection(kind, f"{prefix}{index:03d}", f"closed_schema_rejection: {exc}")
+            )
+        else:
+            kept.append(item)
+    return kept, rejections
 
 
 def _strip_fence(value: str) -> str:
