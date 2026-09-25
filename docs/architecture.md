@@ -1343,6 +1343,80 @@ einmal von fünf ausfällt, ist genau das, was ein einzelner Lauf nicht sieht.
 wechselnden Befunde mit Trefferzahl, die Zahl der abgelehnten Befunde je Lauf und
 ob ein Aufruf eine Modellersetzung gemeldet hat.
 
+## 3w. Die Arme, fünfmal über denselben Graphen
+
+Fünf Läufe nach der Festlegung in 3v. Der Eingang lag fest und ist geprüft:
+Dokument-Hash und Claim-Ids waren in allen fünf Läufen identisch, die Gültigkeits-
+bedingung ist also erfüllt.
+
+| Lauf | Arm-Befunde | davon verschieden | abgelehnt | Thinking-Arm |
+|---|---:|---:|---:|---|
+| 1 | 11 | 11 | 1 | **ohne Antwort** |
+| 2 | 11 | 11 | 1 | **ohne Antwort** |
+| 3 | 20 | 16 | 0 | 10 Befunde |
+| 4 | 10 | 10 | 1 | **ohne Antwort** |
+| 5 | 19 | 15 | 0 | 9 Befunde |
+
+„Verschieden" zählt Befunde nach Identität — dieselben Claims aus demselben Grund
+—, und beide Arme können denselben Befund liefern. Das ist eine Angabe, keine
+Rechnung: 20 Befunde in Lauf 3 sind 16 verschiedene.
+
+**Das Urteil nach der Vorab-Regel: die Auflösung liegt bei 0,63.** Acht Befunde
+kommen in allen fünf Läufen vor, gegen ein Mittel von 12,6 verschiedenen pro Lauf.
+Das ist die Mittelkategorie: ein Effekt, der kleiner ist als die wechselnde Menge,
+ist mit einem Lauf je Arm nicht zeigbar. Getrennt nach Arm: der Evidenz-Arm
+erreicht 0,77 bei 10 bis 11 Befunden pro Lauf, der Thinking-Arm 0,00 — und zwar
+aus einem Grund, der die eigentliche Nachricht dieses Laufs ist.
+
+### Der Thinking-Arm fällt in drei von fünf Läufen aus
+
+`_FatalProviderError: DeepSeek output was truncated; raise max_tokens`, dreimal
+von fünf, auf dem 1.700 Zeichen langen Antrag des eigenen Repositorys. Das
+Reviewer-Budget ist in `anti_delphi.py` auf 8.192 Tokens festgeschrieben, und der
+Thinking-Arm verbraucht es beim Denken, bevor er seine Findings schreibt. Bei
+Abschneiden wird nicht wiederholt — dieselbe Anfrage bei Temperatur 0 endet
+genauso —, also fehlt der Arm ganz.
+
+Drei Dinge daran sind bemerkenswert und keines davon ist angenehm.
+
+**Es ist ein Produktionsfehler, nicht ein Messartefakt.** Jeder zweite bis dritte
+Review läuft mit einem statt zwei unabhängigen Armen, und das Anti-Delphi-Prinzip
+— zwei Arme, die sich nicht sehen — ist dann nicht erfüllt. Der Anteil, den 3v
+für den Thinking-Arm ausweist, ist deshalb keine Aussage über seine Stabilität,
+sondern über seine Verfügbarkeit.
+
+**Das Dossier hat es die ganze Zeit protokolliert.** `status: "failed"`,
+`error_type`, und die Ablehnung mit ihrem Grund stehen in jedem betroffenen Lauf.
+Es hat nur nie jemand hingesehen, weil die eingefrorenen Kontrollen offline
+laufen und die Arme dort gar nicht aufgerufen werden, und weil jeder Live-Lauf
+bisher ein einzelner war: dort sieht man „der Thinking-Arm hat nichts gefunden"
+oder „er hat zehn gefunden" und kann nicht unterscheiden, was der Normalfall ist.
+Genau das ist der Grund, aus dem 3v fünf Läufe verlangt hat.
+
+**Und die Modellersetzung aus dem vorigen Abschnitt wird live bestätigt.** Jeder
+erfolgreiche Aufruf meldet `model_substituted`, jeder fehlgeschlagene keinen — was
+richtig ist, denn ohne Antwort ist kein ausgeliefertes Modell bekannt. Der
+Mechanismus hat innerhalb einer Stunde nach dem Einbau einen echten Treffer
+geliefert.
+
+### Was daraus folgt, und was nicht
+
+Nicht gemessen ist damit weiterhin, wie stabil der Thinking-Arm ist, wenn er
+antwortet: zwei Läufe mit 10 und 9 Befunden sind zwei Läufe. Die Wiederholung
+gehört nachgeholt, nachdem das Budget entschieden ist — und sie ist erst dann
+aussagekräftig, weil ein Arm, der in drei von fünf Fällen fehlt, jede
+Stabilitätszahl dominiert.
+
+Die Entscheidung über das Budget fällt nicht hier. Drei Wege stehen offen: das
+Reviewer-Budget global heben, es nur für den Thinking-Arm heben, oder den
+Thinking-Arm um weniger bitten. Alle drei kosten pro Aufruf mehr oder verändern,
+was der Arm liefert, und keine Messung sagt bisher, welcher Wert reicht.
+
+Was ohne weitere Entscheidung gilt: **keine Aussage über Befundqualität auf diesem
+Branch darf auf einem Lauf ruhen.** Bei 0,63 ist ein Ein-Lauf-Vergleich zweier
+Prompts oder zweier Profile nicht lesbar, und das betrifft jede zukünftige
+Reviewer-Arbeit genauso, wie es 3i die Extraktionsarbeit betroffen hat.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

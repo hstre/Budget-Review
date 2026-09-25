@@ -11,6 +11,29 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **The reviewer arms, five times over a graph that cannot move** — the repository's
+  frozen packet through the real gate, one document, one profile, so that the only
+  thing able to vary is the arms. By the mark fixed in §3v the resolution lands at
+  0.63: eight findings appear in all five runs against a mean of 12.6 distinct
+  findings per run, which means no comparison of reviewer prompts or profiles may
+  rest on a single run. The evidence arm reaches 0.77 at 10 to 11 findings a run.
+- **The thinking arm was absent in three of five runs**, and this is a defect in the
+  product rather than in the measurement. `_FatalProviderError: DeepSeek output was
+  truncated; raise max_tokens` — the reviewer budget is fixed at 8,192 tokens and
+  the thinking arm spends it before it writes its findings, on a 1,700-character
+  proposal. Truncation is not retried, so the arm is simply missing and every
+  second or third review runs with one independent arm instead of two. The dossier
+  has recorded it all along under `status` and `error_type`; nobody looked, because
+  the frozen controls never call the arms and every live run so far was a single
+  run, where a silent arm and a productive one are indistinguishable. The budget
+  decision is not taken here: raising it globally, raising it for that arm alone,
+  or asking that arm for less all cost more per call or change what it returns, and
+  no measurement yet says which value suffices.
+- The model-substitution report added an hour earlier produced a true positive on
+  its first live run: every successful reviewer call reported a substituted model,
+  and every failed one reported none, which is correct — with no answer, no served
+  model is known.
+
 - **The dossier says when the provider substituted the model.** Today's run found
   the served model had changed under the branch four weeks earlier, and it found
   it in an experiment rather than in the product. `complete_json` now reports the

@@ -143,6 +143,11 @@ def test_two_runs_over_the_frozen_packet_report_their_spread(monkeypatch, tmp_pa
 
     report = capsys.readouterr().out
     assert "In allen 2 Läufen: 0" in report, "the one arm finding moved between runs"
+    # Both arms name the same claims for the same reason, so two findings are one
+    # key. Reporting only the key count next to a findings count reads as an
+    # arithmetic mistake, so the run line has to say both.
+    assert "2 Arm-Befunde (1 verschieden)" in report
+    assert "Verschiedene Befunde je Lauf: [1, 1]" in report
     written = json.loads((tmp_path / "reviewer-run-1.json").read_text(encoding="utf-8"))
     assert any(f["reviewer_kind"] == "llm" for f in written["findings"])
 

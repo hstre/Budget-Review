@@ -336,7 +336,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3u.
+detail per experiment is in `docs/architecture.md` §3a–§3w.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -360,6 +360,8 @@ detail per experiment is in `docs/architecture.md` §3a–§3u.
 | 18 | Two-stage extraction against the single call, A24, three runs per arm | improvement only if min(B) > max(A); unreadable if arm A alone spreads ≥ 40 | Arm A 194/201/124, arm B 203/127/121 of 219; arm A spreads 77 | **Resolution insufficient** by the rule fixed first. Neither shown nor refuted; the fixture counter-check passed at 25/25 |
 | 19 | Same configuration on the same document, four weeks apart | none — noticed, not planned | The response envelope names `deepseek-flash` where it named `deepseek-v4-flash`; anchoring rejections 64/134 → 7–31/111–122, of which genuine paraphrase 54 → 0/0/11 | The served model changed. Every cross-week number on this branch compares two models |
 | 20 | Re-gating finished packets with whitespace-tolerant anchoring, offline | none — post hoc, and labelled as such | 194→216, 201→**219/219**, 124→192, 203→218, 127→198, 121→196; spread 77→27 and 82→22 | Most of the run-to-run spread was the gate refusing typeset quotes, not the extractor. Says only what the same proposals would have scored |
+| 21 | The reviewer arms five times over the frozen fixture graph | stable at a core share ≥ 0.8; unusable below 0.5 | 0.63 pooled, 0.77 for the evidence arm; graph identical in all five runs | **The resolution is 0.63.** No reviewer claim may rest on one run |
+| 22 | Same run, the thinking arm's availability | none — it was not the question | Truncated at the 8,192-token reviewer budget in **3 of 5 runs**, on a 1,700-character proposal | A production defect: every second or third review has one independent arm, not two |
 
 #### What we believe we know
 
@@ -914,7 +916,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3u.
+stehen in `docs/architecture.md` §3a–§3w.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -938,6 +940,8 @@ stehen in `docs/architecture.md` §3a–§3u.
 | 18 | Zweistufige Extraktion gegen den einen Aufruf, A24, drei Läufe je Arm | Verbesserung nur bei min(B) > max(A); nicht lesbar, wenn Arm A allein ≥ 40 streut | Arm A 194/201/124, Arm B 203/127/121 von 219; Arm A streut 77 | **Auflösung unzureichend** nach der zuerst festgelegten Regel. Weder gezeigt noch widerlegt; die Gegenprobe auf der Fixture bestanden mit 25/25 |
 | 19 | Dieselbe Konfiguration auf demselben Dokument, vier Wochen später | keines — aufgefallen, nicht geplant | Die Antwort nennt `deepseek-flash`, wo sie `deepseek-v4-flash` nannte; Anker-Ablehnungen 64/134 → 7–31/111–122, davon echte Umformulierung 54 → 0/0/11 | Das ausgelieferte Modell hat sich geändert. Jede Zahl über Wochen hinweg vergleicht zwei Modelle |
 | 20 | Fertige Pakete offline neu gegatet, mit Leerraum-Toleranz | keines — nachträglich, und so gekennzeichnet | 194→216, 201→**219/219**, 124→192, 203→218, 127→198, 121→196; Streuung 77→27 und 82→22 | Die Streuung war größtenteils das Gate, das getypte Zitate ablehnt, nicht der Extraktor. Sagt nur, was dieselben Vorschläge erreicht hätten |
+| 21 | Die Reviewer-Arme fünfmal über den eingefrorenen Fixture-Graphen | stabil ab Kernanteil ≥ 0,8; unbrauchbar unter 0,5 | 0,63 gepoolt, 0,77 für den Evidenz-Arm; Graph in allen fünf Läufen identisch | **Die Auflösung liegt bei 0,63.** Keine Reviewer-Aussage darf auf einem Lauf ruhen |
+| 22 | Derselbe Lauf, die Verfügbarkeit des Thinking-Arms | keines — das war nicht die Frage | Abgeschnitten am Reviewer-Budget von 8.192 Tokens in **3 von 5 Läufen**, auf einem 1.700-Zeichen-Antrag | Produktionsfehler: jeder zweite bis dritte Review hat einen statt zwei unabhängigen Armen |
 
 #### Was wir zu wissen glauben
 

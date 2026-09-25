@@ -140,7 +140,8 @@ def main() -> int:
             run["reviewer_id"] for run in dossier["reviewer_runs"] if run.get("status") == "failed"
         ]
         print(
-            f"Lauf {index}: {len(findings)} Arm-Befunde, "
+            f"Lauf {index}: {len(findings)} Arm-Befunde "
+            f"({len({finding_key(f) for f in findings})} verschieden), "
             f"{len(dossier['review_rejections'])} abgelehnt"
             + (f", Arm ohne Antwort: {', '.join(failed_arms)}" if failed_arms else "")
             + (f", Modell ersetzt in {len(substituted)} Aufruf(en)" if substituted else ""),
@@ -153,7 +154,10 @@ def main() -> int:
 
     counts = [len(keys) for keys in pooled]
     always, flipping = stability(pooled)
-    print(f"\nArm-Befunde je Lauf: {counts}")
+    # Distinct keys, not findings: both arms can name the same claims for the
+    # same reason, and that is one finding for this measurement. Printing only
+    # the keys against a per-run findings count reads as an arithmetic error.
+    print(f"\nVerschiedene Befunde je Lauf: {counts}")
     print(f"Streuung: {max(counts) - min(counts)}")
     print(f"In allen {len(pooled)} Läufen: {len(always)}")
     print(f"Anteil am Mittel eines Laufs: {always_share(always, pooled):.2f}")
