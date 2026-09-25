@@ -56,6 +56,9 @@ def render_markdown(dossier: ReviewDossier, language: str = "de") -> str:
             f"- {t['md_full_audit']}: `dossier.json`",
         ]
     )
+    substituted = _substituted_models(dossier)
+    if substituted:
+        lines.insert(len(lines) - 1, f"- {t['model_substituted']}: {', '.join(substituted)}")
     return "\n".join(lines) + "\n"
 
 
@@ -324,11 +327,33 @@ def _coverage_line(dossier: ReviewDossier, language: str) -> str:
     return f"{coverage.ratio:.0%} · {len(coverage.gaps)} {t['coverage_gaps']}"
 
 
+def _substituted_models(dossier: ReviewDossier) -> list[str]:
+    """Reviewer runs whose answer named a model other than the one requested.
+
+    Nothing in the pipeline can prevent a provider substituting a model, so the
+    only defence is that the dossier says so. It is reported, not enforced: a
+    substitution is a fact about the run, not a finding about the document.
+    """
+    return [
+        f"{run['reviewer_id']}: {run.get('requested_model_id', '?')} → {run.get('model_id', '?')}"
+        for run in dossier.reviewer_runs
+        if run.get("model_substituted")
+    ]
+
+
 def _audit_html(dossier: ReviewDossier, language: str) -> str:
     t = _TEXT[language]
     claim_count = len(dossier.semantic.claims)
     relation_count = len(dossier.semantic.relations)
     rejection_count = len(dossier.semantic.rejections) + len(dossier.review_rejections)
+    substituted = _substituted_models(dossier)
+    substitutions = (
+        ""
+        if not substituted
+        else f"""
+    <div><dt>{t["model_substituted"]}</dt>"""
+        f"""<dd>{escape(", ".join(substituted))}</dd></div>"""
+    )
     return f"""
 <details class="audit">
   <summary>{t["show_audit"]}</summary>
@@ -339,7 +364,7 @@ def _audit_html(dossier: ReviewDossier, language: str) -> str:
     <div><dt>ClaimGraph</dt><dd>{claim_count} Claims · {relation_count} {t["relations"]}</dd></div>
     <div><dt>{t["coverage"]}</dt><dd>{_coverage_line(dossier, language)}</dd></div>
     <div><dt>{t["raw_findings"]}</dt><dd>{len(dossier.findings)}</dd></div>
-    <div><dt>Rejections</dt><dd>{rejection_count}</dd></div>
+    <div><dt>Rejections</dt><dd>{rejection_count}</dd></div>{substitutions}
   </dl>
   <p>{t["full_audit"]} <code>dossier.json</code>.</p>
 </details>"""
@@ -380,6 +405,7 @@ _TEXT = {
         "show_audit": "Technischen Audit anzeigen",
         "document_hash": "Dokument-Hash",
         "extraction": "Extraktion",
+        "model_substituted": "Modell ersetzt",
         "profile": "Prüfprofil",
         "raw_findings": "Rohe Findings",
         "coverage": "Textabdeckung",
@@ -437,6 +463,7 @@ _TEXT = {
         "show_audit": "Show technical audit",
         "document_hash": "Document hash",
         "extraction": "Extraction",
+        "model_substituted": "Model substituted",
         "profile": "Review profile",
         "raw_findings": "Raw findings",
         "coverage": "Text coverage",

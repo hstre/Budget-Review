@@ -106,3 +106,27 @@ def test_distinct_proposals_addressing_one_edge_are_deduplicated(
 
     assert len(dossier.relations) == len(controlled_packet.relations)
     assert [item.reason for item in dossier.rejections].count("duplicate_relation") == 1
+
+
+def test_a_claim_dropped_before_the_gate_still_appears_in_the_audit(
+    controlled_source, controlled_packet
+) -> None:
+    """A proposal the provider had to drop must not vanish from the record.
+
+    That is the whole bargain of rejecting one claim instead of the packet: the
+    run survives and the loss stays visible.
+    """
+    data = controlled_packet.to_dict()
+    data["claim_rejections"] = [
+        {
+            "item_kind": "claim",
+            "item_id": "C042",
+            "reason": "closed_schema_rejection: unknown claim_type: conclusion",
+        }
+    ]
+
+    dossier = govern_packet(controlled_source.text, SemanticPacket.from_dict(data))
+
+    recorded = [item for item in dossier.rejections if item.item_id == "C042"]
+    assert len(recorded) == 1
+    assert "unknown claim_type: conclusion" in recorded[0].reason

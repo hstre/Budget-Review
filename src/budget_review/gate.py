@@ -39,7 +39,12 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
     """
     claims: list[GovernedClaim] = []
     relations: list[GovernedRelation] = []
-    rejections: list[Rejection] = list(packet.relation_rejections)
+    # Rejections the provider already recorded travel with the packet, so a
+    # proposal dropped before the gate is still visible in the audit.
+    rejections: list[Rejection] = [
+        *packet.claim_rejections,
+        *packet.relation_rejections,
+    ]
     admitted: dict[str, GovernedClaim] = {}
     by_node: dict[str, GovernedClaim] = {}
     seen_ids: set[str] = set()
