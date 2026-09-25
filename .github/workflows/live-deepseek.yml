@@ -100,13 +100,18 @@ on:
         required: false
         default: false
         type: boolean
+      reviewer_repeats:
+        description: "Run the reviewer arms N times over the frozen fixture graph. 0 disables it."
+        required: false
+        default: "0"
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true && inputs.reviewer_repeats == '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -142,7 +147,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true || inputs.reviewer_repeats != '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -174,7 +179,7 @@ jobs:
           fi
 
       - name: Build the case
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.reviewer_repeats == '0'
         run: |
           mkdir -p gold-case
           # The fixture corpus skips the fetch step, so there is no provenance
@@ -256,9 +261,24 @@ jobs:
             ${{ inputs.relax_whitespace == true && '--relax-whitespace' || '' }} \
             --watch "${{ inputs.watch_spans }}" 2>&1 | tee gold-case/repair.txt
 
+      - name: Repeat the reviewer arms over a frozen graph
+        if: inputs.reviewer_repeats != '0'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          # No corpus and no extraction: the input is the repository's frozen
+          # packet through the real gate, so the only thing that can move
+          # between runs is the arms.
+          mkdir -p gold-case
+          mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
+          python scripts/reviewer_variance.py gold-case \
+            --runs "${{ inputs.reviewer_repeats }}" \
+            --profile "${{ inputs.profile }}" 2>&1 | tee gold-case/reviewer-variance.txt
+
       - name: Live extraction
         id: extract
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.reviewer_repeats == '0'
         continue-on-error: true
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}

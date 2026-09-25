@@ -1298,6 +1298,51 @@ Textstelle des Dokuments ersetzen und diesen Eingriff protokollieren
 (Schema 0.2 → 0.3), und die Messung sagt, dass daran auf diesem Korpus zwischen
 neun und achtundsechzig Spannen hängen.
 
+## 3v. Die Streuung der Reviewer-Arme: die Vorab-Festlegung
+
+Auf diesem Branch ist keine einzige Aussage über Befundqualität wiederholt
+worden. Nach 3u ist das kein Versäumnis mehr, sondern ein bekannter Fehler.
+
+**Warum die Arme zuerst allein gemessen werden.** Die Arme lesen den gegateten
+Graphen, und der schwankte in 3u auf demselben Dokument zwischen 77 und 115
+zugelassenen Claims. Eine Reviewer-Messung über frische Extraktionen misst
+deshalb den Extraktor und schreibt das Ergebnis dem Reviewer zu. Der Eingang muss
+also festliegen: das eingefrorene Paket des Repositorys durch das echte Gate,
+fünf Läufe, dasselbe Dokument, dasselbe Profil (`budget`, weil dort eine
+eingefrorene Kontrolle daneben steht). Die Kette Extraktion + Review wird danach
+gemessen, nicht gleichzeitig.
+
+**Gültigkeitsbedingung, keine Marke.** Dokument-Hash und die Liste der
+zugelassenen Claim-Ids müssen in allen Läufen identisch sein. Sind sie es nicht,
+hat sich der Eingang bewegt, und die Messung sagt nichts über die Arme — sie wird
+dann nicht interpretiert, sondern abgebrochen.
+
+**Die Identität eines Befunds.** Zwei Befunde sind derselbe, wenn sie dieselben
+Claims aus demselben Grund benennen: Kategorie plus Claim-Ids. Der Wortlaut der
+Zusammenfassung gehört nicht dazu, sonst wäre jede Umformulierung ein neuer
+Befund. Gezählt wird ausschließlich die LLM-Hälfte; die deterministischen Befunde
+sind konstruktionsgemäß identisch, und sie mitzuzählen berichtete die Stabilität
+der Regeln als die der Arme.
+
+**Das Maß:** Anteil = Zahl der Befunde, die in *allen* fünf Läufen vorkommen,
+geteilt durch die mittlere Befundzahl eines Laufs.
+
+- **≥ 0,8 ⇒ stabil.** Ein Ein-Lauf-Vergleich der Arme ist für Effekte brauchbar,
+  die größer sind als die wechselnde Menge.
+- **< 0,5 ⇒ instabil.** Dann darf keine Aussage über Befundqualität aus einem Lauf
+  gemacht werden, und jede bestehende müsste pro Arm wiederholt werden, bevor sie
+  stehen bleibt.
+- **0,5 bis 0,8 ⇒ die Auflösung liegt dort.** Ein Effekt kleiner als die
+  wechselnde Menge ist mit einem Lauf je Arm nicht zeigbar.
+
+Ein Arm, der nicht antwortet, zählt als Lauf ohne Befunde und nimmt damit jeden
+Befund aus dem stabilen Kern — wie in 3i, und aus demselben Grund: ein Arm, der
+einmal von fünf ausfällt, ist genau das, was ein einzelner Lauf nicht sieht.
+
+**Zweitens, nur beschreibend:** der Anteil je Arm getrennt, die Liste der
+wechselnden Befunde mit Trefferzahl, die Zahl der abgelehnten Befunde je Lauf und
+ob ein Aufruf eine Modellersetzung gemeldet hat.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
