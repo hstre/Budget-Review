@@ -1124,6 +1124,55 @@ Audit, der sagt, dass der Anker über Leerraum gefunden und der Wortlaut auf die
 Quelle gesetzt wurde. Das ist eine Schemafrage (0.2 → 0.3) und eine Entscheidung,
 die nicht nebenbei fällt. Gemessen ist sie; gebaut ist sie nicht.
 
+## 3t. Zweistufige Extraktion: die Vorab-Festlegung
+
+Abschnitt 3n hat den Aufbau beschrieben und ausdrücklich offengelassen, was die
+Messung braucht. Das hier ist diese Festlegung, geschrieben vor dem ersten
+bezahlten Lauf.
+
+**Was geprüft wird.** Nur eine der beiden Fragen aus 3n ist mit diesem Skript
+überhaupt prüfbar. Ob der Claim-Recall steigt, wenn ein Aufruf weniger zu tun
+hat: ja. Ob die Segmentierung damit brauchbar wird: nein — `two_stage_extract.py`
+segmentiert nicht, es fragt beide Stufen über das ganze Dokument. Die zweite
+Frage bleibt offen und wird hier nicht nebenbei mitbeantwortet.
+
+**Die Arme.** A ist der Produktionsvertrag in einem Aufruf, B derselbe Vertrag in
+zwei Stufen. Sonst identisch: A24, Produktionsprompt, 65.536 Tokens, `general`,
+dasselbe Gold, dieselbe Messung. A24, weil 219 Gold-Spannen aus einer Spanne
+Unterschied einen halben Prozentpunkt machen und nicht vier Prozent.
+
+**Drei Wiederholungen je Arm, verschränkt in einem Fenster.** Der Grund steht in
+3i und 3p: Auf A24 kamen zwei erste Durchgänge unter identischen Einstellungen
+bei 124 und 80 Spannen heraus. Ein Paar aus je einem Lauf könnte einen Effekt von
+44 Spannen nicht von der Streuung trennen, und ein Effekt dieser Größe ist nicht
+zu erwarten. Die drei Läufe je Arm messen deshalb zuerst die Streuung des Arms
+selbst; der Unterschied zwischen den Armen wird an ihr gelesen, nicht an den
+Mittelwerten.
+
+**Die Entscheidungsregel, vorab:**
+
+- **Verbesserung** nur, wenn sich die Arme nicht überschneiden: min(B) > max(A)
+  beim Recall auf 80 Prozent Überlappung. Bei drei gegen drei Läufen tritt eine
+  vollständige Trennung unter Zufall in 10 Prozent der Fälle ein — das ist die
+  schwächste Aussage, die diese Stichprobe tragen kann.
+- **Kein Befund**, wenn sich die Arme überschneiden. Dann ist der Effekt kleiner
+  als die Streuung, und die Zweistufigkeit bleibt ungemessen, nicht widerlegt.
+- **Auflösung unzureichend**, wenn allein die Streuung innerhalb von Arm A
+  40 Spannen oder mehr beträgt. Dann sagt der Vergleich unabhängig von den
+  Mittelwerten nichts, und das ist das Ergebnis.
+- Ein Lauf, der abbricht, zählt zu seinem Arm, wie in 3i.
+
+**Zweitens, nur beschreibend:** zugelassene Relationen je Arm, Claims je Arm, in
+Stufe zwei verworfene Kanten mit unbekannten Endpunkten, Beinahe-Dubletten. Für
+die Relationszahl gibt es keine Vorab-Marke, weil es für A24 keinen gemessenen
+Ausgangswert gibt — sie wird in diesem Lauf erst erhoben. Aus einer Zahl ohne
+Vorhersage wird hier kein Befund gemacht.
+
+**Die Gegenprobe.** Ein Lauf auf der eigenen Fixture, deren eingefrorenes Paket
+25 Claims und 15 Relationen hat. Vorab: mindestens 24 der 25 Gold-Claims, sonst
+ist die Aufspaltung eine Verschlechterung auf einem Dokument, das sie mühelos
+schaffen müsste — und das schlägt jeden Gewinn auf Papern.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
