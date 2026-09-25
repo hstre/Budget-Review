@@ -336,7 +336,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3j.
+detail per experiment is in `docs/architecture.md` §3a–§3u.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -357,6 +357,9 @@ detail per experiment is in `docs/architecture.md` §3a–§3j.
 | 15 | Gold spans fed to the gate as a packet | — | All 24 and 49 claims admitted, no rejections, coverage 0.946 and 0.977 | The deterministic half is unaffected by length |
 | 16 | Anchors reaching into two speakers, counted against the corpus's actor labels | none — a first measurement | **0 of 40** | Holds; one document, one run |
 | 17 | Near-identical claims at disjoint anchors | none — a first measurement | 0 of 40 | The repair rule's third case does not occur in a single run |
+| 18 | Two-stage extraction against the single call, A24, three runs per arm | improvement only if min(B) > max(A); unreadable if arm A alone spreads ≥ 40 | Arm A 194/201/124, arm B 203/127/121 of 219; arm A spreads 77 | **Resolution insufficient** by the rule fixed first. Neither shown nor refuted; the fixture counter-check passed at 25/25 |
+| 19 | Same configuration on the same document, four weeks apart | none — noticed, not planned | The response envelope names `deepseek-flash` where it named `deepseek-v4-flash`; anchoring rejections 64/134 → 7–31/111–122, of which genuine paraphrase 54 → 0/0/11 | The served model changed. Every cross-week number on this branch compares two models |
+| 20 | Re-gating finished packets with whitespace-tolerant anchoring, offline | none — post hoc, and labelled as such | 194→216, 201→**219/219**, 124→192, 203→218, 127→198, 121→196; spread 77→27 and 82→22 | Most of the run-to-run spread was the gate refusing typeset quotes, not the extractor. Says only what the same proposals would have scored |
 
 #### What we believe we know
 
@@ -911,7 +914,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3j.
+stehen in `docs/architecture.md` §3a–§3u.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -932,6 +935,9 @@ stehen in `docs/architecture.md` §3a–§3j.
 | 15 | Gold-Spannen als Packet ins Gate gegeben | — | Alle 24 bzw. 49 Claims zugelassen, keine Rejections, Abdeckung 0,946 und 0,977 | Die deterministische Hälfte ist von der Länge unberührt |
 | 16 | Anker, die in zwei Sprecher hineinreichen, gegen die Akteursangaben des Korpus | keines — Erstmessung | **0 von 40** | Gilt; ein Dokument, ein Lauf |
 | 17 | Fast gleiche Claims an getrennten Ankern | keines — Erstmessung | 0 von 40 | Der dritte Fall der Reparaturregel kommt in einem Lauf nicht vor |
+| 18 | Zweistufige Extraktion gegen den einen Aufruf, A24, drei Läufe je Arm | Verbesserung nur bei min(B) > max(A); nicht lesbar, wenn Arm A allein ≥ 40 streut | Arm A 194/201/124, Arm B 203/127/121 von 219; Arm A streut 77 | **Auflösung unzureichend** nach der zuerst festgelegten Regel. Weder gezeigt noch widerlegt; die Gegenprobe auf der Fixture bestanden mit 25/25 |
+| 19 | Dieselbe Konfiguration auf demselben Dokument, vier Wochen später | keines — aufgefallen, nicht geplant | Die Antwort nennt `deepseek-flash`, wo sie `deepseek-v4-flash` nannte; Anker-Ablehnungen 64/134 → 7–31/111–122, davon echte Umformulierung 54 → 0/0/11 | Das ausgelieferte Modell hat sich geändert. Jede Zahl über Wochen hinweg vergleicht zwei Modelle |
+| 20 | Fertige Pakete offline neu gegatet, mit Leerraum-Toleranz | keines — nachträglich, und so gekennzeichnet | 194→216, 201→**219/219**, 124→192, 203→218, 127→198, 121→196; Streuung 77→27 und 82→22 | Die Streuung war größtenteils das Gate, das getypte Zitate ablehnt, nicht der Extraktor. Sagt nur, was dieselben Vorschläge erreicht hätten |
 
 #### Was wir zu wissen glauben
 

@@ -11,6 +11,41 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **Two-stage extraction, measured.** Claims in one call and relations over the
+  finished claim list in a second, against the production single call on A24,
+  three runs per arm in one window. By the rule fixed beforehand the comparison
+  cannot be read: the single-call arm alone spread 77 spans (124 to 201 of 219),
+  where the rule names 40 as the point at which means say nothing, and the arms
+  overlap besides. The split is neither shown to help nor shown to hurt. It
+  passes its counter-check — 25 of 25 gold claims on the repo's own fixture, and
+  19 relations where the frozen packet has 15 — and the relation stage invented
+  no endpoint in any run, 67 of 67, 60 of 60, 65 of 65 resolvable.
+- **The served model changed under the branch, and the provenance caught it.**
+  The request still asks for `deepseek-v4-flash`; since 31 August the response
+  envelope answers `deepseek-flash`. Same document, same corpus checksum, same
+  prompt, same budget: anchoring rejections fall from 64 of 134 proposals to 7 to
+  31 of 111 to 122, and of those rejections the ones that are genuine paraphrase
+  rather than typesetting fall from 54 to 0, 0 and 11. Recall on A24 goes from 80
+  of 219 to 194, 201, 124 and 209. Every cross-week comparison on this branch is
+  therefore between two served models; comparisons inside one window stand.
+- **`gate_counterfactual.py`: what a whitespace-tolerant gate would have scored,
+  offline.** A finished packet is re-gated twice, once as measured and once with
+  every span that differs from the document only in whitespace replaced by the
+  document's own slice — the repair pass's existing function, never the model's
+  wording. No call, no cost, and it changes nothing in the product. On the seven
+  A24 runs it lifts 194 to 216, 201 to 219 of 219, 124 to 192, 203 to 218, 127 to
+  198 and 121 to 196, and the run-to-run spread collapses from 77 to 27 spans in
+  one arm and 82 to 22 in the other. Most of the spread this branch has been
+  fighting was the gate refusing typeset quotes, not the extractor. The figure is
+  post hoc, not pre-registered, and says only what the same proposals would have
+  scored under a different gate. Five mutations, including the two ways it could
+  flatter itself: amending the baseline along with the tolerant arm, and
+  admitting a paraphrase.
+- Four earlier statements are qualified in `docs/architecture.md` §3u as a
+  result: extraction quality as a property of the document, the anchored-share
+  warning light (a rejected anchor lowers both terms, so part of that correlation
+  may be built in), the repair pass's gain, and every pre-25-September number.
+
 - **Coverage measurement of the semantic extraction.** The gate can reject a
   claim but never add one, so a claim the extractor never proposed is invisible
   to every deterministic check and to both reviewer arms, and the dossier it

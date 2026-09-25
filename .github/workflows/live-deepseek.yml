@@ -336,6 +336,23 @@ jobs:
           python scripts/measure_drift.py review-output/gold/dossier.json \
             2>&1 | tee gold-case/drift.txt || true
 
+      - name: What a whitespace-tolerant gate would have scored
+        if: inputs.sweep_decisions == '' && steps.extract.outcome == 'success'
+        run: |
+          # Offline and free: the packet is on disk and the gate is local, so
+          # this costs no call. It reports and decides nothing — the gate in the
+          # product still refuses a span it cannot find verbatim.
+          CASE=$(cat gold-case/case-name.txt)
+          PACKET=$(ls gold-case/two-stage-packet.json gold-case/variant-packet.json \
+            gold-case/merged-packet.json 2>/dev/null | head -1)
+          if [ -n "$PACKET" ]; then
+            python scripts/gate_counterfactual.py "$PACKET" \
+              "gold-case/$CASE.txt" "gold-case/$CASE.gold.json" \
+              2>&1 | tee gold-case/gate-counterfactual.txt
+          else
+            echo "no packet written on this path, nothing to re-gate"
+          fi
+
       - name: Report an extraction that did not complete
         if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && steps.extract.outcome != 'success'
         run: |

@@ -1173,6 +1173,131 @@ Vorhersage wird hier kein Befund gemacht.
 ist die Aufspaltung eine Verschlechterung auf einem Dokument, das sie mühelos
 schaffen müsste — und das schlägt jeden Gewinn auf Papern.
 
+## 3u. Zweistufig gemessen — und was der Lauf stattdessen fand
+
+Sieben Läufe nach der Festlegung in 3t, dann fünf weitere nach zwei Defekten, die
+der Lauf in sich selbst fand. Die Defekte stehen im Commit; kurz: Stufe zwei kann
+das geschlossene Schema nicht bestehen, weil sie eine leere Claim-Liste
+zurückgeben soll und das Schema mindestens einen Claim verlangt — beide Hälften
+waren getestet, die Nahtstelle zwischen ihnen nicht. Und die Gegenprobe auf der
+Fixture war noch nie gelaufen: ihr Korpus überspringt den Fetch-Schritt, und
+`mv` auf die fehlende Provenienzdatei ließ den Job unter `bash -e` scheitern,
+bevor die Fixture kopiert war.
+
+**Das Urteil nach der Vorab-Regel: Auflösung unzureichend.** Arm A streut heute
+von 124 bis 201 Spannen, also 77 — die Regel nennt 40 als Grenze, ab der der
+Vergleich unabhängig von den Mittelwerten nichts sagt. Zusätzlich überschneiden
+sich die Arme, womit auch die zweite Bedingung (min(B) > max(A)) klar verfehlt
+ist. Die Zweistufigkeit ist damit **nicht gemessen, nicht widerlegt**.
+
+A24, 219 Gold-Spannen, Produktionsprompt, 65.536 Tokens, alles am 25.09. in einem
+Fenster:
+
+| | Vorschläge | zugelassen | Anker abgelehnt | Relationen | Recall@80 |
+|---|---:|---:|---:|---:|---|
+| A einstufig 1 | 111 | 102 | 9 | 29 | 194/219 (89 %) |
+| A einstufig 2 | 122 | 115 | 7 | 73 | 201/219 (92 %) |
+| A einstufig 3 | 111 | 80 | 31 | 30 | 124/219 (57 %) |
+| A Drift-Probe | 121 | 115 | 6 | 31 | 209/219 (95 %) |
+| B zweistufig 1 | 115 | 111 | 4 | 65 | 203/219 (93 %) |
+| B zweistufig 2 | 116 | 84 | 32 | 42 | 127/219 (58 %) |
+| B zweistufig 3 | 108 | 77 | 31 | 45 | 121/219 (55 %) |
+
+Die Drift-Probe ist ein vierter einstufiger Lauf im Fenster der B-Läufe, getrennt
+berichtet und nicht in Arm A hineingerechnet: Arm A lief zwanzig Minuten früher,
+und ohne diese Probe wäre nicht auszuschließen, dass sich in der Zwischenzeit
+etwas verschoben hat. Es hat sich nichts verschoben.
+
+**Die Gegenprobe ist bestanden.** Auf der eigenen Fixture: 27 Claims, 19
+Relationen, **25 von 25 Gold-Claims**, keine Lücke, keine Anker-Ablehnung. Die
+Vorab-Marke war 24 von 25. Die Aufspaltung beschädigt also nichts, wo der
+einstufige Aufruf schon alles erreicht — sie liefert dort sogar mehr Kanten als
+das eingefrorene Paket (19 gegen 15).
+
+**Ein einziger sauberer Unterschied, beschreibend.** Stufe zwei hat in keinem
+Lauf eine Id erfunden: 67 von 67, 60 von 60, 65 von 65 Kanten waren auflösbar.
+Der einstufige Aufruf verlor in zwei von vier Läufen Kanten an nicht zugelassene
+Endpunkte. Das ist kein Recall-Argument, und es ist auch kein großer Effekt — es
+heißt nur, dass eine Kantenfrage über eine fertige Claim-Liste keine Endpunkte
+mehr halluziniert.
+
+### Was der Lauf stattdessen fand
+
+**Das ausgelieferte Modell hat sich geändert.** Dieselbe Anfrage schickt
+weiterhin `deepseek-v4-flash`; die Antwort nennt seit dem 31.08. nicht mehr
+`deepseek-v4-flash`, sondern `deepseek-flash`. Das Feld kommt aus dem Envelope
+der API, nicht aus unserer Konfiguration — die Provenienz hat genau den Zweck
+erfüllt, für den sie da ist. Dasselbe Dokument (gleicher sha256 des Korpus,
+gleiche 21.518 Zeichen), dieselbe Prompt, dasselbe Budget:
+
+| | Anker abgelehnt | davon echte Umformulierung | davon nur Leerraum | Recall@80 |
+|---|---:|---:|---:|---|
+| 31.08. | 64 von 134 | 54 | 10 | 80/219 (37 %) |
+| 25.09. Lauf 1 | 9 von 111 | 0 | 9 | 194/219 (89 %) |
+| 25.09. Lauf 2 | 7 von 122 | 0 | 7 | 201/219 (92 %) |
+| 25.09. Lauf 3 | 31 von 111 | 11 | 20 | 124/219 (57 %) |
+
+Der dominierende Fehlerterm im August war also **falsches Zitieren**, und er ist
+fast verschwunden. Was bleibt, ist überwiegend Satzspiegel.
+
+**Und deshalb: das Gate, nicht der Extraktor.** `gate_counterfactual.py` gatet ein
+fertiges Paket zweimal — wie gemessen, und mit jeder Spanne, die sich vom
+Dokument nur im Leerraum unterscheidet, ersetzt durch die Textstelle des
+Dokuments. Kein neuer Aufruf, keine neuen Kosten, dieselbe Funktion, die der
+Reparaturlauf schon benutzt:
+
+| | wie gemessen | mit Leerraum-Toleranz |
+|---|---|---|
+| A 1 | 194 (89 %) | **216 (99 %)** |
+| A 2 | 201 (92 %) | **219 (100 %)** |
+| A 3 | 124 (57 %) | **192 (88 %)** |
+| A Drift | 209 (95 %) | **218 (100 %)** |
+| B 1 | 203 (93 %) | **218 (100 %)** |
+| B 2 | 127 (58 %) | **198 (90 %)** |
+| B 3 | 121 (55 %) | **196 (89 %)** |
+| 31.08. | 80 (37 %) | 107 (49 %) |
+
+**Die Streuung war größtenteils das Gate.** Arm A geht von 77 Spannen Streuung
+auf 27, Arm B von 82 auf 22, und das Niveau springt auf 88 bis 100 Prozent. Das
+heißt: der Extraktor ist viel stabiler, als jede Messung auf diesem Branch
+aussah — was streute, war zu einem großen Teil, ob das Gate seine Zitate annimmt.
+Ein Lauf erreicht 219 von 219.
+
+### Was das an früheren Aussagen ändert
+
+Vier Dinge sind damit zu relativieren, und keines davon ist angenehm.
+
+1. **„Extraktionsqualität ist eine Eigenschaft des Dokuments"** (3p) steht unter
+   Vorbehalt. Unter dem toleranten Gate landen alle Läufe auf A24 zwischen 88 und
+   100 Prozent; die Unterschiede, die auf vier Papern nach Dokumenteigenschaft
+   aussahen, könnten überwiegend Anker-Ablehnungen gewesen sein. Das ist auf den
+   anderen drei Papern nachzurechnen — offline, ohne Kosten.
+2. **Die Warnleuchte** (verankerter Anteil ordnet den Recall) hat ein
+   Tautologieproblem, das ich bisher nicht benannt habe: Eine Anker-Ablehnung
+   senkt mechanisch beides, den verankerten Anteil *und* den Recall. Die
+   Korrelation über vier Paper kann deshalb zum Teil eingebaut sein. Ob die
+   Leuchte auch dann noch ordnet, wenn das Anker-Problem behoben ist, ist offen.
+3. **Der Gewinn des Reparaturlaufs** (3q, 124 → 210) ist teilweise
+   Wiederbeschaffung dessen, was das Gate verworfen hat — für einen bezahlten
+   zweiten Aufruf, wo die Gate-Toleranz nichts kostet.
+4. **Jede Zahl auf diesem Branch von vor dem 25.09.** ist gegen eine andere
+   ausgelieferte Modellkennung gemessen. Die Vergleiche innerhalb eines Fensters
+   bleiben gültig; jeder Vergleich über Wochen hinweg ist keiner.
+
+Und eine methodische Einordnung, die dazugehört: Die Leerraum-Rechnung ist
+**nachträglich**, nicht vorab festgelegt. Sie ist eine Hypothese aus den Daten,
+die sie erklärt, und was sie sagt, ist präzise begrenzt — was dieselben
+Vorschläge unter einem anderen Gate erreicht hätten, nicht was ein Lauf unter
+diesem Gate produzieren würde. Zweitrundeneffekte, etwa eine Abdeckungsmessung,
+die andere Lücken meldet, und ein Reparaturlauf, der deshalb nach anderen
+Passagen fragt, liegen außerhalb.
+
+Die Produktionsentscheidung aus 3s bleibt damit unverändert offen, aber sie ist
+jetzt teuer geworden: Das Gate müsste den `raw_span` eines Vorschlags durch die
+Textstelle des Dokuments ersetzen und diesen Eingriff protokollieren
+(Schema 0.2 → 0.3), und die Messung sagt, dass daran auf diesem Korpus zwischen
+neun und achtundsechzig Spannen hängen.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
