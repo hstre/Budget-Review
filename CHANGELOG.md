@@ -11,6 +11,20 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **The dossier says when the provider substituted the model.** Today's run found
+  the served model had changed under the branch four weeks earlier, and it found
+  it in an experiment rather than in the product. `complete_json` now reports the
+  requested id alongside the served one and whether they differ; an envelope
+  naming no model is recorded as no comparison rather than as agreement. Each
+  reviewer run carries `requested_model_id` and `model_substituted`, and the
+  comparison is made inside the audit from the two ids it holds, so no provider
+  can suppress it by omitting a flag. A failed run no longer records the
+  requested model under `model_id` — no answer arrived, so nothing is known about
+  which model ran, and the audit stops claiming otherwise. When a substitution
+  happened it appears in the Markdown and HTML audit as one line; when none
+  happened, nothing is added. Reported, never enforced: a substitution is a fact
+  about the run, not a finding about the document. Five mutations.
+
 - **Two-stage extraction, measured.** Claims in one call and relations over the
   finished claim list in a second, against the production single call on A24,
   three runs per arm in one window. By the rule fixed beforehand the comparison

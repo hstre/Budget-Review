@@ -134,9 +134,7 @@ def test_extraction_repairs_one_schema_violation(monkeypatch) -> None:
         )
 
     monkeypatch.setattr(provider, "complete_json", fake_complete_json)
-    packet = provider.extract(
-        "example", "A method is used. A result follows.", profile="general"
-    )
+    packet = provider.extract("example", "A method is used. A result follows.", profile="general")
 
     assert len(calls) == 2
     assert "unknown relation_type: METHOD" in calls[1]["system"]
@@ -425,3 +423,53 @@ def test_recovery_declines_a_packet_it_had_nothing_to_drop() -> None:
     }
 
     assert _reject_invalid_proposals(intact) is None
+
+
+def _envelope(model: str | None) -> dict:
+    envelope = {
+        "choices": [{"finish_reason": "stop", "message": {"content": '{"findings": []}'}}],
+        "usage": {},
+    }
+    if model is not None:
+        envelope["model"] = model
+    return envelope
+
+
+def _metadata_for(monkeypatch, model: str | None) -> dict:
+    monkeypatch.setattr(
+        "urllib.request.urlopen", lambda request, timeout: _Response(_envelope(model))
+    )
+    provider = DeepSeekProvider(api_key="test-secret", retries=0)
+    _, metadata = provider.complete_json(
+        system="Return json.",
+        user="Review.",
+        config=ModelConfig("deepseek-v4-flash", thinking=False),
+    )
+    return metadata
+
+
+def test_an_answer_naming_another_model_is_reported_as_a_substitution(monkeypatch) -> None:
+    """Four weeks of numbers on one branch were measured across such a change."""
+    metadata = _metadata_for(monkeypatch, "deepseek-flash")
+
+    assert metadata["model"] == "deepseek-flash"
+    assert metadata["model_requested"] == "deepseek-v4-flash"
+    assert metadata["model_substituted"] is True
+
+
+def test_the_requested_model_answering_is_not_a_substitution(monkeypatch) -> None:
+    metadata = _metadata_for(monkeypatch, "deepseek-v4-flash")
+
+    assert metadata["model_substituted"] is False
+
+
+def test_an_envelope_naming_no_model_is_not_read_as_agreement(monkeypatch) -> None:
+    """Silence is not the same as confirmation, and must not be recorded as it.
+
+    The reported model still falls back to the request, because something has to
+    be written; the substitution flag stays false because nothing was compared.
+    """
+    metadata = _metadata_for(monkeypatch, None)
+
+    assert metadata["model"] == "deepseek-v4-flash"
+    assert metadata["model_substituted"] is False

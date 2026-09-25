@@ -120,8 +120,15 @@ class DeepSeekProvider:
                 if not isinstance(parsed, dict):
                     raise ProviderError("DeepSeek JSON root must be an object")
                 usage = envelope.get("usage") or {}
+                served = envelope.get("model")
                 metadata = {
-                    "model": envelope.get("model", config.model_id),
+                    "model": served or config.model_id,
+                    "model_requested": config.model_id,
+                    # A provider that answers under a different id than it was
+                    # asked for has substituted the model, and every comparison
+                    # across that boundary is between two models. An envelope
+                    # naming no model says nothing, which is not agreement.
+                    "model_substituted": bool(served) and served != config.model_id,
                     "system_fingerprint": envelope.get("system_fingerprint", ""),
                     "usage": usage,
                     "output_hash": sha256_text(content),
