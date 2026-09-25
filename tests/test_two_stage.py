@@ -61,9 +61,10 @@ def test_stage_one_drops_the_relation_half_of_the_contract() -> None:
 
 
 def test_stage_one_keeps_the_user_message_byte_identical() -> None:
-    assert two_stage.claims_only_prompt("d", DOCUMENT)[1] == extraction_prompt(
-        "d", DOCUMENT, "general"
-    )[1]
+    assert (
+        two_stage.claims_only_prompt("d", DOCUMENT)[1]
+        == extraction_prompt("d", DOCUMENT, "general")[1]
+    )
 
 
 def test_a_production_prompt_without_the_relation_half_fails_the_run(monkeypatch) -> None:
@@ -114,3 +115,161 @@ def test_assembling_keeps_the_claims_and_takes_the_new_relations() -> None:
     assert assembled["claims"] == _claims()
     assert assembled["relations"] == [{"source_id": "C01"}]
     assert assembled["provenance"]["prompt_hash"] != "a" * 64
+
+
+def _schema_claims() -> list[dict]:
+    """Stage one's claims as the closed schema wants them."""
+    return [
+        {
+            "proposal_id": "C01",
+            "claim_type": "fact",
+            "canonical_content": "One proposition.",
+            "raw_span": "A short document.",
+            "confidence": 0.9,
+            "source_ref": "d",
+        },
+        {
+            "proposal_id": "C02",
+            "claim_type": "fact",
+            "canonical_content": "Another proposition.",
+            "raw_span": "A short document.",
+            "confidence": 0.9,
+            "source_ref": "d",
+        },
+    ]
+
+
+class _RelationOnlyProvider:
+    """What stage two is asked for: edges, and the empty claim list it was told to send."""
+
+    calls = 0
+    claims_in_answer: list[dict] = []
+
+    def complete_json(self, system, user, config, max_tokens):  # noqa: ANN001, D102
+        type(self).calls += 1
+        response = {
+            "claims": list(type(self).claims_in_answer),
+            "relations": [
+                {
+                    "source_id": "C01",
+                    "relation_type": "SUPPORTS",
+                    "target_id": "C02",
+                    "confidence": 0.8,
+                    "rationale": "x",
+                }
+            ],
+        }
+        return response, {"model": "deepseek-flash", "output_hash": "o" * 64}
+
+
+def test_a_relation_only_answer_is_validated_against_stage_ones_claims(monkeypatch) -> None:
+    """The failure that killed the first paid run of this pass, pinned.
+
+    Stage two answers with no claims because that is what it is told to do, and
+    the closed schema requires at least one. Validating that answer as a packet
+    of its own therefore cannot succeed — it failed twice per document, after
+    stage one had already produced its claims and been paid for.
+    """
+    _RelationOnlyProvider.calls = 0
+    _RelationOnlyProvider.claims_in_answer = []
+    monkeypatch.setattr(two_stage.variant, "DeepSeekProvider", _RelationOnlyProvider)
+
+    packet = two_stage.variant.extract_packet("d", "system", "user", 128, claims=_schema_claims())
+
+    assert _RelationOnlyProvider.calls == 1, "no repair round should be needed"
+    assert [c["proposal_id"] for c in packet["claims"]] == ["C01", "C02"]
+    assert packet["relations"][0]["relation_type"] == "SUPPORTS"
+
+
+def test_without_the_claim_list_a_relation_only_answer_still_fails(monkeypatch) -> None:
+    _RelationOnlyProvider.calls = 0
+    _RelationOnlyProvider.claims_in_answer = []
+    monkeypatch.setattr(two_stage.variant, "DeepSeekProvider", _RelationOnlyProvider)
+
+    with pytest.raises(SystemExit) as failure:
+        two_stage.variant.extract_packet("d", "system", "user", 128)
+
+    assert "at least one claim" in str(failure.value)
+
+
+def test_claims_stage_two_proposes_anyway_are_discarded(monkeypatch, capsys) -> None:
+    """The ban on stage-two claims is code, not only prompt wording.
+
+    Discarded silently it would be indistinguishable from a stage that obeyed,
+    so the count is reported.
+    """
+    _RelationOnlyProvider.calls = 0
+    _RelationOnlyProvider.claims_in_answer = [
+        {
+            "proposal_id": "C99",
+            "claim_type": "fact",
+            "canonical_content": "Smuggled.",
+            "raw_span": "A short document.",
+            "confidence": 0.9,
+            "source_ref": "d",
+        }
+    ]
+    monkeypatch.setattr(two_stage.variant, "DeepSeekProvider", _RelationOnlyProvider)
+
+    packet = two_stage.variant.extract_packet("d", "system", "user", 128, claims=_schema_claims())
+
+    assert [c["proposal_id"] for c in packet["claims"]] == ["C01", "C02"]
+    assert "1 Claims trotz Verbot vorgeschlagen" in capsys.readouterr().err
+
+
+class _TwoStageProvider:
+    """Stage one answers claims, stage two answers edges and no claims."""
+
+    seen: list[str] = []
+
+    def complete_json(self, system, user, config, max_tokens):  # noqa: ANN001, D102
+        stage = "two" if "The claim list is final" in system else "one"
+        type(self).seen.append(stage)
+        if stage == "one":
+            response = {"claims": _schema_claims(), "relations": []}
+        else:
+            response = {
+                "claims": [],
+                "relations": [
+                    {
+                        "source_id": "C01",
+                        "relation_type": "SUPPORTS",
+                        "target_id": "C02",
+                        "confidence": 0.8,
+                        "rationale": "x",
+                    },
+                    {
+                        "source_id": "C01",
+                        "relation_type": "SUPPORTS",
+                        "target_id": "C99",
+                        "confidence": 0.8,
+                        "rationale": "invented endpoint",
+                    },
+                ],
+            }
+        return response, {"model": "deepseek-flash", "output_hash": "o" * 64}
+
+
+def test_both_stages_run_end_to_end_and_the_packet_is_written(monkeypatch, tmp_path) -> None:
+    """The call site, which is where the first paid run of this pass died.
+
+    Both halves were tested on their own and the run still failed twice per
+    document, because nothing exercised main: stage two was validated without
+    stage one's claims. A mutation that stops passing them has to fail here.
+    """
+    import json
+    import sys
+
+    _TwoStageProvider.seen = []
+    monkeypatch.setattr(two_stage.variant, "DeepSeekProvider", _TwoStageProvider)
+    document = tmp_path / "doc.txt"
+    document.write_text(DOCUMENT, encoding="utf-8")
+    out = tmp_path / "packet.json"
+    monkeypatch.setattr(sys, "argv", ["two_stage_extract.py", str(document), "d", str(out)])
+
+    assert two_stage.main() == 0
+    assert _TwoStageProvider.seen == ["one", "two"]
+
+    packet = json.loads(out.read_text(encoding="utf-8"))
+    assert [c["proposal_id"] for c in packet["claims"]] == ["C01", "C02"]
+    assert [(r["source_id"], r["target_id"]) for r in packet["relations"]] == [("C01", "C02")]

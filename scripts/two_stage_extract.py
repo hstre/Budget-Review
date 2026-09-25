@@ -16,7 +16,8 @@ The prompt surgery asserts the passages it removes are present, so a production
 prompt that has since changed fails the run instead of quietly testing the same
 thing twice. Stage two may not invent claims: an edge naming an id that stage
 one did not produce is dropped with a reason before the packet is assembled,
-which is the same bargain the gate makes for unresolved endpoints.
+which is the same bargain the gate makes for unresolved endpoints, and the claim
+list it is validated against is stage one's, not whatever it answers.
 
 Nothing here is the production path. It exists to be measured against it.
 
@@ -166,8 +167,16 @@ def main() -> int:
     print(f"Stufe 1: {len(first['claims'])} Claims, 0 Relationen angefordert", flush=True)
 
     relation_system, relation_user = relation_prompt(args.document_id, document, first["claims"])
+    # Stage one's claims travel with the request. A relation-only answer cannot
+    # pass the closed schema on its own — it requires at least one claim — and
+    # the first run of this pass died on exactly that, twice per document, after
+    # stage one had already succeeded.
     second = variant.extract_packet(
-        args.document_id, relation_system, relation_user, args.max_tokens
+        args.document_id,
+        relation_system,
+        relation_user,
+        args.max_tokens,
+        claims=first["claims"],
     )
     kept, dropped = resolved(second.get("relations", []), first["claims"])
     print(f"Stufe 2: {len(second.get('relations', []))} Relationen, {len(kept)} auflösbar")

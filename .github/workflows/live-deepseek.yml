@@ -177,7 +177,11 @@ jobs:
         if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0'
         run: |
           mkdir -p gold-case
-          mv gold-case-provenance.txt gold-case/
+          # The fixture corpus skips the fetch step, so there is no provenance
+          # file to move and an unconditional mv fails the job before the
+          # fixture is even copied. The repair step has always been tolerant
+          # here; this one was not, and no fixture run had ever reached it.
+          mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
           if [ -n "${{ inputs.gold_decision }}" ]; then
             if [ "${{ inputs.corpus }}" = "sciarg" ]; then
               python scripts/sciarg_gold.py corpus-sciarg/compiled_corpus \

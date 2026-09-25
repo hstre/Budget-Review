@@ -101,13 +101,27 @@ def variant_prompt(
     return system, user
 
 
-def extract_packet(document_id: str, system: str, user: str, max_tokens: int) -> dict:
+def extract_packet(
+    document_id: str,
+    system: str,
+    user: str,
+    max_tokens: int,
+    claims: list[dict] | None = None,
+) -> dict:
     """One extraction, with the production path's single schema repair round.
 
     Without that round the experiment is more brittle than the path it is
     compared against, and a rejected label would read as a worse result rather
     than as one extra call. Legal prose reaches for labels the proposal-shaped
     vocabulary does not have — "conclusion" among them.
+
+    `claims` is for a call that is not asking for claims at all. The closed
+    schema requires at least one claim, so a relation-only response cannot pass
+    it as a packet of its own — a call that asks for relations over a finished
+    claim list has to be validated with that list in place. Passing it here is
+    also what turns "this pass may not propose claims" from an instruction in a
+    prompt into a property of the code: whatever the model answers under
+    "claims" is discarded and counted, never merged.
     """
     provider = DeepSeekProvider()
     validation_error: SchemaError | None = None
@@ -125,6 +139,11 @@ def extract_packet(document_id: str, system: str, user: str, max_tokens: int) ->
             config=ModelConfig(model_id="deepseek-v4-flash", thinking=False),
             max_tokens=max_tokens,
         )
+        if claims is not None and response.get("claims"):
+            print(
+                f"  {len(response['claims'])} Claims trotz Verbot vorgeschlagen, verworfen",
+                file=sys.stderr,
+            )
         candidate = {
             "schema_version": "content-review.semantic-packet/0.2",
             "document_id": document_id,
@@ -136,7 +155,7 @@ def extract_packet(document_id: str, system: str, user: str, max_tokens: int) ->
                 "output_hash": str(metadata["output_hash"]),
                 "temperature": 0.0,
             },
-            "claims": response.get("claims"),
+            "claims": response.get("claims") if claims is None else claims,
             "relations": response.get("relations", []),
         }
         try:
