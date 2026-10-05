@@ -604,6 +604,8 @@ Zwei Dinge daran folgen aus dem bestehenden Gate und nicht aus Geschmack.
 
 **Die Inhaltsadresse trägt den Wortlaut, nicht den Offset.** Ein Knoten wird
 über `document_id`, `claim_type`, `canonical_content` und `raw_span` gebildet.
+*(Das war der Stand bei dieser Entscheidung. `canonical_content` ist seit 3z
+nicht mehr Teil der Identität — siehe 3y für den Grund.)*
 Zwei Vorschläge mit identischem Wortlaut *und* identischem Zitat fallen deshalb
 schon heute zu einem Knoten zusammen; unterscheidet sich das Zitat, entstehen
 zwei. Der dritte Fall oben ist also kein neues Verhalten, sondern die Frage, ob
@@ -1124,6 +1126,10 @@ Audit, der sagt, dass der Anker über Leerraum gefunden und der Wortlaut auf die
 Quelle gesetzt wurde. Das ist eine Schemafrage (0.2 → 0.3) und eine Entscheidung,
 die nicht nebenbei fällt. Gemessen ist sie; gebaut ist sie nicht.
 
+*Inzwischen gebaut, siehe 3z — und anders, als dieser Abschnitt erwartet hat:
+Die Identität läuft über die normalisierte Textstelle, weshalb das Ersetzen kein
+Eingriff in die Identität mehr ist.*
+
 ## 3t. Zweistufige Extraktion: die Vorab-Festlegung
 
 Abschnitt 3n hat den Aufbau beschrieben und ausdrücklich offengelassen, was die
@@ -1588,6 +1594,113 @@ wurden.
 Die Abdeckung. Claims, die nie vorgeschlagen wurden, sind von keiner dieser
 Messungen und von keinem Teil des Papers berührt; der Reparaturlauf bleibt dafür
 der einzige Mechanismus, und er kostet einen bezahlten Aufruf.
+
+## 3z. Gebaut: der Anker toleriert Satzspiegel, die Identität trägt das Zitat
+
+Die Entscheidung aus 3s und 3y ist umgesetzt. Sie besteht aus zwei Teilen, die
+ich in meinem Vorschlag zusammengezogen hatte und die getrennt gehören.
+
+**Teil A, die Verankerung.** `anchoring.py` sucht die Textstelle zuerst wörtlich.
+Nur wenn es keinen wörtlichen Treffer gibt, wird auf einer
+leerraum-normalisierten Kopie des Dokuments gesucht, und zurück kommt die
+Position im **Original**. Der Claim zitiert damit die Zeichen des Dokuments, nie
+den Wortlaut des Modells. Eine Passage, die das Dokument abseits von Leerraum
+nicht enthält, wird weiter abgelehnt.
+
+Dass wörtliche Treffer gewinnen, ist die Eigenschaft, die den Eingriff klein
+hält: Ein Vorschlag, der korrekt zitiert hat, verankert genau wie vorher. Die
+Toleranz kann nur Anker *hinzufügen*, wo es keine gab, und niemals einen
+verschieben.
+
+**Teil B, die Identität.** Der Knoten wird über `document_id`, `claim_type` und
+die **leerraum-normalisierte Textstelle des Dokuments** gebildet.
+`canonical_content` ist nicht mehr Teil davon — nach 3y die instabile Hälfte.
+
+**Kleinschreibung und Satzzeichen bleiben draußen,** und das ist gemessen, nicht
+gewählt: Casefolding verankert auf A24 keine einzige weitere Spanne (412 wörtlich,
+42 über Leerraum, 11 echte Umformulierung, 0 über Kleinschreibung) und verändert
+den stabilen Kern nicht (75 gegen 75 auf dem Paper, 30 gegen 30 auf der
+Entscheidung). Die schwächere Regel ist deshalb die, die gilt.
+
+### Die Verifikation: sieben Vorhersagen, sieben Treffer
+
+`gate_counterfactual.py` hatte vor dem Bau ausgerechnet, was dieselben
+Vorschläge unter einem toleranten Gate erreicht hätten. Das echte Gate
+reproduziert **alle sieben Zahlen exakt**:
+
+| Lauf | vorhergesagt | gemessen | über Leerraum verankert | noch abgelehnt |
+|---|---:|---:|---:|---:|
+| A1 | 216 | **216**/219 | 9 | 0 |
+| A2 | 219 | **219**/219 | 7 | 0 |
+| A3 | 192 | **192**/219 | 20 | 11 |
+| A Drift | 218 | **218**/219 | 6 | 0 |
+| B1 | 218 | **218**/219 | 4 | 0 |
+| B2 | 198 | **198**/219 | 25 | 7 |
+| B3 | 196 | **196**/219 | 24 | 7 |
+
+Und auf der Gerichtsentscheidung, über die drei Reparaturrunden aus 3s:
+
+| Runde | Claims | über Leerraum | als Dublette kollabiert | Recall |
+|---|---:|---:|---:|---|
+| 1 | 52 | 6 | 1 | **24/24** |
+| 2 | 57 | 6 | 2 | 22/24 |
+| 3 | 51 | 6 | 3 | **24/24** |
+
+**Zweimal von drei die vollständige Gold-Antwort.** Das bisherige Maximum auf
+diesem Dokument war 23/24, über Monate lag es bei 16 bis 20. G19, das in jedem
+früheren Lauf unter der Schwelle blieb, ist drin.
+
+Die kollabierten Dubletten sind genau die aus 3y inspizierten Paare: ein
+`C…`-Claim des Erstpasses und ein `Q…`-Claim des Reparaturlaufs, dieselbe
+Aussage am selben Zitat. Der Fall, für den `MINIMUM_NEW_SHARE` und
+`near_duplicates` von Hand gebaut wurden, fällt jetzt strukturell weg.
+
+### Was im Audit steht
+
+Zwei neue Felder am zugelassenen Claim. `anchor_normalised` sagt, dass die
+Textstelle erst nach Ignorieren von Leerraum gefunden wurde; `proposed_span`
+trägt dann den Wortlaut, den das Modell geschickt hat. Beide sind leer
+beziehungsweise `false`, wenn wörtlich zitiert wurde — auf den eingefrorenen
+Kontrollen also durchgehend.
+
+Damit ist die Forderung aus 3s erfüllt: ersetzen, aber protokollieren. Was das
+Gate ersetzt, ist rekonstruierbar, und zwar ohne das Paket daneben zu legen.
+
+**Der Zustand steigt dabei nicht.** Ein Zeilenumbruch mitten im Satz ist kein
+Fall für einen Menschen; `human_review_required` bleibt der mehrdeutigen
+Fundstelle und der niedrigen Konfidenz vorbehalten. Was ein Leser braucht, ist
+der Eintrag, dass es passiert ist, nicht eine Eskalation.
+
+### Schema und Migration
+
+`content-review.semantic-dossier` und `content-review.dossier` gehen auf 0.3.
+Das **Paketschema bleibt bei 0.2**: Der Eingangsvertrag ist unverändert, das
+Modell schickt weiter wörtliche Zitate.
+
+Knoten-Ids wandern. Gespeicherte Dossiers werden **nicht** migriert und nicht
+umgeschrieben; sie bleiben auf ihrer Version, und ein Vergleich über die
+Versionsgrenze hinweg vergleicht zwei Identitätsbegriffe. Die eingefrorenen
+Kontrollen behalten ihre Zahlen — die Fixture hat unter der neuen Identität
+keine Kollision, 25 Claims bleiben 25 Claims —, nur ihre Ids sind andere.
+
+### Zurückgezogen aus dem Repo
+
+`gate_counterfactual.py` und seine Tests sind entfernt. Das Skript hat
+gemessen, was ein tolerantes Gate erreichen würde; das Gate ist jetzt tolerant,
+und ein Werkzeug, dessen Docstring eine Hypothese beschreibt, die inzwischen
+Produktionsverhalten ist, führt den nächsten Leser in die Irre. Die Zahlen, die
+es erzeugt hat, stehen in 3u und oben.
+
+Offen bleibt `--relax-whitespace` im Reparaturlauf: Der Schalter entscheidet
+weiterhin, ob die *Reparatur* eine leerraum-abweichende Spanne vor ihrer eigenen
+Merge-Regel annimmt, aber für die Zulassung ist er bedeutungslos geworden. Er
+fällt, wenn der Reparaturlauf das nächste Mal angefasst wird.
+
+### Was das nicht löst
+
+Die Abdeckung. Von 465 Vorschlägen auf A24 bleiben 11 echte Umformulierungen
+abgelehnt, und Claims, die nie vorgeschlagen wurden, berührt auch diese Änderung
+nicht.
 
 ## 4. ClaimGraph
 

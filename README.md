@@ -336,7 +336,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3y.
+detail per experiment is in `docs/architecture.md` §3a–§3z.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -364,6 +364,7 @@ detail per experiment is in `docs/architecture.md` §3a–§3y.
 | 22 | Same run, the thinking arm's availability | none — it was not the question | Truncated at the 8,192-token reviewer budget in **3 of 5 runs**, on a 1,700-character proposal | A production defect: every second or third review has one independent arm, not two |
 | 23 | Finished packets re-keyed at five identity rungs, offline | core growth ≥ 50% with ≤ 5% merged inside a run ⇒ worth it; < 20% ⇒ parked | Dropping the span from the identity: +5% on the decision. Dropping the model's wording: +58%. On A24 +125% against +47% | **The model's paraphrase is the unstable half**, not the document's quote — the opposite of the paper's own choice |
 | 24 | Relation labels the extractor reached for, across 32 files | none — a count | 16 of 18 are our own claim types in the relation field; 0 are a missing family. Single-call arm 10 invalid labels / ~173 edges, two-stage arm **0 / 192** | My "every one is a family label" is **retracted.** Family-first would not fix it; the two-stage split does |
+| 25 | The gate built from #23: tolerant anchoring, identity on the document's passage | reproduce the seven recall figures the offline counterfactual predicted before it existed | **7 of 7 exactly**: 216, 219, 192, 218, 218, 198, 196 of 219. Court decision **24/24 in two of three rounds** | Built. Previous maximum on that decision was 23/24, the long-standing figure 16–20 |
 
 #### What we believe we know
 
@@ -918,7 +919,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3y.
+stehen in `docs/architecture.md` §3a–§3z.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -946,6 +947,7 @@ stehen in `docs/architecture.md` §3a–§3y.
 | 22 | Derselbe Lauf, die Verfügbarkeit des Thinking-Arms | keines — das war nicht die Frage | Abgeschnitten am Reviewer-Budget von 8.192 Tokens in **3 von 5 Läufen**, auf einem 1.700-Zeichen-Antrag | Produktionsfehler: jeder zweite bis dritte Review hat einen statt zwei unabhängigen Armen |
 | 23 | Fertige Pakete offline auf fünf Identitätsstufen neu geschlüsselt | Kernzuwachs ≥ 50 % bei ≤ 5 % Verschmelzung ⇒ lohnt; < 20 % ⇒ geparkt | Span aus der Identität: +5 % auf der Entscheidung. Wortlaut des Modells heraus: +58 %. Auf A24 +125 % gegen +47 % | **Der Wortlaut des Modells ist die instabile Hälfte**, nicht das Zitat des Dokuments — umgekehrt zur Wahl des Papers |
 | 24 | Relationslabels, nach denen der Extraktor gegriffen hat, über 32 Dateien | keines — eine Zählung | 16 von 18 sind unsere eigenen Claim-Typen im Relationsfeld; 0 eine fehlende Familie. Einstufig 10 ungültige Labels / ~173 Kanten, zweistufig **0 / 192** | Mein „jedes ist ein Familienlabel" ist **zurückgenommen.** Familie-zuerst behebt es nicht, die Aufspaltung schon |
+| 25 | Das Gate aus #23 gebaut: toleranter Anker, Identität über die Textstelle | die sieben Recall-Zahlen reproduzieren, die die Offline-Rechnung vorher vorhergesagt hatte | **7 von 7 exakt**: 216, 219, 192, 218, 218, 198, 196 von 219. Gerichtsentscheidung **24/24 in zwei von drei Runden** | Gebaut. Bisheriges Maximum dort war 23/24, über Monate 16–20 |
 
 #### Was wir zu wissen glauben
 

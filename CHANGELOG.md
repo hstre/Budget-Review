@@ -9,6 +9,48 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Changed
+
+- **The gate anchors a quote that differs from the document only in whitespace,
+  and a claim's identity is the document's passage rather than the model's
+  prose.** Two changes, measured separately and built together. Exact matches
+  still win outright, so a proposal that quoted correctly anchors exactly as
+  before and the tolerance can only add anchors where there were none; when it
+  applies, the claim carries the document's own characters and never the model's
+  wording. The node id is now `document_id`, `claim_type` and the
+  whitespace-folded passage — `canonical_content` is out, since re-keying
+  finished runs showed it to be the unstable half (§3y). Case and punctuation
+  stay in: casefolding anchored not a single further span on 465 proposals and
+  changed no claim's identity, so the weaker rule is the one that holds.
+  Verification: the offline counterfactual had predicted seven recall figures
+  before any of this existed, and the built gate reproduces **all seven
+  exactly** — 216, 219, 192, 218, 218, 198 and 196 of 219. On the court decision
+  the three repair rounds reach **24/24 twice of three**, where this branch's
+  previous maximum was 23 and the long-standing figure 16 to 20. Eight
+  mutations.
+- Two fields on an admitted claim record what the gate did: `anchor_normalised`
+  when whitespace had to be ignored, and `proposed_span` with the wording the
+  model sent. Both are absent on an exactly quoted claim, so the frozen controls
+  carry neither. A normalised anchor does **not** raise the semantic state: a
+  line break inside a sentence is typesetting, not something a human has to
+  adjudicate, and what a reader needs is the record that it happened.
+- `content-review.semantic-dossier` and `content-review.dossier` go to 0.3. The
+  **packet schema stays at 0.2** — the input contract is unchanged. Node ids
+  move, so stored dossiers are not migrated and not rewritten; a comparison
+  across the version boundary compares two notions of identity. The frozen
+  controls keep their counts (the fixture has no collision under the new
+  identity) and change only their ids.
+
+### Removed
+
+- `scripts/gate_counterfactual.py` and its tests. It measured what a gate
+  tolerating typesetting would score; the gate now does, and a tool whose
+  docstring describes a hypothesis that has become production behaviour misleads
+  the next reader. Its figures are in `docs/architecture.md` §3u and §3z.
+- Still standing: `--relax-whitespace` in the repair pass, which now decides only
+  whether the repair accepts such a span before its own merge rule and is
+  meaningless for admission. It goes when that script is next touched.
+
 ### Added
 
 - **The unstable half of a claim's identity is the model's wording, not the

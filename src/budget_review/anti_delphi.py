@@ -112,7 +112,7 @@ def review_claim_graph(
                     }
                 )
     return ReviewDossier(
-        schema_version="content-review.dossier/0.2",
+        schema_version="content-review.dossier/0.3",
         semantic=dossier,
         findings=tuple(findings),
         review_rejections=tuple(rejections),
