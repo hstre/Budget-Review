@@ -47,6 +47,10 @@ says when it moves them. Their current values are `polished` 5 claims /
   tolerating typesetting would score; the gate now does, and a tool whose
   docstring describes a hypothesis that has become production behaviour misleads
   the next reader. Its figures are in `docs/architecture.md` §3u and §3z.
+- The repair pass's own copy of the whitespace search. `relaxed_span` is now a
+  thin wrapper over the package's `anchor_spans`, since two implementations of
+  one rule are free to drift apart and the gate's is the one that decides
+  admission.
 - Still standing: `--relax-whitespace` in the repair pass, which now decides only
   whether the repair accepts such a span before its own merge rule and is
   meaningless for admission. It goes when that script is next touched.
