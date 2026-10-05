@@ -1417,6 +1417,62 @@ Branch darf auf einem Lauf ruhen.** Bei 0,63 ist ein Ein-Lauf-Vergleich zweier
 Prompts oder zweier Profile nicht lesbar, und das betrifft jede zukünftige
 Reviewer-Arbeit genauso, wie es 3i die Extraktionsarbeit betroffen hat.
 
+## 3x. Steckt die Instabilität in der Identität? Die Vorab-Festlegung
+
+Working Paper 2 (Alexandria, SPL, §10.2) legt die Identität eines Claims als
+`CIK = hash(subject_id, relation_id, object_id, scope)` fest — **ohne
+Oberflächentext und ohne Score**, und begründet das genau mit dem Fall, den dieser
+Branch gebaut hat: „two ClaimCandidates with the same subject-relation-object
+triple but different candidate_scores would be treated as different propositions,
+causing duplicate ingestion."
+
+Unser Gate hasht stattdessen `document_id ∥ claim_type ∥ canonical_content ∥
+raw_span` (`gate.py:64`). Beide Wortlaute — der des Modells und der des Dokuments
+— stecken in der Identität, und `relation_id` hasht die Knoten-Ids beider Enden
+(`gate.py:119`), also verändert ein umformulierter Claim **jede Kante, die ihn
+berührt**.
+
+Wenn das die Ursache der Streuung aus 3u ist, dann war jeder Patch dieses Branches
+— die Leerraum-Toleranz, die `MINIMUM_NEW_SHARE`-Regel des Reparaturlaufs,
+`near_duplicates` — ein Symptom.
+
+**Was gemessen wird, und was nicht.** Kein neuer Aufruf: `identity_ladder.py`
+schlüsselt fertige Pakete auf vier Stufen neu auf — `exact` (heutige Identität),
+`span` (leerraum- und satzzeichennormalisiertes Zitat), `content`
+(normalisierte Proposition), `proposition` (sortierte Token-Menge der
+Proposition). Datenbasis: die sieben A24-Läufe vom 25.09. (vier einstufig, drei
+zweistufig) und der Lauf vom 31.08., getrennt nach Arm und gepoolt.
+
+`proposition` ist **kein CIK.** Ein CIK braucht Entitätsauflösung, die hier nicht
+existiert. Die Stufe behält Funktionswörter absichtlich — sie weglassen wäre ein
+Regler zum Nachjustieren —, verwirft dafür die Wortstellung, und sie kann keine
+Synonyme zusammenziehen. Sie begrenzt den Effekt also einseitig: konservativ beim
+Wortlaut, gar nicht beim Vokabular.
+
+**Die Regel, vorab:** relativer Zuwachs des stabilen Kerns von `exact` zu
+`proposition`.
+
+- **≥ +50 Prozent**, bei höchstens 5 Prozent innerhalb eines Laufs verschmolzenen
+  Claims ⇒ der Wortlaut in der Identität ist eine Hauptursache der Instabilität,
+  und ihn herauszunehmen ist die Entitätsauflösung wert, die es kostet.
+- **< +20 Prozent** ⇒ die Streuung ist nicht überwiegend Umformulierung. Der CIK
+  löst unser Problem dann nicht, und die Idee wird geparkt statt gebaut.
+- Dazwischen ⇒ Teileffekt; die `span`-Stufe sagt dann, wie viel davon allein
+  Satzspiegel ist.
+- **Mehr als 15 Prozent verschmolzene Claims innerhalb eines Laufs** ⇒ der
+  Ersatzschlüssel zieht verschiedene Propositionen zusammen, und die Zahl sagt
+  unabhängig vom Zuwachs nichts.
+
+**Die zweite Messung hat keine Marke, weil sie eine Zählung ist.**
+`relation_reach.py` zählt die Relationslabels, nach denen der Extraktor gegriffen
+hat und die unser geschlossenes Vokabular nicht hat, und sortiert jedes in einen
+von vier Fällen: unser eigener Claim-Typ im falschen Feld; eine Familie, die wir
+abdecken (falsches Wort, richtige Familie — der Fall, den die Familie-zuerst-Frage
+aus §5.3 des Papers fängt); eine Familie, von der wir kein einziges Mitglied
+haben (dann ist das Vokabular zu eng, nicht die Prompt); oder keiner Familie
+zuzuordnen. Die Zuordnung unserer vierzehn Relationen zu den sechs Familien des
+Papers ist ein Urteil, einmal und offen getroffen, keine Messung.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
