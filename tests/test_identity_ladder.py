@@ -35,7 +35,17 @@ def test_a_line_break_in_the_span_is_the_same_claim_one_rung_up() -> None:
     flowing = _claim("The budget rises.", "the budget rises by four per cent")
 
     assert ladder.key(wrapped, "exact") != ladder.key(flowing, "exact")
-    assert ladder.key(wrapped, "span") == ladder.key(flowing, "span")
+    assert ladder.key(wrapped, "span_ws") == ladder.key(flowing, "span_ws")
+
+
+def test_punctuation_separates_the_two_span_rungs() -> None:
+    """An identity that ignores punctuation is a stronger claim than one that
+    only ignores typesetting, so the two must not be the same rung."""
+    comma = _claim("x", "the budget, which rises")
+    plain = _claim("x", "the budget which rises")
+
+    assert ladder.key(comma, "span_ws") != ladder.key(plain, "span_ws")
+    assert ladder.key(comma, "span_norm") == ladder.key(plain, "span_norm")
 
 
 def test_a_rewording_is_the_same_proposition_but_not_the_same_content() -> None:
@@ -91,3 +101,32 @@ def test_the_report_grows_the_core_without_losing_claims(capsys) -> None:
     assert rows["proposition"]["core"] == 1, "one proposition is in both runs"
     assert rows["proposition"]["claims"] == 3
     assert "Kern exact → proposition: 0 → 1" in capsys.readouterr().out
+
+
+def test_the_same_passage_with_two_different_claims_is_reported_as_disagreement() -> None:
+    """The span rungs drop the proposition, so over-merging across runs is
+    invisible to the merge counter and has to be looked for separately."""
+    run_one = [_claim("The budget rises.", "the sentence")]
+    run_two = [_claim("The schools receive nothing.", "the sentence")]
+
+    scores = ladder.content_agreement([run_one, run_two], "span_ws")
+
+    assert len(scores) == 1
+    assert scores[0] < 0.5, "two unrelated propositions under one key"
+
+
+def test_agreement_on_a_rewording_of_the_same_proposition_stays_high() -> None:
+    run_one = [_claim("The regional budget rises by four per cent.", "s")]
+    run_two = [_claim("The regional budget rises by four percent", "s")]
+
+    scores = ladder.content_agreement([run_one, run_two], "span_ws")
+
+    assert scores[0] >= 0.5
+
+
+def test_a_key_missing_from_one_run_is_not_scored_at_all() -> None:
+    """Agreement is only defined where every run wrote something under the key."""
+    run_one = [_claim("A.", "one"), _claim("B.", "two")]
+    run_two = [_claim("A.", "one")]
+
+    assert len(ladder.content_agreement([run_one, run_two], "span_ws")) == 1

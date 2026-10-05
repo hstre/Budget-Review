@@ -336,7 +336,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3w.
+detail per experiment is in `docs/architecture.md` §3a–§3y.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -362,6 +362,8 @@ detail per experiment is in `docs/architecture.md` §3a–§3w.
 | 20 | Re-gating finished packets with whitespace-tolerant anchoring, offline | none — post hoc, and labelled as such | 194→216, 201→**219/219**, 124→192, 203→218, 127→198, 121→196; spread 77→27 and 82→22 | Most of the run-to-run spread was the gate refusing typeset quotes, not the extractor. Says only what the same proposals would have scored |
 | 21 | The reviewer arms five times over the frozen fixture graph | stable at a core share ≥ 0.8; unusable below 0.5 | 0.63 pooled, 0.77 for the evidence arm; graph identical in all five runs | **The resolution is 0.63.** No reviewer claim may rest on one run |
 | 22 | Same run, the thinking arm's availability | none — it was not the question | Truncated at the 8,192-token reviewer budget in **3 of 5 runs**, on a 1,700-character proposal | A production defect: every second or third review has one independent arm, not two |
+| 23 | Finished packets re-keyed at five identity rungs, offline | core growth ≥ 50% with ≤ 5% merged inside a run ⇒ worth it; < 20% ⇒ parked | Dropping the span from the identity: +5% on the decision. Dropping the model's wording: +58%. On A24 +125% against +47% | **The model's paraphrase is the unstable half**, not the document's quote — the opposite of the paper's own choice |
+| 24 | Relation labels the extractor reached for, across 32 files | none — a count | 16 of 18 are our own claim types in the relation field; 0 are a missing family. Single-call arm 10 invalid labels / ~173 edges, two-stage arm **0 / 192** | My "every one is a family label" is **retracted.** Family-first would not fix it; the two-stage split does |
 
 #### What we believe we know
 
@@ -916,7 +918,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3w.
+stehen in `docs/architecture.md` §3a–§3y.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -942,6 +944,8 @@ stehen in `docs/architecture.md` §3a–§3w.
 | 20 | Fertige Pakete offline neu gegatet, mit Leerraum-Toleranz | keines — nachträglich, und so gekennzeichnet | 194→216, 201→**219/219**, 124→192, 203→218, 127→198, 121→196; Streuung 77→27 und 82→22 | Die Streuung war größtenteils das Gate, das getypte Zitate ablehnt, nicht der Extraktor. Sagt nur, was dieselben Vorschläge erreicht hätten |
 | 21 | Die Reviewer-Arme fünfmal über den eingefrorenen Fixture-Graphen | stabil ab Kernanteil ≥ 0,8; unbrauchbar unter 0,5 | 0,63 gepoolt, 0,77 für den Evidenz-Arm; Graph in allen fünf Läufen identisch | **Die Auflösung liegt bei 0,63.** Keine Reviewer-Aussage darf auf einem Lauf ruhen |
 | 22 | Derselbe Lauf, die Verfügbarkeit des Thinking-Arms | keines — das war nicht die Frage | Abgeschnitten am Reviewer-Budget von 8.192 Tokens in **3 von 5 Läufen**, auf einem 1.700-Zeichen-Antrag | Produktionsfehler: jeder zweite bis dritte Review hat einen statt zwei unabhängigen Armen |
+| 23 | Fertige Pakete offline auf fünf Identitätsstufen neu geschlüsselt | Kernzuwachs ≥ 50 % bei ≤ 5 % Verschmelzung ⇒ lohnt; < 20 % ⇒ geparkt | Span aus der Identität: +5 % auf der Entscheidung. Wortlaut des Modells heraus: +58 %. Auf A24 +125 % gegen +47 % | **Der Wortlaut des Modells ist die instabile Hälfte**, nicht das Zitat des Dokuments — umgekehrt zur Wahl des Papers |
+| 24 | Relationslabels, nach denen der Extraktor gegriffen hat, über 32 Dateien | keines — eine Zählung | 16 von 18 sind unsere eigenen Claim-Typen im Relationsfeld; 0 eine fehlende Familie. Einstufig 10 ungültige Labels / ~173 Kanten, zweistufig **0 / 192** | Mein „jedes ist ein Familienlabel" ist **zurückgenommen.** Familie-zuerst behebt es nicht, die Aufspaltung schon |
 
 #### Was wir zu wissen glauben
 

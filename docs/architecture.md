@@ -1473,6 +1473,122 @@ haben (dann ist das Vokabular zu eng, nicht die Prompt); oder keiner Familie
 zuzuordnen. Die Zuordnung unserer vierzehn Relationen zu den sechs Familien des
 Papers ist ein Urteil, einmal und offen getroffen, keine Messung.
 
+## 3y. Nicht die Proposition, sondern das Zitat
+
+Beide Messungen aus 3x sind gelaufen, offline, ohne einen Aufruf. Die erste
+widerspricht der Deutung, mit der ich sie vorgeschlagen habe; die zweite
+widerlegt eine Behauptung, die ich davor aufgestellt hatte.
+
+### Messung 1: der Wortlaut des Modells ist das Instabile
+
+| Stufe | A24 Arm A (4 Läufe) | A24 alle sieben | 001-141170 (3 Runden) |
+|---|---|---|---|
+| `exact` (heute) | 36 | 26 | 19 |
+| `span_ws` | **75** (+108 %) | **59** (+127 %) | **30** (+58 %) |
+| `span_norm` | **81** (+125 %) | **64** (+146 %) | **31** (+63 %) |
+| `content` | 53 (+47 %) | 41 (+58 %) | 20 (**+5 %**) |
+| `proposition` | 53 (+47 %) | 41 (+58 %) | 20 (+5 %) |
+
+Die vorab festgelegte Hauptgröße war der Zuwachs von `exact` zu `proposition`:
++47 Prozent auf Arm A, +58 Prozent gepoolt, **+5 Prozent auf dem Rechtstext**.
+Nach der Regel aus 3x ist das auf dem Paper ein Teileffekt und auf der
+Entscheidung **unterhalb der Abbruchschwelle von 20 Prozent**. Die wörtliche
+CIK-Lesart — Identität aus der Proposition, Oberflächentext heraus — erklärt
+unsere Instabilität also **nicht**.
+
+Die Regel sah für den Teileffekt vor, dass dann die `span`-Stufe sagt, wie viel
+davon Satzspiegel ist. Sie sagt: fast alles. Und sie sagt mehr, als die Regel
+erwartet hat — nicht „ein Teil der Streuung ist Satzspiegel", sondern:
+
+**Der instabile Bestandteil der heutigen Identität ist `canonical_content`, der
+Wortlaut des Modells. Das Zitat des Dokuments ist vergleichsweise stabil.**
+
+Den Span aus der Identität zu nehmen bringt auf dem Rechtstext 5 Prozent; die
+Proposition herauszunehmen bringt 58. Das ist die umgekehrte Richtung zu dem, was
+ich vorgeschlagen habe, und auch zu dem, was das Paper vorsieht: §10.2 nimmt den
+Oberflächentext ganz heraus und setzt subject/relation/object in die Identität —
+alles drei vom Modell geschrieben. Unsere Daten sagen, dass genau das die
+unzuverlässige Hälfte ist.
+
+**Alle Schutzbedingungen halten.** Innerhalb eines Laufs verschmolzen: 0,0 / 0,0
+/ 3,6 Prozent der Claims, gegen eine Vorab-Grenze von 5. Dass der Rechtstext der
+einzige Fall mit Verschmelzungen ist, war vorhergesagt — juristische Prosa
+wiederholt ganze Formeln. Und die Propositionen hinter einem gemeinsamen
+Span-Key stimmen überein: Median 1,00, Minimum 0,71, **keiner von 170 Keys unter
+0,5**. Der Span-Key zieht also keine verschiedenen Aussagen über dieselbe Stelle
+zusammen; die drei schwächsten Fälle sind derselbe Satz mit aufgelöstem Pronomen
+(„This approach" gegen „The BFECC approach").
+
+**Leerraum genügt, Satzzeichen braucht es nicht.** `span_ws` (Kleinschreibung und
+Leerraum) gegen `span_norm` (zusätzlich ohne Satzzeichen) unterscheidet sich um
+sechs Keys auf A24 und einen auf der Entscheidung. Die schwächere und besser
+begründbare Normalisierung trägt praktisch alles, und Satzzeichen können
+bedeutungstragend sein — sie bleiben also in der Identität.
+
+**Was das für die offene Entscheidung aus 3s bedeutet.** Die Frage war: darf das
+Gate den `raw_span` eines Vorschlags durch die Textstelle des Dokuments
+*ersetzen*? Sie stellt sich so nicht mehr. Die Identität würde über einen
+leerraum-normalisierten Span berechnet, der wörtliche Span bleibt als Beleg
+gespeichert. Kein Vorschlag wird umgeschrieben, das exakte Zitat bleibt im Audit,
+und eine Satzspiegel-Variante ist derselbe Knoten statt gar keiner.
+
+Der Preis bleibt und ist zu nennen: Knoten-Ids ändern sich, also ist das eine
+Schemaänderung (0.2 → 0.3) und eine Einbahnstraße für bereits gespeicherte
+Dossiers. Nur ist es jetzt eine kleinere und sauberere Änderung als beide
+Varianten, die ich vorher zur Wahl gestellt habe.
+
+### Messung 2: eine Rücknahme
+
+18 Relations-Ablehnungen in 32 Dateien.
+
+| Label | Treffer | Fall |
+|---|---:|---|
+| CAUSAL | 9 | **eigener Claim-Typ im Relationsfeld** |
+| LIMITATION | 7 | **eigener Claim-Typ im Relationsfeld** |
+| CAUSES | 1 | Familie vorhanden (DYNAMIC) |
+| DEFINES | 1 | Familie vorhanden (ONTIC) |
+
+**16 von 18 sind Feldverwechslungen**, keine Griffe nach einer fehlenden
+Relation: `CAUSAL` und `LIMITATION` sind unsere *eigenen Claim-Typen*. Kein
+einziger Fall fällt in „Familie ohne Mitglied".
+
+Ich hatte vorher behauptet, jedes dieser Labels sei ein Familienlabel, nach dem
+das Modell greift, weil unser konkretes Vokabular es nicht hat. **Das ist falsch.**
+Es sind überwiegend unsere eigenen Claim-Typen im falschen Feld — und die
+Produktionsprompt verbietet genau das ausdrücklich („Never put a claim_type such
+as method, evidence or assumption into relation_type") und wird sechzehnmal
+ignoriert. Die Familie-zuerst-Frage aus §5.3 des Papers würde den dominierenden
+Fall deshalb **nicht** beheben.
+
+**Was ihn behebt, haben wir schon gemessen, ohne es zu merken.** Nach Arm
+getrennt:
+
+| | vorgeschlagene Kanten | ungültige Labels |
+|---|---:|---:|
+| Arm A, einstufig, 4 Läufe | ~173 | **10** |
+| Arm B, zweistufig, 3 Läufe | 192 | **0** |
+
+Die Aufspaltung, die nach der Recall-Regel aus 3u „nicht lesbar" war, hat damit
+eine zweite saubere Eigenschaft neben den auflösbaren Endpunkten: Stufe zwei hat
+kein `claim_type`-Feld, aus dem etwas ins Relationsfeld lecken könnte. Dreimal
+null bei vergleichbarer oder höherer Exposition.
+
+**Und die Grenze dieser Zählung.** Sie sieht nur Labels, nach denen das Modell
+*trotz* der geschlossenen Liste in der Prompt greift, also keine unterdrückte
+Nachfrage. Dass unsere vierzehn Relationen nur vier der sechs Familien des Papers
+abdecken — STATISTICAL und NORMATIVE haben **kein einziges Mitglied** — bleibt
+strukturell wahr und hat in diesen Daten **keine Stütze**: das Modell hat nie
+danach gefragt. Auf einer Entscheidung des EGMR, die von Geboten und Verboten
+handelt, ist das Fehlen von NORMATIVE auffällig; es als gemessenen Bedarf zu
+verkaufen wäre genau der Fehler, für dessen Verhinderung die vier Fälle gebaut
+wurden.
+
+### Was weiterhin offen ist
+
+Die Abdeckung. Claims, die nie vorgeschlagen wurden, sind von keiner dieser
+Messungen und von keinem Teil des Papers berührt; der Reparaturlauf bleibt dafür
+der einzige Mechanismus, und er kostet einen bezahlten Aufruf.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

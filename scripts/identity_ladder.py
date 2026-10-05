@@ -15,11 +15,14 @@ merges inside a single run — the price of a looser key.
 The rungs:
 
     exact        (claim_type, canonical_content, raw_span) — today's identity
-    span         (claim_type, normalised raw_span)
+    span_ws      (claim_type, casefolded, whitespace-collapsed raw_span)
+    span_norm    (claim_type, the same with punctuation stripped as well)
     content      (claim_type, normalised canonical_content)
     proposition  (claim_type, sorted token multiset of canonical_content)
 
-Normalisation is casefolding, whitespace collapse and punctuation stripping.
+The two span rungs are separated because punctuation can carry meaning and an
+identity that ignores it is a stronger claim than one that only ignores
+typesetting. Which of the two is load-bearing is a measurement, not a taste.
 `proposition` keeps function words on purpose: dropping them would be a knob to
 tune, and keeping them makes the rung collapse less, so an effect found under it
 is not an artefact of a stopword list. What it cannot do is collapse synonyms —
@@ -36,12 +39,17 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import statistics
 import sys
 from itertools import combinations
 from pathlib import Path
 
 PUNCTUATION = re.compile(r"[^\w\s]+", re.UNICODE)
-RUNGS = ("exact", "span", "content", "proposition")
+RUNGS = ("exact", "span_ws", "span_norm", "content", "proposition")
+
+
+def whitespace_folded(text: str) -> str:
+    return " ".join(text.casefold().split())
 
 
 def normalised(text: str) -> str:
@@ -56,7 +64,9 @@ def key(claim: dict, rung: str) -> tuple:
     claim_type = str(claim["claim_type"])
     if rung == "exact":
         return (claim_type, claim["canonical_content"], claim["raw_span"])
-    if rung == "span":
+    if rung == "span_ws":
+        return (claim_type, whitespace_folded(claim["raw_span"]))
+    if rung == "span_norm":
         return (claim_type, normalised(claim["raw_span"]))
     if rung == "content":
         return (claim_type, normalised(claim["canonical_content"]))
@@ -96,6 +106,39 @@ def mean_jaccard(runs: list[set]) -> float:
     return sum(scores) / len(scores)
 
 
+def core_keys(runs: list[dict]) -> set:
+    """Keys every run holds, as keys rather than a count."""
+    if not runs:
+        return set()
+    core = set(runs[0])
+    for keyed in runs[1:]:
+        core &= set(keyed)
+    return core
+
+
+def content_agreement(packets: list[list[dict]], rung: str) -> list[float]:
+    """How much the propositions behind one shared key agree, per key.
+
+    A span rung drops canonical_content from the identity, so it could merge two
+    different assertions about the same passage across runs — which the merge
+    counter cannot see, because it only looks inside one run. This looks: for
+    each key in the core, the mean pairwise token overlap of the propositions the
+    runs wrote under it. Low values mean the rung is over-merging.
+    """
+    keyed = [{key(claim, rung): claim for claim in claims} for claims in packets]
+    scores = []
+    for shared in core_keys(keyed):
+        contents = [set(tokens(mapping[shared]["canonical_content"])) for mapping in keyed]
+        pairs = [
+            len(left & right) / len(left | right)
+            for left, right in combinations(contents, 2)
+            if left | right
+        ]
+        if pairs:
+            scores.append(sum(pairs) / len(pairs))
+    return scores
+
+
 def report(label: str, packets: list[list[dict]]) -> dict[str, dict]:
     rows: dict[str, dict] = {}
     for rung in RUNGS:
@@ -116,11 +159,21 @@ def report(label: str, packets: list[list[dict]]) -> dict[str, dict]:
             f"{row['merges']:14}"
         )
     base = rows["exact"]["core"]
-    grown = rows["proposition"]["core"]
-    growth = (grown - base) / base if base else float("inf")
-    share = rows["proposition"]["merges"] / max(1, rows["proposition"]["claims"])
-    print(f"Kern exact → proposition: {base} → {grown} ({growth:+.0%})")
-    print(f"Innerhalb eines Laufs verschmolzen: {share:.1%} der Claims")
+    for rung in RUNGS[1:]:
+        grown = rows[rung]["core"]
+        growth = (grown - base) / base if base else float("inf")
+        share = rows[rung]["merges"] / max(1, rows[rung]["claims"])
+        print(f"Kern exact → {rung}: {base} → {grown} ({growth:+.0%}), verschmolzen {share:.1%}")
+    for rung in ("span_ws", "span_norm"):
+        scores = content_agreement(packets, rung)
+        if not scores:
+            continue
+        below = sum(1 for score in scores if score < 0.5)
+        print(
+            f"Propositionen innerhalb eines {rung}-Keys: Median "
+            f"{statistics.median(scores):.2f}, Minimum {min(scores):.2f}, "
+            f"unter 0,5: {below}/{len(scores)}"
+        )
     return rows
 
 

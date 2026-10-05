@@ -11,6 +11,41 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **The unstable half of a claim's identity is the model's wording, not the
+  document's.** `identity_ladder.py` re-keys finished packets at five rungs and
+  reports, per rung, how many claims survive in every run and how many a looser
+  key folds together inside one run. Taking the quoted span out of the identity
+  buys 5 per cent on the court decision; taking the model's `canonical_content`
+  out buys 58. On A24 the figures are +125 and +47 across four single-call runs,
+  +146 and +58 across all seven. That is the opposite direction to Working Paper 2
+  §10.2, which removes the surface text and puts subject, relation and object —
+  all model-authored — into the identity. Guards: 0.0, 0.0 and 3.6 per cent of
+  claims merged inside a run against a 5 per cent mark fixed beforehand, and the
+  propositions behind a shared span agree at median 1.00, minimum 0.71, none of
+  170 keys below 0.5. Casefolding and whitespace do almost all of it; stripping
+  punctuation adds six keys on a paper and one on the decision, so punctuation
+  stays in. Ten mutations.
+- The open question from §3s changes shape as a result. It is no longer "may the
+  gate replace a proposal's `raw_span`" but "is the identity computed over a
+  whitespace-folded span, with the verbatim span kept as evidence" — nothing is
+  rewritten, the exact quote stays in the audit, and a typeset variant becomes the
+  same node instead of none. Still a schema change (0.2 → 0.3) and a one-way
+  migration for stored dossiers, since node ids move.
+- **A retraction.** I had said the relation labels the extractor reaches for are
+  family-level labels missing from our vocabulary. `relation_reach.py` counts 18
+  such rejections across 32 files and **16 are our own claim types in the relation
+  field** — CAUSAL nine times, LIMITATION seven — which the production prompt
+  explicitly forbids and which no family-first ask would fix. Two are the wrong
+  word for a family we already cover; none is a missing family. What does fix it
+  is the split already measured in §3u: the single-call arm produced 10 invalid
+  labels over roughly 173 proposed edges, the two-stage arm **0 over 192**, because
+  its relation stage has no claim-type field to leak from. Seven mutations.
+- That our fourteen relations cover only four of the paper's six families —
+  STATISTICAL and NORMATIVE have no member at all — stays true structurally and
+  has no support in this data: the model never asked for them. The count sees only
+  what is reached for despite a closed list in the prompt, so it cannot measure
+  suppressed demand, and the gap is recorded as untested rather than as a finding.
+
 - **The reviewer arms, five times over a graph that cannot move** — the repository's
   frozen packet through the real gate, one document, one profile, so that the only
   thing able to vary is the arms. By the mark fixed in §3v the resolution lands at
