@@ -167,14 +167,32 @@ def test_the_ledger_records_the_model_the_api_reported(controlled_semantic) -> N
 
     assert {run["model_id"] for run in llm_runs(dossier)} == {"deepseek-v4-flash-0711"}
     assert {call["config"].model_id for call in provider.calls} == {REQUESTED_MODEL}
+    # The substitution this pins is exactly what went unnoticed for four weeks
+    # on the extraction side, so the audit has to say it happened.
+    assert all(run["model_substituted"] for run in llm_runs(dossier))
+    assert {run["requested_model_id"] for run in llm_runs(dossier)} == {REQUESTED_MODEL}
 
 
-def test_a_failed_run_records_the_requested_model(controlled_semantic) -> None:
+def test_a_run_on_the_requested_model_is_not_reported_as_substituted(
+    controlled_semantic,
+) -> None:
+    provider = FakeProvider(reply(finding()), reply())
+
+    dossier = review_claim_graph(controlled_semantic, provider=provider, profile="budget")
+
+    assert not any(run["model_substituted"] for run in llm_runs(dossier))
+
+
+def test_a_failed_run_does_not_claim_to_know_which_model_ran(controlled_semantic) -> None:
+    """No answer arrived, so the audit may name the request and nothing else."""
     provider = FakeProvider(ProviderError("timeout"), reply())
 
     dossier = review_claim_graph(controlled_semantic, provider=provider, profile="budget")
 
-    assert llm_runs(dossier)[0]["model_id"] == REQUESTED_MODEL
+    failed = llm_runs(dossier)[0]
+    assert failed["status"] == "failed"
+    assert failed["requested_model_id"] == REQUESTED_MODEL
+    assert "model_id" not in failed
 
 
 def test_usage_and_output_hash_reach_the_audit(controlled_semantic) -> None:
@@ -345,3 +363,32 @@ def test_a_payload_without_a_findings_list_is_refused_whole(controlled_semantic)
     assert dossier.review_rejections[0].reason == "findings_not_a_list"
     assert dossier.review_rejections[0].item_id == "packet"
     assert llm_runs(dossier)[0]["status"] == "completed"
+
+
+@pytest.mark.parametrize("language", ["de", "en"])
+def test_a_substituted_model_reaches_the_human_readable_audit(
+    controlled_semantic, language
+) -> None:
+    """A substitution recorded only in the JSON is one nobody reads."""
+    from budget_review.render import render_html, render_markdown
+
+    provider = FakeProvider(reply(model="deepseek-flash"), reply(model="deepseek-flash"))
+    dossier = review_claim_graph(
+        controlled_semantic, provider=provider, profile="budget", language=language
+    )
+
+    markdown = render_markdown(dossier, language)
+    html = render_html(dossier, language)
+    for rendered in (markdown, html):
+        assert "deepseek-v4-flash → deepseek-flash" in rendered
+    assert markdown.rstrip().endswith("`dossier.json`"), "the pointer stays last"
+
+
+def test_an_unsubstituted_run_adds_no_line_to_the_audit(controlled_semantic) -> None:
+    from budget_review.render import render_html, render_markdown
+
+    provider = FakeProvider(reply(), reply())
+    dossier = review_claim_graph(controlled_semantic, provider=provider, profile="budget")
+
+    assert "Modell ersetzt" not in render_markdown(dossier, "de")
+    assert "Modell ersetzt" not in render_html(dossier, "de")

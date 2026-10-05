@@ -75,6 +75,7 @@ def review_claim_graph(
                     config=arm.config,
                     max_tokens=8192,
                 )
+                served = str(metadata["model"])
                 admitted, rejected = govern_review_payload(dossier, arm, payload)
                 findings.extend(admitted)
                 rejections.extend(rejected)
@@ -82,7 +83,13 @@ def review_claim_graph(
                     {
                         "reviewer_id": arm.reviewer_id,
                         "kind": "llm",
-                        "model_id": str(metadata["model"]),
+                        "model_id": served,
+                        "requested_model_id": arm.config.model_id,
+                        # Compared here rather than taken from the provider's
+                        # metadata: the audit holds both ids itself, so no
+                        # provider can suppress the comparison by omitting a
+                        # flag.
+                        "model_substituted": served != arm.config.model_id,
                         "status": "completed",
                         "finding_count": len(admitted),
                         "rejection_count": len(rejected),
@@ -96,7 +103,10 @@ def review_claim_graph(
                     {
                         "reviewer_id": arm.reviewer_id,
                         "kind": "llm",
-                        "model_id": arm.config.model_id,
+                        # No answer arrived, so no served model is known. Naming
+                        # the requested one here would be the audit claiming to
+                        # know which model ran.
+                        "requested_model_id": arm.config.model_id,
                         "status": "failed",
                         "error_type": type(exc).__name__,
                     }

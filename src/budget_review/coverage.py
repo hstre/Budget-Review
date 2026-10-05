@@ -33,6 +33,10 @@ from .models import Coverage, CoverageGap, GovernedClaim
 # move from 1.31 to 1.01, so the exact value is not a sensitive knob. The
 # reported gaps account for 98% of the unanchored text on average, which is
 # what makes the list a decomposition of the ratio rather than a sample of it.
+# That last property is scale-dependent: on the 10k-to-40k-character
+# argumentation of ECHR court decisions the gaps cover a median 72% instead,
+# since 94% of the stretches between anchors fall under the threshold and their
+# total mass grows with the document.
 MIN_GAP_CHARACTERS = 120
 EXCERPT_CHARACTERS = 160
 
