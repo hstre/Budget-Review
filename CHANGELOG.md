@@ -9,8 +9,60 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Fixed
+
+- **The extraction contract now names the document's language, and the silent
+  translation stops completely.** Three lines beside the verbatim-span rule:
+  `canonical_content` in the language of the document, not translated, with the
+  reason — a claim has to be checkable against the span it quotes. Re-run over
+  the same 24 cases, the same 72 paid calls, the same profile, with `cases.json`
+  and the scorer byte-identical and `meaning_preserved` unchanged, so the
+  comparison has one variable: **0 of 123 claims from German sources came back
+  translated, against 38 of 122 before.** English stays at 0 of 119. The yield
+  did not fall (242 admitted claims against 248): the instruction switched off
+  the translation and not the extraction.
+  The language is deliberately **not** a parameter. It is a property of the
+  document and not of the caller's interface — a German document reviewed with
+  `--language en` still needs German propositions, because the span they are
+  checked against is German.
+  This also answers the question the change was built to answer: the hidden
+  semantic projection — which must exist, since a pure extractor cannot
+  translate — **is steerable by instruction.** The language problem does not
+  require an explicit projection layer.
+- Meaning preserved rises from 59 of 72 case-runs to **69 of 72**, and every
+  remaining failure is the conditional. Scope 3/6 → 6/6, speaker 9/12 → 12/12,
+  several assertions in one passage 10/12 → 12/12, correlation against causation
+  11/12 → 12/12. Negation and modality hold at 12/12, which was the pre-set guard
+  that would have reverted the change. Anchoring unchanged at 24 of 24 in all
+  three runs, `anchor_normalised` 0, no distortions, no failed call.
+- **Gold defect M-1 is resolved without a gold change.** All four cases that
+  failed in the first run *on language alone* now pass their existing,
+  unmodified requirements. The proposed bilingual requirement is not
+  implemented and is not needed; the token lists were not too narrow.
+
 ### Measured
 
+- **The conditional is now the only measured meaning failure in the set, and it
+  did not move.** 2 of 6 runs preserved it before, 3 of 6 now, which on six
+  trials is nothing, and it is reported as unchanged — as §3ag predicted a
+  language instruction would leave it. The six runs do sharpen the diagnosis, and
+  correct the first run's wording of it (the claim reads "The funds are granted",
+  not "will be granted"): the extractor **splits the sentence at the comma**. The
+  antecedent becomes its own claim, typed `assumption`, which is a defensible
+  reading. The consequent becomes its own claim, typed `forecast`, asserted
+  **unconditionally** — "construction begins in spring" with no condition
+  attached, which is an invented commitment. In the three passing runs one claim
+  carries the whole conditional sentence instead.
+  A re-check of the gold on this point holds: the forbidden reading appears in
+  exactly the three failing runs and in none of the passing ones, so the two
+  signals agree 6 of 6. The structural gap — a run delivering the conditional
+  *and* the bare consequent would pass — is recorded as latent defect M-4 and was
+  not observed.
+- 11 of 242 claims are undecidable on the language axis (10 of 248 before), and
+  undecidable does not count as translated, so the 0 could be flattering. It is
+  not: all eleven were read by hand and stand in the language of their source.
+  The mechanism is mechanical rather than noise — "Construction began in spring"
+  contains only markers that appear in *both* word lists.
 - **The semantic layer silently translates German documents into English
   propositions.** 38 of 122 claims from German sources came back in English and 0
   of 126 from English sources came back in German, over 24 hand-annotated cases
@@ -20,9 +72,13 @@ says when it moves them. Their current values are `polished` 5 claims /
   measurement in this project had ever looked at the language of
   `canonical_content`. It is also the "language-dependent artifact" the project's
   own working paper names as one of three reasons for a projection layer.
+  **Fixed in this same release — see Fixed above. This bullet is the measurement
+  that found it, not the current behaviour.**
 - **Conditionals collapse.** The one genuine meaning failure, and the only
-  phenomenon that fails once the language effect is removed: "If the funds are
-  granted, construction begins in spring" becomes "The funds will be granted" plus
+  phenomenon that fails once the language effect is removed. The wording of the
+  claim below is corrected in the second run's entry above — it reads "The funds
+  are granted": "If the funds are granted, construction begins in spring" becomes
+  "The funds are granted" plus
   "Construction begins in spring" — three of three runs in English, one of three
   in German. The condition is gone and one claim asserts what the source
   explicitly does not. For a proposal review that is the error class the product

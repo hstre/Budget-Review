@@ -2100,6 +2100,146 @@ behauptet, die Mittel *würden* bewilligt. Davon ist keine Sprachanweisung
 betroffen, und wenn sie es doch wäre, wäre das eine Überraschung, die gegen die
 Notwendigkeit expliziter Felder spricht. Berichtet wird es ohne Marke.
 
+## 3ah. Die verborgene Projektion ist steuerbar — und übrig bleibt genau die Bedingung
+
+Derselbe Bestand, dieselben 72 bezahlten Aufrufe, dasselbe Profil. Geändert sind
+**drei Zeilen im Extraktionsvertrag** und sonst nichts: `cases.json` und der
+Scorer sind zwischen beiden Läufen byte-identisch, und `meaning_preserved` ist
+unverändert definiert. Der Vergleich hat eine Variable.
+
+### 1. Die Vorab-Regel, beantwortet
+
+| | 3af | dieser Lauf | Schwelle aus 3ag |
+|---|---:|---:|---|
+| übersetzte Claims, deutsche Quelle | 38 von 122 | **0 von 123** | ≤ 5 ⇒ steuerbar |
+| übersetzte Claims, englische Quelle | 0 von 126 | 0 von 119 | muss 0 bleiben |
+| Negation | 12/12 | 12/12 | Schutzbedingung |
+| Modalität | 12/12 | 12/12 | Schutzbedingung |
+
+**Steuerbar.** Der Effekt ist vollständig, nicht teilweise: nicht ein einziger
+Claim aus einer deutschen Quelle kam übersetzt zurück. Die Schutzbedingung hält,
+die Änderung bleibt. Für das Sprachproblem braucht es **keine** explizite
+Projektionsschicht.
+
+Die Ausbeute ist dabei nicht gefallen — 242 zugelassene Claims gegen 248. Die
+Anweisung hat die Übersetzung abgeschaltet und nicht die Extraktion.
+
+**Was die Zahl 0 nicht verdeckt.** 11 der 242 Claims klassifiziert die
+Sprachachse als unentscheidbar (3af: 10 von 248), und unentscheidbar zählt nicht
+als übersetzt — die 0 könnte also eine Schönung sein. Ist sie nicht: alle elf sind
+von Hand geprüft und stehen in der Sprache ihrer Quelle. Ihr Mechanismus ist
+mechanisch und kein Rauschen: Sätze wie „Construction began in spring." enthalten
+nur Marker, die in **beiden** Listen stehen (`in`), also 1 zu 1, also „?".
+
+### 2. Der Nebeneffekt, auf den ich gesetzt habe, ist eingetreten
+
+Alle vier Fälle, die in 3af **ausschließlich an der Sprache** gescheitert sind,
+bestehen jetzt ihre **bestehenden, unveränderten** Bedingungen:
+`sco-01-de` 0/3 → 3/3, `spk-02-de` 0/3 → 3/3, `mul-01-de` 1/3 → 3/3,
+`cor-01-de` 2/3 → 3/3.
+
+**M-1 ist damit ohne eine Gold-Änderung gelöst.** Die offene Frage aus dem
+Review-Auftrag — ob eine zweisprachige Bedingung Schärfe verliert — stellt sich
+nicht mehr, weil keine zweisprachige Bedingung gebraucht wird. Meine deutschen
+Token-Listen waren nicht zu eng; das Modell antwortete in der falschen Sprache.
+M-2 (`spk-01-de` war versehentlich sprachtolerant) bleibt als Inkonsistenz
+bestehen und ist jetzt wirkungslos, weil kein Fall mehr Toleranz braucht.
+
+### 3. Bedeutung nach Phänomen: ein Phänomen bleibt
+
+| Phänomen | 3af | dieser Lauf |
+|---|---:|---:|
+| Negation | 12/12 | 12/12 |
+| Modalität | 12/12 | 12/12 |
+| Korrelation gegen Kausalität | 11/12 | 12/12 |
+| Sprecher | 9/12 | 12/12 |
+| mehrere Aussagen | 10/12 | 12/12 |
+| Geltungsbereich | 3/6 | 6/6 |
+| **Bedingung** | **2/6** | **3/6** |
+| **Summe** | **59/72** | **69/72** |
+
+Verankerung unverändert bei 24/24 in allen drei Läufen, `anchor_normalised` 0
+über alle Claims, 0 Verzerrungen, kein fehlgeschlagener Aufruf.
+
+**Die Bedingung ist nicht besser geworden.** 2/6 gegen 3/6 ist auf sechs
+Versuchen nichts, und ich berichte es als unverändert. 3ag hat vorhergesagt, dass
+die Sprachanweisung die Bedingung nicht anfasst; das ist eingetreten.
+
+### 4. Was der Lauf über die Bedingung genauer sagt
+
+3af hat den Befund als „die Bedingung wird zerlegt und verschwindet" berichtet.
+Die sechs Läufe dieses Durchgangs zeigen die Struktur schärfer, und meine
+Formulierung in 3af war in einem Detail falsch — dort steht „The funds will be
+granted", tatsächlich lautet der Claim „The funds are granted".
+
+| Lauf | Claim auf der Spanne | Bedingung |
+|---|---|---|
+| de-1 | `assumption` „Die Mittel werden bewilligt." + `forecast` „Der Ausbau beginnt im Frühjahr." | verloren |
+| de-2, de-3 | `forecast` „Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr." + `assumption` „Die Mittel werden bewilligt." | erhalten |
+| en-1, en-2 | `assumption` „The funds are granted." + `forecast` „Construction begins in spring." | verloren |
+| en-3 | `forecast` „If the funds are granted, construction begins in spring." | erhalten |
+
+Der Fehler ist **nicht**, dass die Bedingung fehlt. Er ist, dass der Extraktor
+den Satz **am Komma zerlegt**: der Vordersatz wird ein eigener Claim, der
+Nachsatz wird ein eigener Claim, und der Nachsatz steht dann **unbedingt** da.
+Die Bedingung lebt in den drei bestehenden Läufen in *einem* Claim weiter, der
+den ganzen Satz trägt.
+
+Dass der Vordersatz als `assumption` getypt wird, ist dabei die *vertretbare*
+Hälfte: „Die Mittel werden bewilligt" als Annahme des Nachsatzes zu führen ist
+eine zulässige Lesart der Quelle. Die unvertretbare Hälfte ist der `forecast`,
+der ohne jede Annahme behauptet, der Ausbau beginne im Frühjahr. Für eine
+Antragsprüfung ist das eine erfundene Zusage.
+
+**Und eine Prüfung meines Golds, die diesmal aufgeht.** `requires_all_groups`
+besteht, sobald *irgendein* Claim auf der Spanne einen Bedingungsmarker trägt —
+es sieht nicht, ob daneben die verbotene Lesart steht. Nachgerechnet: die
+verbotene Lesart („Der Ausbau beginnt im Frühjahr.") erscheint in genau den drei
+Läufen, die scheitern, und in keinem, der besteht. Beide Signale stimmen 6 von 6
+überein, der Fall misst hier also das Richtige. Die **Lücke bleibt latent**: ein
+Lauf, der die Bedingung *und* den unbedingten Nachsatz liefert, würde bestehen.
+In diesem Lauf ist das nicht vorgekommen; als Mangel M-4 im Review-Auftrag
+notiert, nicht als Messergebnis.
+
+### 5. Was das für die Projektionsschicht heißt
+
+Die Frage aus 3ag war die Entscheidungsfrage vor Option C (explizite Felder für
+Subjekt, Relation, Objekt, Modalität, Geltungsbereich, Sprecher). Die Antwort
+teilt sie in zwei:
+
+- **Sprache: erledigt, und zwar durch eine Anweisung.** Die verborgene Projektion
+  existiert und ist steuerbar. Die Beobachtung, die den Anstoß gab — „Das
+  Übersetzen allein benötigt eigentlich eine semantische Schicht" — ist bestätigt
+  und *gleichzeitig* entschärft: die Schicht ist da, und man muss sie nicht
+  materialisieren, um ihr zu sagen, in welcher Sprache sie ausgeben soll.
+- **Bedingung: offen, und jetzt der einzige gemessene Bedeutungsfehler im
+  Bestand.** Eine Sprachanweisung hat ihn nicht berührt. Er ist genau die
+  Fehlerklasse, für die explizite Felder gebaut würden: Modalität und
+  Geltungsbereich eines Claims getrennt zu führen, statt sie dem Satzbau einer
+  Proposition zu überlassen.
+
+Das ist ein besser gestellter Gegenstand als vorher. Vorher stand Option C gegen
+„die semantische Schicht ist unzuverlässig"; jetzt steht sie gegen ein einzelnes,
+reproduzierbares, auf drei von sechs Läufen auftretendes Strukturversagen an
+einer benannten Konstruktion. Ob ein Feld oder — wie bei jeder kleinen Änderung
+dieses Projekts, die gewirkt hat — eine Vertragszeile reicht, ist die nächste
+Vorab-Frage und nicht hier entschieden.
+
+### 6. Was weiter nicht gemessen ist
+
+**Relationen:** weiter nicht messbar, der Bestand annotiert keine Kanten (3ae).
+Der Sprachbefund hat daran nichts geändert.
+
+**Zwei unabhängige Durchsichten des Bestands fehlen weiter.** Zwei der vier
+Gold-Mängel sind durch diesen Lauf erledigt oder wirkungslos, einer ist neu
+(M-4), und keiner davon ersetzt die Durchsicht. Der Bestand bleibt ein Entwurf.
+
+**Ein Dokument pro Fall, ein bis drei Sätze.** Dass eine Vertragszeile auf
+24 kurzen Sätzen greift, sagt nichts darüber, ob sie auf 26.000 Zeichen
+Gerichtstext greift. Die nächste Messung der Sprachachse gehört auf ein langes
+Dokument und kostet dort nichts extra, weil sie offline aus gespeicherten
+Dossiers läuft.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

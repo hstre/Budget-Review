@@ -341,7 +341,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3y.
+detail per experiment is in `docs/architecture.md` §3a–§3ah.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -369,6 +369,8 @@ detail per experiment is in `docs/architecture.md` §3a–§3y.
 | 22 | Same run, the thinking arm's availability | none — it was not the question | Truncated at the 8,192-token reviewer budget in **3 of 5 runs**, on a 1,700-character proposal | A production defect: every second or third review has one independent arm, not two |
 | 23 | Finished packets re-keyed at five identity rungs, offline | core growth ≥ 50% with ≤ 5% merged inside a run ⇒ worth it; < 20% ⇒ parked | Dropping the span from the identity: +5% on the decision. Dropping the model's wording: +58%. On A24 +125% against +47% | **The model's paraphrase is the unstable half**, not the document's quote — the opposite of the paper's own choice |
 | 24 | Relation labels the extractor reached for, across 32 files | none — a count | 16 of 18 are our own claim types in the relation field; 0 are a missing family. Single-call arm 10 invalid labels / ~173 edges, two-stage arm **0 / 192** | My "every one is a family label" is **retracted.** Family-first would not fix it; the two-stage split does |
+| 25 | A hand-annotated meaning set, 24 cases in German and English, three runs | ≥ 90 % of cases must anchor a claim on their span; `anchor_normalised` must be 0 | 24 of 24 anchored in all three runs, `anchor_normalised` 0 across 248 claims. **38 of 122 propositions from German sources came back in English**, 0 of 126 the other way. One real meaning failure: the conditional | The apparatus holds. The translation is a product defect; my prediction about which of my own cases were weak was **refuted** |
+| 26 | The same set and the same 72 calls, with the document's language named in the extraction contract | **≤ 5** translated German propositions ⇒ steerable; **> 15** ⇒ not steerable; negation and modality must hold at 12/12 or the change is reverted | **0 of 123** translated, English stays 0 of 119, yield 242 claims against 248. Negation and modality 12/12. Meaning preserved 59/72 → **69/72**; scope 3/6 → 6/6, speaker 9/12 → 12/12 | **The hidden projection is steerable by instruction.** The language problem needs no explicit projection layer. The conditional is untouched (2/6 → 3/6) and is now the only measured meaning failure |
 
 #### What we believe we know
 
@@ -516,7 +518,9 @@ content-review review proposal.pdf budget.xlsx \
 ```
 
 `--language de|en` sets the dossier language for HTML, Markdown and the reviewer
-arms. Without it the stored interface language is used.
+arms. Without it the stored interface language is used. It does **not** set the
+language a claim's own proposition is written in: that follows the document, so
+that the proposition and the span it quotes can be read side by side.
 
 The old `budget-review` command remains as a compatible alias. A previously
 extracted semantic packet can be reviewed offline with `--packet`.
@@ -575,8 +579,11 @@ copy nothing into this repository.
 - PDF extraction has no OCR.
 - The dossier is rendered in German or English: interface labels, deterministic
   findings and the reviewer arms all follow `--language` (default: the stored
-  interface setting). Quoted claims keep their original wording, since they are
-  verbatim spans from the source.
+  interface setting). A quoted span is verbatim from the source. A claim's
+  proposition is a paraphrase and does **not** follow `--language`: it is written
+  in the language of the document, because it has to be checkable against the
+  span it quotes. Measured — before that requirement was in the extraction
+  contract, 38 of 122 propositions from German sources came back in English.
 - The local web server is single-user and has no account system.
 
 Security details are collected in [SECURITY.md](SECURITY.md); changes per
@@ -928,7 +935,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3y.
+stehen in `docs/architecture.md` §3a–§3ah.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -956,6 +963,8 @@ stehen in `docs/architecture.md` §3a–§3y.
 | 22 | Derselbe Lauf, die Verfügbarkeit des Thinking-Arms | keines — das war nicht die Frage | Abgeschnitten am Reviewer-Budget von 8.192 Tokens in **3 von 5 Läufen**, auf einem 1.700-Zeichen-Antrag | Produktionsfehler: jeder zweite bis dritte Review hat einen statt zwei unabhängigen Armen |
 | 23 | Fertige Pakete offline auf fünf Identitätsstufen neu geschlüsselt | Kernzuwachs ≥ 50 % bei ≤ 5 % Verschmelzung ⇒ lohnt; < 20 % ⇒ geparkt | Span aus der Identität: +5 % auf der Entscheidung. Wortlaut des Modells heraus: +58 %. Auf A24 +125 % gegen +47 % | **Der Wortlaut des Modells ist die instabile Hälfte**, nicht das Zitat des Dokuments — umgekehrt zur Wahl des Papers |
 | 24 | Relationslabels, nach denen der Extraktor gegriffen hat, über 32 Dateien | keines — eine Zählung | 16 von 18 sind unsere eigenen Claim-Typen im Relationsfeld; 0 eine fehlende Familie. Einstufig 10 ungültige Labels / ~173 Kanten, zweistufig **0 / 192** | Mein „jedes ist ein Familienlabel" ist **zurückgenommen.** Familie-zuerst behebt es nicht, die Aufspaltung schon |
+| 25 | Ein von Hand annotierter Bedeutungsbestand, 24 Fälle auf Deutsch und Englisch, drei Läufe | ≥ 90 % der Fälle müssen einen Claim auf ihrer Spanne ankern; `anchor_normalised` muss 0 sein | 24 von 24 in allen drei Läufen verankert, `anchor_normalised` 0 über 248 Claims. **38 von 122 Propositionen aus deutschen Quellen kamen auf Englisch zurück**, 0 von 126 umgekehrt. Ein echter Bedeutungsfehler: die Bedingung | Der Apparat hält. Die Übersetzung ist ein Produktmangel; meine Vorhersage, welche meiner eigenen Fälle schwach sind, ist **widerlegt** |
+| 26 | Derselbe Bestand, dieselben 72 Aufrufe, mit der Sprache des Dokuments im Extraktionsvertrag | **≤ 5** übersetzte deutsche Propositionen ⇒ steuerbar; **> 15** ⇒ nicht steuerbar; Negation und Modalität müssen 12/12 halten, sonst wird die Änderung zurückgenommen | **0 von 123** übersetzt, Englisch bleibt 0 von 119, Ausbeute 242 gegen 248 Claims. Negation und Modalität 12/12. Bedeutung erhalten 59/72 → **69/72**; Geltungsbereich 3/6 → 6/6, Sprecher 9/12 → 12/12 | **Die verborgene Projektion ist durch eine Anweisung steuerbar.** Das Sprachproblem braucht keine explizite Projektionsschicht. Die Bedingung ist unberührt (2/6 → 3/6) und jetzt der einzige gemessene Bedeutungsfehler |
 
 #### Was wir zu wissen glauben
 
@@ -1113,7 +1122,9 @@ content-review review antrag.pdf budget.xlsx \
 ```
 
 `--language de|en` bestimmt die Sprache von HTML, Markdown und den
-Reviewer-Armen. Ohne den Schalter gilt die gespeicherte Oberflächensprache.
+Reviewer-Armen. Ohne den Schalter gilt die gespeicherte Oberflächensprache. Die
+Sprache der Proposition eines Claims bestimmt er **nicht**: die folgt dem
+Dokument, damit Proposition und zitierte Textstelle nebeneinander lesbar sind.
 
 Der frühere Befehl `budget-review` bleibt als kompatibler Alias erhalten. Ein
 bereits extrahiertes Semantic Packet kann mit `--packet` vollständig offline
@@ -1178,8 +1189,12 @@ kopieren nichts in dieses Repository.
 - PDF-Extraktion enthält kein OCR.
 - Das Dossier erscheint auf Deutsch oder Englisch: Bezeichnungen,
   deterministische Befunde und die Reviewer-Arme folgen `--language`
-  (Vorgabe: die gespeicherte Spracheinstellung). Zitierte Claims behalten ihren
-  Wortlaut, weil sie exakte Originalstellen sind.
+  (Vorgabe: die gespeicherte Spracheinstellung). Die zitierte Textstelle ist
+  wörtlich aus der Quelle. Die Proposition eines Claims ist eine Umschreibung und
+  folgt `--language` **nicht**: sie steht in der Sprache des Dokuments, weil sie
+  gegen die Textstelle prüfbar sein muss, die sie zitiert. Gemessen — bevor diese
+  Anforderung im Extraktionsvertrag stand, kamen 38 von 122 Propositionen aus
+  deutschen Quellen auf Englisch zurück.
 - Der lokale Webserver ist für einen Benutzer ausgelegt und besitzt noch kein
   Kontensystem.
 

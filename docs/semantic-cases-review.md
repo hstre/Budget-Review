@@ -74,9 +74,10 @@ Ergebnis, und genau das hat auf diesem Branch schon zweimal Befunde entwertet.
 
 ## Gefundene Gold-Mängel, offen bis zur Durchsicht
 
-Aus dem ersten Lauf (2026-10-06, §3af). **Nichts davon ist geändert** — die Regel
-oben verlangt Zustimmung einer Durchsicht, und eine Liste zu erweitern, bis ein
-Lauf durchläuft, ist Anpassung des Tests an das System.
+Aus den beiden Läufen vom 2026-10-06 (§3af, §3ah). **Am Bestand ist nichts
+geändert** — die Regel oben verlangt Zustimmung einer Durchsicht, und eine Liste
+zu erweitern, bis ein Lauf durchläuft, ist Anpassung des Tests an das System.
+M-1 ist erledigt, weil das *Produkt* geändert wurde und nicht der Test.
 
 **M-1 (2026-10-06, Claude): Die Bedingungen verwechseln Sprache mit Bedeutung.**
 31 Prozent der Claims aus deutschen Quellen kamen auf Englisch zurück, und weil
@@ -89,18 +90,41 @@ Liste weiten. Die Achse ist gebaut; die Gold-Änderung nicht.
 *Zu prüfen:* Verliert die Prüfung damit Schärfe? Eine Bedingung, die beide
 Sprachen akzeptiert, kann einen Fall nicht mehr fangen, bei dem das Modell die
 deutsche Wendung durch eine englische *mit anderer Bedeutung* ersetzt.
+**Erledigt (2026-10-06, §3ah), ohne eine Gold-Änderung.** Der Extraktionsvertrag
+verlangt jetzt die Sprache des Dokuments, 0 von 123 deutschen Claims kamen
+übersetzt zurück, und alle vier betroffenen Fälle bestehen ihre **unveränderten**
+Bedingungen. Der Vorschlag oben wird damit **nicht** umgesetzt und die Frage nach
+der Schärfe stellt sich nicht: es wird keine zweisprachige Bedingung gebraucht.
+Meine Listen waren nicht zu eng — das Modell antwortete in der falschen Sprache.
 
 **M-2 (2026-10-06, Claude): `spk-01-de` ist versehentlich sprachtolerant.**
 Seine Gruppe lautet `["Regierung", "Government"]` — dieser eine Fall besteht
 trotz Übersetzung, die anderen elf nicht. Die deutschen Fälle waren damit nicht
 untereinander konsistent, und der Fall hat 3/3 bestanden, ohne dass es etwas
 heißt.
+**Wirkungslos seit §3ah**, weil kein Fall mehr Sprachtoleranz braucht. Die
+Inkonsistenz steht weiter im Bestand und gehört aufgelöst, damit die zwölf
+deutschen Fälle dieselbe Prüfung durchlaufen.
 
 **M-3 (2026-10-06, Claude): Der Bestand annotiert keine Kanten.** Die dritte
 Achse aus §3ac ist deshalb nicht messbar. Aufgefallen beim Implementieren des
 Scorers, nicht beim Schreiben des Bestands.
 *Zu prüfen:* Welche Kanten gehören bei `mul-*` und `spk-02` annotiert, ohne eine
 Relationstaxonomie vorwegzunehmen, die das Produkt noch nicht hat?
+
+**M-4 (2026-10-06, Claude, §3ah): `sco-02` kann die verbotene Lesart nicht
+sehen, wenn sie neben einer bestehenden steht.** `requires_all_groups` besteht,
+sobald *irgendein* Claim auf der Spanne einen Bedingungsmarker trägt. Ein Lauf,
+der die Bedingung **und** den unbedingten Nachsatz liefert, würde bestehen,
+obwohl der Graph eine erfundene Zusage enthält. In §3ah ist das nicht vorgekommen
+— die verbotene Lesart erschien in genau den drei scheiternden Läufen und in
+keinem bestehenden, beide Signale stimmen 6 von 6 überein. Die Lücke ist also
+**latent und nicht gemessen.**
+*Vorschlag:* `forbidden_readings` wird vom Scorer geprüft und nicht nur vom
+Validator. Heute liest nur `scripts/semantic_cases.py` das Feld; der Scorer
+kennt nur `forbids`.
+*Zu prüfen:* Gilt das für mehr als `sco-02`? Jeder Fall, dessen Bedingung auf
+*Anwesenheit* prüft, hat dieselbe Form, und das sind die meisten.
 
 **Widerlegt:** Meine Vorhersage, `neg-02` und `mod-02` enthielten eingebaute
 Falschalarme. Beide haben 3/3 in beiden Sprachen bestanden. Die beiden Stellen
