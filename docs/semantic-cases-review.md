@@ -72,6 +72,40 @@ zustimmt, dass die neue Wendung eine treue Wiedergabe ist — und jede Erweiteru
 wird hier mit Datum und Urheber vermerkt. Sonst wandert die Marke mit dem
 Ergebnis, und genau das hat auf diesem Branch schon zweimal Befunde entwertet.
 
+## Gefundene Gold-Mängel, offen bis zur Durchsicht
+
+Aus dem ersten Lauf (2026-10-06, §3af). **Nichts davon ist geändert** — die Regel
+oben verlangt Zustimmung einer Durchsicht, und eine Liste zu erweitern, bis ein
+Lauf durchläuft, ist Anpassung des Tests an das System.
+
+**M-1 (2026-10-06, Claude): Die Bedingungen verwechseln Sprache mit Bedeutung.**
+31 Prozent der Claims aus deutschen Quellen kamen auf Englisch zurück, und weil
+die deutschen Bedingungen deutsche Token verlangen, scheitert eine *treue*
+englische Wiedergabe an der Bedeutungsprüfung. Betroffen: `sco-01-de`,
+`spk-02-de`, `mul-01-de`, `cor-01-de`.
+*Vorschlag:* Die Bedingungsgruppen eines Paares werden zur Vereinigung beider
+Sprachen, und die Sprache wird als eigene Achse berichtet — getrennt messen statt
+Liste weiten. Die Achse ist gebaut; die Gold-Änderung nicht.
+*Zu prüfen:* Verliert die Prüfung damit Schärfe? Eine Bedingung, die beide
+Sprachen akzeptiert, kann einen Fall nicht mehr fangen, bei dem das Modell die
+deutsche Wendung durch eine englische *mit anderer Bedeutung* ersetzt.
+
+**M-2 (2026-10-06, Claude): `spk-01-de` ist versehentlich sprachtolerant.**
+Seine Gruppe lautet `["Regierung", "Government"]` — dieser eine Fall besteht
+trotz Übersetzung, die anderen elf nicht. Die deutschen Fälle waren damit nicht
+untereinander konsistent, und der Fall hat 3/3 bestanden, ohne dass es etwas
+heißt.
+
+**M-3 (2026-10-06, Claude): Der Bestand annotiert keine Kanten.** Die dritte
+Achse aus §3ac ist deshalb nicht messbar. Aufgefallen beim Implementieren des
+Scorers, nicht beim Schreiben des Bestands.
+*Zu prüfen:* Welche Kanten gehören bei `mul-*` und `spk-02` annotiert, ohne eine
+Relationstaxonomie vorwegzunehmen, die das Produkt noch nicht hat?
+
+**Widerlegt:** Meine Vorhersage, `neg-02` und `mod-02` enthielten eingebaute
+Falschalarme. Beide haben 3/3 in beiden Sprachen bestanden. Die beiden Stellen
+oben, die ich zum Angreifen markiert habe, waren nicht die schwachen.
+
 ## Durchsicht 1
 
 *Offen.* Modell, Datum, Einwände, und was geändert wurde.

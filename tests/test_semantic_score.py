@@ -30,6 +30,7 @@ SPAN = "Die Maßnahme wirkt nicht."
 def _case(**overrides) -> dict:
     base = {
         "case_id": "probe-de",
+        "language": "de",
         "document": DOCUMENT,
         "span": SPAN,
         "requires_all_groups": [["nicht", "kein"]],
@@ -131,3 +132,68 @@ def test_a_normalised_anchor_is_counted() -> None:
     claim = {**_claim("Die Maßnahme wirkt nicht."), "anchor_normalised": True}
 
     assert scorer.score(_case(), [claim])["normalised_anchors"] == 1
+
+
+def test_the_language_guess_classifies_every_shipped_document() -> None:
+    """The heuristic has to pass 24 texts of known language before it may judge a claim.
+
+    It is function words counted, nothing more. If it cannot place the cases'
+    own documents it is not fit to place a claim.
+    """
+    cases = _module("semantic_cases").load()
+
+    wrong = [
+        (case["case_id"], scorer.language_of(case["document"]))
+        for case in cases
+        if scorer.language_of(case["document"]) != case["language"]
+    ]
+
+    assert wrong == []
+
+
+def test_a_faithful_translation_is_counted_as_a_language_failure_not_a_meaning_one() -> None:
+    """What the first run found: 38 of 122 German claims came back in English.
+
+    The rendering below preserves the scope perfectly. Without a separate axis it
+    would read as lost meaning, and the fix would look like a wider token list.
+    """
+    case = _case(
+        case_id="sco-01-de",
+        document="Die Auswertung unterscheidet Regionen. In ländlichen Gebieten senkt das "
+        "Programm die Quote. Für Städte liegen keine Daten vor.",
+        span="In ländlichen Gebieten senkt das Programm die Quote.",
+        requires_all_groups=[["ländlichen"]],
+    )
+    document = case["document"]
+    start = document.index(case["span"])
+    claim = {
+        "canonical_content": "In rural areas the program lowers the rate.",
+        "claim_type": "fact",
+        "anchor_start": start,
+        "anchor_end": start + len(case["span"]),
+        "anchor_normalised": False,
+    }
+
+    row = scorer.score({**case, "language": "de"}, [claim])
+
+    assert row["anchored"] is True
+    assert row["in_source_language"] is False
+    assert row["translated"] == ["In rural areas the program lowers the rate."]
+
+
+def test_a_claim_in_the_documents_language_is_not_flagged() -> None:
+    row = scorer.score(
+        {**_case(), "language": "de"}, [_claim("Die Maßnahme wirkt nicht auf die Quote.")]
+    )
+
+    assert row["in_source_language"] is True
+    assert row["translated"] == []
+
+
+def test_an_undecidable_claim_is_not_called_a_translation() -> None:
+    """Three words carry no function words, and a guess there would be noise."""
+    assert scorer.language_of("Haushalt steigt") == "?"
+
+    row = scorer.score({**_case(), "language": "de"}, [_claim("Haushalt steigt")])
+
+    assert row["translated"] == []

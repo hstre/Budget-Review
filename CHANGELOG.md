@@ -9,6 +9,50 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Measured
+
+- **The semantic layer silently translates German documents into English
+  propositions.** 38 of 122 claims from German sources came back in English and 0
+  of 126 from English sources came back in German, over 24 hand-annotated cases
+  run three times. The `raw_span` quotes the German source while
+  `canonical_content` does not, so the README's promise that quoted claims keep
+  their original wording holds for the span and not for the proposition. No
+  measurement in this project had ever looked at the language of
+  `canonical_content`. It is also the "language-dependent artifact" the project's
+  own working paper names as one of three reasons for a projection layer.
+- **Conditionals collapse.** The one genuine meaning failure, and the only
+  phenomenon that fails once the language effect is removed: "If the funds are
+  granted, construction begins in spring" becomes "The funds will be granted" plus
+  "Construction begins in spring" — three of three runs in English, one of three
+  in German. The condition is gone and one claim asserts what the source
+  explicitly does not. For a proposal review that is the error class the product
+  exists to catch.
+- Negation and modality survive 12 of 12 each. Correlation against causation,
+  speaker and multiple assertions fail only where the claim was translated.
+- The apparatus works: 24 of 24 cases anchored a claim on their span in all three
+  runs, against a mark of 90 per cent fixed beforehand. `anchor_normalised` is 0
+  across all 248 claims as predicted, which is the first live exercise of the gate
+  merged in #18 — it had only ever been verified against stored packets.
+- **My pre-registered prediction was wrong.** `neg-02` and `mod-02` were named in
+  advance as containing built-in false alarms; both passed 3 of 3 in both
+  languages. The real defect in my gold is one I did not foresee: the requirements
+  conflate language with meaning, and one case (`spk-01-de`) passed only because I
+  had accidentally made its group language-tolerant while the other eleven were
+  not. All three gold defects are recorded as dated entries in
+  `docs/semantic-cases-review.md` and **nothing was changed**, because widening a
+  token list until a run passes is fitting the test to the system.
+
+### Added
+
+- A **language axis** in `scripts/semantic_score.py`, reported apart from
+  anchoring and meaning. It was computed offline from the 72 stored dossiers at no
+  further cost. Without it the run would have read as "the extractor loses half
+  the meaning on scope and speaker", which is false — which is itself the evidence
+  for measuring the outcomes separately. Function words counted, crude like the
+  meaning checks, and it has to classify all 24 case documents correctly before it
+  may classify a claim, which the test suite asserts. Four mutations, nine on the
+  scorer in total.
+
 ### Added
 
 - **A hand-annotated set for meaning, as a draft pending independent review.**

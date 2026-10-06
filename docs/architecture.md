@@ -1900,6 +1900,119 @@ andere Wert ist eine Überraschung und wird nachgesehen.
 24 Fälle, drei Wiederholungen, 72 bezahlte Aufrufe auf Dokumenten von rund 120
 Zeichen.
 
+## 3af. Erster Lauf auf dem Bedeutungsbestand: der Apparat läuft, mein Gold war falsch, und eine Bedingung bricht
+
+24 Fälle, drei Wiederholungen, 72 bezahlte Aufrufe, 248 zugelassene Claims.
+
+### 1. Der Apparat funktioniert
+
+**24 von 24 Fällen ankerten in allen drei Läufen** einen Claim auf ihrer Spanne —
+100 Prozent gegen eine Vorab-Marke von 90. Kein Lauf ist abgebrochen, keine
+Prüfung ist gescheitert.
+
+Und die Nebenprüfung aus 3ae: **`anchor_normalised` ist 0 über alle 248 Claims**,
+wie vorhergesagt. Das war die erste Live-Ausübung des Gates aus #18, das bis
+dahin nur gegen gespeicherte Pakete verifiziert war. Es verhält sich wie gebaut.
+
+### 2. Meine Vorhersage war falsch — und mein Gold hat einen anderen Mangel
+
+3ae hat benannt, was dieser Lauf an mir prüfen sollte: Ich hielt `neg-02` und
+`mod-02` für eingebaute Falschalarme. **Beide haben 3/3 in beiden Sprachen
+bestanden.** Die Vorhersage ist widerlegt.
+
+Was ich nicht vorhergesehen habe, ist der tatsächliche Mangel: **Der Bestand
+verwechselt Sprache mit Bedeutung.**
+
+| Quelle | Claims | in der Sprache der Quelle | übersetzt |
+|---|---:|---:|---:|
+| Deutsch | 122 | 83 | **38 (31 %)** |
+| Englisch | 126 | 117 | **0** |
+
+Weil meine Bedingungen deutsche Token verlangen, scheitert eine **treue**
+englische Wiedergabe an der Bedeutungsprüfung. Fünf der zwölf deutschen Fälle
+sind betroffen, und die Claims sind tadellos:
+
+| Fall | Ergebnis | Claim |
+|---|---|---|
+| `sco-01-de` | 0/3 | „In rural areas the program lowers the rate." — Geltungsbereich vollständig erhalten |
+| `spk-02-de` | 0/3 | zwei getrennte Sprechakte, beide Sprecher benannt: „The government argued…" / „The court found…" |
+| `mul-01-de` | 1/3 | beide Aussagen korrekt getrennt, auf Englisch |
+| `cor-01-de` | 2/3 | „Participation correlates with higher completion rates." |
+
+**Und ein dritter Mangel, aufgefallen beim Klassifizieren:** `spk-01-de` hat nur
+*zufällig* bestanden. Ich hatte seine Bedingungsgruppe als
+`["Regierung", "Government"]` geschrieben — dieser eine Fall toleriert die
+Übersetzung, die anderen elf nicht. Meine Bedingungsgruppen waren unbeabsichtigt
+unterschiedlich sprachtolerant, und damit waren die deutschen Fälle nicht einmal
+untereinander konsistent.
+
+### 3. Der Produktbefund, und er ist der wichtigere
+
+**Die semantische Schicht übersetzt deutsche Dokumente still ins Englische.** Der
+`raw_span` zitiert die deutsche Quelle, `canonical_content` ist englisch. Das
+README sagt, zitierte Claims behielten ihren ursprünglichen Wortlaut — das gilt
+für die Spanne und nicht für die Proposition. Keine Messung dieses Projekts hat
+je auf die *Sprache* von `canonical_content` gesehen.
+
+Es ist zudem genau das „language-dependent artifact", das das eigene Working
+Paper 2 als einen von drei Gründen für eine Projektionsschicht nennt: *the same
+content expressed in different languages yields different claim structures.*
+
+Die Richtung ist einseitig: 38 deutsche Claims wurden englisch, kein englischer
+wurde deutsch.
+
+### 4. Der eine echte Bedeutungsfehler: die Bedingung bricht
+
+Nach Abzug des Sprachenffekts bleiben **4 von 72 Fall-Läufen**, und sie liegen
+alle auf demselben Phänomen.
+
+`sco-02`, Quelle: „Wenn die Mittel bewilligt werden, beginnt der Ausbau im
+Frühjahr."
+
+| | Claims |
+|---|---|
+| englisch, 3 von 3 Läufen | „The funds will be granted." + „Construction begins in spring." |
+| deutsch, 1 von 3 Läufen | „Die Mittel werden bewilligt." + „Der Ausbau beginnt im Frühjahr." |
+
+**Die Bedingung wird zerlegt und verschwindet.** Übrig bleiben zwei unbedingte
+Behauptungen, und eine davon — die Mittel *werden* bewilligt — behauptet etwas,
+was die Quelle ausdrücklich nicht behauptet. Für eine Antragsprüfung ist das die
+Fehlerklasse, für deren Entdeckung das Produkt existiert, erzeugt vom Produkt.
+
+Damit lautet der Befund dieses Laufs: **Bedeutung überlebt überall außer bei der
+Bedingung; jeder andere Fehlschlag war der Sprachwechsel.**
+
+| Phänomen | erhalten | davon Fehlschläge durch Übersetzung |
+|---|---|---|
+| Negation | 12/12 | — |
+| Modalität | 12/12 | — |
+| Korrelation gegen Kausalität | 11/12 | 1 von 1 |
+| Sprecher | 9/12 | 3 von 3 |
+| mehrere Aussagen | 10/12 | 2 von 2 |
+| Geltungsbereich | 3/6 | 3 von 3 |
+| **Bedingung** | **2/6** | **0 von 4** |
+
+### 5. Was nicht gemessen ist, und was ich nicht geändert habe
+
+**Relationen:** weiter nicht messbar, der Bestand annotiert keine Kanten (3ae).
+
+**Keine Token-Gruppe wurde erweitert.** Die Regel aus 3ad gilt: Eine Bedingung,
+die auf einem treuen Claim feuert, ist ein Mangel des Falls, behoben über den
+Review-Auftrag mit Datum — nicht dadurch, dass die Liste wächst, bis der Lauf
+durchläuft. Die drei Gold-Mängel sind dort als Einträge vermerkt und warten auf
+die Durchsicht.
+
+**Die Sprachachse ist eine neue Messung, keine Lockerung.** Sie wurde offline aus
+den 72 gespeicherten Dossiers gerechnet, ohne einen weiteren Aufruf, und wird
+jetzt vom Scorer getrennt berichtet. Vier Mutationen darauf, darunter die beiden,
+die sie nutzlos machen würden: ein unentscheidbarer Claim bekommt doch eine
+Sprache zugewiesen, und die Achse besteht immer.
+
+Dass die Achse überhaupt nötig ist, ist der Beleg für das Prinzip aus 3ac: Hätte
+ich Verankerung, Sprache und Bedeutung nicht getrennt, stünde hier „der Extraktor
+verliert bei Geltungsbereich und Sprecher die Hälfte der Bedeutung" — und das
+wäre falsch.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
