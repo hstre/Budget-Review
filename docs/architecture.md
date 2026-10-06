@@ -1834,6 +1834,72 @@ begutachtet ist. Ein Scorer vor der Durchsicht würde Zahlen gegen eine
 unbestätigte Annotation produzieren, und solche Zahlen stehen in 3u bis 3ab schon
 genug herum.
 
+## 3ae. Die drei Ergebnisse: die Vorab-Festlegung
+
+Schritt 3 aus 3ac. `semantic_score.py` bewertet den Bestand aus 3ad auf getrennten
+Achsen, und die Trennung ist der Zweck: Bisher kann eine Änderung besser aussehen,
+weil sie **mehr Text erfasst**, ohne bessere Struktur zu erzeugen.
+
+| Achse | Frage |
+|---|---|
+| Verankerung | Berührt irgendein zugelassener Claim die annotierte Stelle? |
+| Bedeutung | Halten die deklarierten Bedingungen, und verletzt kein Claim ein Verbot? |
+| Beziehungen | Sind die Kanten zwischen Claims richtig? |
+
+**Die dritte Achse ist auf diesem Bestand nicht messbar**, und das ist ein Mangel
+des Bestands, nicht des Skripts: Die Fälle halten fest, welche Bedeutung erhalten
+bleiben muss, und sagen nichts darüber, welche Kanten entstehen sollen.
+Aufgefallen beim Implementieren. Sie wird als *nicht gemessen* berichtet und nicht
+still weggelassen; die Annotation nachzuziehen gehört in die Durchsichtsrunde.
+
+### Was dieser erste Lauf ist, und was er nicht ist
+
+Der Bestand ist ein Entwurf, von einem Modell geschrieben und **nicht
+begutachtet** (3ad). Diese Zahlen sind deshalb **kein Urteil über den Extraktor.**
+Sie prüfen zwei andere Dinge, und das ist vorab festgelegt, damit es hinterher
+nicht umdeutbar ist:
+
+**1. Der Apparat funktioniert**, wenn jeder Fall ein Dossier liefert und in
+mindestens 90 Prozent der Fälle wenigstens ein Claim auf der Spanne ankert. Das
+sind Dokumente von einem bis drei Sätzen; scheitert die Verankerung breit, liegt
+es am Apparat oder an der Dokumentgröße, und über Bedeutung ist dann nichts zu
+lesen.
+
+**2. Mein Gold ist falsch**, wo ein Fall in *allen* Wiederholungen scheitert und
+der Claim-Text gelesen eine **treue** Wiedergabe ist. Dazu eine benannte
+Vorhersage, die dieser Lauf bestätigen oder widerlegen kann: Ich halte `neg-02`
+(„Nicht alle Schulen…") und `mod-02` (verlangt `zeigt/belegt/…`) für eingebaute
+Falschalarme. Scheitern sie mit treuem Text, ist die Vorhersage bestätigt und die
+beiden Fälle werden umgeschrieben. Passieren sie, war ich falsch.
+
+**3. Der Extraktor verzerrt**, wo ein Fall mit Text scheitert, der tatsächlich
+untreu ist — Negation weg, Ursache erfunden. Gezählt je Phänomen.
+
+Der Unterschied zwischen 2 und 3 ist eine **Lesung von Hand** und keine
+Maschinenentscheidung. Das ist die Grenze dieses Laufs und steht hier, weil sie
+sonst später als Zahl missverstanden wird.
+
+### Zwei Regeln, die nicht verhandelbar sind
+
+**Keine Token-Gruppe wird in diesem Lauf erweitert.** Eine Bedingung, die auf
+einem treuen Claim feuert, ist ein Mangel des Falls — behoben über den
+Review-Auftrag mit Datum und Urheber, nie dadurch, dass die Liste so weit wächst,
+bis der Lauf durchläuft. Wandernde Marken haben auf diesem Branch zweimal Befunde
+entwertet.
+
+**Der Bestand validiert sich vor jeder Messung selbst.** Verletzt er eine der
+fünf Invarianten aus 3ad, bricht das Skript ab und bewertet nichts.
+
+### Nebenbei die erste Live-Prüfung des neuen Gates
+
+#18 ist auf main und wurde **nie live gelaufen** — verifiziert war es gegen
+gespeicherte Pakete. Diese 24 Dokumente sind von Hand als einzeilige Sätze
+geschrieben, also ist `anchor_normalised` über alle Läufe **erwartet 0**. Jeder
+andere Wert ist eine Überraschung und wird nachgesehen.
+
+24 Fälle, drei Wiederholungen, 72 bezahlte Aufrufe auf Dokumenten von rund 120
+Zeichen.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
