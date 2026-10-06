@@ -11,6 +11,17 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **`docs/research-report.md`** — a synthesis of the measurement work for readers
+  who have not followed it: what is established, what we do not know as a list of
+  unmade measurements, the problems solved and the problems still open, and the
+  eight claims that were reported and later withdrawn. Bilingual, and each finding
+  carries whether it is in production, in review, measured only, or open, because
+  two of the largest results are in open pull requests rather than on main.
+  `README.md` and `docs/architecture.md` point at it; the latter stays the
+  chronological record behind it.
+
+### Added
+
 - **The unstable half of a claim's identity is the model's wording, not the
   document's.** `identity_ladder.py` re-keys finished packets at five rungs and
   reports, per rung, how many claims survive in every run and how many a looser

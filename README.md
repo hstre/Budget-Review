@@ -332,6 +332,11 @@ the document plausibly supports, the graph is thin, whatever the findings say.
 
 ### Research log
 
+> **A synthesis of all of this — what is established, what was withdrawn, what is
+> still open, and the problems solved and unsolved — is in
+> [`docs/research-report.md`](docs/research-report.md). Start there; the table
+> below and `docs/architecture.md` are the chronological record behind it.**
+
 Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
@@ -912,6 +917,11 @@ unter dem, was das Dokument plausibel hergibt, ist der Graph dünn — unabhäng
 davon, was die Befunde sagen.
 
 ### Forschung
+
+> **Eine Synthese des Ganzen — was belegt ist, was zurückgezogen wurde, was offen
+> ist, und die gelösten wie ungelösten Probleme — steht in
+> [`docs/research-report.md`](docs/research-report.md). Dort anfangen; die Tabelle
+> unten und `docs/architecture.md` sind die chronologische Aufzeichnung dahinter.**
 
 Alles Folgende lief gegen eine kostenpflichtige API auf echten Dokumenten, jedes
 Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
