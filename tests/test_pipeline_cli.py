@@ -17,7 +17,7 @@ def test_write_all_audit_formats(tmp_path, controlled_source, controlled_packet)
     dossier = ReviewPipeline(profile="budget").run(controlled_source, packet=controlled_packet)
     json_path, markdown_path, html_path = ReviewPipeline.write(dossier, tmp_path)
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    assert payload["schema_version"] == "content-review.dossier/0.2"
+    assert payload["schema_version"] == "content-review.dossier/0.3"
     assert payload["profile"] == "budget"
     assert "10 konsolidierte Punkte" in markdown_path.read_text(encoding="utf-8")
     html = html_path.read_text(encoding="utf-8")

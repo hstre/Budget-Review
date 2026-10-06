@@ -263,9 +263,7 @@ class SemanticPacket:
             claims=tuple(ClaimProposal.from_dict(item) for item in raw_claims),
             relations=tuple(RelationProposal.from_dict(item) for item in raw_relations),
             relation_rejections=tuple(Rejection.from_dict(item) for item in raw_rejections),
-            claim_rejections=tuple(
-                Rejection.from_dict(item) for item in raw_claim_rejections
-            ),
+            claim_rejections=tuple(Rejection.from_dict(item) for item in raw_claim_rejections),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -285,6 +283,12 @@ class GovernedClaim:
     confidence: float
     source_ref: str
     semantic_state: str
+    # True when the passage was located only after whitespace was ignored, in
+    # which case raw_span carries the document's characters and proposed_span
+    # the wording the model sent. Recorded rather than escalated: a line break
+    # inside a sentence is a typesetting difference, not a matter of judgement.
+    anchor_normalised: bool = False
+    proposed_span: str | None = None
 
 
 @dataclass(frozen=True)
