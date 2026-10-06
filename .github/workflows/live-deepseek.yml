@@ -105,6 +105,11 @@ on:
         required: false
         default: "0"
         type: string
+      reviewer_max_tokens:
+        description: "Output budget per reviewer arm. The default 8192 truncated the thinking arm."
+        required: false
+        default: "8192"
+        type: string
 
 permissions:
   contents: read
@@ -274,7 +279,9 @@ jobs:
           mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
           python scripts/reviewer_variance.py gold-case \
             --runs "${{ inputs.reviewer_repeats }}" \
-            --profile "${{ inputs.profile }}" 2>&1 | tee gold-case/reviewer-variance.txt
+            --profile "${{ inputs.profile }}" \
+            --max-tokens "${{ inputs.reviewer_max_tokens }}" \
+            2>&1 | tee gold-case/reviewer-variance.txt
 
       - name: Live extraction
         id: extract

@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from .anti_delphi import review_claim_graph
+from .anti_delphi import REVIEWER_MAX_TOKENS, review_claim_graph
 from .gate import govern_packet
 from .ingest import SourceBundle
 from .models import ReviewDossier, SemanticPacket
@@ -28,6 +28,7 @@ class ReviewPipeline:
         *,
         packet: SemanticPacket | None = None,
         live_review: bool = False,
+        reviewer_max_tokens: int = REVIEWER_MAX_TOKENS,
     ) -> ReviewDossier:
         selected = get_profile(self.profile)
         if packet is None:
@@ -51,6 +52,7 @@ class ReviewPipeline:
             provider=self.provider if live_review else None,
             profile=selected,
             language=self.language,
+            max_tokens=reviewer_max_tokens,
         )
 
     @staticmethod

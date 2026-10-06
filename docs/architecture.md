@@ -1589,6 +1589,121 @@ Die Abdeckung. Claims, die nie vorgeschlagen wurden, sind von keiner dieser
 Messungen und von keinem Teil des Papers berührt; der Reparaturlauf bleibt dafür
 der einzige Mechanismus, und er kostet einen bezahlten Aufruf.
 
+## 3aa. Was der Thinking-Arm braucht: die Vorab-Festlegung
+
+3w hat gefunden, dass der Thinking-Arm in drei von fünf Läufen fehlt, am
+Reviewer-Budget von 8.192 Tokens abgeschnitten, auf einem 1.700 Zeichen langen
+Antrag. Das Budget war fest verdrahtet; es ist jetzt ein Parameter mit der alten
+Vorgabe, sodass die Änderung allein nichts kostet.
+
+**Mein erster Vorschlag dazu war falsch, und zwar auf eine Art, die dieser Branch
+schon mehrfach bezahlt hat.** Ich hatte „ein Lauf je Budgetstufe (8.192 / 16.384 /
+32.768), abgeschnitten ist abgeschnitten" vorgeschlagen und „eindeutig" genannt.
+Es ist nicht eindeutig: Der Arm hat bei 8.192 **zweimal von fünf fertig
+geschrieben**. Der Ausfall ist also stochastisch, und eine Treppensuche mit einem
+Lauf je Stufe berichtet, welche Stufe gerade Glück hatte, nicht die kleinste, die
+reicht. Dasselbe Ein-Lauf-Argument, das in 3i für die Extraktion und in 3w für die
+Arme widerlegt wurde.
+
+**Was stattdessen gemessen wird.** Das Budget wird hoch genug gesetzt, dass nichts
+abschneidet, und abgelesen wird, wie viele Ausgabe-Tokens der Arm tatsächlich
+verbraucht. Fünf Läufe, 65.536 Tokens, eingefrorenes Paket durch das echte Gate,
+Profil `budget`, beide Arme — zehn Aufrufe. Die Verteilung ist die Antwort; eine
+Suche braucht es nicht.
+
+**Gültigkeitsbedingung, keine Marke.** Schneidet auch bei 65.536 noch ein Aufruf
+ab, dann ist die Diagnose aus 3w — das Budget ist die Decke — falsch, und der Lauf
+meldet das statt eines Budgets. Es gäbe dann einen zweiten Grund für den Ausfall,
+den niemand gesucht hat.
+
+**Was der Lauf liefert:** das Maximum der verbrauchten Ausgabe-Tokens über alle
+zehn Aufrufe, je Arm getrennt. Die Empfehlung folgt daraus mit Reserve; die
+Entscheidung über das Produktionsbudget folgt nicht aus ihr, weil jeder Aufruf
+dann mehr kostet, und sie gehört dem Eigentümer des Repos.
+
+**Vorab festgehalten, damit es später nicht als Befund gelesen wird:** Die
+Auflösung von 0,63 aus 3w ist mit nichts vergleichbar, was dieser Lauf an
+Stabilität zeigt. Das Budget unterscheidet sich, also ist es eine andere
+Konfiguration. Die Wiederholung der fünf Läufe gehört nach die Budgetentscheidung,
+nicht daneben.
+
+## 3ab. Das Budget lag am unteren Rand des Bedarfs
+
+Fünf Läufe, 65.536 Tokens, eingefrorenes Paket, beide Arme, zehn Aufrufe. Der
+Graph war in allen fünf Läufen identisch, und **kein einziger Aufruf hat
+abgeschnitten** — die Gültigkeitsbedingung aus 3aa ist erfüllt, die Diagnose aus
+3w hält: Das Budget war die Decke.
+
+| Lauf | Evidenz-Arm | Thinking-Arm |
+|---|---:|---:|
+| 1 | 1.962 | 8.453 |
+| 2 | 2.417 | 8.226 |
+| 3 | 2.129 | 10.369 |
+| 4 | 1.961 | 12.159 |
+| 5 | 2.002 | 10.759 |
+
+**Der Thinking-Arm braucht 8.226 bis 12.159 Ausgabe-Tokens. Das Budget war
+8.192.** Es lag damit nicht deutlich unter dem Bedarf, sondern **genau an seiner
+unteren Kante** — die schlechteste Stelle für eine Grenze, weil sie dort
+unvorhersagbar greift. Genau das erklärt das Bild aus 3w: zweimal von fünf hat
+der Arm eine Antwort geschrieben, die eben noch passte, dreimal nicht.
+
+Der Evidenz-Arm braucht 1.961 bis 2.417. Für ihn war die Grenze nie bindend, und
+der Unterschied von Faktor fünf ist das Denken selbst: beide Arme liefern elf
+Befunde, einer verbraucht dafür zweitausend Tokens, der andere zehntausend.
+
+### Die Empfehlung, und was an ihr Extrapolation ist
+
+Gemessen ist der Bedarf **auf der Fixture**: 1.707 Zeichen, 25 Claims. Das ist das
+kürzeste Dokument im Repo. Der Reviewer-Prompt enthält den Graphen, also wächst
+die Antwort mit ihm, und auf der Gerichtsentscheidung trägt der Graph 40 bis 57
+Claims. Die 12.159 sind deshalb eine **untere Schranke** des Bedarfs, keine obere.
+
+Daraus: 16.384 wäre 1,35-mal das gemessene Maximum und auf einem doppelt so
+großen Graphen voraussichtlich wieder zu knapp. **32.768** ist der erste Wert mit
+Reserve gegen die Hochrechnung. Dass die Hochrechnung eine ist und keine Messung,
+steht hier, damit die Zahl nicht als gemessen gelesen wird — gemessen wäre sie
+mit fünf Läufen auf 001-141170.
+
+Die Entscheidung fällt nicht hier: jeder Aufruf kostet dann mehr, und es ist das
+Produktionsbudget.
+
+### Ein Nebenergebnis, das 3w neu liest
+
+3aa hat vorab festgehalten, dass die Stabilitätszahl dieses Laufs mit den 0,63
+aus 3w nicht vergleichbar ist. Sie ist es, nach der Regel aus 3v gelesen,
+trotzdem aufschlussreich.
+
+| | 3w (Budget 8.192) | hier (65.536) |
+|---|---|---|
+| Befunde je Lauf, verschieden | 11, 11, 16, 10, 15 | 18, 19, 17, 20, 17 |
+| in allen fünf | 8 | **5** |
+| Anteil | 0,63 | **0,27** |
+| Evidenz-Arm | 0,77 | **0,27** |
+| Thinking-Arm | 0,00 (3 von 5 ohne Antwort) | 0,36 |
+
+**Mit einem arbeitenden Thinking-Arm fällt der Anteil auf 0,27** — unter die
+Schwelle von 0,5, die 3v für „instabil" festgelegt hat. Die 0,63 waren also keine
+Aussage über die Arme, sondern überwiegend über den einen Arm, der antwortete.
+
+Und die unangenehmere Hälfte: **Der Evidenz-Arm fällt von 0,77 auf 0,27**, bei
+identischem Graphen und einer Grenze, die für ihn nie bindend war (Maximum 2.417
+von 8.192). Der naheliegende Grund ist die Streuung über Sitzungen — dieselbe,
+die 16 gegen 20 Spannen und 124 gegen 201 erzeugt hat, nur eine Ebene höher: die
+*Stabilitätszahl selbst* ist nicht reproduzierbar.
+
+Ausschließen kann ich das erhöhte Budget als Ursache nicht: Es wurde für beide
+Arme angehoben, und ein Modell kann mit mehr Raum anders antworten. Für den
+Evidenz-Arm fehlt der Tokenverbrauch aus 3w, also gibt es keinen Vergleich. Das
+trennt erst ein Lauf, der das alte Budget beibehält und nur die Sitzung wechselt.
+
+**Was daraus folgt, unabhängig davon, welcher der beiden Gründe trägt:** Eine
+einzige Fünf-Läufe-Messung legt die Stabilität der Arme nicht fest. Die
+Wiederholung nach der Budgetentscheidung muss über Sitzungen verteilt sein, nicht
+nur über Läufe — wie in 3i, und aus demselben Grund.
+
+Die Modellersetzung wurde übrigens in allen zehn Aufrufen gemeldet.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
