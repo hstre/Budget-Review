@@ -45,12 +45,16 @@ DEFAULT_ARMS = reviewer_arms(GENERAL)
 BUDGET_ARMS = reviewer_arms(BUDGET)
 
 
+REVIEWER_MAX_TOKENS = 8192
+
+
 def review_claim_graph(
     dossier: SemanticDossier,
     provider: DeepSeekProvider | None = None,
     arms: tuple[ReviewerArm, ...] | None = None,
     profile: str | ReviewProfile = "general",
     language: str = "de",
+    max_tokens: int = REVIEWER_MAX_TOKENS,
 ) -> ReviewDossier:
     selected = get_profile(profile)
     selected_arms = reviewer_arms(selected) if arms is None else arms
@@ -73,7 +77,7 @@ def review_claim_graph(
                     system=system,
                     user=user,
                     config=arm.config,
-                    max_tokens=8192,
+                    max_tokens=max_tokens,
                 )
                 served = str(metadata["model"])
                 admitted, rejected = govern_review_payload(dossier, arm, payload)

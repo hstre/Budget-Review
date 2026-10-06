@@ -1589,6 +1589,44 @@ Die Abdeckung. Claims, die nie vorgeschlagen wurden, sind von keiner dieser
 Messungen und von keinem Teil des Papers berührt; der Reparaturlauf bleibt dafür
 der einzige Mechanismus, und er kostet einen bezahlten Aufruf.
 
+## 3aa. Was der Thinking-Arm braucht: die Vorab-Festlegung
+
+3w hat gefunden, dass der Thinking-Arm in drei von fünf Läufen fehlt, am
+Reviewer-Budget von 8.192 Tokens abgeschnitten, auf einem 1.700 Zeichen langen
+Antrag. Das Budget war fest verdrahtet; es ist jetzt ein Parameter mit der alten
+Vorgabe, sodass die Änderung allein nichts kostet.
+
+**Mein erster Vorschlag dazu war falsch, und zwar auf eine Art, die dieser Branch
+schon mehrfach bezahlt hat.** Ich hatte „ein Lauf je Budgetstufe (8.192 / 16.384 /
+32.768), abgeschnitten ist abgeschnitten" vorgeschlagen und „eindeutig" genannt.
+Es ist nicht eindeutig: Der Arm hat bei 8.192 **zweimal von fünf fertig
+geschrieben**. Der Ausfall ist also stochastisch, und eine Treppensuche mit einem
+Lauf je Stufe berichtet, welche Stufe gerade Glück hatte, nicht die kleinste, die
+reicht. Dasselbe Ein-Lauf-Argument, das in 3i für die Extraktion und in 3w für die
+Arme widerlegt wurde.
+
+**Was stattdessen gemessen wird.** Das Budget wird hoch genug gesetzt, dass nichts
+abschneidet, und abgelesen wird, wie viele Ausgabe-Tokens der Arm tatsächlich
+verbraucht. Fünf Läufe, 65.536 Tokens, eingefrorenes Paket durch das echte Gate,
+Profil `budget`, beide Arme — zehn Aufrufe. Die Verteilung ist die Antwort; eine
+Suche braucht es nicht.
+
+**Gültigkeitsbedingung, keine Marke.** Schneidet auch bei 65.536 noch ein Aufruf
+ab, dann ist die Diagnose aus 3w — das Budget ist die Decke — falsch, und der Lauf
+meldet das statt eines Budgets. Es gäbe dann einen zweiten Grund für den Ausfall,
+den niemand gesucht hat.
+
+**Was der Lauf liefert:** das Maximum der verbrauchten Ausgabe-Tokens über alle
+zehn Aufrufe, je Arm getrennt. Die Empfehlung folgt daraus mit Reserve; die
+Entscheidung über das Produktionsbudget folgt nicht aus ihr, weil jeder Aufruf
+dann mehr kostet, und sie gehört dem Eigentümer des Repos.
+
+**Vorab festgehalten, damit es später nicht als Befund gelesen wird:** Die
+Auflösung von 0,63 aus 3w ist mit nichts vergleichbar, was dieser Lauf an
+Stabilität zeigt. Das Budget unterscheidet sich, also ist es eine andere
+Konfiguration. Die Wiederholung der fünf Läufe gehört nach die Budgetentscheidung,
+nicht daneben.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

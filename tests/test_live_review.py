@@ -392,3 +392,38 @@ def test_an_unsubstituted_run_adds_no_line_to_the_audit(controlled_semantic) -> 
 
     assert "Modell ersetzt" not in render_markdown(dossier, "de")
     assert "Modell ersetzt" not in render_html(dossier, "de")
+
+
+def test_the_reviewer_budget_is_passed_through_and_defaults_to_the_old_value(
+    controlled_semantic,
+) -> None:
+    """Hard-wired at 8,192, the thinking arm was truncated in three of five runs.
+
+    The default has to stay 8,192 so this change alone costs nothing, and the
+    override has to reach the provider, or the measurement would report the old
+    budget's behaviour under a new label.
+    """
+    from budget_review.anti_delphi import REVIEWER_MAX_TOKENS
+
+    assert REVIEWER_MAX_TOKENS == 8192
+
+    provider = FakeProvider(reply(), reply())
+    review_claim_graph(controlled_semantic, provider=provider, profile="budget")
+    assert {call["max_tokens"] for call in provider.calls} == {8192}
+
+    raised = FakeProvider(reply(), reply())
+    review_claim_graph(controlled_semantic, provider=raised, profile="budget", max_tokens=65536)
+    assert {call["max_tokens"] for call in raised.calls} == {65536}
+
+
+def test_the_pipeline_carries_the_reviewer_budget(controlled_source, controlled_packet) -> None:
+    from budget_review.pipeline import ReviewPipeline
+
+    provider = FakeProvider(reply(), reply())
+    pipeline = ReviewPipeline(provider=provider, profile="budget", language="de")
+
+    pipeline.run(
+        controlled_source, packet=controlled_packet, live_review=True, reviewer_max_tokens=32768
+    )
+
+    assert {call["max_tokens"] for call in provider.calls} == {32768}

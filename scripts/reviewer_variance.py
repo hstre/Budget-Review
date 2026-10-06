@@ -21,8 +21,17 @@ ids differ between runs, the input moved and the measurement says nothing.
 Only the arms' findings are counted. The deterministic half is identical by
 construction, and including it would report the rules' stability as the arms'.
 
+`--max-tokens` raises the reviewer output budget for the run. The arms' budget
+was hard-wired at 8,192, and at that value the thinking arm was truncated in
+three of five runs on a 1,700-character proposal — so what the arm actually
+needs has to be read off a budget high enough that nothing truncates, not found
+by a staircase search. Completion tokens per call are reported for that purpose:
+a single run per budget step could not have answered it, because the arm
+completed at 8,192 twice of five.
+
 Usage:
     reviewer_variance.py <output-dir> [--runs N] [--profile budget|general]
+                         [--max-tokens N]
 """
 
 from __future__ import annotations
@@ -36,6 +45,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[0] / "src"))
 
+from budget_review import anti_delphi  # noqa: E402
 from budget_review.ingest import ingest  # noqa: E402
 from budget_review.pipeline import ReviewPipeline, load_packet  # noqa: E402
 from budget_review.provider import DeepSeekProvider, ProviderError  # noqa: E402
@@ -102,12 +112,14 @@ def main() -> int:
     parser.add_argument("out_dir", type=Path)
     parser.add_argument("--runs", type=int, default=5)
     parser.add_argument("--profile", choices=sorted(CASES), default="budget")
+    parser.add_argument("--max-tokens", type=int, default=anti_delphi.REVIEWER_MAX_TOKENS)
     args = parser.parse_args()
 
     folder, document, packet_name, document_id = CASES[args.profile]
     source = ingest([FIXTURES / folder / document], document_id)
     packet = load_packet(FIXTURES / folder / packet_name)
     pipeline = ReviewPipeline(provider=DeepSeekProvider(), profile=args.profile, language="de")
+    print(f"Reviewer-Budget: {args.max_tokens} Tokens")
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     pooled: list[set] = []
@@ -115,7 +127,9 @@ def main() -> int:
     signatures: set = set()
     for index in range(1, args.runs + 1):
         try:
-            dossier = pipeline.run(source, packet=packet, live_review=True).to_dict()
+            dossier = pipeline.run(
+                source, packet=packet, live_review=True, reviewer_max_tokens=args.max_tokens
+            ).to_dict()
         except (ProviderError, SystemExit) as exc:
             print(f"Lauf {index}: fehlgeschlagen ({exc})", flush=True)
             pooled.append(set())
@@ -139,6 +153,14 @@ def main() -> int:
         failed_arms = [
             run["reviewer_id"] for run in dossier["reviewer_runs"] if run.get("status") == "failed"
         ]
+        for run in dossier["reviewer_runs"]:
+            if run["kind"] != "llm":
+                continue
+            spent = (run.get("usage") or {}).get("completion_tokens")
+            print(
+                f"    {run['reviewer_id']}: {run['status']}"
+                + (f", {spent} Ausgabe-Tokens" if spent else "")
+            )
         print(
             f"Lauf {index}: {len(findings)} Arm-Befunde "
             f"({len({finding_key(f) for f in findings})} verschieden), "
