@@ -1756,6 +1756,84 @@ dieses Repo gebaut ist. Die Gegenmaßnahme ist, dass die Prüfungen **mechanisch
 sein müssen: nicht „bedeutet der Claim dasselbe?", von einem Modell beurteilt,
 sondern deklarierte, deterministisch prüfbare Anforderungen je Beispiel.
 
+## 3ad. Der semantische Prüfbestand: Entwurf, noch nicht begutachtet
+
+Schritt 2 aus 3ac ist gebaut:
+`src/budget_review/fixtures/semantic_cases/cases.json`, 24 Fälle, zwölf
+Bedeutungen in Deutsch und Englisch, über sechs Phänomene — Negation, Modalität,
+Korrelation gegen Kausalität, Bedingung und Geltungsbereich, Sprecher, mehrere
+Aussagen in einer Stelle.
+
+**Warum es den Bestand überhaupt gibt.** Jeder Korpus, gegen den dieses Projekt
+gemessen hat, annotiert, *wo* eine Argumenteinheit sitzt. Keiner annotiert, ob
+der Claim, der sie zitiert, noch dasselbe bedeutet. Ein Claim kann perfekt
+verankert sein und die Negation verlieren, aus „könnte" ein „senkt" machen oder
+aus einer Korrelation eine Ursache — und der Span-Recall zählt das als Treffer.
+Das ist die Lücke, die 3ac benannt hat und ohne die auch die Identitätsfrage aus
+3z nicht entscheidbar ist.
+
+**Die Prüfungen sind mechanisch, und das ist die Bedingung.** Keine Bedingung
+fragt ein Modell, ob zwei Sätze dasselbe bedeuten — dann wären das geprüfte
+System und sein Prüfer aus derselben Familie. Stattdessen Token-Gruppen und
+Regexe. Sie sind absichtlich grob: Sie fangen den groben Fehler — eine Negation,
+die einfach fehlt, eine erfundene Ursache — und sie fangen feine Verschiebung
+nicht. Eine Prüfung, über die man nicht streiten kann, ist hier mehr wert als
+eine, die öfter recht hat.
+
+Geprüft wird **die treue Wiedergabe der Quelle.** Die Quellen sagen Dinge, die
+falsch sein können; das ist nicht Gegenstand der Messung.
+
+### Fünf Invarianten, und wofür die letzten zwei da sind
+
+1. Jede Spanne kommt in ihrem Dokument genau einmal vor.
+2. Jede Bedingungsgruppe hat mindestens eine ihrer Wendungen **in der Spanne
+   selbst** — ein Fall kann also kein Wort verlangen, das die Quelle nicht
+   enthält.
+3. Kein Verbot trifft die Spanne — ein Fall kann also nicht den Wortlaut der
+   Quelle verbieten.
+4. Jedes Paar trägt beide Sprachen, dasselbe Phänomen, dieselbe Zahl von Gruppen
+   und dieselbe Claim-Zahl. Sprache ist damit eine Variable und kein Störfaktor.
+5. Jede aufgeführte **zulässige** Lesart erfüllt die Bedingungen, und jede
+   **verbotene** verletzt mindestens eine.
+
+Die fünfte ist die wichtigste: Ein Fall, dessen eigener ausgeschriebener
+Fehlerfall seine eigenen Prüfungen passiert, misst nichts. Sie läuft über alle
+achtzehn Einzel-Claim-Fälle; für die sechs Fälle mit `min_claims_on_span ≥ 2` ist
+sie abgeschaltet, weil ihr Fehlerfall „nur ein Claim" lautet und keine
+Inhaltsprüfung ist. Für diese sechs ist also **nicht maschinell belegt**, dass
+ihre verbotene Lesart durchfällt, und das steht als Schwäche im Review-Auftrag.
+
+Sechs Mutationen auf dem Validator, darunter die drei, die ihn nutzlos machen
+würden: eine Gruppe genügt statt aller, ein Wortverbot feuert innerhalb eines
+anderen Wortes, und eine verbotene Lesart, die alles passiert, wird nicht mehr
+gemeldet.
+
+### Der Status ist Entwurf, und das ist kein Formalismus
+
+Beispiele, Gold und Bedingungen sind **von einem Modell geschrieben** — aus
+derselben Familie, die am Ende geprüft wird. Ohne unabhängige Durchsicht messen
+wir, ob das System die Lesart eines Modells teilt. Der Auftrag für zwei
+Durchsichten, die Fragen, die zu stellen sind, und die Stellen, die ich selbst
+für die schwächsten halte, stehen in
+[`semantic-cases-review.md`](semantic-cases-review.md), zusammen mit der Regel,
+die den Beraterrollen Sinn gibt: **Uneinigkeit ist ein Filter auf Beispiele,
+keine Abstimmung über Bedeutung.** Wer sich nicht einig ist, was ein Satz
+bedeutet, streicht das Beispiel.
+
+Dort steht auch die Governance-Regel für Erweiterungen: eine Token-Gruppe zu
+erweitern, nachdem ein Lauf daran gescheitert ist, ist Anpassung des Tests an das
+System — erlaubt nur mit Zustimmung einer Durchsicht und mit Vermerk. Auf diesem
+Branch haben wandernde Marken schon zweimal Befunde entwertet.
+
+### Was noch nicht da ist
+
+Der Bestand validiert sich selbst, er **bewertet noch nichts.** Die drei
+getrennten Ergebnisse aus 3ac — Quellenverankerung, Bedeutungsübertragung,
+Beziehungen zwischen Claims — sind Schritt 3 und setzen voraus, dass das Gold
+begutachtet ist. Ein Scorer vor der Durchsicht würde Zahlen gegen eine
+unbestätigte Annotation produzieren, und solche Zahlen stehen in 3u bis 3ab schon
+genug herum.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

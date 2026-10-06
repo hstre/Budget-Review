@@ -9,6 +9,34 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Added
+
+- **A hand-annotated set for meaning, as a draft pending independent review.**
+  `src/budget_review/fixtures/semantic_cases/cases.json`: 24 cases, twelve
+  meanings in German and English, over negation, modality, correlation against
+  causation, condition and scope, speaker, and several assertions in one passage.
+  Every corpus measured against so far annotates *where* an argument unit sits
+  and none annotates whether the claim quoting it still means the same thing — a
+  claim can anchor perfectly and lose the negation, and span recall counts that
+  as a hit.
+  Every requirement is a token group or a regex, never a model judging whether
+  two sentences mean the same, because the system under test and its examiner
+  would then come from one family. The checks are crude on purpose: they catch a
+  negation that is simply gone or a cause invented, not subtle drift.
+  `scripts/semantic_cases.py` validates the set against five invariants, of
+  which the last two would catch a check that proves nothing: every permitted
+  reading must satisfy the requirements and every declared forbidden reading must
+  violate one. That holds for the eighteen single-claim cases; for the six that
+  require two claims it is switched off, since their failure is "only one claim",
+  and that weakness is written into the review brief rather than left implicit.
+  Six mutations on the validator.
+- **`docs/semantic-cases-review.md`** — the brief for two independent reviews,
+  because the draft was authored by the same kind of model it will be used to
+  test. It carries the five questions to ask, the five places I think are weakest,
+  the rule that **disagreement filters examples rather than voting on meaning**,
+  and the governance rule for extending a token group after a run has failed
+  against it. Until both reviews are recorded there, the set stays a draft.
+
 ### Changed
 
 - **The gate anchors a quote that differs from the document only in whitespace.**
