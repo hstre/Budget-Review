@@ -9,6 +9,40 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Changed
+
+- **The reviewer output budget is a parameter**, defaulting to the 8,192 it was
+  hard-wired at, and threaded through the pipeline so a measurement can raise it
+  without changing production behaviour.
+
+### Measured
+
+- **What the thinking arm actually needs: 8,226 to 12,159 output tokens, against
+  a budget of 8,192.** Five runs at 65,536 over the frozen packet, both arms, ten
+  calls, nothing truncated — so the §3w diagnosis holds and the limit sat not far
+  below the requirement but **at the very bottom edge of it**, which is the worst
+  place for a limit because it then fails unpredictably. That is why the arm
+  finished twice of five. The evidence arm needs 1,961 to 2,417 and was never
+  near the limit; the factor of five between them is the thinking itself, for the
+  same eleven findings.
+  The figure is measured on the repository's shortest document (1,707 characters,
+  25 claims) and the reviewer prompt carries the graph, so it is a lower bound on
+  the requirement. 32,768 is the first value with room against that extrapolation
+  — and the extrapolation is named as one, since measuring it would take five runs
+  on a court decision. The production budget is not changed here.
+- **The resolution figure from §3w is re-read, and it was not about the arms.**
+  With a working thinking arm the share of findings present in all five runs falls
+  from 0.63 to **0.27**, below the 0.5 the pre-registration set for "unstable":
+  the earlier number was mostly the one arm that answered. Worse, the evidence
+  arm alone falls from 0.77 to 0.27 on an identical graph with a limit that never
+  bound it, which points at session-to-session variance one level up — the
+  stability figure is itself not reproducible. The raised budget cannot be
+  excluded as the cause, since it was raised for both arms and §3w recorded no
+  token counts to compare, and separating the two takes a run that keeps the old
+  budget and changes only the session. Either way a single five-run measurement
+  does not fix the arms' stability, and the repeat after the budget decision has
+  to be spread across sessions, as in §3i.
+
 ### Added
 
 - **The unstable half of a claim's identity is the model's wording, not the

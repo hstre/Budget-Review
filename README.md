@@ -336,7 +336,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3y.
+detail per experiment is in `docs/architecture.md` §3a–§3ab.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -364,6 +364,8 @@ detail per experiment is in `docs/architecture.md` §3a–§3y.
 | 22 | Same run, the thinking arm's availability | none — it was not the question | Truncated at the 8,192-token reviewer budget in **3 of 5 runs**, on a 1,700-character proposal | A production defect: every second or third review has one independent arm, not two |
 | 23 | Finished packets re-keyed at five identity rungs, offline | core growth ≥ 50% with ≤ 5% merged inside a run ⇒ worth it; < 20% ⇒ parked | Dropping the span from the identity: +5% on the decision. Dropping the model's wording: +58%. On A24 +125% against +47% | **The model's paraphrase is the unstable half**, not the document's quote — the opposite of the paper's own choice |
 | 24 | Relation labels the extractor reached for, across 32 files | none — a count | 16 of 18 are our own claim types in the relation field; 0 are a missing family. Single-call arm 10 invalid labels / ~173 edges, two-stage arm **0 / 192** | My "every one is a family label" is **retracted.** Family-first would not fix it; the two-stage split does |
+| 25 | What the thinking arm needs, read off a budget high enough not to truncate | validity: nothing may truncate at 65,536, or the §3w diagnosis is wrong | Thinking arm 8,226–12,159 output tokens against a budget of **8,192**; evidence arm 1,961–2,417. Nothing truncated | The limit sat at the bottom edge of the requirement, which is why it failed unpredictably. A lower bound: measured on the shortest document |
+| 26 | The same five-run stability measurement with a working thinking arm | none — pre-declared as a different configuration | Share 0.63 → **0.27**, below the 0.5 "unstable" floor. The evidence arm alone 0.77 → 0.27 on an identical graph | §3w's 0.63 was mostly the one arm that answered. The stability figure is itself not reproducible across sessions |
 
 #### What we believe we know
 
@@ -918,7 +920,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3y.
+stehen in `docs/architecture.md` §3a–§3ab.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|

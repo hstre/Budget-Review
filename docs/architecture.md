@@ -1627,6 +1627,83 @@ Stabilität zeigt. Das Budget unterscheidet sich, also ist es eine andere
 Konfiguration. Die Wiederholung der fünf Läufe gehört nach die Budgetentscheidung,
 nicht daneben.
 
+## 3ab. Das Budget lag am unteren Rand des Bedarfs
+
+Fünf Läufe, 65.536 Tokens, eingefrorenes Paket, beide Arme, zehn Aufrufe. Der
+Graph war in allen fünf Läufen identisch, und **kein einziger Aufruf hat
+abgeschnitten** — die Gültigkeitsbedingung aus 3aa ist erfüllt, die Diagnose aus
+3w hält: Das Budget war die Decke.
+
+| Lauf | Evidenz-Arm | Thinking-Arm |
+|---|---:|---:|
+| 1 | 1.962 | 8.453 |
+| 2 | 2.417 | 8.226 |
+| 3 | 2.129 | 10.369 |
+| 4 | 1.961 | 12.159 |
+| 5 | 2.002 | 10.759 |
+
+**Der Thinking-Arm braucht 8.226 bis 12.159 Ausgabe-Tokens. Das Budget war
+8.192.** Es lag damit nicht deutlich unter dem Bedarf, sondern **genau an seiner
+unteren Kante** — die schlechteste Stelle für eine Grenze, weil sie dort
+unvorhersagbar greift. Genau das erklärt das Bild aus 3w: zweimal von fünf hat
+der Arm eine Antwort geschrieben, die eben noch passte, dreimal nicht.
+
+Der Evidenz-Arm braucht 1.961 bis 2.417. Für ihn war die Grenze nie bindend, und
+der Unterschied von Faktor fünf ist das Denken selbst: beide Arme liefern elf
+Befunde, einer verbraucht dafür zweitausend Tokens, der andere zehntausend.
+
+### Die Empfehlung, und was an ihr Extrapolation ist
+
+Gemessen ist der Bedarf **auf der Fixture**: 1.707 Zeichen, 25 Claims. Das ist das
+kürzeste Dokument im Repo. Der Reviewer-Prompt enthält den Graphen, also wächst
+die Antwort mit ihm, und auf der Gerichtsentscheidung trägt der Graph 40 bis 57
+Claims. Die 12.159 sind deshalb eine **untere Schranke** des Bedarfs, keine obere.
+
+Daraus: 16.384 wäre 1,35-mal das gemessene Maximum und auf einem doppelt so
+großen Graphen voraussichtlich wieder zu knapp. **32.768** ist der erste Wert mit
+Reserve gegen die Hochrechnung. Dass die Hochrechnung eine ist und keine Messung,
+steht hier, damit die Zahl nicht als gemessen gelesen wird — gemessen wäre sie
+mit fünf Läufen auf 001-141170.
+
+Die Entscheidung fällt nicht hier: jeder Aufruf kostet dann mehr, und es ist das
+Produktionsbudget.
+
+### Ein Nebenergebnis, das 3w neu liest
+
+3aa hat vorab festgehalten, dass die Stabilitätszahl dieses Laufs mit den 0,63
+aus 3w nicht vergleichbar ist. Sie ist es, nach der Regel aus 3v gelesen,
+trotzdem aufschlussreich.
+
+| | 3w (Budget 8.192) | hier (65.536) |
+|---|---|---|
+| Befunde je Lauf, verschieden | 11, 11, 16, 10, 15 | 18, 19, 17, 20, 17 |
+| in allen fünf | 8 | **5** |
+| Anteil | 0,63 | **0,27** |
+| Evidenz-Arm | 0,77 | **0,27** |
+| Thinking-Arm | 0,00 (3 von 5 ohne Antwort) | 0,36 |
+
+**Mit einem arbeitenden Thinking-Arm fällt der Anteil auf 0,27** — unter die
+Schwelle von 0,5, die 3v für „instabil" festgelegt hat. Die 0,63 waren also keine
+Aussage über die Arme, sondern überwiegend über den einen Arm, der antwortete.
+
+Und die unangenehmere Hälfte: **Der Evidenz-Arm fällt von 0,77 auf 0,27**, bei
+identischem Graphen und einer Grenze, die für ihn nie bindend war (Maximum 2.417
+von 8.192). Der naheliegende Grund ist die Streuung über Sitzungen — dieselbe,
+die 16 gegen 20 Spannen und 124 gegen 201 erzeugt hat, nur eine Ebene höher: die
+*Stabilitätszahl selbst* ist nicht reproduzierbar.
+
+Ausschließen kann ich das erhöhte Budget als Ursache nicht: Es wurde für beide
+Arme angehoben, und ein Modell kann mit mehr Raum anders antworten. Für den
+Evidenz-Arm fehlt der Tokenverbrauch aus 3w, also gibt es keinen Vergleich. Das
+trennt erst ein Lauf, der das alte Budget beibehält und nur die Sitzung wechselt.
+
+**Was daraus folgt, unabhängig davon, welcher der beiden Gründe trägt:** Eine
+einzige Fünf-Läufe-Messung legt die Stabilität der Arme nicht fest. Die
+Wiederholung nach der Budgetentscheidung muss über Sitzungen verteilt sein, nicht
+nur über Läufe — wie in 3i, und aus demselben Grund.
+
+Die Modellersetzung wurde übrigens in allen zehn Aufrufen gemeldet.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
