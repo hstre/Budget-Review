@@ -2013,6 +2013,93 @@ ich Verankerung, Sprache und Bedeutung nicht getrennt, stünde hier „der Extra
 verliert bei Geltungsbereich und Sprecher die Hälfte der Bedeutung" — und das
 wäre falsch.
 
+## 3ag. Ist die verborgene Projektion steuerbar? Die Vorab-Festlegung
+
+3af hat gemessen, dass 38 von 122 Claims aus deutschen Quellen auf Englisch
+zurückkamen und 0 von 126 aus englischen Quellen auf Deutsch. Dazu gehören zwei
+Erklärungen, und sie widersprechen sich nicht.
+
+**Die banale.** Der Extraktionsvertrag erwähnte Sprache **überhaupt nicht.** Der
+Reviewer-Vertrag trägt seit immer `_REVIEWER_LANGUAGE` („clear German" / „clear
+English") und einen `language`-Parameter; die Extraktionsprompt hatte beides
+nicht, ist selbst durchgehend englisch und ihr Beispielwert lautet
+`"One atomic proposition."`. Das erklärt Richtung und Rate des Drifts — und es
+macht die Sprachwahl des Produkts inkonsistent: `--language de` steuert Labels,
+deterministische Regeln und beide Reviewer-Arme, aber nicht die Propositionen.
+
+**Die tiefere.** Ein reiner Extraktor *kann* nicht übersetzen. Um einen deutschen
+Satz als treue englische Proposition zu schreiben, muss das Modell Subjekt,
+Prädikat, Geltungsbereich und Polarität bereits sprachunabhängig repräsentiert
+haben und dann neu verbalisieren. **Die semantische Projektion findet also statt;
+sie wird nur nicht als Artefakt behalten.**
+
+Das erklärt rückblickend den Befund aus 3y, den ich dort als Tatsache berichtet
+und nicht begründet habe: `raw_span` ist eine **Auswahl** — ein Index ins
+Dokument — und deshalb reproduzierbar; `canonical_content` ist eine **Erzeugung**
+und deshalb die instabile Hälfte. Der Sprachwechsel ist der Beleg, denn dieselbe
+Erzeugung lief in einer anderen Sprache.
+
+Working Paper 2 fordert „no direct text-to-claim" als Regel. Gemessen ist, dass
+es ohnehin keinen direkten Weg gibt: Text → verborgene Projektion → Claim, und
+behalten wird nur der letzte Pfeil.
+
+### Die Änderung, und warum sie klein ist
+
+**Eine Anforderung im Extraktionsvertrag**, direkt neben der Regel für wörtliche
+Spannen, weil sie zur selben Familie gehört: `canonical_content` in der Sprache
+des Dokuments, nicht übersetzt, mit dem Grund — ein Claim muss gegen seine
+Spanne prüfbar sein.
+
+Die Sprache wird **nicht als Parameter übergeben.** Sie ist eine Eigenschaft des
+Dokuments und nicht der Aufrufer-Oberfläche: Ein deutsches Dokument mit
+`--language en` geprüft braucht weiterhin deutsche Propositionen, weil die
+Spanne, gegen die sie zu prüfen sind, deutsch ist. Alles andere am Vertrag ist
+byte-identisch.
+
+Dass die Änderung klein ist, ist Absicht. Jede strukturelle Änderung dieses
+Projekts — Segmentierung, Doppellauf, Zweistufigkeit, Thin-Targeting — ist
+gescheitert oder unlesbar geblieben; die eine, die wirkte, war klein und
+mechanisch.
+
+### Die Regel, vorab
+
+Derselbe Bestand, drei Wiederholungen, dasselbe Profil, derselbe Scorer,
+dieselben 24 Fälle **ohne eine geänderte Token-Gruppe.**
+
+- **Steuerbar**, wenn übersetzte Claims aus deutschen Quellen auf **≤ 5** fallen
+  (Basis 38 von 122). Dann ist die verborgene Projektion durch eine Anweisung
+  kontrollierbar, und für das Sprachproblem braucht es keine explizite
+  Projektionsschicht.
+- **Nicht steuerbar** bei **> 15**. Dann greift eine Anweisung nicht an das, was
+  die Schicht tut, und das ist das stärkste Argument für explizite
+  Projektionsfelder.
+- Dazwischen: Teileffekt, die Anweisung hilft und entscheidet nichts.
+- **Englisch darf nicht regredieren:** 0 von 126 übersetzten bleibt 0.
+
+**Schutzbedingung, die die Änderung zurücknimmt:** Bedeutung darf nicht
+regredieren. Negation und Modalität stehen bei 12/12; fallen sie, hat die
+Anweisung Sprache auf Kosten von Bedeutung gekauft, und sie wird rückgängig
+gemacht.
+
+### Der saubere Nebeneffekt, auf den ich setze
+
+Vier deutsche Fälle — `sco-01-de`, `spk-02-de`, `mul-01-de`, `cor-01-de` — sind in
+3af **ausschließlich an der Sprache** gescheitert; ihre Claims waren inhaltlich
+tadellos. Antwortet das Modell jetzt auf Deutsch, erfüllen sie ihre
+**bestehenden, unveränderten** Bedingungen.
+
+Dann ist **M-1 ohne eine Gold-Änderung gelöst**, und die Frage aus dem
+Review-Auftrag — ob eine zweisprachige Bedingung Schärfe verliert — stellt sich
+nicht mehr. Bestehen sie die Sprachachse und scheitern weiter an den Token, sind
+meine deutschen Listen wirklich zu eng und M-1 braucht die Durchsicht doch.
+
+### Was diese Änderung nicht anfasst
+
+Die **Bedingung.** `sco-02` verliert in 3/3 englischen Läufen das „wenn" und
+behauptet, die Mittel *würden* bewilligt. Davon ist keine Sprachanweisung
+betroffen, und wenn sie es doch wäre, wäre das eine Überraschung, die gegen die
+Notwendigkeit expliziter Felder spricht. Berichtet wird es ohne Marke.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,
