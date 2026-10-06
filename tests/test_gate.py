@@ -130,3 +130,106 @@ def test_a_claim_dropped_before_the_gate_still_appears_in_the_audit(
     recorded = [item for item in dossier.rejections if item.item_id == "C042"]
     assert len(recorded) == 1
     assert "unknown claim_type: conclusion" in recorded[0].reason
+
+
+def _wrapped_source() -> tuple[str, dict]:
+    """A hard-wrapped document and a packet quoting across its line break."""
+    document = "The budget rises by four per cent.\nThe schools receive the larger share."
+    packet = {
+        "schema_version": "content-review.semantic-packet/0.2",
+        "document_id": "d",
+        "provenance": {
+            "provider": "deepseek",
+            "model_id": "m",
+            "run_id": "r",
+            "prompt_hash": "a" * 64,
+            "output_hash": "b" * 64,
+            "temperature": 0.0,
+        },
+        "claims": [
+            {
+                "proposal_id": "C01",
+                "claim_type": "fact",
+                "canonical_content": "The budget rises and the schools get more.",
+                # The document has a newline where this has a space.
+                "raw_span": "four per cent. The schools receive",
+                "confidence": 0.9,
+                "source_ref": "d",
+            }
+        ],
+        "relations": [],
+    }
+    return document, packet
+
+
+def test_a_span_that_differs_only_in_a_line_break_is_admitted_quoting_the_document() -> None:
+    """Fourteen of eighteen repair proposals died on this, and 42 of 465 on a paper."""
+    document, packet = _wrapped_source()
+
+    dossier = govern_packet(document, SemanticPacket.from_dict(packet))
+
+    assert dossier.rejections == ()
+    claim = dossier.claims[0]
+    assert claim.raw_span == "four per cent.\nThe schools receive", "the document's characters"
+    assert claim.proposed_span == "four per cent. The schools receive", "what the model sent"
+    assert claim.anchor_normalised is True
+    assert document[claim.anchor_start : claim.anchor_end] == claim.raw_span
+
+
+def test_a_normalised_anchor_does_not_raise_the_state() -> None:
+    """Typesetting is not something a human has to adjudicate."""
+    document, packet = _wrapped_source()
+
+    dossier = govern_packet(document, SemanticPacket.from_dict(packet))
+
+    assert dossier.claims[0].semantic_state == "proposed"
+
+
+def test_an_exactly_quoted_claim_records_no_substitution(controlled_semantic) -> None:
+    assert all(not claim.anchor_normalised for claim in controlled_semantic.claims)
+    assert all(claim.proposed_span is None for claim in controlled_semantic.claims)
+
+
+def test_the_same_passage_quoted_two_ways_is_one_node() -> None:
+    """The stabilisation this change does buy: typesetting no longer forks a node."""
+    document, packet = _wrapped_source()
+    exact = {
+        **packet,
+        "claims": [{**packet["claims"][0], "raw_span": "four per cent.\nThe schools receive"}],
+    }
+
+    folded_run = govern_packet(document, SemanticPacket.from_dict(packet))
+    exact_run = govern_packet(document, SemanticPacket.from_dict(exact))
+
+    assert folded_run.claims[0].claim_node_id == exact_run.claims[0].claim_node_id
+
+
+def test_two_assertions_at_one_passage_stay_two_claims() -> None:
+    """One passage can carry several assertions, and several readings of it.
+
+    Keying a claim on its anchor alone would make the second of these a
+    duplicate and drop it, silently picking whichever arrived first. A passage
+    is a place in the document, not a proposition, so canonical_content stays in
+    the identity and divergent readings of one quote remain two claims for a
+    human to compare.
+    """
+    document, packet = _wrapped_source()
+    span = "four per cent. The schools receive"
+    packet["claims"] = [
+        {**packet["claims"][0], "proposal_id": "C01", "canonical_content": "The budget rises."},
+        {
+            **packet["claims"][0],
+            "proposal_id": "C02",
+            "canonical_content": "The schools receive the larger share.",
+            "raw_span": span,
+        },
+    ]
+
+    dossier = govern_packet(document, SemanticPacket.from_dict(packet))
+
+    assert len(dossier.claims) == 2, "two assertions, not one duplicate"
+    assert dossier.claims[0].claim_node_id != dossier.claims[1].claim_node_id
+    assert "duplicate_claim_node" not in {item.reason for item in dossier.rejections}
+    assert {claim.anchor_start for claim in dossier.claims} == {dossier.claims[0].anchor_start}, (
+        "both anchored at the same passage"
+    )

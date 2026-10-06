@@ -9,6 +9,58 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Changed
+
+- **The gate anchors a quote that differs from the document only in whitespace.**
+  Exact matches win outright, so a proposal that quoted correctly anchors exactly
+  as before and the tolerance can only add anchors where there were none. When it
+  applies, the claim carries the document's own characters and never the model's
+  wording. Measured over 465 proposals on one paper: 412 anchor verbatim, 42
+  differ only in whitespace, 11 are genuine paraphrase and stay refused, and 0
+  need case folding — so case is not folded and punctuation is not stripped. The
+  offline counterfactual predicted seven recall figures before this existed and
+  the built gate reproduces all seven exactly: 216, 219, 192, 218, 218, 198 and
+  196 of 219. On the court decision three repair rounds reach **24/24, 22/24,
+  24/24** — the full gold answer twice of three, where the previous maximum was
+  23 and the figure this work started from was 16. Six mutations.
+- Two fields record what the gate did: `anchor_normalised` when whitespace had to
+  be ignored, and `proposed_span` with the wording the model sent. Both absent on
+  an exactly quoted claim, so the frozen controls carry neither. The original
+  evidence is therefore preserved rather than overwritten. A normalised anchor
+  does not raise the semantic state: typesetting is not something a human has to
+  adjudicate.
+- Because `raw_span` now carries the document's passage, a typeset and an exact
+  quote of one passage are the same node. That is the whole identity change in
+  this release: **`canonical_content` stays in the node address.** A passage is a
+  place in the document, not a proposition — one sentence can carry several
+  assertions and admits several readings — so divergent readings of one quote stay
+  separate claims for a human to compare, never an automatic duplicate. A mutation
+  that drops `canonical_content` from the identity now fails a test.
+- Both dossier schemas go to 0.3; the packet schema stays at 0.2, since the input
+  contract is unchanged. Node ids move, so stored dossiers are not migrated. The
+  frozen controls keep their counts.
+
+### Removed
+
+- `scripts/gate_counterfactual.py` and its tests. It measured what a gate
+  tolerating typesetting would score; the gate now does.
+- The repair pass's own copy of the whitespace search. `relaxed_span` is a thin
+  wrapper over the package's `anchor_spans`, so the rule exists once and the
+  gate's is the one that decides admission.
+
+### Withdrawn
+
+- **Keying a claim on its anchor alone.** It was built, and the validation that
+  let it through was six merges on one document, all produced by the repair pass —
+  a configuration that manufactures duplicates — with a 0.48-overlap pair judged
+  rather than measured. Separating the two halves showed the collapse had bought
+  **no recall at all**: the anchoring half alone reproduces every figure above
+  while keeping the six pairs as distinct claims. It bought only the stability
+  number (44 against 75 claims present in every run on one paper, 19 against 30
+  on the decision) and paid in propositions. What the identity needs instead is a
+  two-level design, and that needs a notion of a comparable reading that only an
+  annotated test set can supply — see `docs/architecture.md` §3z and §3ac.
+
 ### Added
 
 - **`docs/research-report.md`** — a synthesis of the measurement work for readers

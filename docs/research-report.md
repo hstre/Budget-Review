@@ -6,12 +6,12 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ab, which is a log rather than a synthesis.
+§3a–§3ac, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
 withdrawn, it is listed as withdrawn rather than quietly dropped — there are
-eight of those, and they are the most useful part of the document.
+nine of those, and they are the most useful part of the document.
 
 *(English first; dieselbe Fassung auf Deutsch weiter unten.)*
 
@@ -49,7 +49,7 @@ Three findings carry the rest:
 The fourth finding is about method rather than product, and it generalises past
 this repository: **a measurement regime that does not first establish the spread
 of a single configuration will produce findings at the rate the spread allows,
-and they will survive review because they look like results.** Six of the eight
+and they will survive review because they look like results.** Six of the nine
 withdrawals in §7 have that one cause.
 
 ### Status at a glance
@@ -61,8 +61,8 @@ withdrawals in §7 have that one cause.
 | 3 | The anchored share is a usable warning light computed without any gold answer | **in production**, with a caveat (§4.4) |
 | 4 | The coverage gap list decomposes the unanchored text — 98 % on short abstracts, a median 72 % on court decisions | **in production**, claim scoped |
 | 5 | The run-to-run spread of one configuration exceeds every prompt effect measured | established, shapes all method |
-| 6 | The quoting failure is a line break inside the sentence | **in review (#15)** |
-| 7 | A claim's identity should carry the document's passage, not the model's prose | **in review (#15)** |
+| 6 | The quoting failure is a line break inside the sentence | **in production** (#18) |
+| 7 | A claim's identity should carry the document's passage, not the model's prose | **withdrawn in that form** (§4.5, §7.8) |
 | 8 | A coverage-repair second pass gains ~97 spans on papers and is self-limiting | **in production** |
 | 9 | The provider silently changed the served model; the provenance caught it | **in production** |
 | 10 | The thinking reviewer arm was missing from three of five reviews | **in review (#16)**, budget value open |
@@ -239,7 +239,7 @@ The run-to-run spread falls from 77 spans to 27 in one arm and from 82 to 22 in
 the other. **The extractor was far more stable than every measurement made it
 look; what varied was whether the gate accepted its quotations.**
 
-Status: in review as #15. Case is not folded and punctuation is not stripped —
+Status: in production (#18). Case is not folded and punctuation is not stripped —
 measured, not chosen: casefolding anchors nothing further and changes no claim's
 identity.
 
@@ -292,8 +292,30 @@ median 1.00, minimum 0.71, none of 170 keys below 0.5. The only within-run merge
 are first-pass-and-repair-pass pairs asserting the same thing at the same quote —
 the near-duplicate case a hand-built heuristic existed for.
 
-Status: in review as #15. Node ids move, so it is a schema change (dossier 0.3)
-and a one-way step for stored dossiers; the packet schema is unchanged.
+**This was built and then withdrawn in that form.** A passage is a place in the
+document, not a proposition: one sentence can carry several assertions, and the
+same sentence admits several readings. Keyed on the anchor alone, the second
+assertion at one passage is refused as a duplicate and the machine silently keeps
+whichever arrived first. Divergent readings of one quote have to become a conflict
+a human compares, never an automatic duplicate.
+
+The validation that let it through was weak, and that is the useful part: six
+merges were inspected, on one document, all of them produced by the repair pass —
+a configuration that manufactures duplicates by asking about the same text twice.
+One pair at a token overlap of 0.48 was *judged* to be the same assertion rather
+than measured, and a rule for every case was drawn from it.
+
+Measured separately afterwards, **the collapse bought no recall at all**: the
+anchoring half alone reproduces all seven predictions and both 24-of-24 rounds,
+with the six pairs kept as separate claims. It bought only the stability figure —
+44 against 75 claims present in every run on one paper, and 19 against 30 on the
+decision — and paid for it in propositions.
+
+Status: the anchoring half is in production (#18). The identity half needs a
+two-level design — the anchor as the stable key for coverage, relations and
+cross-run comparison, several claims permitted beneath it, divergence flagged —
+and that needs a notion of a comparable reading, which no amount of counting
+supplies. An annotated test set does.
 
 This was prompted by the project's own earlier working paper, which specifies an
 identity of subject, relation, object and scope with no surface text. The
@@ -509,8 +531,8 @@ Stated as questions, because each is a measurement nobody has made.
 | A proposal refused before the gate vanished from the audit | Pre-gate rejections travel with the packet into the dossier | in production |
 | A silent model substitution was undetectable | Requested and served model both recorded, reported when they differ | in production |
 | A whole section of a document left untouched | Coverage-repair second pass over exactly the uncovered gaps | in production |
-| A quotation refused over a line break | Tolerant anchoring on a whitespace-collapsed copy | in review (#15) |
-| A reworded claim is a different node, and changes every edge | Identity carries the document's passage, not the model's prose | in review (#15) |
+| A quotation refused over a line break | Tolerant anchoring on a whitespace-collapsed copy | in production (#18) |
+| A reworded claim is a different node, and changes every edge | *Not solved.* The fix as built would have dropped a second reading of one passage | withdrawn, §4.5 |
 | The thinking arm silently absent from most reviews | Budget parameterised; requirement measured | in review (#16) |
 
 ### Unsolved
@@ -531,7 +553,7 @@ Stated as questions, because each is a measurement nobody has made.
 ## 7. Withdrawn claims
 
 Each of these was reported, published in the repository, and later retracted. Six
-of the eight have the same cause: a comparison made with one run per arm, before
+of the nine have the same cause: a comparison made with one run per arm, before
 the spread of a single configuration was known.
 
 1. **"A per-domain prompt note raises recall from 16 to 20 of 24."** Swept across
@@ -554,11 +576,17 @@ the spread of a single configuration was known.
 7. **"The resolution of the reviewer arms is 0.63."** Measured with the thinking
    arm absent from three of five runs, so it described the one arm that answered.
    With both arms working it is 0.27. **Re-read.**
-8. **"One run per budget step settles what the thinking arm needs — truncated is
+8. **"Keying a claim on its anchor alone is safe, because the merges it causes are
+   duplicates."** Verified on six merges from one document, all produced by the
+   repair pass, with a 0.48-overlap pair judged rather than measured. A passage
+   can carry several assertions and admits several readings, so the rule would
+   silently drop the second. **Withdrawn after the anchoring half shipped without
+   it** — and the separation showed the collapse had bought no recall at all.
+9. **"One run per budget step settles what the thinking arm needs — truncated is
    truncated."** The arm finished twice of five at the old budget, so the failure is
    stochastic and a staircase search reports whichever step got lucky. **Corrected
-   before the run was paid for**, which is the only one of the eight caught in
-   time.
+   before the run was paid for**, which with the eighth is one of only two caught
+   in time.
 
 ---
 
@@ -606,7 +634,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 20 measurement scripts, each tested
-docs/architecture.md §3a–§3ab            the chronological record, run by run
+docs/architecture.md §3a–§3ac            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -627,8 +655,9 @@ reader knows what is waiting.
 1. **The reviewer output budget.** 12,159 tokens measured on the shortest
    document; 32,768 is the first value with room against the extrapolation to a
    real one. Every call then costs more.
-2. **Merging the identity and anchoring change (#15).** Node ids move; stored
-   dossiers are not migrated.
+2. **How the two-level identity should work.** The anchoring half shipped; the
+   identity half needs a notion of a comparable reading, which only an annotated
+   test set can supply (§4.5).
 3. **Whether the repair pass stays** once the gate no longer refuses what it was
    recovering.
 4. **Whether to extend the relation vocabulary** to the two uncovered families, on
@@ -645,12 +674,12 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ab und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ac und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
 wurde. Wo eine Aussage später zurückgezogen wurde, steht sie als zurückgezogen da
-und wurde nicht still entfernt — es sind acht, und sie sind der nützlichste Teil
+und wurde nicht still entfernt — es sind neun, und sie sind der nützlichste Teil
 des Dokuments.
 
 ## 1. Zusammenfassung
@@ -687,7 +716,7 @@ Drei Befunde tragen den Rest:
 Der vierte Befund betrifft die Methode und gilt über dieses Repository hinaus:
 **Ein Messregime, das nicht zuerst die Streuung einer einzigen Konfiguration
 feststellt, produziert Befunde in dem Tempo, das die Streuung erlaubt — und sie
-überleben jedes Review, weil sie wie Ergebnisse aussehen.** Sechs der acht
+überleben jedes Review, weil sie wie Ergebnisse aussehen.** Sechs der neun
 Rücknahmen in §7 haben genau diese Ursache.
 
 ### Stand im Überblick
@@ -699,8 +728,8 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 3 | Der verankerte Anteil ist eine brauchbare Warnleuchte ohne jede Gold-Antwort | **in Produktion**, mit Vorbehalt (§4.4) |
 | 4 | Die Lückenliste zerlegt den unverankerten Text — 98 % auf kurzen Abstracts, Median 72 % auf Entscheidungen | **in Produktion**, Aussage eingegrenzt |
 | 5 | Die Streuung einer Konfiguration übersteigt jeden gemessenen Prompt-Effekt | belegt, prägt die ganze Methode |
-| 6 | Der Zitierfehler ist ein Zeilenumbruch im Satz | **im Review (#15)** |
-| 7 | Die Identität eines Claims gehört auf die Textstelle, nicht auf die Prosa des Modells | **im Review (#15)** |
+| 6 | Der Zitierfehler ist ein Zeilenumbruch im Satz | **in Produktion** (#18) |
+| 7 | Die Identität eines Claims gehört auf die Textstelle, nicht auf die Prosa des Modells | **in dieser Form zurückgezogen** (§4.5, §7.8) |
 | 8 | Ein Reparaturlauf gewinnt ~97 Spannen auf Papern und ist selbstbegrenzend | **in Produktion** |
 | 9 | Der Anbieter hat das ausgelieferte Modell stillschweigend gewechselt; die Provenienz hat es gefangen | **in Produktion** |
 | 10 | Der Thinking-Arm fehlte in drei von fünf Reviews | **im Review (#16)**, Budgetwert offen |
@@ -868,7 +897,7 @@ Die Streuung fällt von 77 auf 27 Spannen im einen Arm und von 82 auf 22 im
 anderen. **Der Extraktor war viel stabiler, als jede Messung aussah; was streute,
 war, ob das Gate seine Zitate annimmt.**
 
-Stand: im Review als #15. Kleinschreibung und Satzzeichen bleiben draußen —
+Stand: in Produktion (#18). Kleinschreibung und Satzzeichen bleiben draußen —
 gemessen, nicht gewählt: Casefolding verankert nichts weiter und verändert keine
 Identität.
 
@@ -921,8 +950,30 @@ Keys unter 0,5. Die einzigen Verschmelzungen innerhalb eines Laufs sind Paare au
 Erstpass und Reparaturlauf, dieselbe Aussage am selben Zitat — der Fall, für den
 eine Heuristik von Hand gebaut worden war.
 
-Stand: im Review als #15. Knoten-Ids wandern, also Schemaänderung (Dossier 0.3)
-und eine Einbahnstraße für gespeicherte Dossiers; das Paketschema bleibt.
+**Das wurde gebaut und in dieser Form zurückgezogen.** Eine Textstelle ist ein Ort
+im Dokument, keine Proposition: Ein Satz kann mehrere Aussagen tragen, und
+derselbe Satz lässt mehrere Lesarten zu. Allein auf den Anker geschlüsselt wird
+die zweite Aussage an einer Stelle als Dublette abgelehnt, und die Maschine
+behält still die, die zuerst kam. Divergente Lesarten eines Zitats müssen ein
+Konflikt werden, den ein Mensch vergleicht, keine automatische Dublette.
+
+Die Prüfung, die das durchgelassen hat, war schwach, und das ist der nützliche
+Teil: sechs Verschmelzungen, ein Dokument, alle aus dem Reparaturlauf — einer
+Konfiguration, die Dubletten erzeugt, weil sie denselben Text zweimal befragt. Ein
+Paar mit einer Token-Überschneidung von 0,48 wurde als dieselbe Aussage
+*geurteilt* statt gemessen, und daraus eine Regel für alle Fälle gezogen.
+
+Hinterher getrennt gemessen hat **der Kollaps keinen einzigen Gold-Span gekauft**:
+Die Anker-Hälfte allein reproduziert alle sieben Vorhersagen und beide
+24-von-24-Runden, bei erhaltenen sechs Paaren. Gekauft hat er nur die
+Stabilitätszahl — 44 gegen 75 auf einem Paper, 19 gegen 30 auf der Entscheidung —
+und dafür Propositionen bezahlt.
+
+Stand: Die Anker-Hälfte ist in Produktion (#18). Die Identitäts-Hälfte braucht ein
+zweistufiges Design — der Anker als stabiler Schlüssel für Abdeckung, Relationen
+und Lauf-Vergleiche, mehrere Claims darunter erlaubt, Divergenz markiert — und das
+braucht einen Begriff für vergleichbare Lesarten, den kein Zählen liefert. Ein
+annotierter Prüfbestand schon.
 
 Angestoßen hat das das eigene frühere Working Paper des Projekts, das eine
 Identität aus Subjekt, Relation, Objekt und Scope ohne Oberflächentext
@@ -1134,8 +1185,8 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Ein vor dem Gate abgelehnter Vorschlag verschwand aus dem Audit | Vor-Gate-Ablehnungen reisen mit dem Paket ins Dossier | in Produktion |
 | Eine stille Modellersetzung war nicht erkennbar | Angefragtes und ausgeliefertes Modell protokolliert, Abweichung gemeldet | in Produktion |
 | Ein ganzer Abschnitt blieb unbearbeitet | Reparaturlauf über genau die unverankerten Lücken | in Produktion |
-| Ein Zitat scheitert an einem Zeilenumbruch | Toleranter Anker auf leerraum-normalisierter Kopie | im Review (#15) |
-| Ein umformulierter Claim ist ein anderer Knoten und verändert jede Kante | Identität trägt die Textstelle, nicht die Prosa des Modells | im Review (#15) |
+| Ein Zitat scheitert an einem Zeilenumbruch | Toleranter Anker auf leerraum-normalisierter Kopie | in Produktion (#18) |
+| Ein umformulierter Claim ist ein anderer Knoten und verändert jede Kante | *Nicht gelöst.* Die gebaute Fassung hätte eine zweite Lesart derselben Stelle verworfen | zurückgezogen, §4.5 |
 | Der Thinking-Arm fehlte still in den meisten Reviews | Budget parametriert, Bedarf gemessen | im Review (#16) |
 
 ### Ungelöst
@@ -1154,7 +1205,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 ## 7. Zurückgezogene Aussagen
 
 Jede davon wurde berichtet, im Repository veröffentlicht und später zurückgezogen.
-Sechs der acht haben dieselbe Ursache: ein Vergleich mit einem Lauf je Arm, bevor
+Sechs der neun haben dieselbe Ursache: ein Vergleich mit einem Lauf je Arm, bevor
 die Streuung einer einzigen Konfiguration bekannt war.
 
 1. **„Eine domänenspezifische Prompt-Notiz hebt den Recall von 16 auf 20 von
@@ -1179,11 +1230,19 @@ die Streuung einer einzigen Konfiguration bekannt war.
 7. **„Die Auflösung der Reviewer-Arme ist 0,63."** Gemessen mit einem Arm, der in
    drei von fünf Läufen fehlte, beschrieb die Zahl den einen Arm, der antwortete.
    Mit beiden Armen sind es 0,27. **Neu gelesen.**
-8. **„Ein Lauf je Budgetstufe klärt, was der Thinking-Arm braucht — abgeschnitten
+8. **„Einen Claim allein auf seinen Anker zu schlüsseln ist unbedenklich, weil die
+   Verschmelzungen Dubletten sind."** Geprüft an sechs Verschmelzungen eines
+   Dokuments, alle aus dem Reparaturlauf, mit einem Paar bei 0,48
+   Überschneidung, das geurteilt statt gemessen wurde. Eine Textstelle kann
+   mehrere Aussagen tragen und lässt mehrere Lesarten zu; die Regel hätte die
+   zweite still verworfen. **Zurückgezogen, nachdem die Anker-Hälfte ohne sie
+   ausgeliefert wurde** — und die Trennung zeigte, dass der Kollaps gar keinen
+   Recall gekauft hatte.
+9. **„Ein Lauf je Budgetstufe klärt, was der Thinking-Arm braucht — abgeschnitten
    ist abgeschnitten."** Der Arm schrieb beim alten Budget zweimal von fünf fertig,
    der Ausfall ist also stochastisch, und eine Treppensuche berichtet, welche Stufe
-   Glück hatte. **Korrigiert, bevor der Lauf bezahlt war** — der einzige der acht,
-   der rechtzeitig auffiel.
+   Glück hatte. **Korrigiert, bevor der Lauf bezahlt war** — mit der achten einer
+   von nur zwei, die rechtzeitig auffielen.
 
 ## 8. Was die externe Arbeit beigetragen hat
 
@@ -1229,7 +1288,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 20 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ab            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3ac            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -1248,8 +1307,9 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
 1. **Das Reviewer-Ausgabebudget.** 12.159 Tokens auf dem kürzesten Dokument
    gemessen; 32.768 ist der erste Wert mit Reserve gegen die Hochrechnung auf ein
    echtes. Jeder Aufruf kostet dann mehr.
-2. **Die Identitäts- und Anker-Änderung mergen (#15).** Knoten-Ids wandern,
-   gespeicherte Dossiers werden nicht migriert.
+2. **Wie die zweistufige Identität aussehen soll.** Die Anker-Hälfte ist drin; die
+   Identitäts-Hälfte braucht einen Begriff für vergleichbare Lesarten, den nur ein
+   annotierter Prüfbestand liefert (§4.5).
 3. **Ob der Reparaturlauf bleibt**, wo das Gate nicht mehr ablehnt, was er
    wiederbeschafft hat.
 4. **Ob das Relationsvokabular** um die zwei fehlenden Familien erweitert wird —

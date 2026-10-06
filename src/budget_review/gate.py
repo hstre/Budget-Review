@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 
+from .anchoring import anchor_spans
 from .coverage import measure_coverage
 from .models import (
     GovernedClaim,
@@ -18,17 +19,6 @@ CONFIDENCE_FLOOR = 0.5
 
 def sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
-def _all_offsets(document: str, span: str) -> list[int]:
-    offsets: list[int] = []
-    start = 0
-    while True:
-        found = document.find(span, start)
-        if found < 0:
-            return offsets
-        offsets.append(found)
-        start = found + 1
 
 
 def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
@@ -54,10 +44,14 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
             rejections.append(Rejection("claim", proposal.proposal_id, "duplicate_proposal_id"))
             continue
         seen_ids.add(proposal.proposal_id)
-        offsets = _all_offsets(document, proposal.raw_span)
-        if not offsets:
+        spans, normalised = anchor_spans(document, proposal.raw_span)
+        if not spans:
             rejections.append(Rejection("claim", proposal.proposal_id, "source_span_not_found"))
             continue
+        start, end = spans[0]
+        # The document's characters, not the model's. A claim's quote has to be
+        # something a reader can check against the source.
+        quoted = document[start:end]
         if proposal.confidence < CONFIDENCE_FLOOR:
             rejections.append(Rejection("claim", proposal.proposal_id, "confidence_below_floor"))
             continue
@@ -69,7 +63,13 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
                         packet.document_id,
                         proposal.claim_type.value,
                         proposal.canonical_content,
-                        proposal.raw_span,
+                        # The document's passage rather than the model's
+                        # transcription of it, so a quote that differs only in
+                        # typesetting is the same node. canonical_content stays:
+                        # one passage can carry several assertions, and two
+                        # readings of it are a conflict for a human, never an
+                        # automatic duplicate.
+                        quoted,
                     )
                 )
             )[:20]
@@ -80,23 +80,26 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
             rejections.append(Rejection("claim", proposal.proposal_id, "duplicate_claim_node"))
             admitted[proposal.proposal_id] = duplicate
             continue
+        # A normalised anchor does not raise the state. The passage is the
+        # document's own, and typesetting is not something a human has to
+        # adjudicate; what a reader needs is the record that it happened.
         state = (
-            "human_review_required"
-            if len(offsets) > 1 or proposal.confidence < 0.75
-            else "proposed"
+            "human_review_required" if len(spans) > 1 or proposal.confidence < 0.75 else "proposed"
         )
         governed = GovernedClaim(
             claim_node_id=node_id,
             proposal_id=proposal.proposal_id,
             claim_type=proposal.claim_type,
             canonical_content=proposal.canonical_content,
-            raw_span=proposal.raw_span,
-            anchor_start=offsets[0],
-            anchor_end=offsets[0] + len(proposal.raw_span),
-            anchor_ambiguous=len(offsets) > 1,
+            raw_span=quoted,
+            anchor_start=start,
+            anchor_end=end,
+            anchor_ambiguous=len(spans) > 1,
             confidence=proposal.confidence,
             source_ref=proposal.source_ref,
             semantic_state=state,
+            anchor_normalised=normalised,
+            proposed_span=None if quoted == proposal.raw_span else proposal.raw_span,
         )
         claims.append(governed)
         admitted[proposal.proposal_id] = governed
@@ -145,7 +148,7 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
         )
 
     return SemanticDossier(
-        schema_version="content-review.semantic-dossier/0.2",
+        schema_version="content-review.semantic-dossier/0.3",
         document_id=packet.document_id,
         document_hash=sha256_text(document),
         provenance=packet.provenance,

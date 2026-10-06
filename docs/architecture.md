@@ -1128,6 +1128,10 @@ Audit, der sagt, dass der Anker über Leerraum gefunden und der Wortlaut auf die
 Quelle gesetzt wurde. Das ist eine Schemafrage (0.2 → 0.3) und eine Entscheidung,
 die nicht nebenbei fällt. Gemessen ist sie; gebaut ist sie nicht.
 
+*Die Verankerungshälfte ist inzwischen gebaut, siehe 3z. Die Identitätshälfte ist
+zurückgestellt: Eine Textstelle kann mehrere Aussagen tragen, und sie allein als
+Knoten-Adresse zu nehmen hätte die zweite still verworfen.*
+
 ## 3t. Zweistufige Extraktion: die Vorab-Festlegung
 
 Abschnitt 3n hat den Aufbau beschrieben und ausdrücklich offengelassen, was die
@@ -1592,6 +1596,165 @@ wurden.
 Die Abdeckung. Claims, die nie vorgeschlagen wurden, sind von keiner dieser
 Messungen und von keinem Teil des Papers berührt; der Reparaturlauf bleibt dafür
 der einzige Mechanismus, und er kostet einen bezahlten Aufruf.
+
+## 3z. Gebaut: der Anker toleriert Satzspiegel — und nur das
+
+Die Entscheidung aus 3s ist umgesetzt, aber **nur zur Hälfte**, und das ist eine
+Korrektur an meinem eigenen Vorschlag.
+
+3y hatte zwei Dinge zusammengezogen, die getrennt gehören:
+
+- **A, die Verankerung.** Zuerst wörtlich suchen; nur ohne Treffer auf einer
+  leerraum-normalisierten Kopie, und zurück kommt die Position im **Original**.
+  Der Claim zitiert die Zeichen des Dokuments, nie den Wortlaut des Modells.
+- **B, die Identität.** `canonical_content` aus der Knoten-Adresse nehmen.
+
+Gebaut ist **A**. **B ist zurückgestellt**, weil es einen Fehler hat, den meine
+Prüfung nicht gefunden hat.
+
+### Warum B zurückgestellt ist
+
+Eine Textstelle ist ein **Ort im Dokument, keine Proposition.** Ein Satz kann
+mehrere Aussagen tragen, und derselbe Satz lässt mehrere Lesarten zu. Keyte man
+den Knoten allein auf den Anker, würde die zweite Aussage an derselben Stelle als
+`duplicate_claim_node` abgelehnt — die Maschine entscheidet sich still für die,
+die zuerst kam. **Unterschiedliche Lesarten desselben Zitats müssen einen Konflikt
+erzeugen, den ein Mensch vergleicht, keine automatische Dublette.**
+
+Meine Prüfung von B war schwach, und das gehört protokolliert: Ich habe sechs
+Verschmelzungen auf **einem** Dokument angesehen, alle aus dem Reparaturlauf —
+einer Konfiguration, die Dubletten konstruktionsbedingt erzeugt, weil sie
+denselben Text ein zweites Mal befragt. Bei einem Paar mit einer
+Token-Überschneidung von 0,48 habe ich „dieselbe Aussage" **geurteilt, nicht
+gemessen**, und daraus eine Regel für alle Fälle gemacht. Dass derselbe Branch
+seit 3k den Spiegelfall kennt — die Regierungseinlassung und die spätere
+Wiedergabe durch den Gerichtshof sind zwei Sprechakte — hat mich nicht daran
+gehindert.
+
+### Was A allein bringt, getrennt gemessen
+
+Der **Recall-Gewinn liegt vollständig in A.** Dieselben sieben Vorhersagen,
+diesmal ohne jeden Kollaps:
+
+| Lauf | vorhergesagt | mit A allein | kollabierte Dubletten |
+|---|---:|---:|---:|
+| A1 | 216 | **216**/219 | 0 |
+| A2 | 219 | **219**/219 | 0 |
+| A3 | 192 | **192**/219 | 0 |
+| A Drift | 218 | **218**/219 | 0 |
+| B1 | 218 | **218**/219 | 0 |
+| B2 | 198 | **198**/219 | 0 |
+| B3 | 196 | **196**/219 | 0 |
+
+Und auf der Gerichtsentscheidung: **24/24, 22/24, 24/24** — identisch zu dem, was
+A und B zusammen lieferten, bei 53, 59 und 54 Claims statt 52, 57 und 51. Die
+sechs Paare aus Erstpass und Reparaturlauf bleiben also als getrennte Claims
+erhalten, **und der Recall ändert sich dadurch nicht.**
+
+Daraus folgt der Satz, der die Aufteilung begründet: **Der Kollaps hat keinen
+einzigen Gold-Span gekauft.** Er hat nur die Stabilitätszahl gehoben — und dafür
+Propositionen bezahlt.
+
+### Was A an Stabilität bringt, und was offen bleibt
+
+Weil `raw_span` jetzt die Textstelle des Dokuments trägt, verändert A die
+Identität ohnehin: Ein getyptes und ein exaktes Zitat derselben Passage sind
+derselbe Knoten. Neu geschlüsselt über fertige Läufe, Claims die in *jedem* Lauf
+vorkommen:
+
+| | heute | **A allein** | A+B (zurückgestellt) |
+|---|---:|---:|---:|
+| A24, 4 Läufe | 36 | **44** | 75 |
+| A24, alle sieben | 26 | **33** | 59 |
+| 001-141170, 3 Runden | 19 | **19** | 30 |
+| verschmolzene Claims | 0 | **0** | 0 / 0 / 6 |
+
+A allein bringt auf Papern 22 bis 27 Prozent und auf Rechtstext **null**. Der
+große Teil des Stabilitätsgewinns steckt in B — also genau in dem Stück, das
+zurückgestellt ist. Das ist die ehrliche Bilanz: Der sichere Teil kauft den ganzen
+Recall und einen kleinen Teil der Stabilität.
+
+### Wie B aussehen müsste
+
+Nicht eine Identität, sondern **zwei Ebenen**. Der Anker ist stabil und der
+richtige Schlüssel für Abdeckung, Relationen und Lauf-Vergleiche. Der Claim an
+diesem Anker trägt eine Proposition, von der es mehrere geben darf. Divergente
+Lesarten an einer Stelle gehören dann markiert — als Konflikt mit menschlicher
+Prüfung — statt abgelehnt.
+
+Was dafür fehlt, ist der Begriff „vergleichbare Lesart": ohne ihn ist jede
+Umformulierung eine neue Lesart und jeder Konflikt-Marker Rauschen. Den liefert
+kein Zählen, sondern ein annotierter Prüfbestand (siehe die Planung in 3ac).
+
+### Audit, Schema, Entferntes
+
+`anchor_normalised` sagt, dass die Textstelle erst nach Ignorieren von Leerraum
+gefunden wurde; `proposed_span` trägt dann den Wortlaut des Modells. Auf exakt
+zitierten Claims sind beide leer. Damit ist die Forderung aus 3s erfüllt:
+ersetzen, aber protokollieren — **der Originalbeleg bleibt erhalten.** Der Zustand
+steigt nicht: ein Zeilenumbruch ist kein Fall für einen Menschen.
+
+Beide Dossier-Schemata gehen auf 0.3, das Paketschema bleibt bei 0.2. Knoten-Ids
+wandern; gespeicherte Dossiers werden nicht migriert. Die eingefrorenen
+Kontrollen behalten ihre Zahlen.
+
+`gate_counterfactual.py` ist entfernt: Es hat gemessen, was ein toleranter Anker
+erreichen würde, und der Anker ist jetzt tolerant. Und `relaxed_span` im
+Reparaturlauf ist ein dünner Wrapper über `anchor_spans`, damit es die
+Leerraum-Suche nur einmal gibt.
+
+## 3ac. Der Plan, der aus 3z folgt
+
+3z hat die Identitätsfrage zurückgestellt, weil ihr ein Begriff fehlt:
+**vergleichbare Lesart.** Ohne ihn ist jede Umformulierung eine neue Lesart, jeder
+Konflikt-Marker Rauschen und jede Häufigkeitsverteilung über Lesarten eine
+Verteilung über Zeichenketten. Dieselbe Lücke macht die Entropie- und
+Divergenz-Maschinerie aus dem Working Paper unbrauchbar (siehe 3y).
+
+Die Reihenfolge, in der das aufgelöst wird, steht hier, damit sie nicht nur in
+einem Chat existiert.
+
+**1. Die Leerraum-Reparatur allein übernehmen.** Erledigt, 3z: nachgewiesener
+Fehler, Originalbeleg erhalten, kein Kollaps.
+
+**2. Einen kleinen semantischen Prüfbestand bauen.** 20 bis 30 kurze, von Hand
+eindeutig annotierte Beispiele, gezielt auf die Stellen, an denen Bedeutung
+verlorengeht und die kein externer Korpus annotiert:
+
+- Negation: „wirkt" gegen „wirkt nicht".
+- Modalität: „verursacht" gegen „könnte verursachen".
+- Korrelation gegen Kausalität.
+- Bedingungen und Geltungsbereich.
+- Sprecher: Behauptung der Regierung gegen Feststellung des Gerichts.
+- Mehrere Aussagen innerhalb derselben Textstelle.
+
+Je Beispiel wird festgehalten, **welche Bedeutung erhalten bleiben muss** und
+**welche Lesarten der Text zulässt**. Geprüft wird die korrekte Wiedergabe der
+Quelle — die Aussagen der Quelle können selbst falsch sein, und das ist nicht
+Gegenstand der Messung.
+
+**3. Drei Ergebnisse getrennt messen**, statt einer Zahl:
+
+- Quellenverankerung (hat der Claim die richtige Stelle?),
+- Bedeutungsübertragung (ist die Aussage erhalten?),
+- Beziehungen zwischen Claims (sind die Kanten richtig?).
+
+Der Grund für die Trennung steht in diesem Dokument mehrfach: Bisher kann eine
+Änderung besser aussehen, weil sie *mehr Text erfasst*, ohne bessere semantische
+Struktur zu erzeugen. Die Abdeckungsmessungen bleiben daneben nützlich.
+
+**4. Erst darauf die empirische Projektion.** Wiederholte Extraktionen zeigen
+dann, welche *vergleichbaren* Lesarten mit welcher Häufigkeit entstehen; gegen die
+Annotationen wird geprüft, ob diese Häufigkeiten informativ sind. Erst dann haben
+Entropie und Divergenz einen belastbaren Gegenstand, und erst dann ist
+entscheidbar, wie die zweite Ebene der Identität aus 3z aussehen muss.
+
+**Eine Gefahr, die zum Plan gehört.** Schreibe ich die Beispiele, schreibe ich die
+Gold-Annotationen, und ist das geprüfte System aus derselben Modellfamilie, dann
+erbt der Prüfbestand meine blinden Flecken — genau die Zirkularität, gegen die
+dieses Repo gebaut ist. Die Gegenmaßnahme ist, dass die Prüfungen **mechanisch**
+sein müssen: nicht „bedeutet der Claim dasselbe?", von einem Modell beurteilt,
+sondern deklarierte, deterministisch prüfbare Anforderungen je Beispiel.
 
 ## 4. ClaimGraph
 

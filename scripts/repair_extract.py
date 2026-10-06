@@ -60,6 +60,7 @@ variant = _load("prompt_variant_extract")
 recall = _load("measure_recall")
 repair_rule = _load("repair_merge")
 
+from budget_review.anchoring import anchor_spans  # noqa: E402
 from budget_review.gate import govern_packet, sha256_text  # noqa: E402
 from budget_review.models import SemanticPacket  # noqa: E402
 
@@ -186,24 +187,6 @@ class _FixtureBuilder:
         print(f"{document_id}: {len(document)} Zeichen, eigene Fixture")
 
 
-def _collapsed(text: str) -> tuple[str, list[int]]:
-    """The text with whitespace runs squeezed to one space, and an index map."""
-    out: list[str] = []
-    origin: list[int] = []
-    previous_space = False
-    for index, character in enumerate(text):
-        if character.isspace():
-            if not previous_space:
-                out.append(" ")
-                origin.append(index)
-            previous_space = True
-            continue
-        out.append(character)
-        origin.append(index)
-        previous_space = False
-    return "".join(out), origin
-
-
 def relaxed_span(document: str, span: str) -> str | None:
     """The document's own text for a span that differs only in whitespace.
 
@@ -218,15 +201,17 @@ def relaxed_span(document: str, span: str) -> str | None:
     the claim still quotes the source exactly and the audit is unchanged. A span
     the document does not contain, whitespace aside, still returns None: this
     tolerates typesetting, not paraphrase.
+
+    Since the gate itself anchors this way, the search lives in the package and
+    this is the thin wrapper the pass already called. Two implementations of one
+    rule would be free to drift apart, and the gate's is the one that decides
+    admission.
     """
-    needle = " ".join(span.split())
-    if not needle:
+    spans, _ = anchor_spans(document, span)
+    if not spans:
         return None
-    haystack, origin = _collapsed(document)
-    position = haystack.find(needle)
-    if position < 0:
-        return None
-    return document[origin[position] : origin[position + len(needle) - 1] + 1]
+    start, end = spans[0]
+    return document[start:end]
 
 
 def divergence(document: str, span: str, window: int = 30) -> tuple[int, str, str]:
