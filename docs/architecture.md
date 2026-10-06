@@ -1,5 +1,9 @@
 # Architektur und Autoritätsgrenzen
 
+> Dieses Dokument ist die chronologische Aufzeichnung, Lauf für Lauf. Wer wissen
+> will, **was daraus insgesamt folgt** — belegt, zurückgezogen, offen —, liest
+> [`research-report.md`](research-report.md).
+
 ## 1. Problem
 
 Form und Inhalt sind bei LLM-überarbeiteten Texten leicht zu verwechseln.
