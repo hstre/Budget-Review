@@ -9,6 +9,32 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Added
+
+- **The prompt an independent review of the meaning set is asked**, as a committed
+  script rather than a chat log: `scripts/semantic_cases_review_prompt.py`. It
+  assembles the brief and all 24 cases, and carries the field semantics a reviewer
+  needs in order to judge a token group at all — that single words match on word
+  boundaries and phrases as substrings, and that the fifth invariant is switched
+  off for the six multi-claim cases.
+  **The review is blind to the measurements.** The script cuts the brief at the
+  heading where the measured defects begin and refuses a prompt that still names a
+  defect id, a log section or a figure from either run. A reviewer who knows that
+  one contract line took the translated propositions to zero is being invited to
+  approve the gold because the number moved; the question put to them is whether
+  the cases are good tests. Five mutations, including the two that would make the
+  cut and the refusal useless.
+  **Which makes the reviews themselves testable, and the expectation is recorded
+  before they are sent.** Two of the four known gold defects are visible by reading
+  the set alone, and both cost paid runs to find: the requirements conflating
+  language with meaning, and `sco-02` passing as soon as any claim on the span
+  carries a conditional marker. A blind reading that finds either corroborates it
+  from outside the family that wrote the set; one that finds neither bounds what a
+  review of this kind is worth, and is not evidence the defects are absent.
+  Two families are excluded for the same reason the repository exists: the one that
+  wrote the set, and the system under test.
+
+
 ### Fixed
 
 - **The extraction contract now names the document's language, and the silent

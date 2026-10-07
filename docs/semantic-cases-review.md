@@ -130,13 +130,64 @@ kennt nur `forbids`.
 Falschalarme. Beide haben 3/3 in beiden Sprachen bestanden. Die beiden Stellen
 oben, die ich zum Angreifen markiert habe, waren nicht die schwachen.
 
+## Wie die beiden Durchsichten angefragt werden
+
+Vorab festgelegt am 2026-10-07, bevor eine Anfrage hinausgegangen ist.
+
+**Wer nicht in Frage kommt, und warum.** Zwei Familien sind ausgeschlossen, und
+beide aus demselben Grund: Dieses Repo ist gegen Zirkularität gebaut.
+
+- **Nicht die Familie, die den Bestand geschrieben hat.** Beispiele, Gold und
+  Bedingungen sind von Claude. Eine Durchsicht von Claude würde prüfen, ob Claude
+  Claudes Lesart teilt.
+- **Nicht das geprüfte System.** DeepSeek extrahiert die Claims, gegen die
+  gemessen wird. Es darf die Rolle unten spielen und nicht diese.
+
+Bleiben zwei fremde Familien, jeweils das stärkste verfügbare Modell:
+**`google/gemini-3.1-pro-preview`** und **`openai/gpt-5.2`**, über OpenRouter.
+Der Schlüssel ist auf 10 $ begrenzt und läuft am 2026-10-14 ab; die beiden
+Aufrufe kosten nach Listenpreis zusammen etwa 0,20 $.
+
+**Die Durchsicht ist blind gegenüber den Messungen.** Sie bekommt diesen Auftrag
+**ohne** die Mängelliste unten und ohne eine Zahl aus den beiden Läufen.
+`scripts/semantic_cases_review_prompt.py` schneidet den Abschnitt an der
+Überschrift heraus und verweigert eine Anfrage, die noch eine Mangel-Id, eine
+Log-Nummer oder eine Lauf-Zahl enthält; fünf Mutationen darauf, darunter die, die
+den Schnitt und die Prüfung nutzlos machen.
+
+Der Grund ist nicht Förmlichkeit. Eine Durchsicht, die weiß, dass eine
+Vertragszeile die Übersetzung abgeschaltet hat, wird eingeladen, das Gold zu
+billigen, weil die Zahl sich bewegt hat. Gefragt ist, ob die Fälle gute Prüfungen
+sind — nicht, ob sie bequeme Ergebnisse erzeugt haben.
+
+**Damit sind die Durchsichten selbst prüfbar, und das ist die Vorhersage.** Zwei
+der vier Mängel unten stehen im Bestand und sind durch Lesen zu finden: **M-1**
+(die Bedingungen verwechseln Sprache mit Bedeutung) und **M-4** (`sco-02` besteht
+schon, wenn *irgendein* Claim einen Bedingungsmarker trägt, sieht also die
+verbotene Lesart daneben nicht). Beide haben bezahlte Läufe gekostet.
+
+- Findet eine blinde Durchsicht M-1 oder M-4, ist der Mangel von außerhalb der
+  Familie bestätigt, die den Bestand geschrieben hat — und die Durchsicht hat
+  Zähne.
+- Findet keine der beiden einen davon, begrenzt das, was eine Durchsicht dieser
+  Art wert ist. Es ist **kein** Beleg, dass die Mängel nicht bestehen; sie sind
+  gemessen.
+
+Das steht hier, bevor die Antworten da sind, damit es hinterher nicht als
+Bestätigung gelesen werden kann, was auch immer kommt.
+
+**Und was eine Durchsicht nicht ist.** Sie ist Beratung, keine Autorität. Was sie
+sagt, wird wörtlich vermerkt und dann einzeln entschieden — nach der Regel oben:
+Uneinigkeit über Bedeutung streicht das Beispiel, sie stimmt nicht darüber ab.
+
 ## Durchsicht 1
 
-*Offen.* Modell, Datum, Einwände, und was geändert wurde.
+*Offen.* `google/gemini-3.1-pro-preview`, blind. Datum, Einwände, und was
+geändert wurde.
 
 ## Durchsicht 2
 
-*Offen.* Modell, Datum, Einwände, und was geändert wurde.
+*Offen.* `openai/gpt-5.2`, blind. Datum, Einwände, und was geändert wurde.
 
 ## Was DeepSeek hier nicht tun darf
 
