@@ -9,7 +9,7 @@ from budget_review.checks import _MESSAGES, deterministic_checks
 from budget_review.ingest import ingest
 from budget_review.pipeline import ReviewPipeline, load_packet
 from budget_review.profiles import BUDGET, GENERAL, authority_note
-from budget_review.prompts import reviewer_prompt
+from budget_review.prompts import extraction_prompt, reviewer_prompt
 from budget_review.render import _TEXT, render_markdown
 from budget_review.settings import LANGUAGES
 
@@ -143,3 +143,29 @@ def test_unknown_language_falls_back_in_the_checks(controlled_semantic) -> None:
 
 def test_both_languages_cover_the_same_catalogue_keys() -> None:
     assert set(_TEXT["de"]) == set(_TEXT["en"])
+
+
+def test_the_extraction_contract_names_the_documents_language() -> None:
+    """Measured: 38 of 122 claims from German sources came back in English.
+
+    The reviewer contract has carried a language instruction all along; the
+    extraction contract never mentioned language at all, and its own wording and
+    example value are English. A claim has to be checkable against the span it
+    quotes, so the requirement belongs next to the verbatim-span rule.
+    """
+    system, _ = extraction_prompt("d", "Ein deutscher Satz.", "general")
+
+    assert "same language as the document" in system
+    assert "Do not translate" in system
+
+
+def test_the_language_requirement_does_not_depend_on_the_render_language() -> None:
+    """The document's language is a property of the document, not of the caller.
+
+    A German source reviewed with --language en still has to carry German
+    propositions, because the quote it must be checked against is German.
+    """
+    german = extraction_prompt("d", "Ein deutscher Satz.", "general")[0]
+    english = extraction_prompt("d", "An English sentence.", "general")[0]
+
+    assert german == english, "the instruction is the same; the model reads the document"

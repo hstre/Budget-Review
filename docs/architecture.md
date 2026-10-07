@@ -1756,6 +1756,490 @@ dieses Repo gebaut ist. Die Gegenmaßnahme ist, dass die Prüfungen **mechanisch
 sein müssen: nicht „bedeutet der Claim dasselbe?", von einem Modell beurteilt,
 sondern deklarierte, deterministisch prüfbare Anforderungen je Beispiel.
 
+## 3ad. Der semantische Prüfbestand: Entwurf, noch nicht begutachtet
+
+Schritt 2 aus 3ac ist gebaut:
+`src/budget_review/fixtures/semantic_cases/cases.json`, 24 Fälle, zwölf
+Bedeutungen in Deutsch und Englisch, über sechs Phänomene — Negation, Modalität,
+Korrelation gegen Kausalität, Bedingung und Geltungsbereich, Sprecher, mehrere
+Aussagen in einer Stelle.
+
+**Warum es den Bestand überhaupt gibt.** Jeder Korpus, gegen den dieses Projekt
+gemessen hat, annotiert, *wo* eine Argumenteinheit sitzt. Keiner annotiert, ob
+der Claim, der sie zitiert, noch dasselbe bedeutet. Ein Claim kann perfekt
+verankert sein und die Negation verlieren, aus „könnte" ein „senkt" machen oder
+aus einer Korrelation eine Ursache — und der Span-Recall zählt das als Treffer.
+Das ist die Lücke, die 3ac benannt hat und ohne die auch die Identitätsfrage aus
+3z nicht entscheidbar ist.
+
+**Die Prüfungen sind mechanisch, und das ist die Bedingung.** Keine Bedingung
+fragt ein Modell, ob zwei Sätze dasselbe bedeuten — dann wären das geprüfte
+System und sein Prüfer aus derselben Familie. Stattdessen Token-Gruppen und
+Regexe. Sie sind absichtlich grob: Sie fangen den groben Fehler — eine Negation,
+die einfach fehlt, eine erfundene Ursache — und sie fangen feine Verschiebung
+nicht. Eine Prüfung, über die man nicht streiten kann, ist hier mehr wert als
+eine, die öfter recht hat.
+
+Geprüft wird **die treue Wiedergabe der Quelle.** Die Quellen sagen Dinge, die
+falsch sein können; das ist nicht Gegenstand der Messung.
+
+### Fünf Invarianten, und wofür die letzten zwei da sind
+
+1. Jede Spanne kommt in ihrem Dokument genau einmal vor.
+2. Jede Bedingungsgruppe hat mindestens eine ihrer Wendungen **in der Spanne
+   selbst** — ein Fall kann also kein Wort verlangen, das die Quelle nicht
+   enthält.
+3. Kein Verbot trifft die Spanne — ein Fall kann also nicht den Wortlaut der
+   Quelle verbieten.
+4. Jedes Paar trägt beide Sprachen, dasselbe Phänomen, dieselbe Zahl von Gruppen
+   und dieselbe Claim-Zahl. Sprache ist damit eine Variable und kein Störfaktor.
+5. Jede aufgeführte **zulässige** Lesart erfüllt die Bedingungen, und jede
+   **verbotene** verletzt mindestens eine.
+
+Die fünfte ist die wichtigste: Ein Fall, dessen eigener ausgeschriebener
+Fehlerfall seine eigenen Prüfungen passiert, misst nichts. Sie läuft über alle
+achtzehn Einzel-Claim-Fälle; für die sechs Fälle mit `min_claims_on_span ≥ 2` ist
+sie abgeschaltet, weil ihr Fehlerfall „nur ein Claim" lautet und keine
+Inhaltsprüfung ist. Für diese sechs ist also **nicht maschinell belegt**, dass
+ihre verbotene Lesart durchfällt, und das steht als Schwäche im Review-Auftrag.
+
+Sechs Mutationen auf dem Validator, darunter die drei, die ihn nutzlos machen
+würden: eine Gruppe genügt statt aller, ein Wortverbot feuert innerhalb eines
+anderen Wortes, und eine verbotene Lesart, die alles passiert, wird nicht mehr
+gemeldet.
+
+### Der Status ist Entwurf, und das ist kein Formalismus
+
+Beispiele, Gold und Bedingungen sind **von einem Modell geschrieben** — aus
+derselben Familie, die am Ende geprüft wird. Ohne unabhängige Durchsicht messen
+wir, ob das System die Lesart eines Modells teilt. Der Auftrag für zwei
+Durchsichten, die Fragen, die zu stellen sind, und die Stellen, die ich selbst
+für die schwächsten halte, stehen in
+[`semantic-cases-review.md`](semantic-cases-review.md), zusammen mit der Regel,
+die den Beraterrollen Sinn gibt: **Uneinigkeit ist ein Filter auf Beispiele,
+keine Abstimmung über Bedeutung.** Wer sich nicht einig ist, was ein Satz
+bedeutet, streicht das Beispiel.
+
+Dort steht auch die Governance-Regel für Erweiterungen: eine Token-Gruppe zu
+erweitern, nachdem ein Lauf daran gescheitert ist, ist Anpassung des Tests an das
+System — erlaubt nur mit Zustimmung einer Durchsicht und mit Vermerk. Auf diesem
+Branch haben wandernde Marken schon zweimal Befunde entwertet.
+
+### Was noch nicht da ist
+
+Der Bestand validiert sich selbst, er **bewertet noch nichts.** Die drei
+getrennten Ergebnisse aus 3ac — Quellenverankerung, Bedeutungsübertragung,
+Beziehungen zwischen Claims — sind Schritt 3 und setzen voraus, dass das Gold
+begutachtet ist. Ein Scorer vor der Durchsicht würde Zahlen gegen eine
+unbestätigte Annotation produzieren, und solche Zahlen stehen in 3u bis 3ab schon
+genug herum.
+
+## 3ae. Die drei Ergebnisse: die Vorab-Festlegung
+
+Schritt 3 aus 3ac. `semantic_score.py` bewertet den Bestand aus 3ad auf getrennten
+Achsen, und die Trennung ist der Zweck: Bisher kann eine Änderung besser aussehen,
+weil sie **mehr Text erfasst**, ohne bessere Struktur zu erzeugen.
+
+| Achse | Frage |
+|---|---|
+| Verankerung | Berührt irgendein zugelassener Claim die annotierte Stelle? |
+| Bedeutung | Halten die deklarierten Bedingungen, und verletzt kein Claim ein Verbot? |
+| Beziehungen | Sind die Kanten zwischen Claims richtig? |
+
+**Die dritte Achse ist auf diesem Bestand nicht messbar**, und das ist ein Mangel
+des Bestands, nicht des Skripts: Die Fälle halten fest, welche Bedeutung erhalten
+bleiben muss, und sagen nichts darüber, welche Kanten entstehen sollen.
+Aufgefallen beim Implementieren. Sie wird als *nicht gemessen* berichtet und nicht
+still weggelassen; die Annotation nachzuziehen gehört in die Durchsichtsrunde.
+
+### Was dieser erste Lauf ist, und was er nicht ist
+
+Der Bestand ist ein Entwurf, von einem Modell geschrieben und **nicht
+begutachtet** (3ad). Diese Zahlen sind deshalb **kein Urteil über den Extraktor.**
+Sie prüfen zwei andere Dinge, und das ist vorab festgelegt, damit es hinterher
+nicht umdeutbar ist:
+
+**1. Der Apparat funktioniert**, wenn jeder Fall ein Dossier liefert und in
+mindestens 90 Prozent der Fälle wenigstens ein Claim auf der Spanne ankert. Das
+sind Dokumente von einem bis drei Sätzen; scheitert die Verankerung breit, liegt
+es am Apparat oder an der Dokumentgröße, und über Bedeutung ist dann nichts zu
+lesen.
+
+**2. Mein Gold ist falsch**, wo ein Fall in *allen* Wiederholungen scheitert und
+der Claim-Text gelesen eine **treue** Wiedergabe ist. Dazu eine benannte
+Vorhersage, die dieser Lauf bestätigen oder widerlegen kann: Ich halte `neg-02`
+(„Nicht alle Schulen…") und `mod-02` (verlangt `zeigt/belegt/…`) für eingebaute
+Falschalarme. Scheitern sie mit treuem Text, ist die Vorhersage bestätigt und die
+beiden Fälle werden umgeschrieben. Passieren sie, war ich falsch.
+
+**3. Der Extraktor verzerrt**, wo ein Fall mit Text scheitert, der tatsächlich
+untreu ist — Negation weg, Ursache erfunden. Gezählt je Phänomen.
+
+Der Unterschied zwischen 2 und 3 ist eine **Lesung von Hand** und keine
+Maschinenentscheidung. Das ist die Grenze dieses Laufs und steht hier, weil sie
+sonst später als Zahl missverstanden wird.
+
+### Zwei Regeln, die nicht verhandelbar sind
+
+**Keine Token-Gruppe wird in diesem Lauf erweitert.** Eine Bedingung, die auf
+einem treuen Claim feuert, ist ein Mangel des Falls — behoben über den
+Review-Auftrag mit Datum und Urheber, nie dadurch, dass die Liste so weit wächst,
+bis der Lauf durchläuft. Wandernde Marken haben auf diesem Branch zweimal Befunde
+entwertet.
+
+**Der Bestand validiert sich vor jeder Messung selbst.** Verletzt er eine der
+fünf Invarianten aus 3ad, bricht das Skript ab und bewertet nichts.
+
+### Nebenbei die erste Live-Prüfung des neuen Gates
+
+#18 ist auf main und wurde **nie live gelaufen** — verifiziert war es gegen
+gespeicherte Pakete. Diese 24 Dokumente sind von Hand als einzeilige Sätze
+geschrieben, also ist `anchor_normalised` über alle Läufe **erwartet 0**. Jeder
+andere Wert ist eine Überraschung und wird nachgesehen.
+
+24 Fälle, drei Wiederholungen, 72 bezahlte Aufrufe auf Dokumenten von rund 120
+Zeichen.
+
+## 3af. Erster Lauf auf dem Bedeutungsbestand: der Apparat läuft, mein Gold war falsch, und eine Bedingung bricht
+
+24 Fälle, drei Wiederholungen, 72 bezahlte Aufrufe, 248 zugelassene Claims.
+
+### 1. Der Apparat funktioniert
+
+**24 von 24 Fällen ankerten in allen drei Läufen** einen Claim auf ihrer Spanne —
+100 Prozent gegen eine Vorab-Marke von 90. Kein Lauf ist abgebrochen, keine
+Prüfung ist gescheitert.
+
+Und die Nebenprüfung aus 3ae: **`anchor_normalised` ist 0 über alle 248 Claims**,
+wie vorhergesagt. Das war die erste Live-Ausübung des Gates aus #18, das bis
+dahin nur gegen gespeicherte Pakete verifiziert war. Es verhält sich wie gebaut.
+
+### 2. Meine Vorhersage war falsch — und mein Gold hat einen anderen Mangel
+
+3ae hat benannt, was dieser Lauf an mir prüfen sollte: Ich hielt `neg-02` und
+`mod-02` für eingebaute Falschalarme. **Beide haben 3/3 in beiden Sprachen
+bestanden.** Die Vorhersage ist widerlegt.
+
+Was ich nicht vorhergesehen habe, ist der tatsächliche Mangel: **Der Bestand
+verwechselt Sprache mit Bedeutung.**
+
+| Quelle | Claims | in der Sprache der Quelle | übersetzt |
+|---|---:|---:|---:|
+| Deutsch | 122 | 83 | **38 (31 %)** |
+| Englisch | 126 | 117 | **0** |
+
+Weil meine Bedingungen deutsche Token verlangen, scheitert eine **treue**
+englische Wiedergabe an der Bedeutungsprüfung. Fünf der zwölf deutschen Fälle
+sind betroffen, und die Claims sind tadellos:
+
+| Fall | Ergebnis | Claim |
+|---|---|---|
+| `sco-01-de` | 0/3 | „In rural areas the program lowers the rate." — Geltungsbereich vollständig erhalten |
+| `spk-02-de` | 0/3 | zwei getrennte Sprechakte, beide Sprecher benannt: „The government argued…" / „The court found…" |
+| `mul-01-de` | 1/3 | beide Aussagen korrekt getrennt, auf Englisch |
+| `cor-01-de` | 2/3 | „Participation correlates with higher completion rates." |
+
+**Und ein dritter Mangel, aufgefallen beim Klassifizieren:** `spk-01-de` hat nur
+*zufällig* bestanden. Ich hatte seine Bedingungsgruppe als
+`["Regierung", "Government"]` geschrieben — dieser eine Fall toleriert die
+Übersetzung, die anderen elf nicht. Meine Bedingungsgruppen waren unbeabsichtigt
+unterschiedlich sprachtolerant, und damit waren die deutschen Fälle nicht einmal
+untereinander konsistent.
+
+### 3. Der Produktbefund, und er ist der wichtigere
+
+**Die semantische Schicht übersetzt deutsche Dokumente still ins Englische.** Der
+`raw_span` zitiert die deutsche Quelle, `canonical_content` ist englisch. Das
+README sagt, zitierte Claims behielten ihren ursprünglichen Wortlaut — das gilt
+für die Spanne und nicht für die Proposition. Keine Messung dieses Projekts hat
+je auf die *Sprache* von `canonical_content` gesehen.
+
+Es ist zudem genau das „language-dependent artifact", das das eigene Working
+Paper 2 als einen von drei Gründen für eine Projektionsschicht nennt: *the same
+content expressed in different languages yields different claim structures.*
+
+Die Richtung ist einseitig: 38 deutsche Claims wurden englisch, kein englischer
+wurde deutsch.
+
+### 4. Der eine echte Bedeutungsfehler: die Bedingung bricht
+
+Nach Abzug des Sprachenffekts bleiben **4 von 72 Fall-Läufen**, und sie liegen
+alle auf demselben Phänomen.
+
+`sco-02`, Quelle: „Wenn die Mittel bewilligt werden, beginnt der Ausbau im
+Frühjahr."
+
+| | Claims |
+|---|---|
+| englisch, 3 von 3 Läufen | „The funds will be granted." + „Construction begins in spring." |
+| deutsch, 1 von 3 Läufen | „Die Mittel werden bewilligt." + „Der Ausbau beginnt im Frühjahr." |
+
+**Die Bedingung wird zerlegt und verschwindet.** Übrig bleiben zwei unbedingte
+Behauptungen, und eine davon — die Mittel *werden* bewilligt — behauptet etwas,
+was die Quelle ausdrücklich nicht behauptet. Für eine Antragsprüfung ist das die
+Fehlerklasse, für deren Entdeckung das Produkt existiert, erzeugt vom Produkt.
+
+Damit lautet der Befund dieses Laufs: **Bedeutung überlebt überall außer bei der
+Bedingung; jeder andere Fehlschlag war der Sprachwechsel.**
+
+| Phänomen | erhalten | davon Fehlschläge durch Übersetzung |
+|---|---|---|
+| Negation | 12/12 | — |
+| Modalität | 12/12 | — |
+| Korrelation gegen Kausalität | 11/12 | 1 von 1 |
+| Sprecher | 9/12 | 3 von 3 |
+| mehrere Aussagen | 10/12 | 2 von 2 |
+| Geltungsbereich | 3/6 | 3 von 3 |
+| **Bedingung** | **2/6** | **0 von 4** |
+
+### 5. Was nicht gemessen ist, und was ich nicht geändert habe
+
+**Relationen:** weiter nicht messbar, der Bestand annotiert keine Kanten (3ae).
+
+**Keine Token-Gruppe wurde erweitert.** Die Regel aus 3ad gilt: Eine Bedingung,
+die auf einem treuen Claim feuert, ist ein Mangel des Falls, behoben über den
+Review-Auftrag mit Datum — nicht dadurch, dass die Liste wächst, bis der Lauf
+durchläuft. Die drei Gold-Mängel sind dort als Einträge vermerkt und warten auf
+die Durchsicht.
+
+**Die Sprachachse ist eine neue Messung, keine Lockerung.** Sie wurde offline aus
+den 72 gespeicherten Dossiers gerechnet, ohne einen weiteren Aufruf, und wird
+jetzt vom Scorer getrennt berichtet. Vier Mutationen darauf, darunter die beiden,
+die sie nutzlos machen würden: ein unentscheidbarer Claim bekommt doch eine
+Sprache zugewiesen, und die Achse besteht immer.
+
+Dass die Achse überhaupt nötig ist, ist der Beleg für das Prinzip aus 3ac: Hätte
+ich Verankerung, Sprache und Bedeutung nicht getrennt, stünde hier „der Extraktor
+verliert bei Geltungsbereich und Sprecher die Hälfte der Bedeutung" — und das
+wäre falsch.
+
+## 3ag. Ist die verborgene Projektion steuerbar? Die Vorab-Festlegung
+
+3af hat gemessen, dass 38 von 122 Claims aus deutschen Quellen auf Englisch
+zurückkamen und 0 von 126 aus englischen Quellen auf Deutsch. Dazu gehören zwei
+Erklärungen, und sie widersprechen sich nicht.
+
+**Die banale.** Der Extraktionsvertrag erwähnte Sprache **überhaupt nicht.** Der
+Reviewer-Vertrag trägt seit immer `_REVIEWER_LANGUAGE` („clear German" / „clear
+English") und einen `language`-Parameter; die Extraktionsprompt hatte beides
+nicht, ist selbst durchgehend englisch und ihr Beispielwert lautet
+`"One atomic proposition."`. Das erklärt Richtung und Rate des Drifts — und es
+macht die Sprachwahl des Produkts inkonsistent: `--language de` steuert Labels,
+deterministische Regeln und beide Reviewer-Arme, aber nicht die Propositionen.
+
+**Die tiefere.** Ein reiner Extraktor *kann* nicht übersetzen. Um einen deutschen
+Satz als treue englische Proposition zu schreiben, muss das Modell Subjekt,
+Prädikat, Geltungsbereich und Polarität bereits sprachunabhängig repräsentiert
+haben und dann neu verbalisieren. **Die semantische Projektion findet also statt;
+sie wird nur nicht als Artefakt behalten.**
+
+Das erklärt rückblickend den Befund aus 3y, den ich dort als Tatsache berichtet
+und nicht begründet habe: `raw_span` ist eine **Auswahl** — ein Index ins
+Dokument — und deshalb reproduzierbar; `canonical_content` ist eine **Erzeugung**
+und deshalb die instabile Hälfte. Der Sprachwechsel ist der Beleg, denn dieselbe
+Erzeugung lief in einer anderen Sprache.
+
+Working Paper 2 fordert „no direct text-to-claim" als Regel. Gemessen ist, dass
+es ohnehin keinen direkten Weg gibt: Text → verborgene Projektion → Claim, und
+behalten wird nur der letzte Pfeil.
+
+### Die Änderung, und warum sie klein ist
+
+**Eine Anforderung im Extraktionsvertrag**, direkt neben der Regel für wörtliche
+Spannen, weil sie zur selben Familie gehört: `canonical_content` in der Sprache
+des Dokuments, nicht übersetzt, mit dem Grund — ein Claim muss gegen seine
+Spanne prüfbar sein.
+
+Die Sprache wird **nicht als Parameter übergeben.** Sie ist eine Eigenschaft des
+Dokuments und nicht der Aufrufer-Oberfläche: Ein deutsches Dokument mit
+`--language en` geprüft braucht weiterhin deutsche Propositionen, weil die
+Spanne, gegen die sie zu prüfen sind, deutsch ist. Alles andere am Vertrag ist
+byte-identisch.
+
+Dass die Änderung klein ist, ist Absicht. Jede strukturelle Änderung dieses
+Projekts — Segmentierung, Doppellauf, Zweistufigkeit, Thin-Targeting — ist
+gescheitert oder unlesbar geblieben; die eine, die wirkte, war klein und
+mechanisch.
+
+### Die Regel, vorab
+
+Derselbe Bestand, drei Wiederholungen, dasselbe Profil, derselbe Scorer,
+dieselben 24 Fälle **ohne eine geänderte Token-Gruppe.**
+
+- **Steuerbar**, wenn übersetzte Claims aus deutschen Quellen auf **≤ 5** fallen
+  (Basis 38 von 122). Dann ist die verborgene Projektion durch eine Anweisung
+  kontrollierbar, und für das Sprachproblem braucht es keine explizite
+  Projektionsschicht.
+- **Nicht steuerbar** bei **> 15**. Dann greift eine Anweisung nicht an das, was
+  die Schicht tut, und das ist das stärkste Argument für explizite
+  Projektionsfelder.
+- Dazwischen: Teileffekt, die Anweisung hilft und entscheidet nichts.
+- **Englisch darf nicht regredieren:** 0 von 126 übersetzten bleibt 0.
+
+**Schutzbedingung, die die Änderung zurücknimmt:** Bedeutung darf nicht
+regredieren. Negation und Modalität stehen bei 12/12; fallen sie, hat die
+Anweisung Sprache auf Kosten von Bedeutung gekauft, und sie wird rückgängig
+gemacht.
+
+### Der saubere Nebeneffekt, auf den ich setze
+
+Vier deutsche Fälle — `sco-01-de`, `spk-02-de`, `mul-01-de`, `cor-01-de` — sind in
+3af **ausschließlich an der Sprache** gescheitert; ihre Claims waren inhaltlich
+tadellos. Antwortet das Modell jetzt auf Deutsch, erfüllen sie ihre
+**bestehenden, unveränderten** Bedingungen.
+
+Dann ist **M-1 ohne eine Gold-Änderung gelöst**, und die Frage aus dem
+Review-Auftrag — ob eine zweisprachige Bedingung Schärfe verliert — stellt sich
+nicht mehr. Bestehen sie die Sprachachse und scheitern weiter an den Token, sind
+meine deutschen Listen wirklich zu eng und M-1 braucht die Durchsicht doch.
+
+### Was diese Änderung nicht anfasst
+
+Die **Bedingung.** `sco-02` verliert in 3/3 englischen Läufen das „wenn" und
+behauptet, die Mittel *würden* bewilligt. Davon ist keine Sprachanweisung
+betroffen, und wenn sie es doch wäre, wäre das eine Überraschung, die gegen die
+Notwendigkeit expliziter Felder spricht. Berichtet wird es ohne Marke.
+
+## 3ah. Die verborgene Projektion ist steuerbar — und übrig bleibt genau die Bedingung
+
+Derselbe Bestand, dieselben 72 bezahlten Aufrufe, dasselbe Profil. Geändert sind
+**drei Zeilen im Extraktionsvertrag** und sonst nichts: `cases.json` und der
+Scorer sind zwischen beiden Läufen byte-identisch, und `meaning_preserved` ist
+unverändert definiert. Der Vergleich hat eine Variable.
+
+### 1. Die Vorab-Regel, beantwortet
+
+| | 3af | dieser Lauf | Schwelle aus 3ag |
+|---|---:|---:|---|
+| übersetzte Claims, deutsche Quelle | 38 von 122 | **0 von 123** | ≤ 5 ⇒ steuerbar |
+| übersetzte Claims, englische Quelle | 0 von 126 | 0 von 119 | muss 0 bleiben |
+| Negation | 12/12 | 12/12 | Schutzbedingung |
+| Modalität | 12/12 | 12/12 | Schutzbedingung |
+
+**Steuerbar.** Der Effekt ist vollständig, nicht teilweise: nicht ein einziger
+Claim aus einer deutschen Quelle kam übersetzt zurück. Die Schutzbedingung hält,
+die Änderung bleibt. Für das Sprachproblem braucht es **keine** explizite
+Projektionsschicht.
+
+Die Ausbeute ist dabei nicht gefallen — 242 zugelassene Claims gegen 248. Die
+Anweisung hat die Übersetzung abgeschaltet und nicht die Extraktion.
+
+**Was die Zahl 0 nicht verdeckt.** 11 der 242 Claims klassifiziert die
+Sprachachse als unentscheidbar (3af: 10 von 248), und unentscheidbar zählt nicht
+als übersetzt — die 0 könnte also eine Schönung sein. Ist sie nicht: alle elf sind
+von Hand geprüft und stehen in der Sprache ihrer Quelle. Ihr Mechanismus ist
+mechanisch und kein Rauschen: Sätze wie „Construction began in spring." enthalten
+nur Marker, die in **beiden** Listen stehen (`in`), also 1 zu 1, also „?".
+
+### 2. Der Nebeneffekt, auf den ich gesetzt habe, ist eingetreten
+
+Alle vier Fälle, die in 3af **ausschließlich an der Sprache** gescheitert sind,
+bestehen jetzt ihre **bestehenden, unveränderten** Bedingungen:
+`sco-01-de` 0/3 → 3/3, `spk-02-de` 0/3 → 3/3, `mul-01-de` 1/3 → 3/3,
+`cor-01-de` 2/3 → 3/3.
+
+**M-1 ist damit ohne eine Gold-Änderung gelöst.** Die offene Frage aus dem
+Review-Auftrag — ob eine zweisprachige Bedingung Schärfe verliert — stellt sich
+nicht mehr, weil keine zweisprachige Bedingung gebraucht wird. Meine deutschen
+Token-Listen waren nicht zu eng; das Modell antwortete in der falschen Sprache.
+M-2 (`spk-01-de` war versehentlich sprachtolerant) bleibt als Inkonsistenz
+bestehen und ist jetzt wirkungslos, weil kein Fall mehr Toleranz braucht.
+
+### 3. Bedeutung nach Phänomen: ein Phänomen bleibt
+
+| Phänomen | 3af | dieser Lauf |
+|---|---:|---:|
+| Negation | 12/12 | 12/12 |
+| Modalität | 12/12 | 12/12 |
+| Korrelation gegen Kausalität | 11/12 | 12/12 |
+| Sprecher | 9/12 | 12/12 |
+| mehrere Aussagen | 10/12 | 12/12 |
+| Geltungsbereich | 3/6 | 6/6 |
+| **Bedingung** | **2/6** | **3/6** |
+| **Summe** | **59/72** | **69/72** |
+
+Verankerung unverändert bei 24/24 in allen drei Läufen, `anchor_normalised` 0
+über alle Claims, 0 Verzerrungen, kein fehlgeschlagener Aufruf.
+
+**Die Bedingung ist nicht besser geworden.** 2/6 gegen 3/6 ist auf sechs
+Versuchen nichts, und ich berichte es als unverändert. 3ag hat vorhergesagt, dass
+die Sprachanweisung die Bedingung nicht anfasst; das ist eingetreten.
+
+### 4. Was der Lauf über die Bedingung genauer sagt
+
+3af hat den Befund als „die Bedingung wird zerlegt und verschwindet" berichtet.
+Die sechs Läufe dieses Durchgangs zeigen die Struktur schärfer, und meine
+Formulierung in 3af war in einem Detail falsch — dort steht „The funds will be
+granted", tatsächlich lautet der Claim „The funds are granted".
+
+| Lauf | Claim auf der Spanne | Bedingung |
+|---|---|---|
+| de-1 | `assumption` „Die Mittel werden bewilligt." + `forecast` „Der Ausbau beginnt im Frühjahr." | verloren |
+| de-2, de-3 | `forecast` „Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr." + `assumption` „Die Mittel werden bewilligt." | erhalten |
+| en-1, en-2 | `assumption` „The funds are granted." + `forecast` „Construction begins in spring." | verloren |
+| en-3 | `forecast` „If the funds are granted, construction begins in spring." | erhalten |
+
+Der Fehler ist **nicht**, dass die Bedingung fehlt. Er ist, dass der Extraktor
+den Satz **am Komma zerlegt**: der Vordersatz wird ein eigener Claim, der
+Nachsatz wird ein eigener Claim, und der Nachsatz steht dann **unbedingt** da.
+Die Bedingung lebt in den drei bestehenden Läufen in *einem* Claim weiter, der
+den ganzen Satz trägt.
+
+Dass der Vordersatz als `assumption` getypt wird, ist dabei die *vertretbare*
+Hälfte: „Die Mittel werden bewilligt" als Annahme des Nachsatzes zu führen ist
+eine zulässige Lesart der Quelle. Die unvertretbare Hälfte ist der `forecast`,
+der ohne jede Annahme behauptet, der Ausbau beginne im Frühjahr. Für eine
+Antragsprüfung ist das eine erfundene Zusage.
+
+**Und eine Prüfung meines Golds, die diesmal aufgeht.** `requires_all_groups`
+besteht, sobald *irgendein* Claim auf der Spanne einen Bedingungsmarker trägt —
+es sieht nicht, ob daneben die verbotene Lesart steht. Nachgerechnet: die
+verbotene Lesart („Der Ausbau beginnt im Frühjahr.") erscheint in genau den drei
+Läufen, die scheitern, und in keinem, der besteht. Beide Signale stimmen 6 von 6
+überein, der Fall misst hier also das Richtige. Die **Lücke bleibt latent**: ein
+Lauf, der die Bedingung *und* den unbedingten Nachsatz liefert, würde bestehen.
+In diesem Lauf ist das nicht vorgekommen; als Mangel M-4 im Review-Auftrag
+notiert, nicht als Messergebnis.
+
+### 5. Was das für die Projektionsschicht heißt
+
+Die Frage aus 3ag war die Entscheidungsfrage vor Option C (explizite Felder für
+Subjekt, Relation, Objekt, Modalität, Geltungsbereich, Sprecher). Die Antwort
+teilt sie in zwei:
+
+- **Sprache: erledigt, und zwar durch eine Anweisung.** Die verborgene Projektion
+  existiert und ist steuerbar. Die Beobachtung, die den Anstoß gab — „Das
+  Übersetzen allein benötigt eigentlich eine semantische Schicht" — ist bestätigt
+  und *gleichzeitig* entschärft: die Schicht ist da, und man muss sie nicht
+  materialisieren, um ihr zu sagen, in welcher Sprache sie ausgeben soll.
+- **Bedingung: offen, und jetzt der einzige gemessene Bedeutungsfehler im
+  Bestand.** Eine Sprachanweisung hat ihn nicht berührt. Er ist genau die
+  Fehlerklasse, für die explizite Felder gebaut würden: Modalität und
+  Geltungsbereich eines Claims getrennt zu führen, statt sie dem Satzbau einer
+  Proposition zu überlassen.
+
+Das ist ein besser gestellter Gegenstand als vorher. Vorher stand Option C gegen
+„die semantische Schicht ist unzuverlässig"; jetzt steht sie gegen ein einzelnes,
+reproduzierbares, auf drei von sechs Läufen auftretendes Strukturversagen an
+einer benannten Konstruktion. Ob ein Feld oder — wie bei jeder kleinen Änderung
+dieses Projekts, die gewirkt hat — eine Vertragszeile reicht, ist die nächste
+Vorab-Frage und nicht hier entschieden.
+
+### 6. Was weiter nicht gemessen ist
+
+**Relationen:** weiter nicht messbar, der Bestand annotiert keine Kanten (3ae).
+Der Sprachbefund hat daran nichts geändert.
+
+**Zwei unabhängige Durchsichten des Bestands fehlen weiter.** Zwei der vier
+Gold-Mängel sind durch diesen Lauf erledigt oder wirkungslos, einer ist neu
+(M-4), und keiner davon ersetzt die Durchsicht. Der Bestand bleibt ein Entwurf.
+
+**Ein Dokument pro Fall, ein bis drei Sätze.** Dass eine Vertragszeile auf
+24 kurzen Sätzen greift, sagt nichts darüber, ob sie auf 26.000 Zeichen
+Gerichtstext greift. Die nächste Messung der Sprachachse gehört auf ein langes
+Dokument und kostet dort nichts extra, weil sie offline aus gespeicherten
+Dossiers läuft.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

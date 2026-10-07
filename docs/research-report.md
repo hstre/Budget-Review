@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ac, which is a log rather than a synthesis.
+§3a–§3ah, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -46,7 +46,18 @@ Three findings carry the rest:
    spread from 77 spans to 27. On the court decision the full gold answer — 24 of
    24 — is reached for the first time.
 
-The fourth finding is about method rather than product, and it generalises past
+A fourth finding came from the first measurement that looked at *meaning* rather
+than position: **the semantic layer was silently translating.** 38 of 122
+propositions from German sources came back in English, which is both a product
+defect and evidence that a semantic projection is already happening inside the
+extractor — a pure extractor cannot translate. One line in the extraction
+contract took it to 0 of 123, so that projection is steerable without being
+materialised. What the line did not touch is the conditional: in half the runs
+the extractor splits "if A, then B" at the comma and asserts B unconditionally,
+which for a proposal review is an invented commitment. It is now the only
+measured meaning failure (§4.12).
+
+The last finding is about method rather than product, and it generalises past
 this repository: **a measurement regime that does not first establish the spread
 of a single configuration will produce findings at the rate the spread allows,
 and they will survive review because they look like results.** Six of the nine
@@ -69,6 +80,8 @@ withdrawals in §7 have that one cause.
 | 11 | The arms' own stability figure is not reproducible across sessions | open (§5) |
 | 12 | Relation labels the extractor reaches for are field confusions, not vocabulary gaps | established, no action taken |
 | 13 | Two-stage extraction: recall unreadable, relation validity perfect | measured, not adopted |
+| 14 | The semantic layer was silently translating German documents into English propositions | **fixed** by one contract line (§4.12), **in review** |
+| 15 | Conditionals are split at the comma and the consequent is asserted unconditionally | open, and now the only measured meaning failure (§4.12) |
 
 ---
 
@@ -475,6 +488,91 @@ unmade.
 
 ---
 
+### 4.12 Meaning, measured apart from anchoring: the layer was translating
+
+Every corpus measured against up to this point annotates *where* an argument unit
+sits. None annotates whether the claim quoting it still means the same thing — a
+claim can anchor perfectly and lose the negation, and span recall counts that as a
+hit. So 24 short cases were hand-annotated, twelve meanings in German and English,
+over negation, modality, correlation against causation, condition and scope,
+speaker, and several assertions in one passage. Every requirement is a token group
+or a regex, never a model judging whether two sentences mean the same, because the
+system under test and its examiner would then come from one family.
+
+Three outcomes are reported **separately** — anchoring, meaning, relations —
+specifically so that a change cannot look better by capturing *more text*.
+
+**First run, 72 paid calls.** The apparatus holds: 24 of 24 cases anchored a claim
+on their span in all three runs against a mark of 90 per cent fixed beforehand,
+and `anchor_normalised` is 0 across all 248 admitted claims — the first live
+exercise of the anchoring gate merged as #18, which until then had only been
+checked against stored packets.
+
+Then the finding nobody was looking for. **38 of 122 propositions from German
+sources came back in English; 0 of 126 from English sources came back in German.**
+The `raw_span` quotes the German document and `canonical_content` does not. No
+measurement in this project had ever looked at the *language* of a proposition,
+and the README's promise that quoted claims keep their original wording held for
+the span and not for the proposition.
+
+Two explanations, and they do not compete. The mundane one: the extraction
+contract never mentioned language at all, while the reviewer contract has carried
+a language instruction since it existed. The deeper one: **a pure extractor
+cannot translate.** To write a German sentence as a faithful English proposition
+the model must already hold subject, predicate, scope and polarity independently
+of the German wording, and then re-verbalise. The semantic projection is
+happening — it is simply not kept. Which retrospectively explains §4.5, reported
+there as a fact without a cause: `raw_span` is a *selection* into the document
+and therefore reproducible; `canonical_content` is a *generation* and therefore
+the unstable half.
+
+**Second run, same 72 calls, one variable.** Three lines were added to the
+extraction contract beside the verbatim-span rule: the proposition in the
+language of the document, not translated, because a claim has to be checkable
+against the span it quotes. The case file and the scorer are byte-identical
+between the runs and `meaning_preserved` is unchanged.
+
+| | before | after | pre-set threshold |
+|---|---:|---:|---|
+| translated, German source | 38 of 122 | **0 of 123** | ≤ 5 ⇒ steerable |
+| translated, English source | 0 of 126 | 0 of 119 | must stay 0 |
+| negation | 12/12 | 12/12 | guard: a fall reverts the change |
+| modality | 12/12 | 12/12 | guard |
+| meaning preserved, all cases | 59/72 | **69/72** | — |
+
+**The hidden projection is steerable by instruction.** The effect is complete
+rather than partial, the yield did not fall (242 claims against 248), and scope
+went 3/6 → 6/6, speaker 9/12 → 12/12, several assertions 10/12 → 12/12,
+correlation 11/12 → 12/12. All four cases that had failed *on language alone*
+now pass their existing, unmodified requirements, which resolved a gold defect
+without touching the gold. For the language problem, no explicit projection layer
+is needed.
+
+**What the instruction did not touch: the conditional.** "If the funds are
+granted, construction begins in spring." In three of six runs the extractor
+**splits the sentence at the comma**: the antecedent becomes its own claim, typed
+`assumption`, which is a defensible reading, and the consequent becomes its own
+claim, typed `forecast`, asserted **unconditionally**. "Construction begins in
+spring" with no condition attached is an invented commitment — for a proposal
+review, the error class the product exists to catch, produced by the product. In
+the other three runs one claim carries the whole conditional sentence. 2 of 6
+before and 3 of 6 after is nothing on six trials, and it is reported as unchanged.
+
+It is now the only measured meaning failure in the set, which makes it a far
+better-posed target than "the semantic layer is unreliable": a single
+reproducible structural failure at a named construction. Whether it needs
+explicit fields for modality and scope, or — as with every small change in this
+project that worked — one more contract line, is the next pre-registered
+question.
+
+**Limits.** Relations remain unmeasurable: the set annotates no edges, found by
+trying to implement the axis. The set is a **draft** pending two independent
+reviews, which have not happened. Each case is one to three sentences, so a
+contract line that works on 24 short sentences says nothing about 26,000
+characters of court text.
+
+---
+
 ## 5. What we do not know
 
 Stated as questions, because each is a measurement nobody has made.
@@ -534,6 +632,7 @@ Stated as questions, because each is a measurement nobody has made.
 | A quotation refused over a line break | Tolerant anchoring on a whitespace-collapsed copy | in production (#18) |
 | A reworded claim is a different node, and changes every edge | *Not solved.* The fix as built would have dropped a second reading of one passage | withdrawn, §4.5 |
 | The thinking arm silently absent from most reviews | Budget parameterised; requirement measured | in review (#16) |
+| The proposition was silently translated out of the document's language | One line in the extraction contract: the proposition in the document's language, not translated | in review; 38 of 122 → 0 of 123 (§4.12) |
 
 ### Unsolved
 
@@ -546,7 +645,10 @@ Stated as questions, because each is a measurement nobody has made.
 | Genuine paraphrase in quotations | 11 of 465 proposals, correctly refused, permanently lost |
 | Relation expressivity | Four of six families covered; the gap is untested |
 | A finding's state is never resolved | Needs a versioned overlay and a schema decision |
-| German-language evidence | None |
+| Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12) |
+| Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases, and it is a draft pending two independent reviews |
+| Relations between claims | The third outcome of §4.12 is still unmeasurable: the meaning set annotates no edges |
+| German-language evidence | 24 hand-annotated cases, half of them German, run twice — and nothing longer. No German document above fixture length has been measured |
 
 ---
 
@@ -587,6 +689,14 @@ the spread of a single configuration was known.
    stochastic and a staircase search reports whichever step got lucky. **Corrected
    before the run was paid for**, which with the eighth is one of only two caught
    in time.
+
+Two smaller corrections that are not withdrawals, recorded because they were
+published: the conditional's broken claim was first reported as "The funds *will
+be* granted" where the model wrote "The funds **are** granted" — a misquotation
+of the output, corrected from the six runs in §4.12. And a pre-registered
+prediction that two of the meaning cases contained built-in false alarms was
+**refuted**: both passed 3 of 3 in both languages, and the real defect in the set
+was one not foreseen.
 
 ---
 
@@ -633,8 +743,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 20 measurement scripts, each tested
-docs/architecture.md §3a–§3ac            the chronological record, run by run
+scripts/                                 21 measurement scripts, each tested
+docs/architecture.md §3a–§3ah            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -643,7 +753,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-327 tests, `ruff check` clean.
+360 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -662,6 +772,14 @@ reader knows what is waiting.
    recovering.
 4. **Whether to extend the relation vocabulary** to the two uncovered families, on
    evidence that does not yet exist.
+5. **Whether the conditional needs explicit projection fields.** Modality and
+   scope carried as their own fields rather than left to the sentence structure
+   of a proposition. The language problem turned out not to need them (§4.12);
+   the conditional is the remaining candidate, and it is the only measured
+   meaning failure left.
+6. **Who reviews the meaning set.** It is a draft by design: two independent
+   reviews were asked for and none has happened, and until then every figure in
+   §4.12 rests on cases written by the same party that built the system.
 
 ---
 ---
@@ -674,7 +792,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ac und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ah und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -713,7 +831,18 @@ Drei Befunde tragen den Rest:
    Gerichtsentscheidung wird die vollständige Gold-Antwort — 24 von 24 — erstmals
    erreicht.
 
-Der vierte Befund betrifft die Methode und gilt über dieses Repository hinaus:
+Ein vierter Befund kam aus der ersten Messung, die auf *Bedeutung* statt auf
+Position gesehen hat: **Die semantische Schicht hat still übersetzt.** 38 von 122
+Propositionen aus deutschen Quellen kamen auf Englisch zurück — ein Produktmangel
+und gleichzeitig der Beleg, dass im Extraktor schon eine semantische Projektion
+läuft, denn ein reiner Extraktor kann nicht übersetzen. Eine Zeile im
+Extraktionsvertrag hat es auf 0 von 123 gebracht; diese Projektion ist also
+steuerbar, ohne materialisiert zu werden. Was die Zeile nicht angefasst hat, ist
+die Bedingung: in der Hälfte der Läufe zerlegt der Extraktor „wenn A, dann B" am
+Komma und behauptet B unbedingt, was für eine Antragsprüfung eine erfundene
+Zusage ist. Sie ist jetzt der einzige gemessene Bedeutungsfehler (§4.12).
+
+Der letzte Befund betrifft die Methode und gilt über dieses Repository hinaus:
 **Ein Messregime, das nicht zuerst die Streuung einer einzigen Konfiguration
 feststellt, produziert Befunde in dem Tempo, das die Streuung erlaubt — und sie
 überleben jedes Review, weil sie wie Ergebnisse aussehen.** Sechs der neun
@@ -736,6 +865,8 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 11 | Die Stabilitätszahl der Arme ist selbst nicht reproduzierbar | offen (§5) |
 | 12 | Relationslabels, nach denen der Extraktor greift, sind Feldverwechslungen, keine Vokabularlücken | belegt, nichts getan |
 | 13 | Zweistufige Extraktion: Recall nicht lesbar, Relationsgültigkeit perfekt | gemessen, nicht übernommen |
+| 14 | Die semantische Schicht hat deutsche Dokumente still in englische Propositionen übersetzt | **behoben** durch eine Vertragszeile (§4.12), **im Review** |
+| 15 | Bedingungssätze werden am Komma zerlegt und der Nachsatz unbedingt behauptet | offen, und jetzt der einzige gemessene Bedeutungsfehler (§4.12) |
 
 ## 2. Was das System ist
 
@@ -1132,6 +1263,92 @@ von 65 auflösbar — neben den null ungültigen Labels oben.
 Nicht übernommen: Es kostet einen zweiten bezahlten Aufruf je Dokument, und der
 Recall-Fall ist nicht gemacht.
 
+### 4.12 Bedeutung, getrennt von Verankerung gemessen: die Schicht hat übersetzt
+
+Jedes bis hierher gemessene Korpus annotiert, *wo* eine Argumenteinheit sitzt.
+Keines annotiert, ob der Claim, der sie zitiert, noch dasselbe bedeutet — ein
+Claim kann perfekt ankern und die Negation verlieren, und der Span-Recall zählt
+das als Treffer. Also wurden 24 kurze Fälle von Hand annotiert, zwölf Bedeutungen
+auf Deutsch und Englisch, über Negation, Modalität, Korrelation gegen Kausalität,
+Bedingung und Geltungsbereich, Sprecher und mehrere Aussagen in derselben
+Textstelle. Jede Bedingung ist eine Token-Gruppe oder ein regulärer Ausdruck,
+nie ein Modell, das beurteilt, ob zwei Sätze dasselbe bedeuten — sonst kämen das
+geprüfte System und sein Prüfer aus einer Familie.
+
+Drei Ergebnisse werden **getrennt** berichtet — Verankerung, Bedeutung,
+Relationen — genau damit eine Änderung nicht dadurch besser aussehen kann, dass
+sie *mehr Text* erfasst.
+
+**Erster Lauf, 72 bezahlte Aufrufe.** Der Apparat hält: 24 von 24 Fällen haben in
+allen drei Läufen einen Claim auf ihrer Spanne verankert, gegen eine vorab
+gesetzte Marke von 90 Prozent, und `anchor_normalised` ist 0 über alle 248
+zugelassenen Claims — die erste Live-Ausübung des Anker-Gates aus #18, das bis
+dahin nur gegen gespeicherte Pakete geprüft war.
+
+Dann der Befund, nach dem niemand gesucht hat. **38 von 122 Propositionen aus
+deutschen Quellen kamen auf Englisch zurück, 0 von 126 aus englischen Quellen auf
+Deutsch.** Der `raw_span` zitiert das deutsche Dokument, `canonical_content`
+nicht. Keine Messung dieses Projekts hat je auf die *Sprache* einer Proposition
+gesehen, und das Versprechen im README, zitierte Claims behielten ihren Wortlaut,
+gilt für die Spanne und nicht für die Proposition.
+
+Zwei Erklärungen, und sie konkurrieren nicht. Die banale: Der Extraktionsvertrag
+erwähnte Sprache überhaupt nicht, während der Reviewer-Vertrag seit immer eine
+Sprachanweisung trägt. Die tiefere: **Ein reiner Extraktor kann nicht
+übersetzen.** Um einen deutschen Satz als treue englische Proposition zu
+schreiben, muss das Modell Subjekt, Prädikat, Geltungsbereich und Polarität
+bereits unabhängig vom deutschen Wortlaut repräsentieren und dann neu
+verbalisieren. Die semantische Projektion findet statt — sie wird nur nicht
+behalten. Das erklärt rückblickend 4.5, dort als Tatsache ohne Ursache berichtet:
+`raw_span` ist eine *Auswahl* ins Dokument und deshalb reproduzierbar,
+`canonical_content` eine *Erzeugung* und deshalb die instabile Hälfte.
+
+**Zweiter Lauf, dieselben 72 Aufrufe, eine Variable.** Drei Zeilen kamen in den
+Extraktionsvertrag, neben die Regel für wörtliche Spannen: die Proposition in der
+Sprache des Dokuments, nicht übersetzt, weil ein Claim gegen die Spanne prüfbar
+sein muss, die er zitiert. Fallbestand und Scorer sind zwischen beiden Läufen
+byte-identisch, `meaning_preserved` ist unverändert definiert.
+
+| | vorher | nachher | Schwelle, vorab |
+|---|---:|---:|---|
+| übersetzt, deutsche Quelle | 38 von 122 | **0 von 123** | ≤ 5 ⇒ steuerbar |
+| übersetzt, englische Quelle | 0 von 126 | 0 von 119 | muss 0 bleiben |
+| Negation | 12/12 | 12/12 | Schutzbedingung: ein Fall nimmt die Änderung zurück |
+| Modalität | 12/12 | 12/12 | Schutzbedingung |
+| Bedeutung erhalten, alle Fälle | 59/72 | **69/72** | — |
+
+**Die verborgene Projektion ist durch eine Anweisung steuerbar.** Der Effekt ist
+vollständig und nicht teilweise, die Ausbeute ist nicht gefallen (242 gegen 248
+Claims), und Geltungsbereich ging 3/6 → 6/6, Sprecher 9/12 → 12/12, mehrere
+Aussagen 10/12 → 12/12, Korrelation 11/12 → 12/12. Alle vier Fälle, die
+*ausschließlich an der Sprache* gescheitert waren, bestehen jetzt ihre
+bestehenden, unveränderten Bedingungen — ein Gold-Mangel, gelöst ohne das Gold
+anzufassen. Für das Sprachproblem braucht es keine explizite Projektionsschicht.
+
+**Was die Anweisung nicht angefasst hat: die Bedingung.** „Wenn die Mittel
+bewilligt werden, beginnt der Ausbau im Frühjahr." In drei von sechs Läufen
+**zerlegt der Extraktor den Satz am Komma**: der Vordersatz wird ein eigener
+Claim, getypt als `assumption`, was eine zulässige Lesart ist, und der Nachsatz
+wird ein eigener Claim, getypt als `forecast`, **unbedingt behauptet.** „Der
+Ausbau beginnt im Frühjahr" ohne jede Bedingung ist eine erfundene Zusage — für
+eine Antragsprüfung genau die Fehlerklasse, für deren Entdeckung das Produkt
+existiert, erzeugt vom Produkt. In den anderen drei Läufen trägt ein Claim den
+ganzen Bedingungssatz. 2 von 6 vorher gegen 3 von 6 nachher ist auf sechs
+Versuchen nichts und wird als unverändert berichtet.
+
+Sie ist jetzt der einzige gemessene Bedeutungsfehler im Bestand, und das ist ein
+weit besser gestellter Gegenstand als „die semantische Schicht ist
+unzuverlässig": ein einzelnes reproduzierbares Strukturversagen an einer
+benannten Konstruktion. Ob es explizite Felder für Modalität und Geltungsbereich
+braucht oder — wie bei jeder kleinen Änderung dieses Projekts, die gewirkt hat —
+eine weitere Vertragszeile, ist die nächste Vorab-Frage.
+
+**Grenzen.** Relationen bleiben nicht messbar: der Bestand annotiert keine Kanten,
+aufgefallen beim Implementieren der Achse. Der Bestand ist ein **Entwurf** und
+wartet auf zwei unabhängige Durchsichten, die nicht stattgefunden haben. Jeder
+Fall ist ein bis drei Sätze; dass eine Vertragszeile auf 24 kurzen Sätzen greift,
+sagt nichts über 26.000 Zeichen Gerichtstext.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -1188,6 +1405,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Ein Zitat scheitert an einem Zeilenumbruch | Toleranter Anker auf leerraum-normalisierter Kopie | in Produktion (#18) |
 | Ein umformulierter Claim ist ein anderer Knoten und verändert jede Kante | *Nicht gelöst.* Die gebaute Fassung hätte eine zweite Lesart derselben Stelle verworfen | zurückgezogen, §4.5 |
 | Der Thinking-Arm fehlte still in den meisten Reviews | Budget parametriert, Bedarf gemessen | im Review (#16) |
+| Die Proposition wurde still aus der Sprache des Dokuments übersetzt | Eine Zeile im Extraktionsvertrag: die Proposition in der Sprache des Dokuments, nicht übersetzt | im Review; 38 von 122 → 0 von 123 (§4.12) |
 
 ### Ungelöst
 
@@ -1200,7 +1418,10 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Echte Umformulierung im Zitat | 11 von 465 Vorschlägen, zu Recht abgelehnt, dauerhaft verloren |
 | Relations-Ausdruckskraft | Vier von sechs Familien gedeckt; die Lücke ist ungeprüft |
 | Der Zustand eines Befunds wird nie aufgelöst | Braucht ein versioniertes Overlay und eine Schemaentscheidung |
-| Deutschsprachige Evidenz | Keine |
+| Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12) |
+| Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen, und er ist ein Entwurf vor zwei unabhängigen Durchsichten |
+| Beziehungen zwischen Claims | Das dritte Ergebnis aus §4.12 ist weiter nicht messbar: der Bedeutungsbestand annotiert keine Kanten |
+| Deutschsprachige Evidenz | 24 von Hand annotierte Fälle, die Hälfte davon deutsch, zweimal gelaufen — und nichts Längeres. Kein deutsches Dokument über Fixture-Länge ist gemessen |
 
 ## 7. Zurückgezogene Aussagen
 
@@ -1243,6 +1464,15 @@ die Streuung einer einzigen Konfiguration bekannt war.
    der Ausfall ist also stochastisch, und eine Treppensuche berichtet, welche Stufe
    Glück hatte. **Korrigiert, bevor der Lauf bezahlt war** — mit der achten einer
    von nur zwei, die rechtzeitig auffielen.
+
+Zwei kleinere Korrekturen, die keine Rücknahmen sind, aber festgehalten gehören,
+weil sie veröffentlicht waren: Der gebrochene Claim der Bedingung wurde zuerst
+als „The funds *will be* granted" berichtet, wo das Modell „The funds **are**
+granted" geschrieben hat — eine Falschzitierung der Ausgabe, korrigiert aus den
+sechs Läufen in §4.12. Und eine vorab festgelegte Vorhersage, zwei der
+Bedeutungsfälle enthielten eingebaute Falschalarme, ist **widerlegt**: beide
+haben 3 von 3 in beiden Sprachen bestanden, und der wirkliche Mangel des
+Bestands war ein nicht vorhergesehener.
 
 ## 8. Was die externe Arbeit beigetragen hat
 
@@ -1287,8 +1517,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 20 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ac            die chronologische Aufzeichnung
+scripts/                                 21 Messskripte, jedes getestet
+docs/architecture.md §3a–§3ah            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -1298,7 +1528,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-327 Tests, `ruff check` sauber.
+360 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 
@@ -1314,3 +1544,12 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    wiederbeschafft hat.
 4. **Ob das Relationsvokabular** um die zwei fehlenden Familien erweitert wird —
    auf Evidenz, die es noch nicht gibt.
+5. **Ob die Bedingung explizite Projektionsfelder braucht.** Modalität und
+   Geltungsbereich als eigene Felder, statt sie dem Satzbau einer Proposition zu
+   überlassen. Für das Sprachproblem waren sie nicht nötig (§4.12); die Bedingung
+   ist der verbleibende Kandidat und der einzige noch gemessene
+   Bedeutungsfehler.
+6. **Wer den Bedeutungsbestand durchsieht.** Er ist absichtlich ein Entwurf: zwei
+   unabhängige Durchsichten sind angefragt und keine hat stattgefunden, und
+   solange ruht jede Zahl in §4.12 auf Fällen, die dieselbe Partei geschrieben
+   hat, die das System gebaut hat.

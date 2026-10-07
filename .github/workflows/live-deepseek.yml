@@ -105,13 +105,18 @@ on:
         required: false
         default: "0"
         type: string
+      semantic_repeats:
+        description: "Score the hand-annotated meaning set N times. 0 disables it."
+        required: false
+        default: "0"
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true && inputs.reviewer_repeats == '0'
+    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true && inputs.reviewer_repeats == '0' && inputs.semantic_repeats == '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -147,7 +152,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true || inputs.reviewer_repeats != '0'
+    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true || inputs.reviewer_repeats != '0' || inputs.semantic_repeats != '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -179,7 +184,7 @@ jobs:
           fi
 
       - name: Build the case
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.reviewer_repeats == '0'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.reviewer_repeats == '0' && inputs.semantic_repeats == '0'
         run: |
           mkdir -p gold-case
           # The fixture corpus skips the fetch step, so there is no provenance
@@ -276,9 +281,24 @@ jobs:
             --runs "${{ inputs.reviewer_repeats }}" \
             --profile "${{ inputs.profile }}" 2>&1 | tee gold-case/reviewer-variance.txt
 
+      - name: Score the hand-annotated meaning set
+        if: inputs.semantic_repeats != '0'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          # No corpus and no gold document: the cases are in the repository and
+          # each one is a sentence or three. The set validates itself first and
+          # refuses to score if any invariant is broken.
+          mkdir -p gold-case
+          mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
+          python scripts/semantic_score.py gold-case/semantic \
+            --repeats "${{ inputs.semantic_repeats }}" \
+            --profile "${{ inputs.profile }}" 2>&1 | tee gold-case/semantic-score.txt
+
       - name: Live extraction
         id: extract
-        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.reviewer_repeats == '0'
+        if: inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.reviewer_repeats == '0' && inputs.semantic_repeats == '0'
         continue-on-error: true
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}

@@ -9,6 +9,134 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Fixed
+
+- **The extraction contract now names the document's language, and the silent
+  translation stops completely.** Three lines beside the verbatim-span rule:
+  `canonical_content` in the language of the document, not translated, with the
+  reason — a claim has to be checkable against the span it quotes. Re-run over
+  the same 24 cases, the same 72 paid calls, the same profile, with `cases.json`
+  and the scorer byte-identical and `meaning_preserved` unchanged, so the
+  comparison has one variable: **0 of 123 claims from German sources came back
+  translated, against 38 of 122 before.** English stays at 0 of 119. The yield
+  did not fall (242 admitted claims against 248): the instruction switched off
+  the translation and not the extraction.
+  The language is deliberately **not** a parameter. It is a property of the
+  document and not of the caller's interface — a German document reviewed with
+  `--language en` still needs German propositions, because the span they are
+  checked against is German.
+  This also answers the question the change was built to answer: the hidden
+  semantic projection — which must exist, since a pure extractor cannot
+  translate — **is steerable by instruction.** The language problem does not
+  require an explicit projection layer.
+- Meaning preserved rises from 59 of 72 case-runs to **69 of 72**, and every
+  remaining failure is the conditional. Scope 3/6 → 6/6, speaker 9/12 → 12/12,
+  several assertions in one passage 10/12 → 12/12, correlation against causation
+  11/12 → 12/12. Negation and modality hold at 12/12, which was the pre-set guard
+  that would have reverted the change. Anchoring unchanged at 24 of 24 in all
+  three runs, `anchor_normalised` 0, no distortions, no failed call.
+- **Gold defect M-1 is resolved without a gold change.** All four cases that
+  failed in the first run *on language alone* now pass their existing,
+  unmodified requirements. The proposed bilingual requirement is not
+  implemented and is not needed; the token lists were not too narrow.
+
+### Measured
+
+- **The conditional is now the only measured meaning failure in the set, and it
+  did not move.** 2 of 6 runs preserved it before, 3 of 6 now, which on six
+  trials is nothing, and it is reported as unchanged — as §3ag predicted a
+  language instruction would leave it. The six runs do sharpen the diagnosis, and
+  correct the first run's wording of it (the claim reads "The funds are granted",
+  not "will be granted"): the extractor **splits the sentence at the comma**. The
+  antecedent becomes its own claim, typed `assumption`, which is a defensible
+  reading. The consequent becomes its own claim, typed `forecast`, asserted
+  **unconditionally** — "construction begins in spring" with no condition
+  attached, which is an invented commitment. In the three passing runs one claim
+  carries the whole conditional sentence instead.
+  A re-check of the gold on this point holds: the forbidden reading appears in
+  exactly the three failing runs and in none of the passing ones, so the two
+  signals agree 6 of 6. The structural gap — a run delivering the conditional
+  *and* the bare consequent would pass — is recorded as latent defect M-4 and was
+  not observed.
+- 11 of 242 claims are undecidable on the language axis (10 of 248 before), and
+  undecidable does not count as translated, so the 0 could be flattering. It is
+  not: all eleven were read by hand and stand in the language of their source.
+  The mechanism is mechanical rather than noise — "Construction began in spring"
+  contains only markers that appear in *both* word lists.
+- **The semantic layer silently translates German documents into English
+  propositions.** 38 of 122 claims from German sources came back in English and 0
+  of 126 from English sources came back in German, over 24 hand-annotated cases
+  run three times. The `raw_span` quotes the German source while
+  `canonical_content` does not, so the README's promise that quoted claims keep
+  their original wording holds for the span and not for the proposition. No
+  measurement in this project had ever looked at the language of
+  `canonical_content`. It is also the "language-dependent artifact" the project's
+  own working paper names as one of three reasons for a projection layer.
+  **Fixed in this same release — see Fixed above. This bullet is the measurement
+  that found it, not the current behaviour.**
+- **Conditionals collapse.** The one genuine meaning failure, and the only
+  phenomenon that fails once the language effect is removed. The wording of the
+  claim below is corrected in the second run's entry above — it reads "The funds
+  are granted": "If the funds are granted, construction begins in spring" becomes
+  "The funds are granted" plus
+  "Construction begins in spring" — three of three runs in English, one of three
+  in German. The condition is gone and one claim asserts what the source
+  explicitly does not. For a proposal review that is the error class the product
+  exists to catch.
+- Negation and modality survive 12 of 12 each. Correlation against causation,
+  speaker and multiple assertions fail only where the claim was translated.
+- The apparatus works: 24 of 24 cases anchored a claim on their span in all three
+  runs, against a mark of 90 per cent fixed beforehand. `anchor_normalised` is 0
+  across all 248 claims as predicted, which is the first live exercise of the gate
+  merged in #18 — it had only ever been verified against stored packets.
+- **My pre-registered prediction was wrong.** `neg-02` and `mod-02` were named in
+  advance as containing built-in false alarms; both passed 3 of 3 in both
+  languages. The real defect in my gold is one I did not foresee: the requirements
+  conflate language with meaning, and one case (`spk-01-de`) passed only because I
+  had accidentally made its group language-tolerant while the other eleven were
+  not. All three gold defects are recorded as dated entries in
+  `docs/semantic-cases-review.md` and **nothing was changed**, because widening a
+  token list until a run passes is fitting the test to the system.
+
+### Added
+
+- A **language axis** in `scripts/semantic_score.py`, reported apart from
+  anchoring and meaning. It was computed offline from the 72 stored dossiers at no
+  further cost. Without it the run would have read as "the extractor loses half
+  the meaning on scope and speaker", which is false — which is itself the evidence
+  for measuring the outcomes separately. Function words counted, crude like the
+  meaning checks, and it has to classify all 24 case documents correctly before it
+  may classify a claim, which the test suite asserts. Four mutations, nine on the
+  scorer in total.
+
+### Added
+
+- **A hand-annotated set for meaning, as a draft pending independent review.**
+  `src/budget_review/fixtures/semantic_cases/cases.json`: 24 cases, twelve
+  meanings in German and English, over negation, modality, correlation against
+  causation, condition and scope, speaker, and several assertions in one passage.
+  Every corpus measured against so far annotates *where* an argument unit sits
+  and none annotates whether the claim quoting it still means the same thing — a
+  claim can anchor perfectly and lose the negation, and span recall counts that
+  as a hit.
+  Every requirement is a token group or a regex, never a model judging whether
+  two sentences mean the same, because the system under test and its examiner
+  would then come from one family. The checks are crude on purpose: they catch a
+  negation that is simply gone or a cause invented, not subtle drift.
+  `scripts/semantic_cases.py` validates the set against five invariants, of
+  which the last two would catch a check that proves nothing: every permitted
+  reading must satisfy the requirements and every declared forbidden reading must
+  violate one. That holds for the eighteen single-claim cases; for the six that
+  require two claims it is switched off, since their failure is "only one claim",
+  and that weakness is written into the review brief rather than left implicit.
+  Six mutations on the validator.
+- **`docs/semantic-cases-review.md`** — the brief for two independent reviews,
+  because the draft was authored by the same kind of model it will be used to
+  test. It carries the five questions to ask, the five places I think are weakest,
+  the rule that **disagreement filters examples rather than voting on meaning**,
+  and the governance rule for extending a token group after a run has failed
+  against it. Until both reviews are recorded there, the set stays a draft.
+
 ### Changed
 
 - **The gate anchors a quote that differs from the document only in whitespace.**

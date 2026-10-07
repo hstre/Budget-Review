@@ -31,6 +31,9 @@ Review profile: {selected.name}.
 Return JSON only. Never judge whether a claim is true, good, human-written or AI-written.
 Decompose polished prose aggressively: an elegant sentence may contain several claims.
 Each raw_span must be copied verbatim and exactly from the document.
+Write canonical_content in the same language as the document. Do not translate it: a claim
+has to be checkable against the span it quotes, and a reader holding the two side by side
+must not have to translate one of them first.
 Allowed claim_type values: {CLAIM_TYPES}.
 Allowed relation_type values: {RELATION_TYPES}.
 The relation_type field must contain one of those UPPERCASE relation values only. Never put
