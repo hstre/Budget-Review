@@ -11,6 +11,81 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **Two independent blind reviews of the meaning set have run** —
+  `google/gemini-3.1-pro-preview` and `openai/gpt-5.2`, 0.16 $ together, verbatim
+  in `docs/semantic-cases-review-1.md` and `-2.md`. Neither is the family that
+  wrote the set nor the system under test, and neither saw a figure from either
+  paid run.
+- **Their sixteen counterexamples were checked against the real validator rather
+  than taken on trust: twelve confirmed, four refuted.** All five "an unfaithful
+  rendering passes" cases hold, and all seven "a faithful rendering fails" cases
+  hold. The four "it slips through the forbids list" claims are wrong, and both
+  reviews make the same mistake — they argue from `forbids` alone and overlook
+  that `requires_all_groups` must hold too, so "Das Programm senkte die
+  Abbrecherquote" as the only claim fails for carrying no modality token, not for
+  the forbidden pattern. **The forbid lists are therefore not extended**: the
+  premise for it is refuted.
+- **Their concern survives in another form, and it is M-4 at three times the
+  scope.** With the offending wording *beside* a compliant claim the requirements
+  are satisfied and no regex fires, so `mod-01-de`, `mod-01-en` and `cor-01-de`
+  all pass with an unconditional or causal claim in the graph.
+- **The five confirmed weak cases are the serious half.** `neg-01-de` passes with
+  "Die Maßnahme wirkt **nicht nur** auf die Abbrecherquote, sondern auch auf die
+  Noten" — the meaning reversed, the token present. `spk-01-de` passes with "Die
+  Regierung ist wirksam". `spk-02-de`, `mul-01-de` and `mul-02-de` pass with bare
+  fragments. Both reviews independently judge `spk-02` and `mul-*` to measure
+  nothing as written: agreement against the draft, not disagreement.
+- **It weakens published figures without refuting them.** The `speaker 12/12` and
+  `multiple assertions 12/12` entries stand — those runs produced real
+  propositions — but the cases admit fragments, so passing them is a far lower bar
+  than those sections imply. The numbers hold; their evidential weight does not.
+- **One disagreement about meaning, and the brief's own rule fires for the first
+  time.** The second review disputes `neg-02`'s gold: "Nicht alle Schulen erhalten
+  den Zuschlag" is logically compatible with none receiving it, so the
+  `must_preserve` claims a pragmatic implicature rather than the sentence's
+  content. By the rule, the example falls. It was one of two cases predicted as
+  built-in false alarms; the run refuted that prediction, and the case now dies
+  for a reason not foreseen.
+
+### Fixed
+
+- **`meaning_preserved` ignored `distortions` entirely**, found while building the
+  counter-check. Three holes, not one: a tripped `forbids` pattern let a case
+  pass, a forbidden `claim_type` let a case pass, and `forbidden_readings` was
+  never read by the scorer at all — only the validator used it, and only to prove
+  a case is not vacuous. A distortion now fails the case, and a declared forbidden
+  reading among the claims is a distortion whatever else passes. This makes the
+  check **stricter**, which the governance rule permits. Five mutations.
+- **The 72 stored dossiers re-scored under the stricter scorer: no figure moves.**
+  Negation, modality, correlation, speaker and multiple assertions stay at 12/12,
+  scope at 6/6, the conditional at 3/6. The holes were open and never exercised,
+  so the figures now rest on a stricter instrument — demonstrated rather than
+  asserted.
+
+### Added
+
+- `semantic_score.py --rescore`, which scores dossiers already on disk and calls
+  no provider, so a change to the scorer can be tested against every run ever
+  paid for at no cost. The reporting was split into one function the paid path and
+  the rescore path share, because a second reporting path is a second thing to
+  keep in step.
+
+### Not done
+
+- **Rewriting the eight cases both reviews want rewritten or dropped** — `neg-02`,
+  `spk-01`, `spk-02`, `mul-01`, `mul-02`, `mod-02`. That is a third of the set and
+  it changes every measurement standing on them, including the 69 of 72. Not a
+  decision to take alone.
+- **The seventh phenomenon**, where the two reviews disagree: temporal scope
+  against numbers and units. Not a disagreement about meaning, so the rule does
+  not apply — it is a priority, and for a product reviewing budgets numbers and
+  units look the more expensive.
+- **Relation annotations** (M-3). Both reviews were asked for edges and neither
+  proposed any.
+
+
+### Measured
+
 - **A claim's type is the third generated component, and nothing had ever looked
   at it.** §4.5 separated `raw_span` (a selection into the document, reproducible)
   from `canonical_content` (a generation, the unstable half). The type is also a

@@ -88,6 +88,11 @@ def language_of(text: str) -> str:
     return "de" if german > english else "en"
 
 
+def _folded(text: str) -> str:
+    """Whitespace, case and a trailing full stop ignored; nothing else."""
+    return " ".join(text.split()).casefold().rstrip(".")
+
+
 def claims_on_span(claims: list[dict], document: str, span: str) -> list[dict]:
     """Admitted claims whose anchor overlaps the annotated passage."""
     start = document.index(span)
@@ -115,6 +120,14 @@ def score(case: dict, claims: list[dict]) -> dict:
     distinct_met = len(assigned) == len(distinct)
 
     forbidden_types = {t.lower() for t in (case.get("forbidden_claim_types") or [])}
+    # A case's own worked failures. The validator checks that each one violates
+    # some requirement, which proves the case is not vacuous; it never checked
+    # whether a live claim *is* one. Found by the independent reviews: a forbidden
+    # reading standing beside a compliant claim satisfied the requirements and
+    # tripped no regex, so the case passed with the invented claim in the graph.
+    forbidden_readings = {
+        _folded(reading) for reading in (case.get("forbidden_readings") or [])
+    }
     distortions = []
     for claim in on_span:
         tripped = cases_module.violates(claim["canonical_content"], case.get("forbids") or [])
@@ -123,6 +136,10 @@ def score(case: dict, claims: list[dict]) -> dict:
         if str(claim["claim_type"]).lower() in forbidden_types:
             distortions.append(
                 {"claim": claim["canonical_content"][:90], "claim_type": claim["claim_type"]}
+            )
+        if _folded(claim["canonical_content"]) in forbidden_readings:
+            distortions.append(
+                {"claim": claim["canonical_content"][:90], "forbidden_reading": True}
             )
 
     needed = case.get("min_claims_on_span", 1)
@@ -139,15 +156,43 @@ def score(case: dict, claims: list[dict]) -> dict:
         "enough_claims": len(on_span) >= needed,
         "requirements_met": bool(satisfied) if groups else True,
         "distinct_met": distinct_met,
+        # A distortion now fails the case. It did not before: `distortions` was
+        # reported beside `meaning_preserved` and never entered it, so a claim
+        # that tripped a forbidden pattern or carried a forbidden claim type
+        # still counted as meaning preserved. No run had ever produced one, so
+        # no published figure moves — but the check could not have caught it.
         "meaning_preserved": (bool(satisfied) if groups else True)
         and distinct_met
-        and len(on_span) >= needed,
+        and len(on_span) >= needed
+        and not distortions,
         "distortions": distortions,
         "translated": translated,
         "in_source_language": bool(contents) and not translated,
         "normalised_anchors": sum(1 for c in on_span if c.get("anchor_normalised")),
         "contents": contents,
     }
+
+
+def rescore(directory: Path, cases: list[dict]) -> dict[str, list[dict]]:
+    """Score stored dossiers again under the current scorer, at no cost.
+
+    The figures in §3af and §3ah were produced by a scorer in which a distortion
+    did not fail a case. When that is fixed the honest question is whether any
+    published figure moves, and the dossiers are on disk, so the answer costs
+    nothing. Reads `<case_id>-<repeat>.json` and calls no provider.
+    """
+    by_id = {case["case_id"]: case for case in cases}
+    rows: dict[str, list[dict]] = {}
+    for path in sorted(directory.glob("*.json")):
+        stem, _, repeat = path.stem.rpartition("-")
+        case = by_id.get(stem)
+        if case is None or not repeat.isdigit():
+            continue
+        stored = json.loads(path.read_text(encoding="utf-8"))
+        if "claims" not in stored:
+            continue
+        rows.setdefault(stem, []).append(score(case, stored["claims"]))
+    return rows
 
 
 def extract(provider, case: dict, profile: str) -> dict:
@@ -167,6 +212,11 @@ def main() -> int:
     parser.add_argument("out_dir", type=Path)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--profile", default="general")
+    parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="score the dossiers already in out_dir; calls no provider, costs nothing",
+    )
     args = parser.parse_args()
 
     cases = cases_module.load()
@@ -177,10 +227,18 @@ def main() -> int:
             print(f"  {problem}")
         return 1
 
-    provider = DeepSeekProvider()
-    args.out_dir.mkdir(parents=True, exist_ok=True)
     rows: dict[str, list[dict]] = {}
     failures: Counter = Counter()
+
+    if args.rescore:
+        rows = rescore(args.out_dir, cases)
+        if not rows:
+            print(f"keine gespeicherten Dossiers in {args.out_dir}", file=sys.stderr)
+            return 1
+        return report(cases, rows, failures, args.out_dir)
+
+    provider = DeepSeekProvider()
+    args.out_dir.mkdir(parents=True, exist_ok=True)
 
     for index in range(1, args.repeats + 1):
         for case in cases:
@@ -204,6 +262,20 @@ def main() -> int:
                 flush=True,
             )
 
+    return report(cases, rows, failures, args.out_dir)
+
+
+def report(
+    cases: list[dict],
+    rows: dict[str, list[dict]],
+    failures: Counter,
+    out_dir: Path,
+) -> int:
+    """The three outcomes plus the language axis, printed and stored.
+
+    Split out of main() so that --rescore reports identically to a paid run:
+    a second reporting path would be a second thing to keep in step.
+    """
     print("\n" + "=" * 72)
     print(
         f"{'Fall':12}{'verankert':>11}{'Sprache':>9}{'Bedeutung':>11}{'Claims':>9}{'Verzerrt':>10}"
@@ -248,7 +320,7 @@ def main() -> int:
     if failures:
         print(f"Fehlgeschlagene Aufrufe: {dict(failures)}")
     print("\nRelationen: auf diesem Bestand nicht messbar, die Fälle annotieren keine Kanten.")
-    (args.out_dir / "semantic-score.json").write_text(
+    (out_dir / "semantic-score.json").write_text(
         json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8"
     )
     return 0

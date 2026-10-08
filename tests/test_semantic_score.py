@@ -197,3 +197,90 @@ def test_an_undecidable_claim_is_not_called_a_translation() -> None:
     row = scorer.score({**_case(), "language": "de"}, [_claim("Haushalt steigt")])
 
     assert row["translated"] == []
+
+
+# --- a distortion must fail the case, which it did not until the reviews ---
+
+
+def test_a_tripped_forbidden_pattern_now_fails_the_case() -> None:
+    # `distortions` was reported beside `meaning_preserved` and never entered it,
+    # so a claim that tripped a forbidden pattern still counted as preserved.
+    row = scorer.score(
+        _case(forbids=[r"\bsenkt\b"]),
+        [_claim("Die Maßnahme senkt die Quote nicht, sagt man.")],
+    )
+
+    assert row["distortions"]
+    assert row["meaning_preserved"] is False
+
+
+def test_a_forbidden_claim_type_now_fails_the_case() -> None:
+    row = scorer.score(
+        _case(forbidden_claim_types=["causal"]),
+        [_claim("Die Maßnahme wirkt nicht auf die Quote.", claim_type="causal")],
+    )
+
+    assert row["distortions"]
+    assert row["meaning_preserved"] is False
+
+
+def test_a_declared_forbidden_reading_fails_the_case_beside_a_compliant_claim() -> None:
+    # The gap both independent reviews walked into from the other side: the
+    # forbidden reading satisfies no requirement and trips no regex, so with a
+    # compliant claim next to it the case passed and the invented claim stayed in
+    # the graph. The validator only ever checked that a forbidden reading
+    # violates something, never whether a live claim is one.
+    row = scorer.score(
+        _case(forbidden_readings=["Die Maßnahme wirkt."]),
+        [
+            _claim("Die Maßnahme wirkt nicht auf die Quote."),
+            _claim("Die Maßnahme wirkt."),
+        ],
+    )
+
+    assert row["requirements_met"] is True, "a compliant claim is present"
+    assert any(d.get("forbidden_reading") for d in row["distortions"])
+    assert row["meaning_preserved"] is False
+
+
+def test_a_forbidden_reading_is_matched_past_spacing_case_and_a_full_stop() -> None:
+    for variant in ("die maßnahme wirkt", "Die   Maßnahme  wirkt.", "Die Maßnahme wirkt"):
+        row = scorer.score(_case(forbidden_readings=["Die Maßnahme wirkt."]), [_claim(variant)])
+        assert any(d.get("forbidden_reading") for d in row["distortions"]), variant
+
+
+def test_a_different_proposition_is_not_mistaken_for_a_forbidden_reading() -> None:
+    # Folding must not become a fuzzy match: a claim that merely resembles the
+    # forbidden reading is a different claim and the case must not fail on it.
+    row = scorer.score(
+        _case(forbidden_readings=["Die Maßnahme wirkt."]),
+        [_claim("Die Maßnahme wirkt nicht.")],
+    )
+    assert not any(d.get("forbidden_reading") for d in row["distortions"])
+
+
+def test_rescoring_reads_stored_dossiers_and_calls_no_provider(tmp_path) -> None:
+    import json
+
+    case = _case()
+    dossier = {"claims": [_claim("Die Maßnahme wirkt nicht auf die Quote.")]}
+    for repeat in (1, 2):
+        (tmp_path / f"probe-de-{repeat}.json").write_text(
+            json.dumps(dossier), encoding="utf-8"
+        )
+    (tmp_path / "semantic-score.json").write_text("{}", encoding="utf-8")
+
+    rows = scorer.rescore(tmp_path, [case])
+
+    assert set(rows) == {"probe-de"}
+    assert len(rows["probe-de"]) == 2
+    assert all(row["meaning_preserved"] for row in rows["probe-de"])
+
+
+def test_rescoring_ignores_a_file_that_is_not_a_dossier(tmp_path) -> None:
+    import json
+
+    (tmp_path / "probe-de-1.json").write_text(json.dumps({"summary": "no claims"}), "utf-8")
+    (tmp_path / "probe-de-2.json").write_text(json.dumps({"summary": "no claims"}), "utf-8")
+
+    assert scorer.rescore(tmp_path, [_case()]) == {}

@@ -2387,6 +2387,165 @@ in **2 von 24 Fällen** (`cor-01-de/en`). Gegen `meaning_preserved` gemessen hä
 die Permutation 216 bezahlte Aufrufe für eine Achse gekostet, die den Typ fast
 nicht sieht. Das richtige Instrument ist Typstabilität, und die läuft gratis.
 
+## 3al. Zwei unabhängige Durchsichten: zwölf von sechzehn Gegenbeispielen bestätigt, vier widerlegt, und drei Löcher in meinem Scorer
+
+Der Bestand war seit #19 ein Entwurf, weil Beispiele, Gold und Bedingungen von
+derselben Modellfamilie stammen, die geprüft wird. Zwei blinde Durchsichten sind
+am 2026-10-08 gelaufen — `google/gemini-3.1-pro-preview` und `openai/gpt-5.2`,
+zusammen **0,16 $**. Wörtlich in `docs/semantic-cases-review-1.md` und `-2.md`.
+
+**Blind heißt: ohne die Mängelliste und ohne eine Zahl aus den beiden Läufen.**
+Das Skript schneidet den Auftrag an der Überschrift und verweigert eine Anfrage,
+die noch eine Mangel-Id oder Lauf-Zahl enthält.
+
+### Ich habe sie nachgerechnet, statt sie zu übernehmen
+
+Jede „würde durchkommen"-Behauptung ist eine Aussage über *unseren* Validator und
+damit mechanisch prüfbar. Alle sechzehn gegen `scripts/semantic_cases.py`:
+
+| Klasse | behauptet | Ergebnis |
+|---|---:|---|
+| **zu schwach** — untreue Wiedergabe besteht | 5 | **5 bestätigt** |
+| **zu eng** — treue Wiedergabe fällt durch | 7 | **7 bestätigt** |
+| rutscht durch die `forbids`-Liste | 4 | **4 widerlegt** |
+
+**Die vier Widerlegungen haben eine gemeinsame Ursache, und beide Durchsichten
+machen denselben Fehler:** Sie argumentieren allein über `forbids` und übersehen,
+dass `requires_all_groups` ebenfalls erfüllt sein muss. „Das Programm senkte die
+Abbrecherquote." als einziger Claim fällt nicht am Verbot — `\bsenkt\b` trifft
+„senkte" nicht —, sondern daran, dass der Claim kein Modalitäts-Token trägt.
+Dasselbe für „will lower" und „trägt dazu bei".
+
+Daraus folgt ausdrücklich **nicht**, die Verbotslisten zu verlängern, wie beide
+empfehlen. Die Prämisse ist widerlegt, und nach der Regel aus 3ad wäre es
+Anpassung des Tests an eine Lücke, die nicht offen ist.
+
+### Ihre Sorge überlebt aber, und zwar als M-4 in größerem Umfang
+
+Steht die beanstandete Formulierung *neben* einem konformen Claim, ist
+`requires_all_groups` erfüllt und das Verbot greift nicht:
+
+| Fall | Claims auf der Spanne | |
+|---|---|---|
+| `mod-01-de` | „könnte … senken" **+** „senkte die Abbrecherquote" | **besteht** |
+| `mod-01-en` | „could lower" **+** „will lower" | **besteht** |
+| `cor-01-de` | „korreliert mit" **+** „trägt dazu bei, … zu verbessern" | **besteht** |
+
+Das ist genau M-4, den ich für `sco-02` allein notiert hatte. Es sind mindestens
+drei weitere Fälle.
+
+### Und dabei sind drei Löcher in meinem Scorer aufgefallen, nicht eines
+
+Beim Bauen der Gegenprüfung: **`meaning_preserved` hat `distortions` vollständig
+ignoriert.**
+
+```python
+"meaning_preserved": satisfied and distinct_met and len(on_span) >= needed,
+```
+
+`distortions` stand daneben und ging nie ein. Also:
+
+1. ein ausgelöstes `forbids`-Regex ließ den Fall **bestehen**;
+2. ein verbotener `claim_type` ließ den Fall **bestehen**;
+3. `forbidden_readings` wurde vom Scorer **überhaupt nie geprüft** — nur der
+   Validator liest das Feld, und der prüft lediglich, dass eine verbotene Lesart
+   *irgendeine* Bedingung verletzt, nie ob ein echter Claim eine ist.
+
+Drei Löcher in dem Mechanismus, der Verzerrung fangen soll. Gefunden, weil zwei
+Fremde die Angriffslinie vorgegeben haben — nicht an der Stelle, die sie meinten.
+
+**Behoben**, und das ist ein Mangel unseres Codes und keine Gold-Änderung: eine
+Verzerrung lässt den Fall jetzt scheitern, und eine deklarierte verbotene Lesart
+unter den Claims ist eine Verzerrung, unabhängig davon, was daneben besteht. Die
+Prüfung wird dadurch **strenger**, was die Regel aus 3ad ausdrücklich erlaubt.
+
+### Die 72 Dossiers gegen den strengeren Scorer, gratis
+
+`semantic_score.py --rescore` bewertet gespeicherte Dossiers ohne einen Aufruf.
+Über dieselben 72 Dossiers aus 3ah:
+
+| Phänomen | 3ah | neu bewertet |
+|---|---:|---:|
+| Negation | 12/12 | 12/12 |
+| Modalität | 12/12 | 12/12 |
+| Korrelation gegen Kausalität | 12/12 | 12/12 |
+| Sprecher | 12/12 | 12/12 |
+| mehrere Aussagen | 12/12 | 12/12 |
+| Geltungsbereich | 6/6 | 6/6 |
+| Bedingung | 3/6 | 3/6 |
+
+**Null Bewegung.** Die Löcher waren offen und nie belegt. Damit stehen die Zahlen
+aus 3ah auf einem strengeren Instrument — und das ist jetzt belegt und nicht
+behauptet.
+
+### Die fünf bestätigten „zu schwach"-Fälle sind der Ernstfall
+
+| Fall | besteht mit |
+|---|---|
+| `neg-01-de` | „Die Maßnahme wirkt **nicht nur** auf die Abbrecherquote, sondern auch auf die Noten." — Bedeutung ins Gegenteil verkehrt, Token „nicht" vorhanden |
+| `spk-01-de` | „Die Regierung ist wirksam." — völlig andere Proposition |
+| `spk-02-de` | „Die Regierung ist eine Behörde." + „Der Gerichtshof steht in Straßburg." |
+| `mul-01-de` | „Haushalt." + „Schulen." — **Fragmente** |
+| `mul-02-de` | „Mittel." + „Ausbau." — **Fragmente** |
+
+Beide Durchsichten urteilen unabhängig gleich über `spk-02` und `mul-*`: in dieser
+Form messen sie nichts. Das ist keine Uneinigkeit, sondern Übereinstimmung
+**gegen** den Entwurf.
+
+**Und es schwächt veröffentlichte Zahlen, ohne sie zu widerlegen.** 3af und 3ah
+berichten `Sprecher 12/12` und `mehrere Aussagen 12/12`. Die Claims jener Läufe
+waren echte Propositionen — ich habe sie gelesen, die Zahlen sind richtig. Aber
+die Fälle lassen Fragmente durch, also ist das Bestehen eine viel niedrigere
+Hürde, als die Abschnitte vermuten lassen. **Die Zahlen stehen, ihre Beweiskraft
+nicht.**
+
+### Die eine Uneinigkeit über Bedeutung — und die Regel greift zum ersten Mal
+
+`neg-02`: Durchsicht 2 bestreitet das Gold. „Nicht alle Schulen erhalten den
+Zuschlag." ist streng logisch mit „Keine Schule erhält den Zuschlag." verträglich;
+dass *einige* ihn erhalten, ist eine pragmatische Implikatur. Mein
+`must_preserve` behauptet genau diese Implikatur.
+
+Nach der Regel „Uneinigkeit ist ein Filter auf Beispiele" fällt damit das
+Beispiel. `neg-02` war einer meiner beiden vorab benannten
+Falschalarm-Verdachtsfälle; der Lauf hat die Vorhersage widerlegt (3/3), und
+jetzt stirbt der Fall aus einem Grund, den ich nicht gesehen habe. Durchsicht 1
+hält ihn dagegen nur für zu eng. Uneins, *welcher* Mangel — einig, dass einer
+vorliegt.
+
+### Was die Vorab-Festlegung wert war
+
+Gefragt war, ob eine blinde Durchsicht **M-1** oder **M-4** findet.
+
+- **M-1 nicht.** Durchsicht 2 findet die Inkonsistenz — `spk-01-de` ist
+  sprachtolerant, die elf anderen nicht — und nennt sie „leaky". Das ist **M-2**,
+  blind gefunden. Dass eine *treue englische* Wiedergabe an den elf scheitert,
+  konnte sie nicht schließen, weil sie nicht weiß, dass das Modell übersetzt.
+- **M-4 nicht an seinem Fall.** Beide behandeln `sco-02` nur als zu eng. Aber
+  beide finden den Mechanismus, dessen Instanz M-4 ist, **breiter als ich**.
+
+Das Urteil über diese Art Durchsicht ist damit genauer als „hat Zähne" oder
+„nutzlos": **Sie findet, was durch Lesen zu finden ist, und breiter als der
+Autor. Was eine Messung voraussetzt, findet sie nicht. Und wo sie über die
+Mechanik spekuliert statt über die Beispiele, irrt sie — vier von vier Mal.**
+
+### Was offen bleibt, und es ist nicht meine Entscheidung
+
+Acht von 24 Fällen gehören nach beiden Durchsichten umgeschrieben oder
+gestrichen: `neg-02` (Gold strittig), `spk-01`, `spk-02`, `mul-01`, `mul-02`
+(Bedingung erzwingt kein Prädikat), `mod-02` (Syntaxfessel). Das ändert jede
+Messung, die auf ihnen steht — darunter die 69/72 aus 3ah. Diese Entscheidung
+treffe ich nicht allein.
+
+**Das siebte Phänomen**, und hier sind die beiden uneins: zeitlicher
+Geltungsbereich („wird eingeführt" → „ist eingeführt") gegen Zahlen und Einheiten
+(Prozent gegen Prozentpunkte, „ca.", Basisrate). Keine Uneinigkeit über
+Bedeutung, also greift die Regel nicht; es ist eine Priorität. Für ein Produkt,
+das Budgets prüft, halte ich Zahlen und Einheiten für das teurere.
+
+**Relationen** bleiben nicht annotiert (M-3). Keine der beiden Durchsichten hat
+Kanten vorgeschlagen, und gefragt war danach ausdrücklich.
+
 ## 4. ClaimGraph
 
 Kernrelationen sind `SUPPORTS`, `CONTRADICTS`, `DEPENDS_ON`,

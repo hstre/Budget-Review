@@ -341,7 +341,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3ai.
+detail per experiment is in `docs/architecture.md` §3a–§3al.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -372,6 +372,7 @@ detail per experiment is in `docs/architecture.md` §3a–§3ai.
 | 25 | A hand-annotated meaning set, 24 cases in German and English, three runs | ≥ 90 % of cases must anchor a claim on their span; `anchor_normalised` must be 0 | 24 of 24 anchored in all three runs, `anchor_normalised` 0 across 248 claims. **38 of 122 propositions from German sources came back in English**, 0 of 126 the other way. One real meaning failure: the conditional | The apparatus holds. The translation is a product defect; my prediction about which of my own cases were weak was **refuted** |
 | 26 | The same set and the same 72 calls, with the document's language named in the extraction contract | **≤ 5** translated German propositions ⇒ steerable; **> 15** ⇒ not steerable; negation and modality must hold at 12/12 or the change is reverted | **0 of 123** translated, English stays 0 of 119, yield 242 claims against 248. Negation and modality 12/12. Meaning preserved 59/72 → **69/72**; scope 3/6 → 6/6, speaker 9/12 → 12/12 | **The hidden projection is steerable by instruction.** The language problem needs no explicit projection layer. The conditional is untouched (2/6 → 3/6) and is now the only measured meaning failure |
 | 27 | Claim-type stability across byte-identical repeats, offline from the §26 dossiers | none — a first measurement, and nothing in this project had ever looked at the type | **8 of 24** documents change their claim-type multiset; `unsupported_assumption` (confidence 0.95) has its type precondition flip in 1 of 24; confidence does not separate the two populations (0.934 against 0.931) and the field is degenerate at 0.9/0.95 | A claim's **type is the third generated component**, beside the proposition. Not "the extractor is unstable": 21 types, no definitions, so the vocabulary has **no truth conditions** — and my §3ah reading of `assumption` as the defensible half is **corrected** |
+| 30 | Two independent **blind** reviews of the meaning set, then their sixteen counterexamples checked against the real validator | none — the set was a draft until two reviews were recorded | **12 confirmed, 4 refuted.** All five "unfaithful passes" hold: `neg-01-de` passes with the meaning reversed, `mul-*` with bare fragments. The four "slips through the forbids" claims are wrong — both reviews argued from `forbids` alone and forgot `requires_all_groups` | Agreement *against* the draft on `spk-02` and `mul-*`: as written they measure nothing. `speaker 12/12` and `multiple assertions 12/12` **stand but lose evidential weight**. Found three holes in my own scorer; re-scoring all 72 dossiers moved **nothing** |
 
 #### What we believe we know
 
@@ -936,7 +937,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3ai.
+stehen in `docs/architecture.md` §3a–§3al.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -967,6 +968,7 @@ stehen in `docs/architecture.md` §3a–§3ai.
 | 25 | Ein von Hand annotierter Bedeutungsbestand, 24 Fälle auf Deutsch und Englisch, drei Läufe | ≥ 90 % der Fälle müssen einen Claim auf ihrer Spanne ankern; `anchor_normalised` muss 0 sein | 24 von 24 in allen drei Läufen verankert, `anchor_normalised` 0 über 248 Claims. **38 von 122 Propositionen aus deutschen Quellen kamen auf Englisch zurück**, 0 von 126 umgekehrt. Ein echter Bedeutungsfehler: die Bedingung | Der Apparat hält. Die Übersetzung ist ein Produktmangel; meine Vorhersage, welche meiner eigenen Fälle schwach sind, ist **widerlegt** |
 | 26 | Derselbe Bestand, dieselben 72 Aufrufe, mit der Sprache des Dokuments im Extraktionsvertrag | **≤ 5** übersetzte deutsche Propositionen ⇒ steuerbar; **> 15** ⇒ nicht steuerbar; Negation und Modalität müssen 12/12 halten, sonst wird die Änderung zurückgenommen | **0 von 123** übersetzt, Englisch bleibt 0 von 119, Ausbeute 242 gegen 248 Claims. Negation und Modalität 12/12. Bedeutung erhalten 59/72 → **69/72**; Geltungsbereich 3/6 → 6/6, Sprecher 9/12 → 12/12 | **Die verborgene Projektion ist durch eine Anweisung steuerbar.** Das Sprachproblem braucht keine explizite Projektionsschicht. Die Bedingung ist unberührt (2/6 → 3/6) und jetzt der einzige gemessene Bedeutungsfehler |
 | 27 | Typstabilität der Claim-Typen über byte-identische Wiederholungen, offline aus den Dossiers von 26 | keines — eine erste Messung, und nie hat in diesem Projekt etwas auf den Typ gesehen | **8 von 24** Dokumenten wechseln ihre Typmenge; bei `unsupported_assumption` (Konfidenz 0,95) wechselt die Typ-Vorbedingung in 1 von 24; die Konfidenz trennt die beiden Gruppen nicht (0,934 gegen 0,931) und das Feld ist auf 0,9/0,95 entartet | Der **Typ ist die dritte erzeugte Komponente**, neben der Proposition. Nicht „der Extraktor ist instabil": 21 Typen, keine Definitionen, also hat das Vokabular **keine Wahrheitsbedingungen** — und meine Lesart aus §3ah, `assumption` sei die vertretbare Hälfte, ist **korrigiert** |
+| 30 | Zwei unabhängige **blinde** Durchsichten des Bedeutungsbestands, danach ihre sechzehn Gegenbeispiele gegen den echten Validator geprüft | keines — der Bestand war Entwurf, bis zwei Durchsichten vermerkt sind | **12 bestätigt, 4 widerlegt.** Alle fünf „untreu besteht" halten: `neg-01-de` besteht mit umgekehrter Bedeutung, `mul-*` mit nackten Fragmenten. Die vier „rutscht durch die Verbote" sind falsch — beide argumentierten allein über `forbids` und übersahen `requires_all_groups` | Übereinstimmung *gegen* den Entwurf bei `spk-02` und `mul-*`: so messen sie nichts. `Sprecher 12/12` und `mehrere Aussagen 12/12` **stehen, verlieren aber Beweiskraft**. Drei Löcher in meinem eigenen Scorer gefunden; die Neubewertung aller 72 Dossiers bewegte **nichts** |
 
 #### Was wir zu wissen glauben
 
