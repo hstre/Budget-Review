@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ah, which is a log rather than a synthesis.
+§3a–§3ai, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -82,6 +82,7 @@ withdrawals in §7 have that one cause.
 | 13 | Two-stage extraction: recall unreadable, relation validity perfect | measured, not adopted |
 | 14 | The semantic layer was silently translating German documents into English propositions | **fixed** by one contract line (§4.12), **in review** |
 | 15 | Conditionals are split at the comma and the consequent is asserted unconditionally | open, and now the only measured meaning failure (§4.12) |
+| 16 | A claim's *type* is the third generated component, and two shipped findings fire on it | **in review**; findings now carry what their trigger rests on (§4.13) |
 
 ---
 
@@ -573,6 +574,86 @@ characters of court text.
 
 ---
 
+### 4.13 A claim's type is the third generated component, and two findings stand on it
+
+§4.5 separated the two halves of a claim: `raw_span` is a *selection* into the
+document and reproducible; `canonical_content` is a *generation* and the unstable
+half. There is a third component, and nothing here had ever measured it.
+
+The extraction contract **names twenty-one claim types and defines none of them.**
+The relation vocabulary at least gets a direction gloss for seven of fourteen; the
+claim types get a bare list. So the label is the whole specification.
+
+That is not decoration. `claim_type` is hashed into the claim node id, so a
+different type is a different node and every edge to it moves with it. And two
+shipped deterministic findings fire on it: `logical_gap` at confidence 0.9 and
+`unsupported_assumption` at 0.95.
+
+Measured offline from runs already paid for, over 24 documents with three
+byte-identical repeats each:
+
+| | |
+|---|---|
+| documents whose **claim-type multiset changes** across repeats | **8 of 24** |
+| `unsupported_assumption`: type precondition flips | **1 of 24** |
+| `logical_gap`: type precondition flips | 0 of 24 |
+
+`neg-02` alternates between `fact` and `scope` in both languages and in opposite
+run positions, so it is a coin flip between two names rather than a language
+artifact. `sco-01-de` alternates between `fact` and `causal` — and `causal` is
+explicitly a distortion marker in another case, so one vocabulary item is an error
+in one place and a free variant in another.
+
+**Confidence does not catch it,** which is the detection result in the paper that
+prompted the look ([arXiv 2610.02586](https://arxiv.org/abs/2610.02586)): 0.934
+against 0.931 for the stable cases, no separation, and the field is degenerate —
+233 of 242 claims sit on exactly 0.9 or 0.95. Gating on confidence was never
+available.
+
+**The precise statement matters, because the obvious one is wrong.** Not "the
+extractor is unstable". For "Nicht alle Schulen erhalten den Zuschlag." both
+`fact` and `scope` are defensible, and with no definitions **there is no fact of
+the matter about which is right.** The finding is that the vocabulary has no truth
+conditions, and a 0.95-confidence finding stands on it.
+
+It also costs a reading from §4.12: the conditional's antecedent typed
+`assumption` was reported there as the defensible half of that failure. In one of
+three identical runs that typing does not exist. Semantic content was credited to
+a coin flip — a reading rather than a measurement, so nothing measured is
+withdrawn, but the inference was unsupported and is corrected.
+
+**What was done, and the choice behind it.** Two options: stop keying
+deterministic findings on a generated label, or ship them with the provenance of
+their trigger. The second, so a later reflection run can take it up — keeping
+information beats discarding it, and the first option stays open afterwards while
+the converse does not hold.
+
+Every rule now declares what its trigger rests on — `document`, `content`,
+`relation_type`, `claim_type` — from one table beside the rule prose rather than
+from fourteen call sites, so a rule cannot be added without declaring it. The
+marker discriminates rather than being constant: `coverage_gap` is computed from
+the document and the anchors, the budget rules from the claim text, and only two
+of fourteen stand on the undefined label. It travels into the dossier JSON, where
+a reflection run reads it, **and onto the rendered page** — because
+`anchor_ambiguous` is the precedent for what happens otherwise: set by the gate
+since it was built, read by no part of the product, only by a measurement script.
+
+The rendered caveat carries **no number**. The 8-of-24 comes from cases of one to
+three sentences; attaching it to a finding on a 27,000-character decision would
+borrow precision from the wrong corpus, which is the failure this repository
+retracts most often. A test forbids a digit in the text.
+
+**Not measured.** `relation_type`, on which three further findings rest alone —
+the same measurement would cost nothing and has not been run. Long documents: that
+`logical_gap` never flips across 24 short cases says nothing about a decision with
+108 claims. And the three-armed probe the paper actually proposes was not run,
+because the obvious way would have been wrong: the meaning set checks `claim_type`
+in 2 of 24 cases, so measuring a label permutation against meaning preservation
+would have spent 216 paid calls on an axis that barely sees the type. The right
+instrument is type stability, and it is free.
+
+---
+
 ## 5. What we do not know
 
 Stated as questions, because each is a measurement nobody has made.
@@ -633,6 +714,7 @@ Stated as questions, because each is a measurement nobody has made.
 | A reworded claim is a different node, and changes every edge | *Not solved.* The fix as built would have dropped a second reading of one passage | withdrawn, §4.5 |
 | The thinking arm silently absent from most reviews | Budget parameterised; requirement measured | in review (#16) |
 | The proposition was silently translated out of the document's language | One line in the extraction contract: the proposition in the document's language, not translated | in review; 38 of 122 → 0 of 123 (§4.12) |
+| A finding's trigger could be an undefined label and nothing said so | Every deterministic rule declares what its trigger rests on; it travels into the JSON and onto the page | in review (§4.13) |
 
 ### Unsolved
 
@@ -646,6 +728,8 @@ Stated as questions, because each is a measurement nobody has made.
 | Relation expressivity | Four of six families covered; the gap is untested |
 | A finding's state is never resolved | Needs a versioned overlay and a schema decision |
 | Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12) |
+| The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
+| Relation-label stability | Three findings rest on `relation_type` alone and the same measurement has never been run on it. It costs nothing |
 | Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases, and it is a draft pending two independent reviews |
 | Relations between claims | The third outcome of §4.12 is still unmeasurable: the meaning set annotates no edges |
 | German-language evidence | 24 hand-annotated cases, half of them German, run twice — and nothing longer. No German document above fixture length has been measured |
@@ -743,8 +827,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 21 measurement scripts, each tested
-docs/architecture.md §3a–§3ah            the chronological record, run by run
+scripts/                                 22 measurement scripts, each tested
+docs/architecture.md §3a–§3ai            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -753,7 +837,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-360 tests and one skipped, `ruff check` clean.
+384 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -780,6 +864,11 @@ reader knows what is waiting.
 6. **Who reviews the meaning set.** It is a draft by design: two independent
    reviews were asked for and none has happened, and until then every figure in
    §4.12 rests on cases written by the same party that built the system.
+7. **Whether a deterministic finding may key on a generated label at all.**
+   §4.13 chose to ship the provenance rather than remove the dependency, so this
+   stays open. Adding definitions to the twenty-one types is the obvious repair
+   and the measured-least-effective one; opaque identifiers are what worked in
+   the paper, and they would cost the vocabulary's readability.
 
 ---
 ---
@@ -792,7 +881,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ah und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ai und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -867,6 +956,7 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 13 | Zweistufige Extraktion: Recall nicht lesbar, Relationsgültigkeit perfekt | gemessen, nicht übernommen |
 | 14 | Die semantische Schicht hat deutsche Dokumente still in englische Propositionen übersetzt | **behoben** durch eine Vertragszeile (§4.12), **im Review** |
 | 15 | Bedingungssätze werden am Komma zerlegt und der Nachsatz unbedingt behauptet | offen, und jetzt der einzige gemessene Bedeutungsfehler (§4.12) |
+| 16 | Der *Typ* eines Claims ist die dritte erzeugte Komponente, und zwei ausgelieferte Befunde feuern darauf | **im Review**; Befunde tragen jetzt die Herkunft ihres Auslösers (§4.13) |
 
 ## 2. Was das System ist
 
@@ -1349,6 +1439,88 @@ wartet auf zwei unabhängige Durchsichten, die nicht stattgefunden haben. Jeder
 Fall ist ein bis drei Sätze; dass eine Vertragszeile auf 24 kurzen Sätzen greift,
 sagt nichts über 26.000 Zeichen Gerichtstext.
 
+### 4.13 Der Typ eines Claims ist die dritte erzeugte Komponente, und zwei Befunde stehen darauf
+
+4.5 hat die zwei Hälften eines Claims getrennt: `raw_span` ist eine **Auswahl**
+ins Dokument und reproduzierbar, `canonical_content` eine **Erzeugung** und die
+instabile Hälfte. Es gibt eine dritte Komponente, und hier hat sie nie etwas
+gemessen.
+
+Der Extraktionsvertrag **nennt 21 Claim-Typen und definiert keinen davon.** Das
+Relationsvokabular bekommt immerhin für 7 von 14 eine Richtungsglosse; die
+Claim-Typen bekommen eine nackte Liste. Das Label ist also die ganze
+Spezifikation.
+
+Das ist nicht dekorativ. `claim_type` steckt im Node-Id-Hash, also ist ein anderer
+Typ ein anderer Knoten, und jede Kante dorthin wandert mit. Und zwei ausgelieferte
+deterministische Befunde feuern darauf: `logical_gap` mit Konfidenz 0,9 und
+`unsupported_assumption` mit 0,95.
+
+Offline gemessen aus bereits bezahlten Läufen, über 24 Dokumente mit je drei
+byte-identischen Wiederholungen:
+
+| | |
+|---|---|
+| Dokumente mit **wechselnder Typmenge** über die Wiederholungen | **8 von 24** |
+| `unsupported_assumption`: Typ-Vorbedingung wechselt | **1 von 24** |
+| `logical_gap`: Typ-Vorbedingung wechselt | 0 von 24 |
+
+`neg-02` wechselt zwischen `fact` und `scope`, in beiden Sprachen und in
+umgekehrter Lauf-Position — also ein Münzwurf zwischen zwei Namen und kein
+Sprachartefakt. `sco-01-de` wechselt zwischen `fact` und `causal`, und `causal`
+ist in einem anderen Fall ausdrücklich ein Verzerrungsmarker: dasselbe
+Vokabelwort ist an einer Stelle ein Fehler und an der anderen eine freie Variante.
+
+**Die Konfidenz fängt es nicht** — das ist der Detektionsbefund des Papers, das
+den Blick ausgelöst hat ([arXiv 2610.02586](https://arxiv.org/abs/2610.02586)):
+0,934 gegen 0,931 für die stabilen Fälle, keine Trennung, und das Feld ist
+entartet — 233 von 242 Claims stehen auf exakt 0,9 oder 0,95. Auf Konfidenz zu
+filtern war nie verfügbar.
+
+**Die präzise Formulierung ist wichtig, weil die naheliegende falsch ist.** Nicht
+„der Extraktor ist instabil". Für „Nicht alle Schulen erhalten den Zuschlag." sind
+`fact` und `scope` beide vertretbar, und ohne Definitionen **gibt es keine
+Tatsache darüber, welcher richtig ist.** Der Befund lautet: das Vokabular hat
+keine Wahrheitsbedingungen, und darauf steht ein Befund mit 0,95.
+
+Es kostet außerdem eine Lesart aus 4.12: Dass der Vordersatz der Bedingung als
+`assumption` getypt wird, stand dort als die vertretbare Hälfte jenes Fehlers. In
+einem von drei identischen Läufen existiert diese Typung nicht. Einem Münzwurf
+wurde semantischer Gehalt zugeschrieben — eine Lesart und keine Messung, also
+wird nichts Gemessenes zurückgenommen, aber der Schluss war unbegründet und ist
+korrigiert.
+
+**Was getan wurde, und die Wahl dahinter.** Zwei Wege: deterministische Befunde
+nicht länger auf einen erzeugten Label stützen, oder sie mit der Herkunft ihres
+Auslösers ausliefern. Der zweite, damit ein späterer Reflexionslauf es aufgreifen
+kann — Information behalten schlägt Information verwerfen, und der erste Weg
+bleibt danach offen, während es umgekehrt nicht gilt.
+
+Jede Regel deklariert jetzt, worauf ihr Auslöser steht — `document`, `content`,
+`relation_type`, `claim_type` — aus **einer** Tabelle neben den Regeltexten statt
+aus 14 Aufrufstellen, damit keine Regel ohne Deklaration dazukommen kann. Die
+Markierung unterscheidet und ist nicht konstant: `coverage_gap` rechnet aus
+Dokument und Ankern, die Budgetregeln aus dem Claim-Text, und nur zwei von
+vierzehn stehen auf dem undefinierten Label. Sie reist ins Dossier-JSON, wo ein
+Reflexionslauf sie liest, **und auf die gerenderte Seite** — denn
+`anchor_ambiguous` ist der Präzedenzfall für das Gegenteil: vom Gate seit seinem
+Bau gesetzt, von keinem Teil des Produkts gelesen, nur von einem Messskript.
+
+Der gerenderte Hinweis trägt **keine Zahl.** Die 8 von 24 stammen aus Fällen von
+einem bis drei Sätzen; sie an einen Befund auf 26.000 Zeichen Gerichtstext zu
+hängen wäre geliehene Präzision — der Fehler, den dieses Repo am häufigsten
+zurücknimmt. Ein Test verbietet eine Ziffer im Text.
+
+**Nicht gemessen.** `relation_type`, auf dem drei weitere Befunde allein stehen —
+dieselbe Messung würde nichts kosten und ist nicht gelaufen. Lange Dokumente: dass
+`logical_gap` über 24 kurze Fälle nie wechselt, sagt über eine Entscheidung mit
+108 Claims nichts. Und die Dreiarm-Probe, die das Paper eigentlich vorschlägt, ist
+nicht gelaufen, weil der naheliegende Weg falsch gewesen wäre: der
+Bedeutungsbestand prüft `claim_type` in 2 von 24 Fällen, eine Label-Permutation
+gegen die Bedeutungserhaltung zu messen hätte also 216 bezahlte Aufrufe für eine
+Achse gekostet, die den Typ fast nicht sieht. Das richtige Instrument ist
+Typstabilität, und die ist gratis.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -1406,6 +1578,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Ein umformulierter Claim ist ein anderer Knoten und verändert jede Kante | *Nicht gelöst.* Die gebaute Fassung hätte eine zweite Lesart derselben Stelle verworfen | zurückgezogen, §4.5 |
 | Der Thinking-Arm fehlte still in den meisten Reviews | Budget parametriert, Bedarf gemessen | im Review (#16) |
 | Die Proposition wurde still aus der Sprache des Dokuments übersetzt | Eine Zeile im Extraktionsvertrag: die Proposition in der Sprache des Dokuments, nicht übersetzt | im Review; 38 von 122 → 0 von 123 (§4.12) |
+| Der Auslöser eines Befunds konnte ein undefinierter Label sein, ohne dass es dastand | Jede deterministische Regel deklariert, worauf ihr Auslöser steht; es reist ins JSON und auf die Seite | im Review (§4.13) |
 
 ### Ungelöst
 
@@ -1419,6 +1592,8 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Relations-Ausdruckskraft | Vier von sechs Familien gedeckt; die Lücke ist ungeprüft |
 | Der Zustand eines Befunds wird nie aufgelöst | Braucht ein versioniertes Overlay und eine Schemaentscheidung |
 | Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12) |
+| Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
+| Stabilität der Relationslabels | Drei Befunde stehen allein auf `relation_type`, und dieselbe Messung ist dort nie gelaufen. Sie kostet nichts |
 | Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen, und er ist ein Entwurf vor zwei unabhängigen Durchsichten |
 | Beziehungen zwischen Claims | Das dritte Ergebnis aus §4.12 ist weiter nicht messbar: der Bedeutungsbestand annotiert keine Kanten |
 | Deutschsprachige Evidenz | 24 von Hand annotierte Fälle, die Hälfte davon deutsch, zweimal gelaufen — und nichts Längeres. Kein deutsches Dokument über Fixture-Länge ist gemessen |
@@ -1517,8 +1692,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 21 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ah            die chronologische Aufzeichnung
+scripts/                                 22 Messskripte, jedes getestet
+docs/architecture.md §3a–§3ai            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -1528,7 +1703,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-360 Tests und einer übersprungen, `ruff check` sauber.
+384 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 
@@ -1553,3 +1728,8 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    unabhängige Durchsichten sind angefragt und keine hat stattgefunden, und
    solange ruht jede Zahl in §4.12 auf Fällen, die dieselbe Partei geschrieben
    hat, die das System gebaut hat.
+7. **Ob ein deterministischer Befund überhaupt auf einem erzeugten Label stehen
+   darf.** §4.13 hat die Herkunft ausgeliefert statt die Abhängigkeit zu
+   entfernen, also bleibt das offen. Definitionen für die 21 Typen nachzutragen
+   ist die naheliegende Reparatur und die gemessen wirkungsloseste; gewirkt haben
+   opake Kennungen, und die kosten die Lesbarkeit des Vokabulars.
