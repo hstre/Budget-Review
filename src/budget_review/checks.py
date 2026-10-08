@@ -112,6 +112,49 @@ def _texts(dossier: SemanticDossier) -> dict[str, str]:
 
 
 
+# What each finding's trigger rests on, keyed by check. A finding is computed
+# deterministically; that says nothing about whether its *inputs* are stable.
+# Four kinds of input, in descending order of how well this project knows them:
+#
+#   document       the document and the anchors into it. §4.3/§3y: a span is a
+#                  selection, and reproducible.
+#   content        the claim text, which `_texts` joins from canonical_content
+#                  and raw_span. The proposition half is a generation and §3y
+#                  measured it as the unstable one; a regex that the span alone
+#                  satisfies is not exposed.
+#   relation_type  a model-assigned label. Seven of fourteen get a direction
+#                  gloss in the extraction contract. Stability unmeasured.
+#   claim_type     a model-assigned label with **no definition anywhere in the
+#                  contract** — the prompt names twenty-one and defines none.
+#                  §3ai measured the multiset changing in 8 of 24 cases across
+#                  byte-identical repeats.
+#
+# The table exists so that a rule cannot be added without declaring this, and so
+# that a later reflection run can ask which findings rest on an undefined label
+# rather than having to read the rules. A test asserts every message key is here.
+TRIGGER_RESTS_ON: dict[str, tuple[str, ...]] = {
+    "coverage_gap": ("document",),
+    "internal_contradiction": ("relation_type",),
+    "scope_tension": ("relation_type",),
+    "overgeneralization": ("relation_type",),
+    "logical_gap": ("claim_type", "relation_type"),
+    "unsupported_assumption": ("claim_type", "relation_type"),
+    "assumption_dependency": ("relation_type", "content"),
+    "capacity_mismatch": ("content",),
+    "resource_mismatch": ("content",),
+    "completion_rate": ("content",),
+    "halving": ("content",),
+    "fte_budget": ("content",),
+    "budget_sum": ("relation_type", "content"),
+    "causal_design": ("content",),
+}
+
+# The claim types the two label-keyed rules fire on. Hoisted out of the rule
+# bodies so `scripts/claim_type_stability.py` measures the types that actually
+# matter instead of restating them and drifting.
+LOGICAL_GAP_TYPES = frozenset({ClaimType.THESIS, ClaimType.INFERENCE, ClaimType.RECOMMENDATION})
+UNSUPPORTED_ASSUMPTION_TYPE = ClaimType.ASSUMPTION
+
 # Deterministic finding prose, keyed by check. Structural fields (category,
 # severity, claim_ids, confidence) stay language independent; only this text
 # follows the dossier language.
@@ -332,6 +375,7 @@ class _Builder:
                 explanation=explanation.format(**params),
                 question_for_reviewer=question,
                 confidence=confidence,
+                trigger_rests_on=TRIGGER_RESTS_ON[key],
             )
         )
 
@@ -423,15 +467,7 @@ def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> Non
 
     for claim in dossier.claims:
         claim_id = claim.proposal_id
-        if (
-            claim.claim_type
-            in {
-                ClaimType.THESIS,
-                ClaimType.INFERENCE,
-                ClaimType.RECOMMENDATION,
-            }
-            and claim_id not in supported | evidenced
-        ):
+        if claim.claim_type in LOGICAL_GAP_TYPES and claim_id not in supported | evidenced:
             builder.add(
                 "logical_gap",
                 FindingCategory.LOGICAL_GAP,
@@ -440,7 +476,7 @@ def _check_general_structure(dossier: SemanticDossier, builder: _Builder) -> Non
                 0.9,
             )
         if (
-            claim.claim_type == ClaimType.ASSUMPTION
+            claim.claim_type == UNSUPPORTED_ASSUMPTION_TYPE
             and claim_id in assumption_sources
             and claim_id not in evidenced
         ):
@@ -637,4 +673,9 @@ def _check_causal_design(texts: dict[str, str], builder: _Builder) -> None:
         )
 
 
-__all__ = ["deterministic_checks"]
+__all__ = [
+    "LOGICAL_GAP_TYPES",
+    "TRIGGER_RESTS_ON",
+    "UNSUPPORTED_ASSUMPTION_TYPE",
+    "deterministic_checks",
+]

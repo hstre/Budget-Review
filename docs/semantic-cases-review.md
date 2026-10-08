@@ -145,8 +145,18 @@ beide aus demselben Grund: Dieses Repo ist gegen Zirkularität gebaut.
 
 Bleiben zwei fremde Familien, jeweils das stärkste verfügbare Modell:
 **`google/gemini-3.1-pro-preview`** und **`openai/gpt-5.2`**, über OpenRouter.
-Der Schlüssel ist auf 10 $ begrenzt und läuft am 2026-10-14 ab; die beiden
-Aufrufe kosten nach Listenpreis zusammen etwa 0,20 $.
+Der Schlüssel ist auf 10 $ begrenzt und selbst ablaufend; die beiden Aufrufe
+kosten nach Listenpreis zusammen etwa 0,20 $. Das Budget war hier nie die
+Einschränkung.
+
+**Warum die Anfragen am 2026-10-08 noch nicht hinaus sind**, und es gehört
+hierher und nicht in einen Chatverlauf: Nicht der Schlüssel fehlte. Die
+Berechtigung, Repo-Inhalt an einen externen Endpunkt zu senden, ist in der
+Umgebung gesperrt, aus der dieser Auftrag gebaut wurde. Zwei Schlüssel sind
+daran vorbeigegangen, ohne etwas zu ändern. Der Auftrag und
+`scripts/semantic_cases_review_prompt.py` sind fertig und geprüft; was fehlt, ist
+eine Freigabe oder ein anderer Ausführungsort — nichts am Inhalt dieses
+Dokuments.
 
 **Die Durchsicht ist blind gegenüber den Messungen.** Sie bekommt diesen Auftrag
 **ohne** die Mängelliste unten und ohne eine Zahl aus den beiden Läufen.

@@ -9,6 +9,57 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Measured
+
+- **A claim's type is the third generated component, and nothing had ever looked
+  at it.** §4.5 separated `raw_span` (a selection into the document, reproducible)
+  from `canonical_content` (a generation, the unstable half). The type is also a
+  generation. Measured offline from runs already paid for, over 24 documents with
+  three byte-identical repeats each: **8 of 24 change their claim-type multiset.**
+  `neg-02` alternates between `fact` and `scope` in both languages and in opposite
+  run positions, so it is a coin flip between two names rather than a language
+  artifact; `sco-01-de` alternates between `fact` and `causal`, and `causal` is
+  explicitly a distortion marker in another case.
+- **Two shipped findings fire on that type.** `logical_gap` at confidence 0.9 and
+  `unsupported_assumption` at 0.95 — whose type precondition flips in 1 of 24. The
+  type is also hashed into the claim node id, so a different type is a different
+  node and every edge to it moves with it.
+- **Confidence does not catch it, and could not have.** 0.934 against 0.931 for
+  the stable cases, no separation, and the field is degenerate: 233 of 242 claims
+  sit on exactly 0.9 or 0.95. Gating on confidence was never available.
+- **The precise statement, because the obvious one is wrong.** Not "the extractor
+  is unstable". The extraction contract names twenty-one claim types and defines
+  none of them, so for a sentence where two labels are both defensible there is no
+  fact of the matter about which is right. The vocabulary has **no truth
+  conditions**, and a 0.95-confidence finding stands on it.
+- Noticed while writing the tests: **the two label-keyed rules only run in the
+  `general` profile.** The budget profile never reaches them, so the exposure is
+  profile-specific.
+
+### Changed
+
+- **Every deterministic rule now declares what its trigger rests on** —
+  `document`, `content`, `relation_type` or `claim_type` — on
+  `Finding.trigger_rests_on`, from one table beside the rule prose rather than
+  from fourteen call sites, so a rule cannot be added without declaring it. A test
+  asserts every message key is in the table.
+  The choice was to ship the provenance rather than remove the dependency, so that
+  a later reflection run can take it up: keeping information beats discarding it,
+  and removing the dependency stays open afterwards while the converse does not.
+  The marker discriminates rather than being constant — `coverage_gap` is computed
+  from the document and the anchors, the budget rules from the claim text, and only
+  two of fourteen stand on the undefined label.
+  It travels into the dossier JSON **and onto the rendered page**, in Markdown and
+  HTML and both languages, because `anchor_ambiguous` is the precedent for what
+  happens otherwise: set by the gate since it was built and read by no part of the
+  product, only by a measurement script.
+  The rendered caveat carries **no number** — the 8-of-24 comes from cases of one
+  to three sentences, and attaching it to a finding on a 27,000-character decision
+  would borrow precision from the wrong corpus. A test forbids a digit in it.
+- `LOGICAL_GAP_TYPES` and `UNSUPPORTED_ASSUMPTION_TYPE` hoisted out of the rule
+  bodies, so the measurement script imports the types the rules actually use
+  instead of restating them and drifting. No behaviour change.
+
 ### Added
 
 - **The prompt an independent review of the meaning set is asked**, as a committed
@@ -33,6 +84,34 @@ says when it moves them. Their current values are `polished` 5 claims /
   review of this kind is worth, and is not evidence the defects are absent.
   Two families are excluded for the same reason the repository exists: the one that
   wrote the set, and the system under test.
+- `scripts/claim_type_stability.py`: type stability and the two label-keyed
+  triggers, from any directory of stored dossiers named `<group>-<repeat>.json`.
+  Eight mutations, including the one that found a bad test of mine — collapsing the
+  multiset to a set survived, because the case I had written differed in its set
+  too. Fixed by a case whose sets match and whose multisets do not.
+
+### Corrected
+
+- **§4.12 reported the conditional's antecedent typed `assumption` as the
+  defensible half of that failure.** In one of three identical runs that typing
+  does not exist. Semantic content was credited to a coin flip. A reading rather
+  than a measurement, so nothing measured is withdrawn, but the inference was
+  unsupported.
+- §4.10 called the invalid relation labels — sixteen of eighteen being our own
+  claim types in the relation field — **field confusion**. With twenty-one
+  undefined and fourteen partly defined short names in one contract it is
+  selection by name similarity within one namespace: the same mechanism from the
+  other side. The conclusion is unchanged (the two-stage split fixes it, 0 of
+  192); the explanation is not.
+
+### Not done
+
+- The three-armed label permutation the prompting paper proposes. The obvious way
+  would have been wrong: the meaning set checks `claim_type` in 2 of 24 cases, so
+  measuring a permutation against meaning preservation would have spent 216 paid
+  calls on an axis that barely sees the type.
+- The same measurement on `relation_type`, on which three further findings rest
+  alone. It costs nothing and has not been run.
 
 
 ### Fixed

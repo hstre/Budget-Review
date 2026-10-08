@@ -62,6 +62,23 @@ def render_markdown(dossier: ReviewDossier, language: str = "de") -> str:
     return "\n".join(lines) + "\n"
 
 
+def _trigger_caveat(issue: ConsolidatedIssue, language: str) -> str | None:
+    """Flag an issue whose trigger is a claim type the contract never defines.
+
+    `anchor_ambiguous` is the cautionary precedent: set by the gate since it was
+    built, and read by no part of the product — only by a measurement script. A
+    marker nobody renders is not a safeguard, so this one appears on the page the
+    examiner reads as well as in the JSON a later reflection run queries.
+
+    Deliberately no number. The instability is measured on cases of one to three
+    sentences (§3ai); attaching 8-of-24 to a finding on a 27,000-character
+    decision would be borrowing precision from the wrong corpus.
+    """
+    if any("claim_type" in finding.trigger_rests_on for finding in issue.findings):
+        return _TEXT[language]["trigger_claim_type"]
+    return None
+
+
 def _markdown_issue(
     dossier: ReviewDossier, issue: ConsolidatedIssue, language: str = "de"
 ) -> list[str]:
@@ -81,9 +98,11 @@ def _markdown_issue(
         "",
         f"**{t['md_detected_by']}:** {reviewers}",
         "",
-        f"**{t['md_claims']}:**",
-        "",
     ]
+    caveat = _trigger_caveat(issue, language)
+    if caveat:
+        lines.extend([f"> {caveat}", ""])
+    lines.extend([f"**{t['md_claims']}:**", ""])
     for claim_id in issue.claim_ids:
         claim = claims.get(claim_id)
         if claim is not None:
@@ -292,6 +311,8 @@ def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue, language: str)
         f"</strong>: {escape(finding.explanation)}</li>"
         for finding in issue.findings
     )
+    caveat = _trigger_caveat(issue, language)
+    trigger_note = f'<p class="trigger-caveat">{escape(caveat)}</p>' if caveat else ""
     sources = " · ".join(
         escape(_reviewer_label(reviewer_id, language)) for reviewer_id in issue.reviewer_ids
     )
@@ -305,6 +326,7 @@ def _issue_html(dossier: ReviewDossier, issue: ConsolidatedIssue, language: str)
   </div>
   <h3>{escape(issue.title)}</h3>
   <p class="explanation">{escape(issue.explanation)}</p>
+  {trigger_note}
   <div class="question"><span>{t["review_question"]}</span>
     <strong>{escape(issue.question)}</strong></div>
   <p class="sources">{sources}</p>
@@ -379,6 +401,11 @@ _TEXT = {
         "original_claims": "Originalaussagen",
         "rejected": "nicht zugelassen",
         "no_findings": "Keine maschinellen Prüfhinweise",
+        "trigger_claim_type": (
+            "Auslöser: ein vom Modell vergebener Claim-Typ, den der "
+            "Extraktionsvertrag nicht definiert — auf kurzen Belegen nicht "
+            "wiederholstabil."
+        ),
         "no_positive": (
             "Das ist kein positives Urteil. Der Text muss weiterhin inhaltlich geprüft werden."
         ),
@@ -439,6 +466,10 @@ _TEXT = {
         "original_claims": "original claims",
         "rejected": "not admitted",
         "no_findings": "No machine-generated review findings",
+        "trigger_claim_type": (
+            "Trigger: a model-assigned claim type the extraction contract does "
+            "not define — not repeat-stable on short fixtures."
+        ),
         "no_positive": "This is not a positive verdict. The content still requires human review.",
         "first": "First",
         "then": "Then",
@@ -602,6 +633,8 @@ h1 { margin:0; font-size:clamp(2rem,6vw,3.6rem); letter-spacing:-.045em; line-he
 .question { display:grid; gap:4px; border-radius:10px; background:#f7f9fc; padding:14px 16px; }
 .question span { color:var(--accent); font-size:.75rem; font-weight:750; text-transform:uppercase; }
 .sources { color:var(--muted); font-size:.78rem; margin:14px 0 6px; }
+.trigger-caveat { color:var(--muted); font-size:.82rem; border-left:3px solid var(--muted);
+  padding:4px 0 4px 10px; margin:8px 0; }
 details { border-top:1px solid var(--line); margin-top:10px; padding-top:10px; }
 summary { cursor:pointer; color:var(--accent); font-weight:650; }
 .claims,.voices { list-style:none; padding:4px 0 0; margin:8px 0 0; }

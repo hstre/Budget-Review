@@ -2185,11 +2185,20 @@ Nachsatz wird ein eigener Claim, und der Nachsatz steht dann **unbedingt** da.
 Die Bedingung lebt in den drei bestehenden Läufen in *einem* Claim weiter, der
 den ganzen Satz trägt.
 
-Dass der Vordersatz als `assumption` getypt wird, ist dabei die *vertretbare*
-Hälfte: „Die Mittel werden bewilligt" als Annahme des Nachsatzes zu führen ist
-eine zulässige Lesart der Quelle. Die unvertretbare Hälfte ist der `forecast`,
-der ohne jede Annahme behauptet, der Ausbau beginne im Frühjahr. Für eine
-Antragsprüfung ist das eine erfundene Zusage.
+Dass der Vordersatz als `assumption` getypt wird, hielt ich hier für die
+*vertretbare* Hälfte: „Die Mittel werden bewilligt" als Annahme des Nachsatzes zu
+führen ist eine zulässige Lesart der Quelle.
+
+> **Korrektur (3ai).** Das trägt nicht. Der Extraktionsvertrag definiert keinen
+> der 21 Claim-Typen, und in Lauf 3 von `sco-02-en` existiert diese Typung
+> überhaupt nicht — die Typmenge dieses Falls wechselt über die drei identischen
+> Läufe. Ich habe einem Münzwurf semantischen Gehalt zugeschrieben. Eine Lesart,
+> keine Messung, also keine Rücknahme eines Befunds; aber sie hat den Fehler als
+> halb-vertretbar erscheinen lassen, und das war unbegründet.
+
+Die unvertretbare Hälfte ist der `forecast`, der ohne jede Annahme behauptet, der
+Ausbau beginne im Frühjahr. Für eine Antragsprüfung ist das eine erfundene
+Zusage, und sie steht unabhängig von jeder Typung.
 
 **Und eine Prüfung meines Golds, die diesmal aufgeht.** `requires_all_groups`
 besteht, sobald *irgendein* Claim auf der Spanne einen Bedingungsmarker trägt —
@@ -2239,6 +2248,144 @@ Gold-Mängel sind durch diesen Lauf erledigt oder wirkungslos, einer ist neu
 Gerichtstext greift. Die nächste Messung der Sprachachse gehört auf ein langes
 Dokument und kostet dort nichts extra, weil sie offline aus gespeicherten
 Dossiers läuft.
+
+## 3ai. Der Claim-Typ ist die dritte instabile Hälfte — und zwei ausgelieferte Befunde hängen daran
+
+Anlass war ein fremdes Paper ([arXiv 2610.02586](https://arxiv.org/abs/2610.02586),
+1. Okt. 2026): Wo ein kurzer Optionsname neben einer ausgeschriebenen Definition
+steht, entscheidet der **Name**, nicht die Definition. Definitionen zu entfernen
+änderte die Genauigkeit kaum; Optionen auf A und B umzubenennen hob sie um etwa
+0,15. Eine Konfidenzschwelle fängt das nicht.
+
+Die Übertragung war schnell erledigt, weil sie keine ist. Der Blick in den
+eigenen Vertrag:
+
+| | im Extraktionsvertrag |
+|---|---|
+| `claim_type` | **21 Namen, null Definitionen** |
+| `relation_type` | 14 Namen, 7 mit Richtungsglosse, plus ein ausdrückliches Verbot |
+
+**Wir sind der Grenzfall.** Es gibt keine Definition, die ein Label überstimmen
+könnte; das Label *ist* die ganze Spezifikation. Und `claim_type` ist nicht
+dekorativ: er steckt im Node-Id-Hash (`gate.py`), also ist ein anderer Typ ein
+anderer Knoten und jede Kante dorthin wandert mit; und zwei ausgelieferte
+deterministische Befunde feuern auf ihm — `logical_gap` mit Konfidenz **0,9**,
+`unsupported_assumption` mit **0,95**.
+
+### Die Messung, und sie hat nichts gekostet
+
+3y hat die zwei Hälften eines Claims getrennt: `raw_span` ist eine **Auswahl**
+ins Dokument und reproduzierbar, `canonical_content` eine **Erzeugung** und die
+instabile Hälfte. Der Typ ist ebenfalls eine Erzeugung, und **nie hat etwas ihn
+gemessen.** Also offline aus den 72 bereits bezahlten Dossiers von 3ah,
+`scripts/claim_type_stability.py`:
+
+| | |
+|---|---|
+| Dokumente mit drei byte-identischen Läufen | 24 |
+| davon mit **wechselnder Typmenge** | **8** |
+| `unsupported_assumption`: Typ-Vorbedingung wechselt | **1 von 24** (`sco-02-en`) |
+| `logical_gap`: Typ-Vorbedingung wechselt | 0 von 24 |
+
+```
+mod-01-de   delivery,fact,forecast   | delivery,forecast,target | delivery,forecast,target
+neg-02-de   fact,fact,forecast       | fact,fact,forecast       | fact,forecast,scope
+neg-02-en   fact,forecast,scope      | fact,fact,forecast       | fact,fact,forecast
+sco-01-de   fact,limitation,scope    | causal,limitation,scope  | causal,limitation,scope
+sco-02-en   assumption,causal,...    | assumption,causal,...    | causal,fact,forecast
+```
+
+`neg-02` wechselt zwischen `fact` und `scope` — in **beiden** Sprachen und in
+umgekehrter Lauf-Position, also ein Münzwurf zwischen zwei Namen und kein
+Sprachartefakt. `sco-01-de` wechselt zwischen `fact` und `causal`, wobei `causal`
+in `cor-01` ausdrücklich als **Verzerrungsmarker verboten** ist: dasselbe
+Vokabelwort ist in einem Fall ein Fehler und im anderen eine freie Variante.
+
+**Und die Konfidenz fängt es nicht** — das ist der Detektionsbefund des Papers,
+bei uns schärfer. 0,934 gegen 0,931 für die stabilen Fälle, also keine Trennung;
+und das Feld ist entartet, 233 von 242 Claims stehen auf exakt 0,9 oder 0,95.
+„Auf Konfidenz filtern" war nie eine Option, und wer es vorschlägt, hat die
+Verteilung nicht gesehen.
+
+### Die präzise Formulierung, denn die naheliegende wäre falsch
+
+Nicht „der Extraktor ist instabil". Für „Nicht alle Schulen erhalten den
+Zuschlag." sind `fact` und `scope` beide vertretbar, und **ohne Definitionen gibt
+es keine Tatsache darüber, welcher richtig ist.** Der Befund lautet: **das
+Vokabular hat keine Wahrheitsbedingungen, und darauf steht ein Befund mit 0,95.**
+
+Das ist auch der Grund, warum die naheliegende Reparatur — Definitionen
+nachtragen — nicht die erste Wahl ist: das Paper hat gemessen, dass Definitionen
+neben vorhandenen Labels fast nichts ändern. Gewirkt haben *opake* Kennungen.
+
+### Was mich das kostet
+
+3ah hat geschrieben, die Typung des Vordersatzes als `assumption` sei „die
+vertretbare Hälfte" des Bedingungsfehlers. In Lauf 3 von `sco-02-en` existiert
+diese Typung nicht. **Ich habe einem Münzwurf semantischen Gehalt
+zugeschrieben.** Das ist eine Lesart und keine Messung, also keine Rücknahme
+eines Befunds — aber ich habe mich darauf gestützt, um den Fehler als
+halb-vertretbar zu beschreiben, und das trägt nicht. Die Stelle ist dort
+korrigiert.
+
+Rückblickend erklärt es auch 3ab besser, als ich es dort erklärt habe: 16 von 18
+ungültigen Relationslabels waren unsere eigenen Claim-Typen im Relationsfeld. Ich
+nannte das **Feldverwechslung**. Mit 21 undefinierten und 14 teildefinierten
+kurzen Namen in einem Vertrag ist es Auswahl nach Namensähnlichkeit in einem
+Namensraum — derselbe Mechanismus, von der anderen Seite. Am Ergebnis ändert das
+nichts (die Zweistufigkeit behebt es, 0 von 192), an der Erklärung alles.
+
+### Die Entscheidung, und warum sie (b) ist
+
+Zwei Wege standen offen: **(a)** deterministische Befunde nicht länger auf einen
+erzeugten Label stützen, oder **(b)** sie mit der Herkunft ihres Auslösers
+ausliefern. Gewählt ist **(b)**, damit ein späterer Reflexionslauf es aufgreifen
+kann: Information behalten schlägt Information verwerfen, und (a) bleibt danach
+offen, während es umgekehrt nicht gilt.
+
+`Finding.trigger_rests_on` nennt, worauf der Auslöser steht — `document`,
+`content`, `relation_type`, `claim_type` — und kommt aus **einer** Tabelle neben
+den Regeltexten, nicht aus 14 Aufrufstellen. Damit kann keine Regel ohne
+Deklaration dazukommen; ein Test prüft, dass jeder Regelschlüssel in der Tabelle
+steht.
+
+**Die Markierung ist konstant nutzlos, wenn sie nicht unterscheidet** — sie tut
+es: `coverage_gap` rechnet aus Dokument und Ankern, die Budgetregeln aus dem
+Claim-Text, und nur zwei der vierzehn stehen auf dem undefinierten Label.
+
+**Und sie wird gerendert**, in Markdown und HTML, in beiden Sprachen. Der Grund
+steht im Code: `anchor_ambiguous` wird vom Gate seit seinem Bau gesetzt und von
+**keinem Teil des Produkts gelesen** — nur von einem Messskript. Eine vierte
+Flagge dieser Art wäre Dekoration, die wie eine Sicherung aussieht.
+
+**Ohne Zahl.** Die 8 von 24 stammen von Fällen aus einem bis drei Sätzen; sie an
+einen Befund auf 26.000 Zeichen Gerichtstext zu hängen wäre geliehene Präzision
+— der Fehler, den dieses Repo am häufigsten zurücknimmt. Der Hinweis sagt, dass
+der Auslöser ein undefinierter, auf kurzen Belegen nicht wiederholstabiler Typ
+ist. Ein Test verbietet eine Ziffer im Hinweistext.
+
+### Nebenbefund, beim Testschreiben aufgefallen
+
+**Die beiden label-getriebenen Regeln laufen nur im `general`-Profil.**
+`deterministic_checks` ruft `_check_general_structure` im Budget-Profil nie auf.
+Die Exposition ist also profilabhängig, was ich vorher nicht wusste und was die
+erste Fassung eines Tests falsch annehmen ließ.
+
+### Was nicht gemessen ist
+
+**`relation_type`.** 14 Namen, 7 mit Glosse, und drei Befunde stehen allein
+darauf (`internal_contradiction`, `scope_tension`, `overgeneralization`). Dieselbe
+Messung darauf anzuwenden kostet nichts und ist nicht gemacht.
+
+**Lange Dokumente.** 24 Fälle aus einem bis drei Sätzen. Dass `logical_gap` hier
+0 von 24 wechselt, sagt über eine Gerichtsentscheidung mit 108 Claims nichts.
+
+**Was das Paper eigentlich vorschlägt.** Die Dreiarm-Probe — sprechende Namen,
+opake Kennungen, permutierte Namen — ist hier **nicht** gelaufen, und der
+naheliegende Weg wäre falsch gewesen: unser Bedeutungsbestand prüft `claim_type`
+in **2 von 24 Fällen** (`cor-01-de/en`). Gegen `meaning_preserved` gemessen hätte
+die Permutation 216 bezahlte Aufrufe für eine Achse gekostet, die den Typ fast
+nicht sieht. Das richtige Instrument ist Typstabilität, und die läuft gratis.
 
 ## 4. ClaimGraph
 

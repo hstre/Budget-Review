@@ -355,6 +355,15 @@ class Finding:
     question_for_reviewer: str
     confidence: float
     state: str = "human_review_required"
+    # What this finding's trigger rests on: "document", "content",
+    # "relation_type", "claim_type". A finding is computed deterministically;
+    # that is not the same as its inputs being stable. "claim_type" is the
+    # weakest — the extraction contract names twenty-one types and defines none,
+    # and §3ai measured the multiset changing across byte-identical repeats. Set
+    # from `checks.TRIGGER_RESTS_ON`; empty for a reviewer's own finding, which
+    # rests on the whole graph. It travels into the dossier JSON so a later
+    # reflection run can ask which findings stand on an undefined label.
+    trigger_rests_on: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
