@@ -11,6 +11,68 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **4 of 24 documents emit a different deterministic finding set across
+  byte-identical runs**, measured with the real rules rather than a
+  re-implementation: the packet is rebuilt from a stored dossier, re-gated against
+  the document, and `deterministic_checks` is called.
+  `mul-02-de` loses an `internal_contradiction` at severity **high** — claim types
+  identical in all three runs, one `CONTRADICTS` edge in the first run and three
+  different edges in the other two. `neg-01-de` gains a `logical_gap` because one
+  edge on the same claim pair is called `EVIDENCED_BY` once and `DEPENDS_ON`
+  twice. `sco-02-de` loses an `unsupported_assumption` because the
+  `ASSUMPTION_FOR` edge exists in only one run while the type is present in all
+  three. `sco-02-en` loses one because the type half moves.
+- **Three of the four causes sit on the relation half**, which the previous entry
+  had listed as not measured. `relation_type` is not more stable than
+  `claim_type`; on this corpus it is the larger contributor.
+- `logical_gap` is an **argument from silence** — it fires on the *absence* of a
+  supporting or evidencing edge. This project has measured repeatedly that
+  extraction loses argument structure, so the finding reads as a property of the
+  document while part of it is a property of the run.
+
+### Corrected
+
+- **The previous entry measured preconditions, not findings.** Its
+  "`logical_gap`'s type precondition flips in 0 of 24" is true and nearly empty:
+  three claims typed `thesis`/`inference`/`recommendation` exist across all 72
+  dossiers, all in one document, so the precondition is almost never met — and
+  "it does not flip" concealed that the **finding itself** flips 2:1 on exactly
+  that document. Evaluated as whole findings, `unsupported_assumption` moves in
+  **2 of 24** rather than 1, and `internal_contradiction` joins it.
+- **The honest limit of the chosen option was not stated.** The marker names the
+  *kind* of dependency, not the observed instability, because in production
+  extraction runs once per document: at the moment a finding is emitted the other
+  runs do not exist and whether *this* finding moves is not knowable. A reader
+  sees the same caveat on a finding whose type was rock solid and on one that
+  moved. It is therefore the maximum available without a repeat-run policy, which
+  costs three times the extraction per document — now an open decision with its
+  price named.
+
+### Added
+
+- `scripts/finding_warrant.py`: the finding set per document across repeats, from
+  the real rules. Six mutations, including dropping the relations on rebuild,
+  removing the dangling-endpoint filter, flattening counts to presence, and
+  guessing an empty document when the case is unknown.
+
+### Not done
+
+- **The success-versus-warrant rate the prompting paper suggests.** Not available:
+  nothing in this project is a gold answer about whether a deterministic finding
+  is *right*. The benchmark has task success and we have nothing comparable, so
+  only reproducibility was computed — a **lower bound**, since a finding that
+  recurs three times is not thereby warranted.
+- **The replay evidence card as proposed.** It cannot be built at emission for the
+  reason above. The cross-run record itself already exists as the `--json` output
+  of both measurement scripts; what is missing is a link from a shipped finding to
+  it, and that link only means something once repeats exist.
+- The same measurement on a long document. 24 cases of one to three sentences
+  carry nought to three edges each; a decision with 108 claims has far more for
+  the same thing to happen on, and the run is already stored.
+
+
+### Measured
+
 - **A claim's type is the third generated component, and nothing had ever looked
   at it.** §4.5 separated `raw_span` (a selection into the document, reproducible)
   from `canonical_content` (a generation, the unstable half). The type is also a

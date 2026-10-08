@@ -2287,6 +2287,15 @@ gemessen.** Also offline aus den 72 bereits bezahlten Dossiers von 3ah,
 | `unsupported_assumption`: Typ-Vorbedingung wechselt | **1 von 24** (`sco-02-en`) |
 | `logical_gap`: Typ-Vorbedingung wechselt | 0 von 24 |
 
+> **Korrektur (3aj).** Diese Tabelle misst **Vorbedingungen**, nicht Befunde, und
+> die letzte Zeile ist nahezu leer: In allen 72 Dossiers stehen *drei* Claims vom
+> Typ `thesis`/`inference`/`recommendation`, alle in `neg-01-de`. Die Vorbedingung
+> ist also fast nie erfüllt — und dass sie nicht wechselt, hat verdeckt, dass der
+> **Befund** `logical_gap` auf genau diesem Dokument in 2 von 3 identischen Läufen
+> feuert und im dritten nicht. Als ganze Befunde gemessen wechselt
+> `unsupported_assumption` in **2 von 24** statt 1, und es kommt
+> `internal_contradiction` dazu. Siehe 3aj.
+
 ```
 mod-01-de   delivery,fact,forecast   | delivery,forecast,target | delivery,forecast,target
 neg-02-de   fact,fact,forecast       | fact,fact,forecast       | fact,forecast,scope
@@ -2376,6 +2385,8 @@ erste Fassung eines Tests falsch annehmen ließ.
 **`relation_type`.** 14 Namen, 7 mit Glosse, und drei Befunde stehen allein
 darauf (`internal_contradiction`, `scope_tension`, `overgeneralization`). Dieselbe
 Messung darauf anzuwenden kostet nichts und ist nicht gemacht.
+**Nachgetragen in 3aj:** gemacht, und die Relationshälfte ist auf diesem Bestand
+der *größere* Beitrag — drei der vier wechselnden Befunde liegen dort.
 
 **Lange Dokumente.** 24 Fälle aus einem bis drei Sätzen. Dass `logical_gap` hier
 0 von 24 wechselt, sagt über eine Gerichtsentscheidung mit 108 Claims nichts.
@@ -2386,6 +2397,118 @@ naheliegende Weg wäre falsch gewesen: unser Bedeutungsbestand prüft `claim_typ
 in **2 von 24 Fällen** (`cor-01-de/en`). Gegen `meaning_preserved` gemessen hätte
 die Permutation 216 bezahlte Aufrufe für eine Achse gekostet, die den Typ fast
 nicht sieht. Das richtige Instrument ist Typstabilität, und die läuft gratis.
+
+## 3aj. Vier von 24 Dokumenten liefern eine andere Befundmenge — und die Relationshälfte ist die größere
+
+Anlass war wieder ein fremdes Paper ([arXiv 2610.07753](https://arxiv.org/abs/2610.07753),
+6. Okt. 2026). Seine Unterscheidung: dass ein Ergebnis stimmt, zeigt nicht, dass
+die Evidenz dafür **vor** der Handlung etabliert war. Dieselben Fälle statisch
+95–99 %, interaktiv 28–52 %; und wenn entscheidende Evidenz verborgen wird,
+handeln die Agenten immer noch in 46,5–53,5 % der Episoden.
+
+Das traf eine Stelle, die 3ai offen gelassen hat, ohne es zu merken.
+
+### Die Korrektur an 3ai
+
+3ai hat die **Vorbedingungen** gemessen und nicht die Befunde. Zwei Zahlen daraus
+sind damit schwächer, als sie dort aussahen:
+
+**„`logical_gap`: Typ-Vorbedingung wechselt 0 von 24."** Wahr und nahezu leer. In
+allen 72 Dossiers stehen **drei** Claims vom Typ `thesis`/`inference`/
+`recommendation` — alle in `neg-01-de`, einer je Lauf. Die Vorbedingung ist also
+fast nie erfüllt, und „sie wechselt nicht" sagt beinahe nichts. Schlimmer: sie hat
+verdeckt, dass der **Befund selbst** auf genau diesem Dokument wechselt.
+
+**„`unsupported_assumption`: 1 von 24."** Das war die Typhälfte. Als ganzer Befund
+sind es **2 von 24**.
+
+`logical_gap` ist ein **Schluss aus Schweigen**: er feuert, wenn ein Claim dieser
+Typen *keine* eingehende `SUPPORTS`/`ENTAILS` und *keine* ausgehende
+`EVIDENCED_BY` hat. Abwesenheit ist der Auslöser. Und dieses Projekt hat
+mehrfach gemessen, dass die Extraktion viel Argumentstruktur verliert. Der Befund
+liest sich als Eigenschaft des Dokuments und ist zum Teil eine Eigenschaft dieses
+Laufs.
+
+### Die Messung, mit den echten Regeln
+
+`scripts/finding_warrant.py` baut aus einem gespeicherten Dossier das Paket
+zurück, gatet gegen das Dokument neu und ruft **`deterministic_checks` selbst
+auf** — keine nachgebaute Regellogik. Dann vergleicht es die Befundmenge über die
+Wiederholungen.
+
+| | |
+|---|---|
+| Dokumente mit drei byte-identischen Läufen | 24 |
+| identische Befundmenge | 20 |
+| **wechselnde Befundmenge** | **4** |
+
+| Dokument | Befund | je Lauf | Ursache |
+|---|---|---|---|
+| `mul-02-de` | `internal_contradiction` (**high**) | 1, 0, 0 | Claim-Typen in allen drei Läufen **identisch**; Lauf 1 liefert eine Kante `C01 CONTRADICTS C04`, Läufe 2–3 drei andere Kanten und keine `CONTRADICTS` |
+| `neg-01-de` | `logical_gap` (0,9) | 0, 1, 1 | dieselbe Kante `C02→C01` heißt einmal `EVIDENCED_BY` und zweimal `DEPENDS_ON` |
+| `sco-02-de` | `unsupported_assumption` (0,95) | 1, 0, 0 | `assumption` ist in allen drei Läufen da, die Kante `ASSUMPTION_FOR` nur in Lauf 1 |
+| `sco-02-en` | `unsupported_assumption` (0,95) | 1, 1, 0 | die Typhälfte wechselt (3ai) |
+
+**Vier verschiedene Mechanismen, und drei davon liegen auf der Relationshälfte**
+— die 3ai als „nicht gemessen" eingetragen hat. `mul-02-de` ist der reinste Fall:
+am Claim-Satz bewegt sich **nichts**, und ein Befund mit Schweregrad *high*
+erscheint und verschwindet.
+
+Damit ist auch die offene Zeile aus 3ai beantwortet: `relation_type` ist nicht
+stabiler als `claim_type`, sondern auf diesem Bestand der größere Beitrag.
+
+### Was die naheliegende Übertragung nicht leisten kann
+
+Das Paper misst Ergebnis **gegen** Geltung. Die naheliegende Übertragung — jeden
+Befund zweimal bewerten, einmal nach Ergebnis und einmal nach nachweisbarer
+Geltung — ist hier **nicht verfügbar**: Es gibt in diesem Projekt nirgends eine
+Gold-Antwort darauf, ob ein `logical_gap` *richtig* ist. Der Benchmark hat
+Aufgabenerfolg, wir haben nichts Vergleichbares. Eine „Erfolg-gegen-Geltung-Rate"
+lässt sich daraus nicht rechnen, und ich habe es nicht versucht.
+
+Was sich rechnen lässt, ist **Reproduzierbarkeit, und sie ist eine untere
+Schranke**: Ein Befund, der unter identischer Eingabe nicht wiederkehrt, kann vom
+Dokument nicht gedeckt sein. Umgekehrt gilt es nicht — ein Befund, der dreimal
+wiederkehrt, ist damit nicht gedeckt. Die 4 von 24 sind also ein Boden, keine
+Rate.
+
+### Warum eine Evidenzkarte am Emissionszeitpunkt nicht gebaut werden kann
+
+Der zweite Vorschlag aus derselben Zulieferung ([EviSkill,
+arXiv 2610.05030](https://arxiv.org/abs/2610.05030)) war, den Befund samt
+Instabilität als vorläufiges, evidenzgebundenes Objekt zu speichern, mit den drei
+Dossiers als Replay-Kontext.
+
+Das geht an einer Konstruktionstatsache vorbei: **Im Produktionslauf gibt es die
+drei Dossiers nicht.** Extrahiert wird einmal je Dokument. Zum Zeitpunkt, an dem
+ein Befund emittiert wird, existieren Lauf 2 und 3 nicht, und ob *dieser* Befund
+wechselt, ist nicht wissbar.
+
+Das ist die ehrliche Grenze der Entscheidung (b) aus 3ai, und sie war dort nicht
+benannt: **(b) markiert die Art der Abhängigkeit, nicht die beobachtete
+Instabilität** — weil die beobachtete Instabilität am Emissionszeitpunkt
+konstruktiv nicht vorliegt. Ein Leser sieht denselben Hinweis an einem Befund,
+dessen Typ über drei Läufe felsenfest war, und an einem, der wechselt.
+
+Damit ist (b) das Maximum ohne eine **Wiederholungspolitik** — und die hat einen
+Preis: dreifache Extraktionskosten je Dokument. Das ist eine Entscheidung mit
+Preisschild und steht als solche im Bericht, nicht als Nebensatz.
+
+Die Evidenzkarte selbst existiert übrigens schon, nur an der richtigen Stelle:
+`--json` beider Messskripte schreibt genau diesen Querschnitt. Was fehlt, ist
+**keine Datenstruktur, sondern eine Verknüpfung** von einem ausgelieferten Befund
+zu diesem Datensatz — und die ist erst sinnvoll, wenn es Wiederholungen gibt.
+
+### Was weiter nicht gemessen ist
+
+**Lange Dokumente.** 24 Fälle aus einem bis drei Sätzen, mit vier bis fünf Claims
+und null bis drei Kanten. Eine Gerichtsentscheidung mit 108 Claims hat ungleich
+mehr Kanten, auf denen dasselbe passieren kann, und die Messung dort kostet
+nichts außer einem Lauf, der schon gespeichert ist.
+
+**Die Reviewer-Befunde.** Gemessen sind nur die deterministischen. Die beiden
+LLM-Arme haben eine eigene, separat gemessene Streuung (3ad: 0,27 nach der
+strengen Regel), und beide Zahlen gehören nicht addiert.
 
 ## 4. ClaimGraph
 
