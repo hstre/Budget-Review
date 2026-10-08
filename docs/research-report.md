@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ai, which is a log rather than a synthesis.
+§3a–§3am, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -83,6 +83,7 @@ withdrawals in §7 have that one cause.
 | 14 | The semantic layer was silently translating German documents into English propositions | **fixed** by one contract line (§4.12), **in review** |
 | 15 | Conditionals are split at the comma and the consequent is asserted unconditionally | open, and now the only measured meaning failure (§4.12) |
 | 16 | A claim's *type* is the third generated component, and two shipped findings fire on it | **in review**; findings now carry what their trigger rests on (§4.13) |
+| 19 | Half the meaning set could be passed without preserving the meaning; rewritten, and the figures do not move | **resolved** (§4.16). The set is examined rather than a draft, and 69 of 72 survives a strictly harder instrument |
 
 ---
 
@@ -654,6 +655,70 @@ instrument is type stability, and it is free.
 
 ---
 
+### 4.16 Half the meaning set rewritten, and the figures do not move
+
+§4.12's table reported meaning preserved at 69 of 72 case-runs. Two independent
+blind reviews then found that twelve of the 24 cases — six pairs — could be passed
+by renderings that lose the meaning, and in one case that the gold asserted a
+pragmatic implicature rather than what the sentence entails. All sixteen of their
+counterexamples were checked against the validator before anything changed: twelve
+held, four were refuted.
+
+The cases were rewritten rather than dropped, under the constraint that decided the
+whole exercise: **documents and spans are untouched, all 24.** Only requirements,
+forbidden patterns and gold prose changed. So every dossier already paid for could
+be scored again, and the rewrite is followed by a measurement rather than a hope.
+
+| case | before | after |
+|---|---|---|
+| `spk-01` | one group, which also accepted the other language's word | speaker **and** speech act in one claim |
+| `spk-02` | two groups: a name, a name | per claim: speaker, act, content |
+| `mul-01`, `mul-02` | one group per claim | per claim: subject, predicate, figure |
+| `mod-02` | a reporting verb from a list of four | the source named and the effect stated; which verb is irrelevant |
+| `neg-02` | the gold asserted an implicature | the gold reduced to the entailment |
+| `neg-01`, `mod-01`, `cor-01` | — | the reversed scope and the missing inflections forbidden |
+
+That needed one schema change. A requirement of one group per claim is satisfied by
+a single word from it, so two bare fragments passed a case whose point was that two
+assertions survive. It is now a list of groups per claim, all of which one claim
+must satisfy.
+
+Seven confirmed false alarms were fixed too — faithful renderings the requirements
+rejected, such as "according to the study" where a reporting verb was demanded.
+Each is recorded with its date and the review that named it, and **none came from a
+failing run**: they came from reading the cases, which is the distinction the
+governance rule exists to protect.
+
+**Then the measurement.** The same 72 dossiers against the rewritten set:
+
+| phenomenon | §4.12, weak set | now, twelve cases harder |
+|---|---:|---:|
+| negation, modality, correlation, speaker, several assertions | 12/12 each | 12/12 each |
+| scope | 6/6 | 6/6 |
+| condition | 3/6 | 3/6 |
+| **total** | **69/72** | **69/72** |
+
+§4.12 had to say the numbers held but their evidential weight did not. That is now
+**refuted — by a measurement rather than an argument.** The extractor's actual
+output passes the strict set exactly as it passed the weak one, so 69 of 72 was not
+an artifact of weak cases. One thing is newly visible: `sco-02` reports three
+distortions where it reported none, because the forbidden-reading check now names
+the unconditional consequent for what it is. The verdict does not change; the
+instrument now says *what* went wrong rather than only *that* it did.
+
+The reviews' sixteen counterexamples are kept as a test file, so a later widening
+of any token list has to leave all sixteen verdicts intact. The 0.16 dollars bought
+permanent test coverage rather than an opinion.
+
+**What this does not mean.** The set is no longer a draft — two independent reviews
+are recorded, checked and acted on — which makes it examined rather than good. It is
+still 24 passages of one to three sentences, written by the same party that built
+the system, and the two reviews are two models and not an expert opinion. The
+seventh phenomenon stays open because the reviews disagree about it, and relations
+stay unannotated because neither proposed an edge when asked.
+
+---
+
 ## 5. What we do not know
 
 Stated as questions, because each is a measurement nobody has made.
@@ -730,7 +795,7 @@ Stated as questions, because each is a measurement nobody has made.
 | Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12) |
 | The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
 | Relation-label stability | Three findings rest on `relation_type` alone and the same measurement has never been run on it. It costs nothing |
-| Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases, and it is a draft pending two independent reviews |
+| Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases. Two independent reviews are now recorded, checked and acted on (§4.16), so it is examined rather than a draft — but it is still 24 short passages written by the party that built the system |
 | Relations between claims | The third outcome of §4.12 is still unmeasurable: the meaning set annotates no edges |
 | German-language evidence | 24 hand-annotated cases, half of them German, run twice — and nothing longer. No German document above fixture length has been measured |
 
@@ -828,7 +893,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 22 measurement scripts, each tested
-docs/architecture.md §3a–§3ai            the chronological record, run by run
+docs/architecture.md §3a–§3am            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -881,7 +946,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ai und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3am und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -957,6 +1022,7 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 14 | Die semantische Schicht hat deutsche Dokumente still in englische Propositionen übersetzt | **behoben** durch eine Vertragszeile (§4.12), **im Review** |
 | 15 | Bedingungssätze werden am Komma zerlegt und der Nachsatz unbedingt behauptet | offen, und jetzt der einzige gemessene Bedeutungsfehler (§4.12) |
 | 16 | Der *Typ* eines Claims ist die dritte erzeugte Komponente, und zwei ausgelieferte Befunde feuern darauf | **im Review**; Befunde tragen jetzt die Herkunft ihres Auslösers (§4.13) |
+| 19 | Die Hälfte des Bedeutungsbestands war bestehbar, ohne die Bedeutung zu erhalten; umgeschrieben, und die Zahlen bewegen sich nicht | **gelöst** (§4.16). Der Bestand ist geprüft statt Entwurf, und 69 von 72 übersteht ein strikt härteres Instrument |
 
 ## 2. Was das System ist
 
@@ -1594,7 +1660,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12) |
 | Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
 | Stabilität der Relationslabels | Drei Befunde stehen allein auf `relation_type`, und dieselbe Messung ist dort nie gelaufen. Sie kostet nichts |
-| Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen, und er ist ein Entwurf vor zwei unabhängigen Durchsichten |
+| Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen. Zwei unabhängige Durchsichten sind jetzt vermerkt, nachgerechnet und umgesetzt (§4.16), er ist also geprüft statt Entwurf — aber es sind weiter 24 kurze Stellen, geschrieben von der Partei, die das System gebaut hat |
 | Beziehungen zwischen Claims | Das dritte Ergebnis aus §4.12 ist weiter nicht messbar: der Bedeutungsbestand annotiert keine Kanten |
 | Deutschsprachige Evidenz | 24 von Hand annotierte Fälle, die Hälfte davon deutsch, zweimal gelaufen — und nichts Längeres. Kein deutsches Dokument über Fixture-Länge ist gemessen |
 
@@ -1693,7 +1759,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 22 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ai            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3am            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 

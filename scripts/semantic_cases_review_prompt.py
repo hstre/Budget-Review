@@ -86,8 +86,10 @@ So lesen sich die Felder eines Falls:
 - `requires_all_groups` — Liste von Gruppen. Ein Claim auf der Spanne muss aus
   **jeder** Gruppe mindestens eine Wendung tragen. Einzelwörter werden mit
   Wortgrenzen gematcht, Mehrwortphrasen als Teilstring.
-- `requires_distinct_groups` — wie oben, aber jede Gruppe muss von einem
-  **anderen** Claim erfüllt werden.
+- `requires_distinct_claims` — ein Eintrag je Claim, den die Stelle tragen muss,
+  und ein Eintrag ist eine Liste von Gruppen, die **ein** Claim gemeinsam
+  erfüllen muss. Verschiedene Einträge müssen von **verschiedenen** Claims
+  erfüllt werden.
 - `forbids` — Regexe. Trifft einer auf einen Claim, gilt er als verzerrt.
 - `forbidden_claim_types` — Claim-Typen, die auf dieser Stelle falsch sind.
 - `min_claims_on_span` — so viele Claims müssen auf der Stelle ankern.

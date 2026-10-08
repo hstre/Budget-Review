@@ -2531,11 +2531,15 @@ Mechanik spekuliert statt über die Beispiele, irrt sie — vier von vier Mal.**
 
 ### Was offen bleibt, und es ist nicht meine Entscheidung
 
-Acht von 24 Fällen gehören nach beiden Durchsichten umgeschrieben oder
-gestrichen: `neg-02` (Gold strittig), `spk-01`, `spk-02`, `mul-01`, `mul-02`
-(Bedingung erzwingt kein Prädikat), `mod-02` (Syntaxfessel). Das ändert jede
-Messung, die auf ihnen steht — darunter die 69/72 aus 3ah. Diese Entscheidung
-treffe ich nicht allein.
+Sechs Paare, also **zwölf von 24 Fällen** — die Hälfte des Bestands — gehören
+nach beiden Durchsichten umgeschrieben oder gestrichen: `neg-02` (Gold strittig),
+`spk-01`, `spk-02`, `mul-01`, `mul-02` (Bedingung erzwingt kein Prädikat),
+`mod-02` (Syntaxfessel). Das ändert jede Messung, die auf ihnen steht — darunter
+die 69/72 aus 3ah. Diese Entscheidung treffe ich nicht allein.
+
+> **Korrektur (3am).** Hier stand „acht von 24". Es sind zwölf: sechs Paare mit je
+> zwei Sprachen. Ein Rechenfehler, keine Umwertung — und er hat den Umfang um ein
+> Drittel kleiner aussehen lassen, als er ist.
 
 **Das siebte Phänomen**, und hier sind die beiden uneins: zeitlicher
 Geltungsbereich („wird eingeführt" → „ist eingeführt") gegen Zahlen und Einheiten
@@ -2545,6 +2549,138 @@ das Budgets prüft, halte ich Zahlen und Einheiten für das teurere.
 
 **Relationen** bleiben nicht annotiert (M-3). Keine der beiden Durchsichten hat
 Kanten vorgeschlagen, und gefragt war danach ausdrücklich.
+
+## 3am. Zwölf Fälle umgeschrieben — und die Zahlen bleiben, was sie waren
+
+3al hat die zwei Durchsichten ausgewertet und die Entscheidung offen gelassen,
+weil sie die Hälfte des Bestands betrifft. Sie ist getroffen: umschreiben, nicht
+streichen.
+
+**Eine Korrektur zuerst.** 3al schrieb „acht von 24". Es sind **zwölf** — sechs
+Paare mit je zwei Sprachen. Ein Rechenfehler, der den Umfang um ein Drittel
+kleiner aussehen ließ.
+
+### Die Bedingung, unter der das überhaupt geht
+
+**Dokumente und Spannen sind unverändert geblieben, alle 24.** Nur Bedingungen,
+Verbote und Gold-Prosa wurden geändert. Deshalb bleibt jedes bereits bezahlte
+Dossier bewertbar, und der Umschreibung folgt eine Messung statt einer Hoffnung.
+
+Das war nicht selbstverständlich: `neg-02` hätte man am einfachsten reparieren
+können, indem man das Dokument umschreibt („Ein Teil erhält ihn, andere nicht").
+Dann wäre die Konstruktion „nicht alle" weg gewesen — und 72 Dossiers mit ihr.
+
+### Was geändert wurde
+
+**Eine Schema-Erweiterung, weil drei Fälle ohne sie nicht reparabel sind.**
+`requires_distinct_groups` verlangte **eine** Gruppe je Claim, und
+`satisfies(text, [group])` ist erfüllt, sobald *ein* Wort daraus vorkommt. Also
+bestanden zwei nackte Fragmente einen Fall, dessen ganzer Zweck war, dass zwei
+Aussagen überleben. Ersetzt durch `requires_distinct_claims`: ein Eintrag je
+Claim, und ein Eintrag ist eine Liste von Gruppen, die **ein** Claim gemeinsam
+erfüllen muss. Die kleinste Änderung, die die Bedingung über die Aussage statt
+über ein Schlüsselwort stellt.
+
+| Fall | vorher | nachher |
+|---|---|---|
+| `spk-01` | `[["Regierung", "Government"]]` | Sprecher **und** Sprechakt, in einem Claim — und kein englisches Token mehr im deutschen Fall (**M-2 erledigt**) |
+| `spk-02` | zwei Gruppen: Name, Name | je Claim: Sprecher, Akt, Inhalt |
+| `mul-01` | `[["Haushalt","vier Prozent"], ["Schulen","Anteil"]]` | je Claim: Subjekt, Prädikat, Zahl |
+| `mul-02` | `[["Mittel","bewilligt"], ["Ausbau","Frühjahr"]]` | je Claim: Subjekt, Prädikat, Zeitpunkt |
+| `mod-02` | Berichtsverb aus vier Wörtern erzwungen | Quelle genannt **und** Wirkung benannt; welches Verb, ist gleichgültig |
+| `neg-02` | Gold behauptete eine Implikatur | Gold auf das Entailment zurückgeführt |
+
+**`neg-02` ist die inhaltlich interessanteste.** Durchsicht 2 hat recht: „Nicht
+alle Schulen erhalten den Zuschlag." ist streng logisch mit „Keine Schule erhält
+ihn." verträglich. Dass *einige* ihn erhalten, ist eine pragmatische Implikatur.
+Mein `must_preserve` behauptete sie, und das Verbot `\bkeine Schule\b` erzwang
+sie. Beide sind weg. Geprüft wird jetzt nur, was der Satz **entailt**: dass die
+Zuteilung nicht universell ist. Ein Claim „Die Schulen erhalten den Zuschlag."
+widerspricht der Quelle und bleibt verboten.
+
+Der Fall ist damit *schwächer* als gedacht und *richtig* statt stark. Das ist der
+erste Fall in diesem Projekt, in dem die Regel „Uneinigkeit ist ein Filter auf
+Beispiele" gegen mich gegriffen hat.
+
+**Drei weitere Fälle, die nicht auf der Liste standen.** `neg-01` war der fünfte
+bestätigte „zu schwach"-Fall und blieb in 3al unbehandelt: „wirkt **nicht nur**
+auf X, sondern auch auf Y" trägt das Negationswort und behauptet das Gegenteil.
+Jetzt verboten. Und `mod-01`/`cor-01` haben die Flexionslücke bekommen —
+`senkte`, `Senkung`, `wird … senken`, `trägt dazu bei` —, **nicht** mit der
+Begründung, die die Durchsichten gegeben haben (die ist widerlegt), sondern mit
+der Ko-Präsenz-Begründung aus 3al, die nachgerechnet ist. Ein Verbotsmuster
+greift allgemeiner als eine Liste exakter Texte.
+
+### Die sieben Falschalarme, mit Vermerk
+
+Nach der Regel aus 3ad darf eine Bedingung nur mit Zustimmung einer Durchsicht
+geweitet werden, und jede Weitung wird vermerkt. Alle sieben sind von mindestens
+einer Durchsicht als treu benannt und von der Gegenprüfung als durchfallend
+bestätigt:
+
+| Fall | treue Wendung, die scheiterte | ergänzt |
+|---|---|---|
+| `mod-02-de/en` | „Laut Studie senkt…" | Berichtsverb nicht mehr erzwungen |
+| `neg-02-de` | „Ein Teil der Schulen geht leer aus." | `ein Teil` |
+| `sco-02-de` | „Vorbehaltlich der Mittelbewilligung…" | `vorausgesetzt`, `vorbehaltlich` |
+| `cor-01-de` | „…treten gemeinsam auf." | `gemeinsam`, `zusammen auf` |
+| `cor-02-de/en` | „Wegen der Kürzung…" | `wegen`, `aufgrund` |
+
+**Keine davon kommt von einem gescheiterten Lauf.** Sie kommen vom Lesen der
+Fälle, und das ist der Unterschied, den die Regel schützen soll.
+
+### Abnahme: neun gegen sieben, getrennt
+
+Nach dem Umschreiben halten alle sechzehn Gegenbeispiele die Richtung, die sie
+halten sollen:
+
+- **neun untreue Wiedergaben fallen durch** — vorher bestanden fünf davon;
+- **sieben treue Wiedergaben bestehen** — vorher fielen alle sieben durch;
+- **drei Ko-Präsenz-Fälle fallen durch**, die vorher bestanden.
+
+Das steht als `tests/test_semantic_cases_counterexamples.py` im Repo, nicht in
+einem Chatverlauf. Damit kostet jede künftige Weitung einer Token-Liste den
+Nachweis, dass alle sechzehn Urteile intakt bleiben — und die 0,16 $ sind
+dauerhafte Testabdeckung geworden statt einer Meinung.
+
+### Und jetzt die Messung: null Bewegung
+
+Die 72 bereits bezahlten Dossiers gegen den umgeschriebenen Bestand, gratis:
+
+| Phänomen | 3ah (schwacher Bestand) | jetzt (zwölf Fälle härter) |
+|---|---:|---:|
+| Negation | 12/12 | 12/12 |
+| Modalität | 12/12 | 12/12 |
+| Korrelation gegen Kausalität | 12/12 | 12/12 |
+| Sprecher | 12/12 | 12/12 |
+| mehrere Aussagen | 12/12 | 12/12 |
+| Geltungsbereich | 6/6 | 6/6 |
+| Bedingung | 3/6 | 3/6 |
+| **Summe** | **69/72** | **69/72** |
+
+**Das ist der wichtigste Satz dieses Abschnitts.** 3al musste schreiben: „Die
+Zahlen stehen, ihre Beweiskraft nicht." Das ist jetzt widerlegt — und nicht durch
+ein Argument, sondern durch eine Messung. Die tatsächliche Ausgabe des Extraktors
+besteht den strengen Bestand genauso wie den schwachen. Das 69/72 war **kein**
+Artefakt schwacher Fälle.
+
+Eine Sache ist neu sichtbar: `sco-02` meldet jetzt **drei Verzerrungen** (eine de,
+zwei en), wo vorher null standen. Das ist die Verbotslesart-Prüfung, die den
+unbedingten Nachsatz als solchen erkennt. Am Bedeutungsurteil ändert es nichts —
+jene Läufe scheiterten schon an der Bedingung —, aber das Instrument benennt
+jetzt, *was* schiefgeht, und nicht nur *dass*.
+
+### Was das nicht heißt
+
+Der Bestand ist **kein Entwurf mehr**: zwei unabhängige Durchsichten sind
+vermerkt, nachgerechnet und umgesetzt. Er ist damit nicht gut, sondern geprüft.
+Es sind weiter 24 Sätze von einem bis drei Sätzen, von mir geschrieben, und die
+beiden Durchsichten sind zwei Modelle und kein Fachgutachten.
+
+**Offen bleibt**, was 3al offen gelassen hat und keine Durchsicht entschieden hat:
+das siebte Phänomen — zeitlicher Geltungsbereich gegen Zahlen und Einheiten, die
+beiden sind uneins —, und die Relationen (M-3), für die auch auf Nachfrage keine
+Durchsicht eine Kante vorgeschlagen hat.
 
 ## 4. ClaimGraph
 

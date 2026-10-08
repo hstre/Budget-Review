@@ -97,11 +97,11 @@ def test_a_forbidden_claim_type_is_a_distortion() -> None:
     assert row["distortions"][0]["claim_type"] == "causal"
 
 
-def test_two_speaker_groups_need_two_different_claims() -> None:
+def test_two_speaker_claims_need_two_different_claims() -> None:
     """The speaker-collapse case: one claim naming both is not two speech acts."""
     case = _case(
         requires_all_groups=[],
-        requires_distinct_groups=[["Regierung"], ["Gerichtshof"]],
+        requires_distinct_claims=[[["Regierung"]], [["Gerichtshof"]]],
         min_claims_on_span=2,
     )
 
@@ -115,6 +115,34 @@ def test_two_speaker_groups_need_two_different_claims() -> None:
     )
     assert two_claims["distinct_met"] is True
     assert two_claims["meaning_preserved"] is True
+
+
+def test_a_distinct_claim_must_satisfy_all_of_its_groups_not_one() -> None:
+    """What both independent reviews broke: a keyword per claim is not an assertion.
+
+    Two bare fragments satisfied a group of ["Haushalt", "vier Prozent"] one word
+    at a time, so a case whose point was that two assertions survive passed on
+    two nouns.
+    """
+    case = _case(
+        requires_all_groups=[],
+        requires_distinct_claims=[
+            [["Haushalt"], ["steigt"]],
+            [["Schulen"], ["Anteil"]],
+        ],
+        min_claims_on_span=2,
+    )
+
+    fragments = scorer.score(case, [_claim("Haushalt."), _claim("Schulen.")])
+    assert fragments["distinct_met"] is False
+    assert fragments["meaning_preserved"] is False
+
+    assertions = scorer.score(
+        case,
+        [_claim("Der Haushalt steigt."), _claim("Die Schulen erhalten den Anteil.")],
+    )
+    assert assertions["distinct_met"] is True
+    assert assertions["meaning_preserved"] is True
 
 
 def test_a_passage_that_should_carry_two_claims_is_not_satisfied_by_one() -> None:

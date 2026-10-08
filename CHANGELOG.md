@@ -9,6 +9,74 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Changed
+
+- **Twelve of the 24 meaning cases rewritten** — six pairs — after the two
+  independent reviews, on the project owner's decision. `spk-01` now demands the
+  speaker **and** the speech act in one claim, which also removes its accidental
+  tolerance of the other language's word. `spk-02` demands speaker, act and
+  content per claim; `mul-01` and `mul-02` subject, predicate and figure per claim.
+  `mod-02` no longer forces a reporting verb from a list of four, and asks instead
+  that the source is named and the effect stated. `neg-02`'s gold is reduced from
+  a pragmatic implicature to what the sentence entails. `neg-01`, `mod-01` and
+  `cor-01` gained the reversed scope and the missing inflections as forbidden
+  patterns.
+  **Documents and spans are untouched, all 24.** That constraint decided the
+  exercise: it is why every dossier already paid for could be scored again, and
+  why the rewrite is followed by a measurement rather than a hope.
+- **One schema change, because three cases are not repairable without it.**
+  `requires_distinct_groups` demanded one group per claim, and a group is
+  satisfied by a single word from it, so two bare fragments passed a case whose
+  point was that two assertions survive. Replaced by `requires_distinct_claims`:
+  one entry per claim, each entry a list of groups that **one** claim must satisfy
+  together.
+- **Seven confirmed false alarms fixed**, each with a dated note and the review
+  that named it, as the governance rule requires: "according to the study" where a
+  reporting verb was demanded, "a part of the schools miss out" for the negation,
+  "subject to the funds being granted" for the condition, "co-occur" for the
+  correlation, "because of the cut" for the cause. **None came from a failing run.**
+
+### Measured
+
+- **The same 72 dossiers against the rewritten set: 69 of 72, unchanged.**
+  Negation, modality, correlation, speaker and several assertions stay at 12/12,
+  scope at 6/6, the conditional at 3/6 — with twelve of 24 cases strictly harder.
+  The previous entry had to say the figures held but their evidential weight did
+  not. **That is refuted, by a measurement rather than an argument:** the
+  extractor's actual output passes the strict set exactly as it passed the weak
+  one, so 69 of 72 was not an artifact of weak cases.
+- `sco-02` now reports **three distortions** where it reported none, because the
+  forbidden-reading check names the unconditional consequent for what it is. The
+  verdict does not move; the instrument now says *what* went wrong rather than
+  only *that* it did.
+- **Acceptance, separated:** nine confirmed unfaithful renderings now fail, where
+  five of them passed before; seven confirmed faithful renderings now pass, where
+  all seven failed before; three co-presence cases now fail, where all three
+  passed.
+
+### Added
+
+- `tests/test_semantic_cases_counterexamples.py`: every one of the reviews'
+  sixteen renderings, kept as a test with its verdict. A later widening of any
+  token list has to leave all sixteen intact, so the 0.16 dollars became permanent
+  test coverage rather than an opinion.
+
+### Corrected
+
+- The previous entry said **eight** of 24 cases were to be rewritten. It is
+  **twelve** — six pairs, two languages each. An arithmetic error that made the
+  scope look a third smaller than it is.
+
+### Not done
+
+- **The seventh phenomenon.** The two reviews disagree — temporal scope against
+  numbers and units — which is a priority rather than a disagreement about
+  meaning, so the brief's rule does not settle it.
+- **Relation annotations** (M-3). Both reviews were asked for edges; neither
+  proposed one, and both want the multi-claim cases rebuilt, which removes the
+  cases there would be edges for.
+
+
 ### Measured
 
 - **Two independent blind reviews of the meaning set have run** —

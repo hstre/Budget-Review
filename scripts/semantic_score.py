@@ -108,13 +108,16 @@ def score(case: dict, claims: list[dict]) -> dict:
     groups = case.get("requires_all_groups") or []
     satisfied = [text for text in contents if cases_module.satisfies(text, groups)]
 
-    distinct = case.get("requires_distinct_groups") or []
+    # One entry per claim the span has to carry, and an entry is the groups that
+    # *one* claim must satisfy together. A single group per claim let two bare
+    # fragments pass; see §3am.
+    distinct = cases_module.distinct_claims(case)
     assigned: list[str] = []
-    for group in distinct:
+    for claim_groups in distinct:
         for text in contents:
             if text in assigned:
                 continue
-            if cases_module.satisfies(text, [group]):
+            if cases_module.satisfies(text, claim_groups):
                 assigned.append(text)
                 break
     distinct_met = len(assigned) == len(distinct)

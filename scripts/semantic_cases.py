@@ -79,10 +79,26 @@ def violates(text: str, forbids: list[str]) -> list[str]:
     return [pattern for pattern in forbids if re.search(pattern, text, re.IGNORECASE)]
 
 
+def distinct_claims(case: dict) -> list[list[list[str]]]:
+    """What each separate claim on a multi-assertion span has to carry.
+
+    One entry per claim, and an entry is a list of groups that **one** claim must
+    satisfy together. The older shape was one group per claim, which both
+    independent reviews broke the same way: a claim consisting of the single word
+    "Haushalt" satisfied a group of ["Haushalt", "vier Prozent"], so two bare
+    fragments passed a case whose whole point was that two assertions survive.
+    A conjunction per claim is the smallest change that makes the requirement
+    about the assertion rather than about a keyword.
+    """
+    return [list(groups) for groups in (case.get("requires_distinct_claims") or [])]
+
+
 def groups_of(case: dict) -> list[list[str]]:
-    return list(case.get("requires_all_groups") or []) + list(
-        case.get("requires_distinct_groups") or []
-    )
+    """Every requirement group in the case, flattened, for the span check."""
+    groups = list(case.get("requires_all_groups") or [])
+    for claim_groups in distinct_claims(case):
+        groups.extend(claim_groups)
+    return groups
 
 
 def validate(cases: list[dict]) -> list[str]:

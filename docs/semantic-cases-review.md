@@ -320,11 +320,35 @@ spekuliert statt über die Beispiele — vier von vier Mal.
 **Jetzt umgesetzt**, weil es ein Mangel unseres Codes ist und nicht des Golds:
 die strukturelle Lücke aus M-4 (siehe §3al).
 
-**Nicht umgesetzt, weil es der Bestand selbst ist:** `neg-02` streichen oder
-umschreiben; `spk-01`, `spk-02`, `mul-01`, `mul-02` so umschreiben, dass die
-Bedingung den Kern der Aussage erzwingt und nicht ein Schlüsselwort; `mod-02`
-streichen. Das sind acht von 24 Fällen und es ändert jede Messung, die auf ihnen
-steht. Das ist keine Entscheidung, die ich allein treffe.
+**Umgesetzt am 2026-10-08 (§3am), nach Entscheidung des Projektinhabers:** alle
+zwölf — sechs Paare, nicht acht Fälle, das war ein Rechenfehler. `neg-02` auf das
+Entailment zurückgeführt statt auf die Implikatur; `spk-01`, `spk-02`, `mul-01`,
+`mul-02` so umgeschrieben, dass die Bedingung je Claim mehrere Gruppen verlangt
+und damit den Kern der Aussage erzwingt; `mod-02` von der Berichtsverb-Fessel
+befreit. Dazu `neg-01` (fünfter bestätigter Fall) und die Flexionslücke bei
+`mod-01` und `cor-01`.
+
+**Dokumente und Spannen blieben unverändert**, deshalb sind die 72 bereits
+bezahlten Dossiers weiter bewertbar. Ergebnis: **69/72 vorher, 69/72 nachher.**
+Die Aussage aus diesem Abschnitt — „die Zahlen stehen, ihre Beweiskraft nicht" —
+ist damit widerlegt, durch eine Messung und nicht durch ein Argument.
+
+### Vermerkte Weitungen von Bedingungen, 2026-10-08
+
+Die Regel oben verlangt für jede Weitung die Zustimmung einer Durchsicht und
+einen Vermerk mit Datum. Alle sieben sind von mindestens einer Durchsicht als
+treu benannt und von der Gegenprüfung als durchfallend bestätigt — **keine kommt
+von einem gescheiterten Lauf.**
+
+| Fall | treue Wendung, die scheiterte | ergänzt | Urheber |
+|---|---|---|---|
+| `mod-02-de/en` | „Laut Studie senkt…" | Berichtsverb nicht mehr erzwungen | D1 + D2 |
+| `neg-02-de` | „Ein Teil der Schulen geht leer aus." | `ein Teil` | D1 + D2 |
+| `neg-02-en` | „A fraction of the schools miss out" | `a fraction`, `part of` | D1 |
+| `sco-02-de` | „Vorbehaltlich der Mittelbewilligung…" | `vorausgesetzt`, `vorbehaltlich` | D1 + D2 |
+| `sco-02-en` | „Contingent on…" | `contingent`, `on condition` | D2 |
+| `cor-01-de/en` | „…treten gemeinsam auf." | `gemeinsam`, `zusammen auf`, `co-occur` | D1 |
+| `cor-02-de/en` | „Wegen der Kürzung…" | `wegen`, `aufgrund`, `because of`, `due to` | D2 |
 
 **Nicht umgesetzt, weil die Prämisse widerlegt ist:** die Verbotslisten um
 Vergangenheitsformen und „will lower" erweitern.
