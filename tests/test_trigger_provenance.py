@@ -24,7 +24,7 @@ from budget_review.gate import govern_packet
 from budget_review.models import SemanticPacket
 from budget_review.render import _TEXT, render_html, render_markdown
 
-KINDS = {"document", "content", "relation_type", "claim_type"}
+KINDS = {"document", "content", "relation_type", "claim_type", "absence"}
 
 
 def test_every_rule_declares_what_its_trigger_rests_on() -> None:
@@ -42,7 +42,18 @@ def test_the_marker_discriminates_rather_than_being_constant() -> None:
     # If every rule rested on a label the field would carry no information.
     label_keyed = {k for k, v in TRIGGER_RESTS_ON.items() if "claim_type" in v}
     assert label_keyed == {"logical_gap", "unsupported_assumption"}
-    assert TRIGGER_RESTS_ON["coverage_gap"] == ("document",)
+    assert "claim_type" not in TRIGGER_RESTS_ON["coverage_gap"]
+
+
+def test_the_three_arguments_from_silence_are_named_as_such() -> None:
+    # §3ak measured these as the largest movers on long documents. A rule that
+    # fires on an absence may be reporting the extraction's gap, not the
+    # document's, and nothing else in the table says so.
+    absence = {key for key, rests in TRIGGER_RESTS_ON.items() if "absence" in rests}
+    assert absence == {"coverage_gap", "logical_gap", "unsupported_assumption"}
+    # And it is not constant: the presence-triggered rules must not claim it.
+    assert "absence" not in TRIGGER_RESTS_ON["internal_contradiction"]
+    assert "absence" not in TRIGGER_RESTS_ON["budget_sum"]
 
 
 def test_the_hoisted_type_sets_are_the_ones_the_rules_use() -> None:

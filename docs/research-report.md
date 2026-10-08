@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3aj, which is a log rather than a synthesis.
+§3a–§3ak, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -84,6 +84,7 @@ withdrawals in §7 have that one cause.
 | 15 | Conditionals are split at the comma and the consequent is asserted unconditionally | open, and now the only measured meaning failure (§4.12) |
 | 16 | A claim's *type* is the third generated component, and two shipped findings fire on it | **in production**; findings carry what their trigger rests on (§4.13) |
 | 17 | **4 of 24 documents emit a different finding set** across byte-identical runs, including one at severity high | open; measured with the real rules (§4.14), and three of the four causes sit on the relation half |
+| 18 | On long documents **no finding category holds still** — contradictions at severity high run 2, 7, 5 on one decision | open, and the sharpest open problem in this report (§4.15) |
 
 ---
 
@@ -730,6 +731,80 @@ are measured here, the two LLM arms have their own separately measured spread
 
 ---
 
+### 4.15 On a long document, no finding category holds still
+
+§4.14 measured 24 cases of one to three sentences and found 4 of 24 documents
+emitting a different finding set. Its open item was that a decision with a hundred
+claims has far more edges for the same thing to happen on. The runs were already
+stored, so the measurement cost nothing.
+
+Three sets, each with an **identical `prompt_hash` across its runs** — the
+condition under which a comparison measures run-to-run spread rather than a
+difference in configuration.
+
+| set | document | runs | claims | edges |
+|---|---|---|---|---|
+| A24, two-stage | 21,789 characters | 3 | 115/116/108 | 67/60/65 |
+| A24, variant | 21,789 characters | 2 | 111/111 | 29/35 |
+| decision 001-141170 | 10,371 characters | 3 | 53/59/54 | 30/45/41 |
+
+The hash guard earned itself immediately. The research log describes experiment 18
+as three runs per arm; of the three stored artifacts for the single-call arm only
+**two** share a prompt hash, and the third is a different configuration. Pooling
+them would have reported a configuration difference as instability. The script now
+refuses and prints the hashes.
+
+| | per run |
+|---|---|
+| `internal_contradiction` (**high**), decision | **2, 7, 5** |
+| `logical_gap` (0.9), A24 | **16, 19, 13** |
+| `coverage_gap`, A24 | 6, 10, 10 |
+| `coverage_gap`, A24 variant | 7, 13 |
+| `logical_gap`, A24 variant | 9, 15 |
+| `overgeneralization`, A24 | 6, 6, 5 |
+| `logical_gap`, decision | 2, 6, 3 |
+| `scope_tension` | 0,0,1 and 0,1,0 |
+| `unsupported_assumption` (0.95), A24 | 0, 1, 0 |
+
+**In all three sets: nought categories hold constant across the runs.** On the
+decision the high-severity contradiction count peaks at three and a half times its
+floor — an examiner submitting the same text twice is told of between two and
+seven contradictions. Against §4.14 this is not the same finding scaled up but a
+different state: short cases with four claims and nought to three edges are the
+special case in which anything holds still at all.
+
+**It corrects §4.13's table.** `coverage_gap` was given `("document",)`, the most
+trusted label there, and that is wrong: the gap list is computed deterministically,
+but *which* anchors exist is an extraction outcome. The rule fires on the
+**absence** of an admitted claim, as `logical_gap` fires on the absence of a
+supporting edge and `unsupported_assumption` on the absence of evidence. The table
+now carries a fifth kind, `absence`, and three of the fourteen rules declare it.
+That is not a label added out of caution: these three are the largest movers here.
+Silence is the weakest input, because extraction is known to lose argument
+structure, so the absence may be the run's rather than the document's.
+
+**Three limits.** The decision runs are post-repair-pass, and that pass
+manufactures duplicates (§4.6), so part of that spread may be its. It cannot be
+separated here — but both A24 sets are un-repaired and show the same picture, so
+the finding does not rest on the repair pass. The packets are re-gated with
+today's tolerant anchoring, so these numbers are what the same proposals score now
+and not what those runs reported at the time, the same post-hoc caveat as §4.3.
+And there is still no gold for findings, so reproducibility remains a lower bound:
+these are floors, not rates.
+
+**What follows, and what does not.** Not "the deterministic rules are broken" —
+they compute what they are meant to. What moves are their *inputs*, and for the
+three absence rules the absence itself moves. What does follow is §4.14's decision
+at a harder price. There the marker was said to name the kind of dependency rather
+than the observed instability, because production runs once. On short cases that
+was a subtlety. On a document where **no** category holds still, a single run is
+not a sample but a draw — and a dossier reporting 16 logical gaps where a second
+run would have reported 13 looks exactly as final. The repeat-run policy is
+therefore no longer a thrift question but the question of whether a finding may be
+reported as a number at all.
+
+---
+
 ## 5. What we do not know
 
 Stated as questions, because each is a measurement nobody has made.
@@ -805,7 +880,8 @@ Stated as questions, because each is a measurement nobody has made.
 | A finding's state is never resolved | Needs a versioned overlay and a schema decision |
 | Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12) |
 | The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
-| A finding can appear and vanish under identical input | 4 of 24 documents emit a different finding set, one at severity high. Three of the four causes are an edge relabelled, not a claim changed. `logical_gap` is an argument from silence, and extraction is known to lose argument structure (§4.14) |
+| A finding can appear and vanish under identical input | On 24 short cases 4 of 24 documents emit a different finding set. On two long documents **no category holds still**: contradictions at severity high run 2, 7, 5 and logical gaps 16, 19, 13 across identical runs. Three rules fire on an *absence*, and extraction is known to lose argument structure, so the absence may be the run's (§4.14, §4.15) |
+| A single run is a draw, not a sample | Production extracts once per document, so a dossier reporting 16 logical gaps where a second run would report 13 looks exactly as final. Repeats would fix it at three times the extraction cost (§4.15, decision 7) |
 | Whether a finding was *warranted*, as opposed to reproducible | Not computable here: nothing in this project is a gold answer about whether a deterministic finding is right. Reproducibility is a lower bound only (§4.14) |
 | Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases, and it is a draft pending two independent reviews |
 | Relations between claims | The third outcome of §4.12 is still unmeasurable: the meaning set annotates no edges |
@@ -905,7 +981,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 23 measurement scripts, each tested
-docs/architecture.md §3a–§3aj            the chronological record, run by run
+docs/architecture.md §3a–§3ak            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -914,7 +990,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-395 tests and one skipped, `ruff check` clean.
+405 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -945,7 +1021,9 @@ reader knows what is waiting.
    §4.13 names the kind of dependency and not the observed instability, because at
    emission there is only one run and whether *this* finding moves is not knowable.
    Three runs per document would make it knowable and cost three times the
-   extraction. Until then the caveat is as specific as it can honestly be.
+   extraction. **§4.15 raises the stakes:** on a long document no finding category
+   holds still, so a single run is a draw rather than a sample, and the question is
+   no longer thrift but whether a finding may be reported as a bare number at all.
 8. **Whether a deterministic finding may key on a generated label at all.**
    §4.13 chose to ship the provenance rather than remove the dependency, so this
    stays open. Adding definitions to the twenty-one types is the obvious repair
@@ -963,7 +1041,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3aj und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ak und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1040,6 +1118,7 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 15 | Bedingungssätze werden am Komma zerlegt und der Nachsatz unbedingt behauptet | offen, und jetzt der einzige gemessene Bedeutungsfehler (§4.12) |
 | 16 | Der *Typ* eines Claims ist die dritte erzeugte Komponente, und zwei ausgelieferte Befunde feuern darauf | **in Produktion**; Befunde tragen die Herkunft ihres Auslösers (§4.13) |
 | 17 | **4 von 24 Dokumenten liefern eine andere Befundmenge** über byte-identische Läufe, einer davon mit Schweregrad high | offen; mit den echten Regeln gemessen (§4.14), und drei der vier Ursachen liegen auf der Relationshälfte |
+| 18 | Auf langen Dokumenten bleibt **keine Befundart stehen** — Widersprüche mit Schweregrad high laufen 2, 7, 5 auf einer Entscheidung | offen, und das schärfste ungelöste Problem dieses Berichts (§4.15) |
 
 ## 2. Was das System ist
 
@@ -1683,6 +1762,83 @@ Reviewer-Befunde: gemessen sind nur die deterministischen, die beiden LLM-Arme
 haben eine eigene, separat gemessene Streuung (§5.4), und die zwei Zahlen gehören
 nicht addiert.
 
+### 4.15 Auf einem langen Dokument bleibt keine Befundart stehen
+
+4.14 hat 24 Fälle aus einem bis drei Sätzen gemessen und fand 4 von 24
+Dokumenten mit einer anderen Befundmenge. Der offene Punkt war, dass eine
+Entscheidung mit hundert Claims ungleich mehr Kanten hat, auf denen dasselbe
+passieren kann. Die Läufe lagen gespeichert, die Messung hat nichts gekostet.
+
+Drei Sätze, jeder mit **identischem `prompt_hash` über seine Läufe** — die
+Bedingung, unter der ein Vergleich Laufstreuung misst und nicht einen Unterschied
+der Konfiguration.
+
+| Satz | Dokument | Läufe | Claims | Kanten |
+|---|---|---|---|---|
+| A24, zweistufig | 21.789 Zeichen | 3 | 115/116/108 | 67/60/65 |
+| A24, Variante | 21.789 Zeichen | 2 | 111/111 | 29/35 |
+| Entscheidung 001-141170 | 10.371 Zeichen | 3 | 53/59/54 | 30/45/41 |
+
+Der Hash-Wächter hat sich sofort bezahlt. Das Forschungsprotokoll beschreibt
+Experiment 18 als drei Läufe je Arm; von den drei gespeicherten Artefakten des
+einstufigen Arms teilen nur **zwei** einen `prompt_hash`, das dritte ist eine
+andere Konfiguration. Sie zusammenzuwerfen hätte einen Konfigurationsunterschied
+als Instabilität berichtet. Das Skript verweigert das und nennt die Hashes.
+
+| | je Lauf |
+|---|---|
+| `internal_contradiction` (**high**), Entscheidung | **2, 7, 5** |
+| `logical_gap` (0,9), A24 | **16, 19, 13** |
+| `coverage_gap`, A24 | 6, 10, 10 |
+| `coverage_gap`, A24-Variante | 7, 13 |
+| `logical_gap`, A24-Variante | 9, 15 |
+| `overgeneralization`, A24 | 6, 6, 5 |
+| `logical_gap`, Entscheidung | 2, 6, 3 |
+| `scope_tension` | 0,0,1 und 0,1,0 |
+| `unsupported_assumption` (0,95), A24 | 0, 1, 0 |
+
+**In allen drei Sätzen: null Befundarten, die über die Läufe konstant bleiben.**
+Auf der Entscheidung ist das Maximum der Widersprüche mit Schweregrad *high* das
+Dreieinhalbfache des Minimums — ein Prüfer, der denselben Text zweimal einreicht,
+bekommt zwei bis sieben Widersprüche gemeldet. Gegenüber 4.14 ist das nicht
+derselbe Befund in größerem Maßstab, sondern ein anderer Zustand: kurze Fälle mit
+vier Claims und null bis drei Kanten sind der Sonderfall, in dem überhaupt etwas
+stillsteht.
+
+**Es korrigiert die Tabelle aus 4.13.** `coverage_gap` bekam dort
+`("document",)`, das vertrauenswürdigste Etikett, und das ist falsch: die
+Lückenliste rechnet deterministisch, aber *welche* Anker existieren, ist ein
+Extraktionsergebnis. Die Regel feuert auf die **Abwesenheit** eines zugelassenen
+Claims, so wie `logical_gap` auf die Abwesenheit einer Stützkante und
+`unsupported_assumption` auf die Abwesenheit eines Belegs. Die Tabelle trägt jetzt
+eine fünfte Art, `absence`, und drei der vierzehn Regeln deklarieren sie. Das ist
+kein aus Vorsicht gesetztes Etikett: diese drei sind hier die größten Wanderer.
+Schweigen ist der schwächste Eingang, weil die Extraktion nachweislich
+Argumentstruktur verliert — die Abwesenheit kann die des Laufs sein und nicht die
+des Dokuments.
+
+**Drei Einschränkungen.** Die Entscheidungsläufe sind nach dem Reparaturlauf, und
+der stellt Dubletten her (4.6), also könnte ein Teil jener Streuung von ihm
+kommen. Trennen lässt sich das hier nicht — aber beide A24-Sätze sind unrepariert
+und zeigen dasselbe Bild, der Befund hängt also nicht am Reparaturlauf. Die
+Pakete sind mit der heutigen toleranten Verankerung neu gegatet, diese Zahlen
+sagen also, was dieselben Vorschläge jetzt ergeben, und nicht, was die Läufe
+damals gemeldet haben — derselbe Vorbehalt wie in 4.3. Und für Befunde gibt es
+weiter kein Gold, Reproduzierbarkeit bleibt eine untere Schranke: das sind Böden,
+keine Raten.
+
+**Was folgt, und was nicht.** Nicht „die deterministischen Regeln sind kaputt" —
+sie rechnen, was sie rechnen sollen. Was wandert, sind ihre **Eingänge**, und bei
+den drei Abwesenheitsregeln wandert die Abwesenheit selbst. Was folgt, ist die
+Entscheidung aus 4.14 zu einem härteren Preis. Dort hieß es, die Markierung nenne
+die Art der Abhängigkeit und nicht die beobachtete Instabilität, weil im
+Produktionslauf einmal extrahiert wird. Auf kurzen Fällen war das eine Feinheit.
+Auf einem Dokument, auf dem **keine** Befundart stillsteht, ist ein einzelner Lauf
+keine Stichprobe, sondern eine Ziehung — und ein Dossier, das 16 logische Lücken
+meldet, wo ein zweiter Lauf 13 gemeldet hätte, sieht genauso endgültig aus. Die
+Wiederholungspolitik ist damit keine Sparfrage mehr, sondern die Frage, ob ein
+Befund überhaupt als Zahl berichtet werden darf.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -1755,7 +1911,8 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Der Zustand eines Befunds wird nie aufgelöst | Braucht ein versioniertes Overlay und eine Schemaentscheidung |
 | Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12) |
 | Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
-| Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | 4 von 24 Dokumenten liefern eine andere Befundmenge, einer mit Schweregrad high. Drei der vier Ursachen sind eine umbenannte Kante, kein geänderter Claim. `logical_gap` ist ein Schluss aus Schweigen, und die Extraktion verliert bekanntlich Argumentstruktur (§4.14) |
+| Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | Auf 24 kurzen Fällen liefern 4 von 24 Dokumenten eine andere Befundmenge. Auf zwei langen Dokumenten bleibt **keine Befundart stehen**: Widersprüche mit Schweregrad high laufen 2, 7, 5 und logische Lücken 16, 19, 13 über identische Läufe. Drei Regeln feuern auf eine *Abwesenheit*, und die Extraktion verliert bekanntlich Argumentstruktur — die Abwesenheit kann die des Laufs sein (§4.14, §4.15) |
+| Ein einzelner Lauf ist eine Ziehung, keine Stichprobe | Im Produktionslauf wird einmal je Dokument extrahiert, ein Dossier mit 16 logischen Lücken sieht also genauso endgültig aus wie eines mit 13. Wiederholungen behöben das zum dreifachen Extraktionspreis (§4.15, Entscheidung 7) |
 | Ob ein Befund *gedeckt* war, im Unterschied zu reproduzierbar | Hier nicht rechenbar: nichts in diesem Projekt ist eine Gold-Antwort darauf, ob ein deterministischer Befund richtig ist. Reproduzierbarkeit ist nur eine untere Schranke (§4.14) |
 | Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen, und er ist ein Entwurf vor zwei unabhängigen Durchsichten |
 | Beziehungen zwischen Claims | Das dritte Ergebnis aus §4.12 ist weiter nicht messbar: der Bedeutungsbestand annotiert keine Kanten |
@@ -1856,7 +2013,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 23 Messskripte, jedes getestet
-docs/architecture.md §3a–§3aj            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3ak            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -1866,7 +2023,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-395 Tests und einer übersprungen, `ruff check` sauber.
+405 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 
@@ -1895,8 +2052,10 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    Markierung aus §4.13 die Art der Abhängigkeit nennt und nicht die beobachtete
    Instabilität — am Emissionszeitpunkt gibt es einen Lauf, und ob *dieser* Befund
    wechselt, ist nicht wissbar. Drei Läufe je Dokument machten es wissbar und
-   kosten die dreifache Extraktion. Bis dahin ist der Hinweis so genau, wie er
-   ehrlich sein kann.
+   kosten die dreifache Extraktion. **§4.15 erhöht den Einsatz:** auf einem langen
+   Dokument bleibt keine Befundart stehen, ein einzelner Lauf ist also eine
+   Ziehung und keine Stichprobe, und die Frage ist nicht mehr Sparsamkeit, sondern
+   ob ein Befund überhaupt als nackte Zahl berichtet werden darf.
 8. **Ob ein deterministischer Befund überhaupt auf einem erzeugten Label stehen
    darf.** §4.13 hat die Herkunft ausgeliefert statt die Abhängigkeit zu
    entfernen, also bleibt das offen. Definitionen für die 21 Typen nachzutragen

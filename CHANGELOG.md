@@ -11,6 +11,67 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **On a long document no deterministic finding category holds still.** Three
+  stored run sets, each with an identical `prompt_hash` across its runs: the A24
+  paper (21,789 characters) twice over, and the court decision 001-141170 (10,371
+  characters). In all three, **nought categories hold constant.**
+  `internal_contradiction` at severity **high** runs 2, 7, 5 on the decision — the
+  peak is three and a half times the floor, so an examiner submitting the same
+  text twice is told of between two and seven contradictions. `logical_gap` at
+  confidence 0.9 runs 16, 19, 13 on the paper. `coverage_gap` runs 6, 10, 10 and,
+  in the second A24 set, 7 against 13.
+  Against the 4-of-24 on short cases this is not the same finding scaled up but a
+  different state: cases of one to three sentences with four claims and nought to
+  three edges are the special case in which anything holds still.
+- **A single run is a draw, not a sample.** Production extracts once per document,
+  so a dossier reporting 16 logical gaps where a second run would have reported 13
+  looks exactly as final. That turns the repeat-run decision from a thrift question
+  into whether a finding may be reported as a bare number at all.
+
+### Changed
+
+- **A fifth trigger kind, `absence`**, declared by the three rules that fire
+  because something is *not* there: `coverage_gap` (no admitted claim anchored
+  over a stretch), `logical_gap` (no supporting or entailing edge) and
+  `unsupported_assumption` (no evidence). It is not a label added out of caution —
+  these three are the largest movers in the measurement above. Silence is the
+  weakest input, because extraction is known to lose argument structure, so the
+  absence may be the run's and not the document's. The eleven presence-triggered
+  rules do not declare it, and a test asserts both halves.
+- `finding_warrant.py` takes `--document` with `--runs` for a corpus that is never
+  vendored, and **refuses runs that do not share a `prompt_hash`**. That guard
+  earned itself immediately: the research log describes experiment 18 as three runs
+  per arm, and of the three stored artifacts for the single-call arm only two share
+  a hash. Pooling them would have reported a configuration difference as
+  instability.
+
+### Corrected
+
+- **`coverage_gap` was classified `("document",)`** — the most trusted input in the
+  table — in the entry that introduced it. The gap list is computed
+  deterministically, but *which* anchors exist is an extraction outcome, so the
+  rule is an argument from silence like the other two. Fixed by the `absence` kind
+  above.
+- A guard inside the new script's `held` computation was **unreachable**: a category
+  only enters the comparison by appearing in some run, and one that is not in
+  `moved` has equal counts everywhere, so it is non-zero everywhere. A mutation of
+  it survived, which is how it was found. Removed, with the reasoning written where
+  it stood and the test rewritten to assert the real property.
+
+### Not done
+
+- Separating the repair pass from the extraction on the decision runs, which are
+  post-repair and where that pass is known to manufacture duplicates. It cannot be
+  separated from these artifacts — but both A24 sets are un-repaired and show the
+  same picture, so the finding does not rest on it.
+- The packets are re-gated with today's tolerant anchoring, so these numbers are
+  what the same proposals score now, not what those runs reported at the time.
+- Still no gold for findings, so these remain **floors** rather than rates: a
+  finding that recurs is not thereby warranted.
+
+
+### Measured
+
 - **4 of 24 documents emit a different deterministic finding set across
   byte-identical runs**, measured with the real rules rather than a
   re-implementation: the packet is rebuilt from a stored dossier, re-gated against

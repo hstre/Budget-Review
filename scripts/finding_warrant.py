@@ -49,13 +49,30 @@ from budget_review.models import SemanticPacket  # noqa: E402
 LABEL_KEYED = sorted(key for key, rests in TRIGGER_RESTS_ON.items() if "claim_type" in rests)
 
 
-def as_packet(dossier: dict) -> SemanticPacket:
-    """The proposals behind a stored dossier, so the real gate can run again.
+def is_governed(stored: dict) -> bool:
+    """Whether this file is a gated dossier rather than a pre-gate packet.
 
-    A stored dossier holds governed claims keyed by node id. The packet form wants
+    Both are stored by this project's runs, and they differ in how a relation
+    names its ends: a packet by proposal id, a dossier by claim node id.
+    """
+    claims = stored.get("claims") or ()
+    return bool(claims) and "claim_node_id" in claims[0]
+
+
+def prompt_hashes(runs: list[dict]) -> set[str]:
+    return {run.get("provenance", {}).get("prompt_hash", "") for run in runs}
+
+
+def as_packet(dossier: dict) -> SemanticPacket:
+    """The proposals behind a stored run, so the real gate can run again.
+
+    A pre-gate packet is already in this shape and is passed through. A gated
+    dossier holds governed claims keyed by node id, and the packet form wants
     proposal ids, so relations are translated back through the node-to-proposal
     map rather than rebuilt from anything this script decides.
     """
+    if not is_governed(dossier):
+        return SemanticPacket.from_dict(dossier)
     proposal_of = {claim["claim_node_id"]: claim["proposal_id"] for claim in dossier["claims"]}
     return SemanticPacket.from_dict(
         {
@@ -144,13 +161,79 @@ def report(result: dict) -> None:
     )
 
 
+def measure_runs(document: str, runs: list[dict]) -> dict:
+    """One document, the runs given explicitly, for a corpus not in the repo.
+
+    The long documents this project measures against — a court decision, a paper —
+    are fetched at run time and never vendored, so their repeats sit in separate
+    downloaded artifacts rather than in one directory under a naming convention.
+    """
+    per_run = [fired(run, document) for run in runs]
+    categories = {name for counts in per_run for name in counts}
+    moved = {
+        name: [counts.get(name, 0) for counts in per_run]
+        for name in sorted(categories)
+        if len({counts.get(name, 0) for counts in per_run}) > 1
+    }
+    # A category reaches `categories` only by appearing in some run, and one that
+    # is not in `moved` has equal counts in all of them, so it is non-zero in all.
+    # A category no run produced is in neither dict, which is the honest answer:
+    # a rule that never had a chance to fire held nothing.
+    held = {name: per_run[0][name] for name in sorted(categories - set(moved))}
+    return {"runs": len(runs), "moved": moved, "held": held}
+
+
+def report_runs(result: dict) -> None:
+    print(f"Läufe: {result['runs']}")
+    print(f"Befundarten, die über alle Läufe gleich bleiben: {len(result['held'])}")
+    for name, count in result["held"].items():
+        print(f"    {name:26} {count}× in jedem Lauf")
+    print(f"\n**Befundarten, deren Zahl wechselt**: {len(result['moved'])}")
+    for name, counts in result["moved"].items():
+        print(f"    {name:26} je Lauf: {counts}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("cases", type=Path, help="cases.json, for the documents")
-    parser.add_argument("directory", type=Path, help="stored dossiers, <case_id>-<repeat>.json")
+    parser.add_argument(
+        "cases", type=Path, nargs="?", help="cases.json, for the documents"
+    )
+    parser.add_argument(
+        "directory", type=Path, nargs="?", help="stored runs, <case_id>-<repeat>.json"
+    )
+    parser.add_argument("--document", type=Path, default=None, help="one document, read as text")
+    parser.add_argument(
+        "--runs", type=Path, nargs="+", default=None, help="stored runs over that document"
+    )
     parser.add_argument("--json", type=Path, default=None)
     args = parser.parse_args()
 
+    if args.document is not None or args.runs is not None:
+        if args.document is None or not args.runs:
+            parser.error("--document and --runs go together")
+        if len(args.runs) < 2:
+            parser.error("one run says nothing about reproducibility")
+        runs = [json.loads(path.read_text(encoding="utf-8")) for path in args.runs]
+        hashes = prompt_hashes(runs)
+        if len(hashes) > 1:
+            # Without this the measurement would report configuration differences
+            # as run-to-run instability. It has already caught one set of runs
+            # that the research log describes as three runs of one arm.
+            print(
+                "the runs do not share a prompt hash, so they are not repeats of "
+                f"one configuration: {sorted(hashes)}",
+                file=sys.stderr,
+            )
+            return 1
+        result = measure_runs(args.document.read_text(encoding="utf-8"), runs)
+        result["prompt_hash"] = hashes.pop()
+        report_runs(result)
+        if args.json:
+            args.json.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+        return 0
+
+    if args.cases is None or args.directory is None:
+        parser.error("give cases.json and a directory, or --document with --runs")
     cases = json.loads(args.cases.read_text(encoding="utf-8"))
     result = measure(cases, args.directory)
     if not result["documents"]:

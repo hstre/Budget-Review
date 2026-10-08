@@ -2362,6 +2362,12 @@ steht.
 es: `coverage_gap` rechnet aus Dokument und Ankern, die Budgetregeln aus dem
 Claim-Text, und nur zwei der vierzehn stehen auf dem undefinierten Label.
 
+> **Korrektur (3ak).** `coverage_gap` bekam hier `("document",)` — das stabilste
+> Etikett der Tabelle — und das ist falsch. Die Lückenliste rechnet
+> deterministisch, aber *welche* Anker existieren, ist ein Extraktionsergebnis:
+> die Regel feuert auf die **Abwesenheit** eines zugelassenen Claims. Die Tabelle
+> trägt dafür jetzt eine fünfte Art, `absence`, und drei Regeln tragen sie.
+
 **Und sie wird gerendert**, in Markdown und HTML, in beiden Sprachen. Der Grund
 steht im Code: `anchor_ambiguous` wird vom Gate seit seinem Bau gesetzt und von
 **keinem Teil des Produkts gelesen** — nur von einem Messskript. Eine vierte
@@ -2505,10 +2511,124 @@ zu diesem Datensatz — und die ist erst sinnvoll, wenn es Wiederholungen gibt.
 und null bis drei Kanten. Eine Gerichtsentscheidung mit 108 Claims hat ungleich
 mehr Kanten, auf denen dasselbe passieren kann, und die Messung dort kostet
 nichts außer einem Lauf, der schon gespeichert ist.
+**Nachgetragen in 3ak:** gemessen, über drei Sätze auf zwei langen Dokumenten —
+und dort bleibt **keine einzige Befundart** stehen. Die 4 von 24 hier sind nicht
+die kleine Version desselben Befunds; kurze Fälle sind der Sonderfall, in dem
+überhaupt etwas stillsteht.
 
 **Die Reviewer-Befunde.** Gemessen sind nur die deterministischen. Die beiden
 LLM-Arme haben eine eigene, separat gemessene Streuung (3ad: 0,27 nach der
 strengen Regel), und beide Zahlen gehören nicht addiert.
+
+## 3ak. Auf langen Dokumenten bleibt keine einzige Befundart stehen
+
+3aj hat auf 24 kurzen Fällen gemessen: 4 von 24 Dokumenten liefern eine andere
+Befundmenge. Der offene Punkt dort lautete, dass eine Entscheidung mit über
+hundert Claims ungleich mehr Kanten hat, auf denen dasselbe passieren kann. Die
+Läufe lagen gespeichert, die Messung hat nichts gekostet.
+
+### Welche Läufe, und warum der `prompt_hash` das entscheidet
+
+Drei Sätze, jeder mit **identischem `prompt_hash` über alle Läufe** — das ist die
+Bedingung, unter der ein Vergleich Laufstreuung misst und nicht
+Konfigurationsunterschied.
+
+| Satz | Dokument | Läufe | Claims | Kanten | Modell |
+|---|---|---|---|---|---|
+| A24, zweistufig | 21.789 Zeichen | 3 | 115/116/108 | 67/60/65 | `deepseek-flash` |
+| A24, Variante | 21.789 Zeichen | 2 | 111/111 | 29/35 | `deepseek-flash` |
+| 001-141170 | 10.371 Zeichen | 3 | 53/59/54 | 30/45/41 | `deepseek-v4-flash` |
+
+**Und der Wächter hat gleich zugeschlagen.** Das Forschungsprotokoll beschreibt
+Experiment 18 als „drei Läufe je Arm". Von den drei Artefakten des einstufigen
+Arms teilen nur **zwei** einen `prompt_hash`; das dritte ist eine andere
+Konfiguration. Hätte ich sie zusammengeworfen, wäre ein
+Konfigurationsunterschied als Laufstreuung berichtet worden. Das Skript
+verweigert das jetzt und nennt die Hashes.
+
+### Das Ergebnis
+
+```
+A24, zweistufig, 3 Läufe          A24, Variante, 2 Läufe
+  coverage_gap            6/10/10   coverage_gap             7/13
+  internal_contradiction   1/1/0    logical_gap              9/15
+  logical_gap           16/19/13
+  overgeneralization       6/6/5    001-141170, 3 Läufe
+  scope_tension            0/0/1      internal_contradiction  2/7/5
+  unsupported_assumption   0/1/0      logical_gap             2/6/3
+                                      scope_tension           0/1/0
+```
+
+**In allen drei Sätzen: null Befundarten, die über die Läufe gleich bleiben.**
+
+Die Spitzen, und sie sind keine Rundungsfehler:
+
+- **`internal_contradiction` auf der Entscheidung: 2, 7, 5.** Schweregrad
+  **high**, und das Maximum ist das Dreieinhalbfache des Minimums. Ein Prüfer,
+  der zweimal denselben Text einreicht, bekommt zwei bis sieben Widersprüche
+  gemeldet.
+- **`logical_gap` auf A24: 16, 19, 13.** Konfidenz 0,9, Streuung 6 Befunde.
+- **`coverage_gap`: 6 gegen 10, und in der Variante 7 gegen 13.** Beide fast
+  verdoppelt.
+
+Gegenüber 3aj ist das keine Steigerung um einen Faktor, sondern ein anderer
+Zustand: kurze Fälle mit vier Claims und null bis drei Kanten sind der
+Sonderfall, in dem überhaupt etwas stillsteht.
+
+### Was das an der Tabelle aus 3ai korrigiert
+
+`coverage_gap` stand dort auf `("document",)` — dem stabilsten Etikett, das die
+Tabelle hat. Das ist falsch, und die Messung zeigt es: die Lückenliste rechnet
+deterministisch über Dokument und Anker, aber **welche** Anker existieren, ist ein
+Extraktionsergebnis. `coverage_gap` feuert auf die *Abwesenheit* eines
+zugelassenen Claims — genau wie `logical_gap` auf die Abwesenheit einer
+Stützkante und `unsupported_assumption` auf die Abwesenheit eines Belegs.
+
+Deshalb trägt die Tabelle jetzt eine fünfte Art: **`absence`**. Drei der vierzehn
+Regeln feuern, weil etwas **nicht** da ist, und sie sind in dieser Messung die
+größten Wanderer. Das ist kein Etikett aus Vorsicht, sondern das gemessene
+Ergebnis: Schweigen ist der schwächste Eingang, weil die Extraktion
+nachweislich Argumentstruktur verliert — die Abwesenheit kann die des Laufs sein
+und nicht die des Dokuments.
+
+Die Markierung unterscheidet weiter: die elf Regeln, die auf *Anwesenheit*
+feuern, tragen `absence` nicht, und ein Test prüft beides.
+
+### Drei Einschränkungen, und eine davon ist unauflösbar
+
+**Die Entscheidungsläufe sind nach dem Reparaturlauf.** Der stellt nachweislich
+Dubletten her (3z), also könnte ein Teil jener Streuung von ihm kommen und nicht
+von der Extraktion. Trennen lässt sich das hier nicht. **Aber die beiden
+A24-Sätze sind unrepariert und zeigen dasselbe Bild**, also hängt der Befund
+nicht am Reparaturlauf.
+
+**Die Pakete sind mit dem heutigen Gate neu gegatet.** Diese Zahlen sagen, was
+dieselben Vorschläge unter der toleranten Verankerung aus #18 ergeben — nicht,
+was die Läufe damals gemeldet haben. Derselbe Post-hoc-Vorbehalt wie in 3z.
+
+**Und weiter kein Gold für Befunde.** Reproduzierbarkeit bleibt eine untere
+Schranke: Was nicht wiederkehrt, kann nicht gedeckt sein; was wiederkehrt, ist
+damit nicht gedeckt. Es gibt in diesem Projekt keine Gold-Antwort darauf, ob ein
+`logical_gap` *richtig* ist, und solange gibt es auch keine
+Erfolg-gegen-Geltung-Rate. Die Zahlen oben sind Böden.
+
+### Was daraus folgt, und was nicht
+
+Nicht: „die deterministischen Regeln sind kaputt." Sie rechnen, was sie rechnen
+sollen. Was wandert, sind ihre **Eingänge** — und bei den drei Abwesenheitsregeln
+wandert die Abwesenheit selbst.
+
+Was folgt, ist die Entscheidung aus 3aj mit härterem Preis. Dort stand, die
+Markierung nenne die Art der Abhängigkeit und nicht die beobachtete Instabilität,
+weil es im Produktionslauf einen Lauf gibt. Auf kurzen Fällen war das eine
+Feinheit. Auf einem Dokument, auf dem **keine** Befundart stillsteht, ist ein
+einzelner Lauf keine Stichprobe, sondern eine Ziehung — und ein Dossier, das 16
+`logical_gap` meldet, wo ein zweiter Lauf 13 gemeldet hätte, sieht genauso
+endgültig aus.
+
+Damit ist die Wiederholungspolitik keine Sparvariante mehr, sondern die Frage, ob
+ein Befund überhaupt als Zahl berichtet werden darf. Sie steht als offene
+Entscheidung 7 im Bericht, jetzt mit dieser Messung dahinter.
 
 ## 4. ClaimGraph
 

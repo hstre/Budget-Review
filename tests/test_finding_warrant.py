@@ -187,3 +187,126 @@ def test_a_repeated_category_is_counted_not_flattened(tmp_path, count) -> None:
     moved = MODULE.measure(_cases(), tmp_path)["unstable"][0]["moved"]
 
     assert moved["internal_contradiction"][0] < moved["internal_contradiction"][1]
+
+
+# --- the explicit-runs mode, for a corpus that is never vendored ---
+
+
+def _as_pre_gate_packet(relations: list[dict], prompt_hash: str = "d" * 64) -> dict:
+    """A stored run from before the gate: relations name their ends by proposal."""
+    return {
+        "schema_version": "content-review.semantic-packet/0.2",
+        "document_id": "synthetic",
+        "provenance": dict(PROVENANCE, prompt_hash=prompt_hash),
+        "claims": [
+            {
+                "proposal_id": "C01",
+                "claim_type": "evidence",
+                "canonical_content": FIRST,
+                "raw_span": FIRST,
+                "confidence": 0.9,
+                "source_ref": "synthetic",
+            },
+            {
+                "proposal_id": "C02",
+                "claim_type": "inference",
+                "canonical_content": SECOND,
+                "raw_span": SECOND,
+                "confidence": 0.9,
+                "source_ref": "synthetic",
+            },
+        ],
+        "relations": relations,
+    }
+
+
+def _proposal_edge(source: str, relation_type: str, target: str) -> dict:
+    return {
+        "source_id": source,
+        "relation_type": relation_type,
+        "target_id": target,
+        "confidence": 0.9,
+        "rationale": "structural",
+    }
+
+
+def test_a_pre_gate_packet_is_recognised_and_passed_through() -> None:
+    stored = _as_pre_gate_packet([_proposal_edge("C02", "EVIDENCED_BY", "C01")])
+
+    assert not MODULE.is_governed(stored)
+    packet = MODULE.as_packet(stored)
+    assert packet.relations[0].source_id == "C02"
+
+
+def test_a_gated_dossier_is_recognised_as_such() -> None:
+    assert MODULE.is_governed(_dossier([EVIDENCED]))
+
+
+def test_an_empty_claim_list_is_not_mistaken_for_a_dossier() -> None:
+    assert not MODULE.is_governed({"claims": []})
+
+
+def test_explicit_runs_report_what_moved_and_what_held() -> None:
+    runs = [
+        _as_pre_gate_packet([_proposal_edge("C02", "EVIDENCED_BY", "C01")]),
+        _as_pre_gate_packet([_proposal_edge("C02", "DEPENDS_ON", "C01")]),
+        _as_pre_gate_packet([_proposal_edge("C02", "DEPENDS_ON", "C01")]),
+    ]
+
+    result = MODULE.measure_runs(DOCUMENT, runs)
+
+    assert result["runs"] == 3
+    assert result["moved"]["logical_gap"] == [0, 1, 1]
+    assert "logical_gap" not in result["held"]
+
+
+def test_a_category_present_and_equal_in_every_run_is_held_not_moved() -> None:
+    runs = [_as_pre_gate_packet([_proposal_edge("C01", "CONTRADICTS", "C02")])] * 3
+
+    result = MODULE.measure_runs(DOCUMENT, runs)
+
+    assert result["held"]["internal_contradiction"] == 1
+    assert result["moved"] == {}
+
+
+def test_a_category_absent_from_every_run_is_neither_held_nor_moved() -> None:
+    # A rule that never had a chance to fire held nothing, so it must not pad the
+    # stable count. This holds because a category is only collected by appearing
+    # in some run — an earlier version guarded it again inside `held`, where the
+    # guard was unreachable, and a mutation of it survived.
+    runs = [_as_pre_gate_packet([])] * 2
+
+    result = MODULE.measure_runs(DOCUMENT, runs)
+
+    assert "internal_contradiction" not in result["held"]
+    assert "internal_contradiction" not in result["moved"]
+    # `logical_gap` does hold at 1 here, because with no edges the inference
+    # claim is unsupported in both runs. That is the rule working, not padding.
+    assert result["held"] == {"logical_gap": 1}
+
+
+def test_a_category_counted_in_some_runs_only_is_moved_never_held() -> None:
+    # The case the unreachable guard was aimed at: nought in the first run and
+    # one later. It belongs in `moved`, and `held` must not also claim it.
+    runs = [
+        _as_pre_gate_packet([]),
+        _as_pre_gate_packet([_proposal_edge("C01", "CONTRADICTS", "C02")]),
+    ]
+
+    result = MODULE.measure_runs(DOCUMENT, runs)
+
+    assert result["moved"]["internal_contradiction"] == [0, 1]
+    assert "internal_contradiction" not in result["held"]
+
+
+def test_runs_of_one_configuration_share_a_prompt_hash() -> None:
+    same = [_as_pre_gate_packet([]), _as_pre_gate_packet([])]
+    assert len(MODULE.prompt_hashes(same)) == 1
+
+
+def test_runs_of_different_configurations_are_detectable() -> None:
+    # The guard this exists for: comparing two configurations would report their
+    # difference as run-to-run instability. It caught a real set of runs that the
+    # research log describes as three runs of one arm.
+    mixed = [_as_pre_gate_packet([]), _as_pre_gate_packet([], prompt_hash="e" * 64)]
+    assert len(MODULE.prompt_hashes(mixed)) == 2
