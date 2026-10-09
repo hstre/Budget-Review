@@ -57,6 +57,19 @@ the extractor splits "if A, then B" at the comma and asserts B unconditionally,
 which for a proposal review is an invented commitment. It is now the only
 measured meaning failure (§4.12).
 
+That number rests on a set of cases this project wrote itself, so the set was sent
+to two independent reviews — neither from the family that wrote it nor the system
+under test, and neither shown a figure from any run. **They broke half of it.**
+Twelve of the 24 cases could be passed by renderings that lose the meaning, and in
+one case the gold asserted a pragmatic implicature rather than what the sentence
+entails. Their sixteen counterexamples were checked against the validator before
+anything changed: twelve held, four were refuted, and the four were refuted for one
+reason both reviews shared. The cases were then rewritten with the documents left
+untouched, so the runs already paid for could be scored again — and **69 of 72 came
+back unchanged against a strictly harder instrument** (§4.16). The headline figure
+survived an outside attempt to break the thing that produced it, which is the only
+sense in which it is worth reporting.
+
 The last finding is about method rather than product, and it generalises past
 this repository: **a measurement regime that does not first establish the spread
 of a single configuration will produce findings at the rate the spread allows,
@@ -892,7 +905,7 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 22 measurement scripts, each tested
+scripts/                                 23 measurement scripts, each tested
 docs/architecture.md §3a–§3am            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
@@ -902,7 +915,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-384 tests and one skipped, `ruff check` clean.
+427 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -995,6 +1008,20 @@ steuerbar, ohne materialisiert zu werden. Was die Zeile nicht angefasst hat, ist
 die Bedingung: in der Hälfte der Läufe zerlegt der Extraktor „wenn A, dann B" am
 Komma und behauptet B unbedingt, was für eine Antragsprüfung eine erfundene
 Zusage ist. Sie ist jetzt der einzige gemessene Bedeutungsfehler (§4.12).
+
+Diese Zahl ruht auf Fällen, die dieses Projekt selbst geschrieben hat, also ging
+der Bestand an zwei unabhängige Durchsichten — keine aus der Familie, die ihn
+geschrieben hat, keine das geprüfte System, und keiner wurde eine Zahl aus einem
+Lauf gezeigt. **Sie haben die Hälfte zerlegt.** Zwölf der 24 Fälle waren mit
+Wiedergaben bestehbar, die die Bedeutung verlieren, und in einem Fall behauptete
+das Gold eine pragmatische Implikatur statt dessen, was der Satz entailt. Ihre
+sechzehn Gegenbeispiele wurden gegen den Validator geprüft, bevor etwas geändert
+wurde: zwölf hielten, vier waren widerlegt, und die vier aus einem Grund, den
+beide Durchsichten teilten. Danach wurden die Fälle umgeschrieben, ohne die
+Dokumente anzufassen, damit die bezahlten Läufe bewertbar blieben — und **69 von
+72 kamen gegen ein strikt härteres Instrument unverändert zurück** (§4.16). Die
+Kernzahl hat einen Angriff von außen auf das überstanden, was sie erzeugt hat, und
+nur in diesem Sinn ist sie berichtenswert.
 
 Der letzte Befund betrifft die Methode und gilt über dieses Repository hinaus:
 **Ein Messregime, das nicht zuerst die Streuung einer einzigen Konfiguration
@@ -1587,6 +1614,72 @@ gegen die Bedeutungserhaltung zu messen hätte also 216 bezahlte Aufrufe für ei
 Achse gekostet, die den Typ fast nicht sieht. Das richtige Instrument ist
 Typstabilität, und die ist gratis.
 
+### 4.16 Die Hälfte des Bedeutungsbestands umgeschrieben, und die Zahlen bewegen sich nicht
+
+Die Tabelle in 4.12 berichtete Bedeutung erhalten mit 69 von 72 Fall-Läufen. Zwei
+unabhängige blinde Durchsichten fanden danach, dass **zwölf der 24 Fälle** — sechs
+Paare — mit Wiedergaben bestanden werden konnten, die die Bedeutung verlieren, und
+in einem Fall, dass das Gold eine pragmatische Implikatur behauptete statt dessen,
+was der Satz entailt. Alle sechzehn Gegenbeispiele wurden gegen den Validator
+geprüft, **bevor** etwas geändert wurde: zwölf hielten, vier waren widerlegt.
+
+Umgeschrieben statt gestrichen, unter der Bedingung, die die ganze Übung
+entschieden hat: **Dokumente und Spannen sind unangetastet, alle 24.** Geändert
+wurden nur Bedingungen, Verbote und Gold-Prosa. Deshalb blieb jedes bereits
+bezahlte Dossier bewertbar, und der Umschreibung folgt eine Messung statt einer
+Hoffnung.
+
+| Fall | vorher | nachher |
+|---|---|---|
+| `spk-01` | eine Gruppe, die auch das Wort der anderen Sprache akzeptierte | Sprecher **und** Sprechakt in einem Claim |
+| `spk-02` | zwei Gruppen: ein Name, ein Name | je Claim: Sprecher, Akt, Inhalt |
+| `mul-01`, `mul-02` | eine Gruppe je Claim | je Claim: Subjekt, Prädikat, Zahl |
+| `mod-02` | ein Berichtsverb aus einer Liste von vier | Quelle genannt und Wirkung benannt; welches Verb, ist gleichgültig |
+| `neg-02` | das Gold behauptete eine Implikatur | das Gold auf das Entailment zurückgeführt |
+| `neg-01`, `mod-01`, `cor-01` | — | umgekehrter Skopus und fehlende Flexionsformen verboten |
+
+Dafür brauchte es eine Schema-Änderung. Eine Bedingung von einer Gruppe je Claim
+ist erfüllt, sobald ein einzelnes Wort daraus vorkommt — deshalb bestanden zwei
+nackte Fragmente einen Fall, dessen Zweck war, dass zwei Aussagen überleben. Jetzt
+ist es eine Liste von Gruppen je Claim, die **ein** Claim gemeinsam erfüllen muss.
+
+Sieben bestätigte Falschalarme wurden ebenfalls behoben — treue Wiedergaben, die
+die Bedingung abgelehnt hat, etwa „laut Studie", wo ein Berichtsverb verlangt war.
+Jede ist mit Datum und der Durchsicht vermerkt, die sie benannt hat, und **keine
+kommt von einem gescheiterten Lauf**: sie kommen vom Lesen der Fälle, und das ist
+der Unterschied, den die Governance-Regel schützen soll.
+
+**Dann die Messung.** Dieselben 72 Dossiers gegen den umgeschriebenen Bestand:
+
+| Phänomen | 4.12, schwacher Bestand | jetzt, zwölf Fälle härter |
+|---|---:|---:|
+| Negation, Modalität, Korrelation, Sprecher, mehrere Aussagen | je 12/12 | je 12/12 |
+| Geltungsbereich | 6/6 | 6/6 |
+| Bedingung | 3/6 | 3/6 |
+| **Summe** | **69/72** | **69/72** |
+
+4.12 musste sagen, die Zahlen stünden, ihre Beweiskraft aber nicht. Das ist jetzt
+**widerlegt — durch eine Messung und nicht durch ein Argument.** Die tatsächliche
+Ausgabe des Extraktors besteht den strengen Bestand genauso wie den schwachen, das
+69 von 72 war also **kein** Artefakt schwacher Fälle. Eine Sache ist neu sichtbar:
+`sco-02` meldet drei Verzerrungen, wo es keine meldete, weil die
+Verbotslesart-Prüfung den unbedingten Nachsatz jetzt als solchen benennt. Am
+Urteil ändert das nichts; das Instrument sagt jetzt, *was* schiefgeht, und nicht
+nur *dass*.
+
+Die sechzehn Gegenbeispiele der Durchsichten liegen als Testdatei im Repo, also
+kostet jede künftige Weitung einer Token-Liste den Nachweis, dass alle sechzehn
+Urteile intakt bleiben. Die 0,16 $ sind dauerhafte Testabdeckung geworden statt
+einer Meinung.
+
+**Was das nicht heißt.** Der Bestand ist kein Entwurf mehr — zwei unabhängige
+Durchsichten sind vermerkt, nachgerechnet und umgesetzt —, und damit ist er
+**geprüft, nicht gut.** Es sind weiter 24 Stellen von einem bis drei Sätzen,
+geschrieben von derselben Partei, die das System gebaut hat, und die beiden
+Durchsichten sind zwei Modelle und kein Fachgutachten. Das siebte Phänomen bleibt
+offen, weil die Durchsichten darüber uneins sind, und die Relationen bleiben
+unannotiert, weil keine der beiden auf Nachfrage eine Kante vorgeschlagen hat.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -1758,7 +1851,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 22 Messskripte, jedes getestet
+scripts/                                 23 Messskripte, jedes getestet
 docs/architecture.md §3a–§3am            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
@@ -1769,7 +1862,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-384 Tests und einer übersprungen, `ruff check` sauber.
+427 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

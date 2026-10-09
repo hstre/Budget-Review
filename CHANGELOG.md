@@ -63,6 +63,17 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Corrected
 
+- **The report carried §4.16 in English only**, where every other section has both
+  halves. The German half is now there. Found by asking whether the report was up
+  to date rather than assuming it.
+- **Two self-reported counts in the report were stale** — 384 tests against 427,
+  and 22 measurement scripts against 23. The earlier edit had targeted figures
+  this branch never carried, so the replacement silently did nothing. Both
+  corrected, and the lesson is that a no-op string replacement looks exactly like
+  a successful one.
+- The summary named three carrying findings, the translation finding and the
+  method finding, and said nothing about the review round — although it is what
+  decides whether the 69 of 72 is worth reporting. Added to both halves.
 - The previous entry said **eight** of 24 cases were to be rewritten. It is
   **twelve** — six pairs, two languages each. An arithmetic error that made the
   scope look a third smaller than it is.
