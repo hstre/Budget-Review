@@ -11,6 +11,33 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Changed
 
+- **The log's sections are in chronological order again.** Two branches each
+  inserted theirs before the same heading, so the file read §3ai, §3al, §3am,
+  §3aj, §3ak — the numbers right and the positions wrong, which stops a
+  chronological record being one. Reordered while resolving the merge rather than
+  in a later pass.
+
+### Added
+
+- `tests/test_report_is_current.py`: the report's claims about this repository,
+  checked against it. The script count must match the scripts, the stated test
+  count must agree between the two language halves, the claimed log range must end
+  at the log's last section, those sections must be in order, and every §4 section
+  must exist in both halves.
+  Each of those five failed at some point in the last two days without anything
+  noticing. The cause is worth naming: an edit updated a count with a string
+  replacement aimed at a figure the branch did not carry, so it matched nothing
+  and changed nothing — and **a no-op replacement looks exactly like a success**
+  unless the result is checked against reality. Four mutations.
+
+### Fixed
+
+- The report claimed 23 measurement scripts and 427 tests. After the merge it is
+  24 and 448, and the figures are now asserted rather than asserted-and-hoped.
+
+
+### Changed
+
 - **Twelve of the 24 meaning cases rewritten** — six pairs — after the two
   independent reviews, on the project owner's decision. `spk-01` now demands the
   speaker **and** the speech act in one claim, which also removes its accidental
@@ -161,6 +188,129 @@ says when it moves them. Their current values are `polished` 5 claims /
   units look the more expensive.
 - **Relation annotations** (M-3). Both reviews were asked for edges and neither
   proposed any.
+
+
+### Measured
+
+- **On a long document no deterministic finding category holds still.** Three
+  stored run sets, each with an identical `prompt_hash` across its runs: the A24
+  paper (21,789 characters) twice over, and the court decision 001-141170 (10,371
+  characters). In all three, **nought categories hold constant.**
+  `internal_contradiction` at severity **high** runs 2, 7, 5 on the decision — the
+  peak is three and a half times the floor, so an examiner submitting the same
+  text twice is told of between two and seven contradictions. `logical_gap` at
+  confidence 0.9 runs 16, 19, 13 on the paper. `coverage_gap` runs 6, 10, 10 and,
+  in the second A24 set, 7 against 13.
+  Against the 4-of-24 on short cases this is not the same finding scaled up but a
+  different state: cases of one to three sentences with four claims and nought to
+  three edges are the special case in which anything holds still.
+- **A single run is a draw, not a sample.** Production extracts once per document,
+  so a dossier reporting 16 logical gaps where a second run would have reported 13
+  looks exactly as final. That turns the repeat-run decision from a thrift question
+  into whether a finding may be reported as a bare number at all.
+
+### Changed
+
+- **A fifth trigger kind, `absence`**, declared by the three rules that fire
+  because something is *not* there: `coverage_gap` (no admitted claim anchored
+  over a stretch), `logical_gap` (no supporting or entailing edge) and
+  `unsupported_assumption` (no evidence). It is not a label added out of caution —
+  these three are the largest movers in the measurement above. Silence is the
+  weakest input, because extraction is known to lose argument structure, so the
+  absence may be the run's and not the document's. The eleven presence-triggered
+  rules do not declare it, and a test asserts both halves.
+- `finding_warrant.py` takes `--document` with `--runs` for a corpus that is never
+  vendored, and **refuses runs that do not share a `prompt_hash`**. That guard
+  earned itself immediately: the research log describes experiment 18 as three runs
+  per arm, and of the three stored artifacts for the single-call arm only two share
+  a hash. Pooling them would have reported a configuration difference as
+  instability.
+
+### Corrected
+
+- **`coverage_gap` was classified `("document",)`** — the most trusted input in the
+  table — in the entry that introduced it. The gap list is computed
+  deterministically, but *which* anchors exist is an extraction outcome, so the
+  rule is an argument from silence like the other two. Fixed by the `absence` kind
+  above.
+- A guard inside the new script's `held` computation was **unreachable**: a category
+  only enters the comparison by appearing in some run, and one that is not in
+  `moved` has equal counts everywhere, so it is non-zero everywhere. A mutation of
+  it survived, which is how it was found. Removed, with the reasoning written where
+  it stood and the test rewritten to assert the real property.
+
+### Not done
+
+- Separating the repair pass from the extraction on the decision runs, which are
+  post-repair and where that pass is known to manufacture duplicates. It cannot be
+  separated from these artifacts — but both A24 sets are un-repaired and show the
+  same picture, so the finding does not rest on it.
+- The packets are re-gated with today's tolerant anchoring, so these numbers are
+  what the same proposals score now, not what those runs reported at the time.
+- Still no gold for findings, so these remain **floors** rather than rates: a
+  finding that recurs is not thereby warranted.
+
+
+### Measured
+
+- **4 of 24 documents emit a different deterministic finding set across
+  byte-identical runs**, measured with the real rules rather than a
+  re-implementation: the packet is rebuilt from a stored dossier, re-gated against
+  the document, and `deterministic_checks` is called.
+  `mul-02-de` loses an `internal_contradiction` at severity **high** — claim types
+  identical in all three runs, one `CONTRADICTS` edge in the first run and three
+  different edges in the other two. `neg-01-de` gains a `logical_gap` because one
+  edge on the same claim pair is called `EVIDENCED_BY` once and `DEPENDS_ON`
+  twice. `sco-02-de` loses an `unsupported_assumption` because the
+  `ASSUMPTION_FOR` edge exists in only one run while the type is present in all
+  three. `sco-02-en` loses one because the type half moves.
+- **Three of the four causes sit on the relation half**, which the previous entry
+  had listed as not measured. `relation_type` is not more stable than
+  `claim_type`; on this corpus it is the larger contributor.
+- `logical_gap` is an **argument from silence** — it fires on the *absence* of a
+  supporting or evidencing edge. This project has measured repeatedly that
+  extraction loses argument structure, so the finding reads as a property of the
+  document while part of it is a property of the run.
+
+### Corrected
+
+- **The previous entry measured preconditions, not findings.** Its
+  "`logical_gap`'s type precondition flips in 0 of 24" is true and nearly empty:
+  three claims typed `thesis`/`inference`/`recommendation` exist across all 72
+  dossiers, all in one document, so the precondition is almost never met — and
+  "it does not flip" concealed that the **finding itself** flips 2:1 on exactly
+  that document. Evaluated as whole findings, `unsupported_assumption` moves in
+  **2 of 24** rather than 1, and `internal_contradiction` joins it.
+- **The honest limit of the chosen option was not stated.** The marker names the
+  *kind* of dependency, not the observed instability, because in production
+  extraction runs once per document: at the moment a finding is emitted the other
+  runs do not exist and whether *this* finding moves is not knowable. A reader
+  sees the same caveat on a finding whose type was rock solid and on one that
+  moved. It is therefore the maximum available without a repeat-run policy, which
+  costs three times the extraction per document — now an open decision with its
+  price named.
+
+### Added
+
+- `scripts/finding_warrant.py`: the finding set per document across repeats, from
+  the real rules. Six mutations, including dropping the relations on rebuild,
+  removing the dangling-endpoint filter, flattening counts to presence, and
+  guessing an empty document when the case is unknown.
+
+### Not done
+
+- **The success-versus-warrant rate the prompting paper suggests.** Not available:
+  nothing in this project is a gold answer about whether a deterministic finding
+  is *right*. The benchmark has task success and we have nothing comparable, so
+  only reproducibility was computed — a **lower bound**, since a finding that
+  recurs three times is not thereby warranted.
+- **The replay evidence card as proposed.** It cannot be built at emission for the
+  reason above. The cross-run record itself already exists as the `--json` output
+  of both measurement scripts; what is missing is a link from a shipped finding to
+  it, and that link only means something once repeats exist.
+- The same measurement on a long document. 24 cases of one to three sentences
+  carry nought to three edges each; a decision with 108 claims has far more for
+  the same thing to happen on, and the run is already stored.
 
 
 ### Measured

@@ -128,17 +128,24 @@ def _texts(dossier: SemanticDossier) -> dict[str, str]:
 #                  contract** — the prompt names twenty-one and defines none.
 #                  §3ai measured the multiset changing in 8 of 24 cases across
 #                  byte-identical repeats.
+#   absence        the rule fires because something is **not** there: no claim
+#                  anchored over a stretch, no supporting edge, no evidencing
+#                  edge. Silence is the weakest input of all, because extraction
+#                  is known to lose argument structure, so the absence may be the
+#                  extraction's and not the document's. §3ak measured the three
+#                  absence rules as the largest movers on long documents —
+#                  `logical_gap` 13 to 19 on one paper across identical runs.
 #
 # The table exists so that a rule cannot be added without declaring this, and so
 # that a later reflection run can ask which findings rest on an undefined label
 # rather than having to read the rules. A test asserts every message key is here.
 TRIGGER_RESTS_ON: dict[str, tuple[str, ...]] = {
-    "coverage_gap": ("document",),
+    "coverage_gap": ("document", "absence"),
     "internal_contradiction": ("relation_type",),
     "scope_tension": ("relation_type",),
     "overgeneralization": ("relation_type",),
-    "logical_gap": ("claim_type", "relation_type"),
-    "unsupported_assumption": ("claim_type", "relation_type"),
+    "logical_gap": ("claim_type", "relation_type", "absence"),
+    "unsupported_assumption": ("claim_type", "relation_type", "absence"),
     "assumption_dependency": ("relation_type", "content"),
     "capacity_mismatch": ("content",),
     "resource_mismatch": ("content",),
