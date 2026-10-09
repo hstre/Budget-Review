@@ -9,6 +9,187 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Changed
+
+- **The log's sections are in chronological order again.** Two branches each
+  inserted theirs before the same heading, so the file read §3ai, §3al, §3am,
+  §3aj, §3ak — the numbers right and the positions wrong, which stops a
+  chronological record being one. Reordered while resolving the merge rather than
+  in a later pass.
+
+### Added
+
+- `tests/test_report_is_current.py`: the report's claims about this repository,
+  checked against it. The script count must match the scripts, the stated test
+  count must agree between the two language halves, the claimed log range must end
+  at the log's last section, those sections must be in order, and every §4 section
+  must exist in both halves.
+  Each of those five failed at some point in the last two days without anything
+  noticing. The cause is worth naming: an edit updated a count with a string
+  replacement aimed at a figure the branch did not carry, so it matched nothing
+  and changed nothing — and **a no-op replacement looks exactly like a success**
+  unless the result is checked against reality. Four mutations.
+
+### Fixed
+
+- The report claimed 23 measurement scripts and 427 tests. After the merge it is
+  24 and 448, and the figures are now asserted rather than asserted-and-hoped.
+
+
+### Changed
+
+- **Twelve of the 24 meaning cases rewritten** — six pairs — after the two
+  independent reviews, on the project owner's decision. `spk-01` now demands the
+  speaker **and** the speech act in one claim, which also removes its accidental
+  tolerance of the other language's word. `spk-02` demands speaker, act and
+  content per claim; `mul-01` and `mul-02` subject, predicate and figure per claim.
+  `mod-02` no longer forces a reporting verb from a list of four, and asks instead
+  that the source is named and the effect stated. `neg-02`'s gold is reduced from
+  a pragmatic implicature to what the sentence entails. `neg-01`, `mod-01` and
+  `cor-01` gained the reversed scope and the missing inflections as forbidden
+  patterns.
+  **Documents and spans are untouched, all 24.** That constraint decided the
+  exercise: it is why every dossier already paid for could be scored again, and
+  why the rewrite is followed by a measurement rather than a hope.
+- **One schema change, because three cases are not repairable without it.**
+  `requires_distinct_groups` demanded one group per claim, and a group is
+  satisfied by a single word from it, so two bare fragments passed a case whose
+  point was that two assertions survive. Replaced by `requires_distinct_claims`:
+  one entry per claim, each entry a list of groups that **one** claim must satisfy
+  together.
+- **Seven confirmed false alarms fixed**, each with a dated note and the review
+  that named it, as the governance rule requires: "according to the study" where a
+  reporting verb was demanded, "a part of the schools miss out" for the negation,
+  "subject to the funds being granted" for the condition, "co-occur" for the
+  correlation, "because of the cut" for the cause. **None came from a failing run.**
+
+### Measured
+
+- **The same 72 dossiers against the rewritten set: 69 of 72, unchanged.**
+  Negation, modality, correlation, speaker and several assertions stay at 12/12,
+  scope at 6/6, the conditional at 3/6 — with twelve of 24 cases strictly harder.
+  The previous entry had to say the figures held but their evidential weight did
+  not. **That is refuted, by a measurement rather than an argument:** the
+  extractor's actual output passes the strict set exactly as it passed the weak
+  one, so 69 of 72 was not an artifact of weak cases.
+- `sco-02` now reports **three distortions** where it reported none, because the
+  forbidden-reading check names the unconditional consequent for what it is. The
+  verdict does not move; the instrument now says *what* went wrong rather than
+  only *that* it did.
+- **Acceptance, separated:** nine confirmed unfaithful renderings now fail, where
+  five of them passed before; seven confirmed faithful renderings now pass, where
+  all seven failed before; three co-presence cases now fail, where all three
+  passed.
+
+### Added
+
+- `tests/test_semantic_cases_counterexamples.py`: every one of the reviews'
+  sixteen renderings, kept as a test with its verdict. A later widening of any
+  token list has to leave all sixteen intact, so the 0.16 dollars became permanent
+  test coverage rather than an opinion.
+
+### Corrected
+
+- **The report carried §4.16 in English only**, where every other section has both
+  halves. The German half is now there. Found by asking whether the report was up
+  to date rather than assuming it.
+- **Two self-reported counts in the report were stale** — 384 tests against 427,
+  and 22 measurement scripts against 23. The earlier edit had targeted figures
+  this branch never carried, so the replacement silently did nothing. Both
+  corrected, and the lesson is that a no-op string replacement looks exactly like
+  a successful one.
+- The summary named three carrying findings, the translation finding and the
+  method finding, and said nothing about the review round — although it is what
+  decides whether the 69 of 72 is worth reporting. Added to both halves.
+- The previous entry said **eight** of 24 cases were to be rewritten. It is
+  **twelve** — six pairs, two languages each. An arithmetic error that made the
+  scope look a third smaller than it is.
+
+### Not done
+
+- **The seventh phenomenon.** The two reviews disagree — temporal scope against
+  numbers and units — which is a priority rather than a disagreement about
+  meaning, so the brief's rule does not settle it.
+- **Relation annotations** (M-3). Both reviews were asked for edges; neither
+  proposed one, and both want the multi-claim cases rebuilt, which removes the
+  cases there would be edges for.
+
+
+### Measured
+
+- **Two independent blind reviews of the meaning set have run** —
+  `google/gemini-3.1-pro-preview` and `openai/gpt-5.2`, 0.16 $ together, verbatim
+  in `docs/semantic-cases-review-1.md` and `-2.md`. Neither is the family that
+  wrote the set nor the system under test, and neither saw a figure from either
+  paid run.
+- **Their sixteen counterexamples were checked against the real validator rather
+  than taken on trust: twelve confirmed, four refuted.** All five "an unfaithful
+  rendering passes" cases hold, and all seven "a faithful rendering fails" cases
+  hold. The four "it slips through the forbids list" claims are wrong, and both
+  reviews make the same mistake — they argue from `forbids` alone and overlook
+  that `requires_all_groups` must hold too, so "Das Programm senkte die
+  Abbrecherquote" as the only claim fails for carrying no modality token, not for
+  the forbidden pattern. **The forbid lists are therefore not extended**: the
+  premise for it is refuted.
+- **Their concern survives in another form, and it is M-4 at three times the
+  scope.** With the offending wording *beside* a compliant claim the requirements
+  are satisfied and no regex fires, so `mod-01-de`, `mod-01-en` and `cor-01-de`
+  all pass with an unconditional or causal claim in the graph.
+- **The five confirmed weak cases are the serious half.** `neg-01-de` passes with
+  "Die Maßnahme wirkt **nicht nur** auf die Abbrecherquote, sondern auch auf die
+  Noten" — the meaning reversed, the token present. `spk-01-de` passes with "Die
+  Regierung ist wirksam". `spk-02-de`, `mul-01-de` and `mul-02-de` pass with bare
+  fragments. Both reviews independently judge `spk-02` and `mul-*` to measure
+  nothing as written: agreement against the draft, not disagreement.
+- **It weakens published figures without refuting them.** The `speaker 12/12` and
+  `multiple assertions 12/12` entries stand — those runs produced real
+  propositions — but the cases admit fragments, so passing them is a far lower bar
+  than those sections imply. The numbers hold; their evidential weight does not.
+- **One disagreement about meaning, and the brief's own rule fires for the first
+  time.** The second review disputes `neg-02`'s gold: "Nicht alle Schulen erhalten
+  den Zuschlag" is logically compatible with none receiving it, so the
+  `must_preserve` claims a pragmatic implicature rather than the sentence's
+  content. By the rule, the example falls. It was one of two cases predicted as
+  built-in false alarms; the run refuted that prediction, and the case now dies
+  for a reason not foreseen.
+
+### Fixed
+
+- **`meaning_preserved` ignored `distortions` entirely**, found while building the
+  counter-check. Three holes, not one: a tripped `forbids` pattern let a case
+  pass, a forbidden `claim_type` let a case pass, and `forbidden_readings` was
+  never read by the scorer at all — only the validator used it, and only to prove
+  a case is not vacuous. A distortion now fails the case, and a declared forbidden
+  reading among the claims is a distortion whatever else passes. This makes the
+  check **stricter**, which the governance rule permits. Five mutations.
+- **The 72 stored dossiers re-scored under the stricter scorer: no figure moves.**
+  Negation, modality, correlation, speaker and multiple assertions stay at 12/12,
+  scope at 6/6, the conditional at 3/6. The holes were open and never exercised,
+  so the figures now rest on a stricter instrument — demonstrated rather than
+  asserted.
+
+### Added
+
+- `semantic_score.py --rescore`, which scores dossiers already on disk and calls
+  no provider, so a change to the scorer can be tested against every run ever
+  paid for at no cost. The reporting was split into one function the paid path and
+  the rescore path share, because a second reporting path is a second thing to
+  keep in step.
+
+### Not done
+
+- **Rewriting the eight cases both reviews want rewritten or dropped** — `neg-02`,
+  `spk-01`, `spk-02`, `mul-01`, `mul-02`, `mod-02`. That is a third of the set and
+  it changes every measurement standing on them, including the 69 of 72. Not a
+  decision to take alone.
+- **The seventh phenomenon**, where the two reviews disagree: temporal scope
+  against numbers and units. Not a disagreement about meaning, so the rule does
+  not apply — it is a priority, and for a product reviewing budgets numbers and
+  units look the more expensive.
+- **Relation annotations** (M-3). Both reviews were asked for edges and neither
+  proposed any.
+
+
 ### Measured
 
 - **On a long document no deterministic finding category holds still.** Three
@@ -185,6 +366,28 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **The prompt an independent review of the meaning set is asked**, as a committed
+  script rather than a chat log: `scripts/semantic_cases_review_prompt.py`. It
+  assembles the brief and all 24 cases, and carries the field semantics a reviewer
+  needs in order to judge a token group at all — that single words match on word
+  boundaries and phrases as substrings, and that the fifth invariant is switched
+  off for the six multi-claim cases.
+  **The review is blind to the measurements.** The script cuts the brief at the
+  heading where the measured defects begin and refuses a prompt that still names a
+  defect id, a log section or a figure from either run. A reviewer who knows that
+  one contract line took the translated propositions to zero is being invited to
+  approve the gold because the number moved; the question put to them is whether
+  the cases are good tests. Five mutations, including the two that would make the
+  cut and the refusal useless.
+  **Which makes the reviews themselves testable, and the expectation is recorded
+  before they are sent.** Two of the four known gold defects are visible by reading
+  the set alone, and both cost paid runs to find: the requirements conflating
+  language with meaning, and `sco-02` passing as soon as any claim on the span
+  carries a conditional marker. A blind reading that finds either corroborates it
+  from outside the family that wrote the set; one that finds neither bounds what a
+  review of this kind is worth, and is not evidence the defects are absent.
+  Two families are excluded for the same reason the repository exists: the one that
+  wrote the set, and the system under test.
 - `scripts/claim_type_stability.py`: type stability and the two label-keyed
   triggers, from any directory of stored dossiers named `<group>-<repeat>.json`.
   Eight mutations, including the one that found a bad test of mine — collapsing the

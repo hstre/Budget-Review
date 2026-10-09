@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ak, which is a log rather than a synthesis.
+§3a–§3am, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -57,6 +57,19 @@ the extractor splits "if A, then B" at the comma and asserts B unconditionally,
 which for a proposal review is an invented commitment. It is now the only
 measured meaning failure (§4.12).
 
+That number rests on a set of cases this project wrote itself, so the set was sent
+to two independent reviews — neither from the family that wrote it nor the system
+under test, and neither shown a figure from any run. **They broke half of it.**
+Twelve of the 24 cases could be passed by renderings that lose the meaning, and in
+one case the gold asserted a pragmatic implicature rather than what the sentence
+entails. Their sixteen counterexamples were checked against the validator before
+anything changed: twelve held, four were refuted, and the four were refuted for one
+reason both reviews shared. The cases were then rewritten with the documents left
+untouched, so the runs already paid for could be scored again — and **69 of 72 came
+back unchanged against a strictly harder instrument** (§4.16). The headline figure
+survived an outside attempt to break the thing that produced it, which is the only
+sense in which it is worth reporting.
+
 The last finding is about method rather than product, and it generalises past
 this repository: **a measurement regime that does not first establish the spread
 of a single configuration will produce findings at the rate the spread allows,
@@ -85,6 +98,7 @@ withdrawals in §7 have that one cause.
 | 16 | A claim's *type* is the third generated component, and two shipped findings fire on it | **in production**; findings carry what their trigger rests on (§4.13) |
 | 17 | **4 of 24 documents emit a different finding set** across byte-identical runs, including one at severity high | open; measured with the real rules (§4.14), and three of the four causes sit on the relation half |
 | 18 | On long documents **no finding category holds still** — contradictions at severity high run 2, 7, 5 on one decision | open, and the sharpest open problem in this report (§4.15) |
+| 19 | Half the meaning set could be passed without preserving the meaning; rewritten, and the figures do not move | **resolved** (§4.16). The set is examined rather than a draft, and 69 of 72 survives a strictly harder instrument |
 
 ---
 
@@ -803,6 +817,68 @@ run would have reported 13 looks exactly as final. The repeat-run policy is
 therefore no longer a thrift question but the question of whether a finding may be
 reported as a number at all.
 
+### 4.16 Half the meaning set rewritten, and the figures do not move
+
+§4.12's table reported meaning preserved at 69 of 72 case-runs. Two independent
+blind reviews then found that twelve of the 24 cases — six pairs — could be passed
+by renderings that lose the meaning, and in one case that the gold asserted a
+pragmatic implicature rather than what the sentence entails. All sixteen of their
+counterexamples were checked against the validator before anything changed: twelve
+held, four were refuted.
+
+The cases were rewritten rather than dropped, under the constraint that decided the
+whole exercise: **documents and spans are untouched, all 24.** Only requirements,
+forbidden patterns and gold prose changed. So every dossier already paid for could
+be scored again, and the rewrite is followed by a measurement rather than a hope.
+
+| case | before | after |
+|---|---|---|
+| `spk-01` | one group, which also accepted the other language's word | speaker **and** speech act in one claim |
+| `spk-02` | two groups: a name, a name | per claim: speaker, act, content |
+| `mul-01`, `mul-02` | one group per claim | per claim: subject, predicate, figure |
+| `mod-02` | a reporting verb from a list of four | the source named and the effect stated; which verb is irrelevant |
+| `neg-02` | the gold asserted an implicature | the gold reduced to the entailment |
+| `neg-01`, `mod-01`, `cor-01` | — | the reversed scope and the missing inflections forbidden |
+
+That needed one schema change. A requirement of one group per claim is satisfied by
+a single word from it, so two bare fragments passed a case whose point was that two
+assertions survive. It is now a list of groups per claim, all of which one claim
+must satisfy.
+
+Seven confirmed false alarms were fixed too — faithful renderings the requirements
+rejected, such as "according to the study" where a reporting verb was demanded.
+Each is recorded with its date and the review that named it, and **none came from a
+failing run**: they came from reading the cases, which is the distinction the
+governance rule exists to protect.
+
+**Then the measurement.** The same 72 dossiers against the rewritten set:
+
+| phenomenon | §4.12, weak set | now, twelve cases harder |
+|---|---:|---:|
+| negation, modality, correlation, speaker, several assertions | 12/12 each | 12/12 each |
+| scope | 6/6 | 6/6 |
+| condition | 3/6 | 3/6 |
+| **total** | **69/72** | **69/72** |
+
+§4.12 had to say the numbers held but their evidential weight did not. That is now
+**refuted — by a measurement rather than an argument.** The extractor's actual
+output passes the strict set exactly as it passed the weak one, so 69 of 72 was not
+an artifact of weak cases. One thing is newly visible: `sco-02` reports three
+distortions where it reported none, because the forbidden-reading check now names
+the unconditional consequent for what it is. The verdict does not change; the
+instrument now says *what* went wrong rather than only *that* it did.
+
+The reviews' sixteen counterexamples are kept as a test file, so a later widening
+of any token list has to leave all sixteen verdicts intact. The 0.16 dollars bought
+permanent test coverage rather than an opinion.
+
+**What this does not mean.** The set is no longer a draft — two independent reviews
+are recorded, checked and acted on — which makes it examined rather than good. It is
+still 24 passages of one to three sentences, written by the same party that built
+the system, and the two reviews are two models and not an expert opinion. The
+seventh phenomenon stays open because the reviews disagree about it, and relations
+stay unannotated because neither proposed an edge when asked.
+
 ---
 
 ## 5. What we do not know
@@ -883,7 +959,7 @@ Stated as questions, because each is a measurement nobody has made.
 | A finding can appear and vanish under identical input | On 24 short cases 4 of 24 documents emit a different finding set. On two long documents **no category holds still**: contradictions at severity high run 2, 7, 5 and logical gaps 16, 19, 13 across identical runs. Three rules fire on an *absence*, and extraction is known to lose argument structure, so the absence may be the run's (§4.14, §4.15) |
 | A single run is a draw, not a sample | Production extracts once per document, so a dossier reporting 16 logical gaps where a second run would report 13 looks exactly as final. Repeats would fix it at three times the extraction cost (§4.15, decision 7) |
 | Whether a finding was *warranted*, as opposed to reproducible | Not computable here: nothing in this project is a gold answer about whether a deterministic finding is right. Reproducibility is a lower bound only (§4.14) |
-| Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases, and it is a draft pending two independent reviews |
+| Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases. Two independent reviews are now recorded, checked and acted on (§4.16), so it is examined rather than a draft — but it is still 24 short passages written by the party that built the system |
 | Relations between claims | The third outcome of §4.12 is still unmeasurable: the meaning set annotates no edges |
 | German-language evidence | 24 hand-annotated cases, half of them German, run twice — and nothing longer. No German document above fixture length has been measured |
 
@@ -980,8 +1056,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 23 measurement scripts, each tested
-docs/architecture.md §3a–§3ak            the chronological record, run by run
+scripts/                                 24 measurement scripts, each tested
+docs/architecture.md §3a–§3am            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -990,7 +1066,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-405 tests and one skipped, `ruff check` clean.
+448 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1041,7 +1117,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ak und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3am und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1091,6 +1167,20 @@ die Bedingung: in der Hälfte der Läufe zerlegt der Extraktor „wenn A, dann B
 Komma und behauptet B unbedingt, was für eine Antragsprüfung eine erfundene
 Zusage ist. Sie ist jetzt der einzige gemessene Bedeutungsfehler (§4.12).
 
+Diese Zahl ruht auf Fällen, die dieses Projekt selbst geschrieben hat, also ging
+der Bestand an zwei unabhängige Durchsichten — keine aus der Familie, die ihn
+geschrieben hat, keine das geprüfte System, und keiner wurde eine Zahl aus einem
+Lauf gezeigt. **Sie haben die Hälfte zerlegt.** Zwölf der 24 Fälle waren mit
+Wiedergaben bestehbar, die die Bedeutung verlieren, und in einem Fall behauptete
+das Gold eine pragmatische Implikatur statt dessen, was der Satz entailt. Ihre
+sechzehn Gegenbeispiele wurden gegen den Validator geprüft, bevor etwas geändert
+wurde: zwölf hielten, vier waren widerlegt, und die vier aus einem Grund, den
+beide Durchsichten teilten. Danach wurden die Fälle umgeschrieben, ohne die
+Dokumente anzufassen, damit die bezahlten Läufe bewertbar blieben — und **69 von
+72 kamen gegen ein strikt härteres Instrument unverändert zurück** (§4.16). Die
+Kernzahl hat einen Angriff von außen auf das überstanden, was sie erzeugt hat, und
+nur in diesem Sinn ist sie berichtenswert.
+
 Der letzte Befund betrifft die Methode und gilt über dieses Repository hinaus:
 **Ein Messregime, das nicht zuerst die Streuung einer einzigen Konfiguration
 feststellt, produziert Befunde in dem Tempo, das die Streuung erlaubt — und sie
@@ -1119,6 +1209,7 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 16 | Der *Typ* eines Claims ist die dritte erzeugte Komponente, und zwei ausgelieferte Befunde feuern darauf | **in Produktion**; Befunde tragen die Herkunft ihres Auslösers (§4.13) |
 | 17 | **4 von 24 Dokumenten liefern eine andere Befundmenge** über byte-identische Läufe, einer davon mit Schweregrad high | offen; mit den echten Regeln gemessen (§4.14), und drei der vier Ursachen liegen auf der Relationshälfte |
 | 18 | Auf langen Dokumenten bleibt **keine Befundart stehen** — Widersprüche mit Schweregrad high laufen 2, 7, 5 auf einer Entscheidung | offen, und das schärfste ungelöste Problem dieses Berichts (§4.15) |
+| 19 | Die Hälfte des Bedeutungsbestands war bestehbar, ohne die Bedeutung zu erhalten; umgeschrieben, und die Zahlen bewegen sich nicht | **gelöst** (§4.16). Der Bestand ist geprüft statt Entwurf, und 69 von 72 übersteht ein strikt härteres Instrument |
 
 ## 2. Was das System ist
 
@@ -1839,6 +1930,72 @@ meldet, wo ein zweiter Lauf 13 gemeldet hätte, sieht genauso endgültig aus. Di
 Wiederholungspolitik ist damit keine Sparfrage mehr, sondern die Frage, ob ein
 Befund überhaupt als Zahl berichtet werden darf.
 
+### 4.16 Die Hälfte des Bedeutungsbestands umgeschrieben, und die Zahlen bewegen sich nicht
+
+Die Tabelle in 4.12 berichtete Bedeutung erhalten mit 69 von 72 Fall-Läufen. Zwei
+unabhängige blinde Durchsichten fanden danach, dass **zwölf der 24 Fälle** — sechs
+Paare — mit Wiedergaben bestanden werden konnten, die die Bedeutung verlieren, und
+in einem Fall, dass das Gold eine pragmatische Implikatur behauptete statt dessen,
+was der Satz entailt. Alle sechzehn Gegenbeispiele wurden gegen den Validator
+geprüft, **bevor** etwas geändert wurde: zwölf hielten, vier waren widerlegt.
+
+Umgeschrieben statt gestrichen, unter der Bedingung, die die ganze Übung
+entschieden hat: **Dokumente und Spannen sind unangetastet, alle 24.** Geändert
+wurden nur Bedingungen, Verbote und Gold-Prosa. Deshalb blieb jedes bereits
+bezahlte Dossier bewertbar, und der Umschreibung folgt eine Messung statt einer
+Hoffnung.
+
+| Fall | vorher | nachher |
+|---|---|---|
+| `spk-01` | eine Gruppe, die auch das Wort der anderen Sprache akzeptierte | Sprecher **und** Sprechakt in einem Claim |
+| `spk-02` | zwei Gruppen: ein Name, ein Name | je Claim: Sprecher, Akt, Inhalt |
+| `mul-01`, `mul-02` | eine Gruppe je Claim | je Claim: Subjekt, Prädikat, Zahl |
+| `mod-02` | ein Berichtsverb aus einer Liste von vier | Quelle genannt und Wirkung benannt; welches Verb, ist gleichgültig |
+| `neg-02` | das Gold behauptete eine Implikatur | das Gold auf das Entailment zurückgeführt |
+| `neg-01`, `mod-01`, `cor-01` | — | umgekehrter Skopus und fehlende Flexionsformen verboten |
+
+Dafür brauchte es eine Schema-Änderung. Eine Bedingung von einer Gruppe je Claim
+ist erfüllt, sobald ein einzelnes Wort daraus vorkommt — deshalb bestanden zwei
+nackte Fragmente einen Fall, dessen Zweck war, dass zwei Aussagen überleben. Jetzt
+ist es eine Liste von Gruppen je Claim, die **ein** Claim gemeinsam erfüllen muss.
+
+Sieben bestätigte Falschalarme wurden ebenfalls behoben — treue Wiedergaben, die
+die Bedingung abgelehnt hat, etwa „laut Studie", wo ein Berichtsverb verlangt war.
+Jede ist mit Datum und der Durchsicht vermerkt, die sie benannt hat, und **keine
+kommt von einem gescheiterten Lauf**: sie kommen vom Lesen der Fälle, und das ist
+der Unterschied, den die Governance-Regel schützen soll.
+
+**Dann die Messung.** Dieselben 72 Dossiers gegen den umgeschriebenen Bestand:
+
+| Phänomen | 4.12, schwacher Bestand | jetzt, zwölf Fälle härter |
+|---|---:|---:|
+| Negation, Modalität, Korrelation, Sprecher, mehrere Aussagen | je 12/12 | je 12/12 |
+| Geltungsbereich | 6/6 | 6/6 |
+| Bedingung | 3/6 | 3/6 |
+| **Summe** | **69/72** | **69/72** |
+
+4.12 musste sagen, die Zahlen stünden, ihre Beweiskraft aber nicht. Das ist jetzt
+**widerlegt — durch eine Messung und nicht durch ein Argument.** Die tatsächliche
+Ausgabe des Extraktors besteht den strengen Bestand genauso wie den schwachen, das
+69 von 72 war also **kein** Artefakt schwacher Fälle. Eine Sache ist neu sichtbar:
+`sco-02` meldet drei Verzerrungen, wo es keine meldete, weil die
+Verbotslesart-Prüfung den unbedingten Nachsatz jetzt als solchen benennt. Am
+Urteil ändert das nichts; das Instrument sagt jetzt, *was* schiefgeht, und nicht
+nur *dass*.
+
+Die sechzehn Gegenbeispiele der Durchsichten liegen als Testdatei im Repo, also
+kostet jede künftige Weitung einer Token-Liste den Nachweis, dass alle sechzehn
+Urteile intakt bleiben. Die 0,16 $ sind dauerhafte Testabdeckung geworden statt
+einer Meinung.
+
+**Was das nicht heißt.** Der Bestand ist kein Entwurf mehr — zwei unabhängige
+Durchsichten sind vermerkt, nachgerechnet und umgesetzt —, und damit ist er
+**geprüft, nicht gut.** Es sind weiter 24 Stellen von einem bis drei Sätzen,
+geschrieben von derselben Partei, die das System gebaut hat, und die beiden
+Durchsichten sind zwei Modelle und kein Fachgutachten. Das siebte Phänomen bleibt
+offen, weil die Durchsichten darüber uneins sind, und die Relationen bleiben
+unannotiert, weil keine der beiden auf Nachfrage eine Kante vorgeschlagen hat.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -1914,7 +2071,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | Auf 24 kurzen Fällen liefern 4 von 24 Dokumenten eine andere Befundmenge. Auf zwei langen Dokumenten bleibt **keine Befundart stehen**: Widersprüche mit Schweregrad high laufen 2, 7, 5 und logische Lücken 16, 19, 13 über identische Läufe. Drei Regeln feuern auf eine *Abwesenheit*, und die Extraktion verliert bekanntlich Argumentstruktur — die Abwesenheit kann die des Laufs sein (§4.14, §4.15) |
 | Ein einzelner Lauf ist eine Ziehung, keine Stichprobe | Im Produktionslauf wird einmal je Dokument extrahiert, ein Dossier mit 16 logischen Lücken sieht also genauso endgültig aus wie eines mit 13. Wiederholungen behöben das zum dreifachen Extraktionspreis (§4.15, Entscheidung 7) |
 | Ob ein Befund *gedeckt* war, im Unterschied zu reproduzierbar | Hier nicht rechenbar: nichts in diesem Projekt ist eine Gold-Antwort darauf, ob ein deterministischer Befund richtig ist. Reproduzierbarkeit ist nur eine untere Schranke (§4.14) |
-| Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen, und er ist ein Entwurf vor zwei unabhängigen Durchsichten |
+| Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen. Zwei unabhängige Durchsichten sind jetzt vermerkt, nachgerechnet und umgesetzt (§4.16), er ist also geprüft statt Entwurf — aber es sind weiter 24 kurze Stellen, geschrieben von der Partei, die das System gebaut hat |
 | Beziehungen zwischen Claims | Das dritte Ergebnis aus §4.12 ist weiter nicht messbar: der Bedeutungsbestand annotiert keine Kanten |
 | Deutschsprachige Evidenz | 24 von Hand annotierte Fälle, die Hälfte davon deutsch, zweimal gelaufen — und nichts Längeres. Kein deutsches Dokument über Fixture-Länge ist gemessen |
 
@@ -2012,8 +2169,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 23 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ak            die chronologische Aufzeichnung
+scripts/                                 24 Messskripte, jedes getestet
+docs/architecture.md §3a–§3am            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2023,7 +2180,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-405 Tests und einer übersprungen, `ruff check` sauber.
+448 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

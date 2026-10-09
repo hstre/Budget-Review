@@ -1,379 +1,895 @@
 {
-  "schema_version": "content-review.semantic-cases/0.1",
-  "note": "DRAFT. Authored by one model and not yet reviewed. See docs/architecture.md 3ad.",
-  "requirement_types": {
-    "requires_all_groups": "each group is an OR over acceptable renderings; one claim on the span must satisfy every group",
-    "requires_distinct_groups": "each group must be satisfied by a different claim on the span",
-    "forbids": "regexes that must not match a claim's canonical_content",
-    "forbidden_claim_types": "claim_type values that would themselves be a meaning error",
-    "min_claims_on_span": "how many distinct claims the span must carry"
+ "schema_version": "content-review.semantic-cases/0.1",
+ "note": "Revised 2026-10-08 after two independent blind reviews; see docs/semantic-cases-review.md. Documents and spans unchanged, so runs already paid for remain scorable.",
+ "requirement_types": {
+  "requires_all_groups": "each group is an OR over acceptable renderings; one claim on the span must satisfy every group",
+  "requires_distinct_groups": "each group must be satisfied by a different claim on the span",
+  "forbids": "regexes that must not match a claim's canonical_content",
+  "forbidden_claim_types": "claim_type values that would themselves be a meaning error",
+  "min_claims_on_span": "how many distinct claims the span must carry"
+ },
+ "cases": [
+  {
+   "case_id": "neg-01-de",
+   "pair_id": "neg-01",
+   "language": "de",
+   "phenomenon": "negation",
+   "document": "Der Zwischenbericht liegt vor. Die Maßnahme wirkt nicht auf die Abbrecherquote. Die Erhebung endete im Juni.",
+   "span": "Die Maßnahme wirkt nicht auf die Abbrecherquote.",
+   "requires_all_groups": [
+    [
+     "nicht",
+     "kein",
+     "keine",
+     "ohne Wirkung"
+    ]
+   ],
+   "forbids": [
+    "\\bnicht nur\\b",
+    "\\bsondern auch\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Dass die Massnahme nicht wirkt. Ein Negationswort allein genuegt nicht: 'wirkt nicht nur auf X, sondern auch auf Y' traegt das Wort und behauptet das Gegenteil.",
+   "permitted_readings": [
+    "Die Maßnahme hat keine Wirkung auf die Abbrecherquote."
+   ],
+   "forbidden_readings": [
+    "Die Massnahme wirkt auf die Abbrecherquote.",
+    "Die Maßnahme wirkt nicht nur auf die Abbrecherquote, sondern auch auf die Noten."
+   ]
   },
-  "cases": [
-    {
-      "case_id": "neg-01-de",
-      "pair_id": "neg-01",
-      "language": "de",
-      "phenomenon": "negation",
-      "document": "Der Zwischenbericht liegt vor. Die Maßnahme wirkt nicht auf die Abbrecherquote. Die Erhebung endete im Juni.",
-      "span": "Die Maßnahme wirkt nicht auf die Abbrecherquote.",
-      "requires_all_groups": [["nicht", "kein", "keine", "ohne Wirkung"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Dass die Maßnahme NICHT wirkt. Ein Claim ohne Negation behauptet das Gegenteil der Quelle.",
-      "permitted_readings": ["Die Maßnahme hat keine Wirkung auf die Abbrecherquote."],
-      "forbidden_readings": ["Die Maßnahme wirkt auf die Abbrecherquote."]
-    },
-    {
-      "case_id": "neg-01-en",
-      "pair_id": "neg-01",
-      "language": "en",
-      "phenomenon": "negation",
-      "document": "The interim report is available. The measure does not affect the dropout rate. Data collection ended in June.",
-      "span": "The measure does not affect the dropout rate.",
-      "requires_all_groups": [["not", "no ", "does not", "without effect"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "That the measure does NOT affect it. A claim without the negation asserts the opposite of the source.",
-      "permitted_readings": ["The measure has no effect on the dropout rate."],
-      "forbidden_readings": ["The measure affects the dropout rate."]
-    },
-    {
-      "case_id": "neg-02-de",
-      "pair_id": "neg-02",
-      "language": "de",
-      "phenomenon": "negation",
-      "document": "Die Zuteilung ist beschlossen. Nicht alle Schulen erhalten den Zuschlag. Die Liste folgt im Herbst.",
-      "span": "Nicht alle Schulen erhalten den Zuschlag.",
-      "requires_all_groups": [["nicht alle", "nur ein Teil", "einige", "manche", "nicht jede"]],
-      "forbids": ["\\bkeine Schule\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Der Geltungsbereich der Negation: einige erhalten ihn, nicht keine. 'Die Schulen erhalten den Zuschlag nicht' ist ein Skopusfehler.",
-      "permitted_readings": ["Nur ein Teil der Schulen erhält den Zuschlag."],
-      "forbidden_readings": ["Keine Schule erhält den Zuschlag.", "Die Schulen erhalten den Zuschlag."]
-    },
-    {
-      "case_id": "neg-02-en",
-      "pair_id": "neg-02",
-      "language": "en",
-      "phenomenon": "negation",
-      "document": "The allocation is settled. Not all schools receive the supplement. The list follows in autumn.",
-      "span": "Not all schools receive the supplement.",
-      "requires_all_groups": [["not all", "only some", "some", "not every"]],
-      "forbids": ["\\bno schools?\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "The scope of the negation: some do receive it. 'Schools do not receive the supplement' is a scope error.",
-      "permitted_readings": ["Only some schools receive the supplement."],
-      "forbidden_readings": ["No school receives the supplement.", "Schools receive the supplement."]
-    },
-    {
-      "case_id": "mod-01-de",
-      "pair_id": "mod-01",
-      "language": "de",
-      "phenomenon": "modality",
-      "document": "Der Antrag nennt ein Ziel. Das Programm könnte die Abbrecherquote senken. Belege werden nachgereicht.",
-      "span": "Das Programm könnte die Abbrecherquote senken.",
-      "requires_all_groups": [["könnte", "kann", "möglicherweise", "unter Umständen", "denkbar"]],
-      "forbids": ["\\bsenkt\\b", "\\breduziert\\b", "\\bverringert\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Die Möglichkeitsform. Ein Claim im Indikativ macht aus einer Vermutung eine Feststellung.",
-      "permitted_readings": ["Das Programm kann die Abbrecherquote möglicherweise senken."],
-      "forbidden_readings": ["Das Programm senkt die Abbrecherquote."]
-    },
-    {
-      "case_id": "mod-01-en",
-      "pair_id": "mod-01",
-      "language": "en",
-      "phenomenon": "modality",
-      "document": "The proposal names a target. The programme could lower the dropout rate. Evidence will follow.",
-      "span": "The programme could lower the dropout rate.",
-      "requires_all_groups": [["could", "might", "may", "possibly", "potentially"]],
-      "forbids": ["\\blowers\\b", "\\breduces\\b", "\\bdecreases\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "The modality. An indicative claim turns a conjecture into a finding.",
-      "permitted_readings": ["The programme may lower the dropout rate."],
-      "forbidden_readings": ["The programme lowers the dropout rate."]
-    },
-    {
-      "case_id": "mod-02-de",
-      "pair_id": "mod-02",
-      "language": "de",
-      "phenomenon": "modality",
-      "document": "Die Begleitstudie ist abgeschlossen. Die Studie zeigt, dass das Programm die Quote senkt. Der Bericht ist öffentlich.",
-      "span": "Die Studie zeigt, dass das Programm die Quote senkt.",
-      "requires_all_groups": [["zeigt", "belegt", "weist nach", "ergibt"]],
-      "forbids": ["\\bkönnte\\b", "\\bmöglicherweise\\b", "\\bvielleicht\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Die Behauptungsstärke. Ein abgeschwächter Claim unterschlägt, was die Quelle behauptet - Verzerrung geht in beide Richtungen.",
-      "permitted_readings": ["Die Studie belegt, dass das Programm die Quote senkt."],
-      "forbidden_readings": ["Das Programm könnte die Quote senken."]
-    },
-    {
-      "case_id": "mod-02-en",
-      "pair_id": "mod-02",
-      "language": "en",
-      "phenomenon": "modality",
-      "document": "The accompanying study is complete. The study shows that the programme lowers the rate. The report is public.",
-      "span": "The study shows that the programme lowers the rate.",
-      "requires_all_groups": [["shows", "demonstrates", "finds", "establishes"]],
-      "forbids": ["\\bcould\\b", "\\bmight\\b", "\\bpossibly\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "The assertion strength. A hedged claim understates what the source asserts - distortion runs both ways.",
-      "permitted_readings": ["The study demonstrates that the programme lowers the rate."],
-      "forbidden_readings": ["The programme might lower the rate."]
-    },
-    {
-      "case_id": "cor-01-de",
-      "pair_id": "cor-01",
-      "language": "de",
-      "phenomenon": "correlation_not_causation",
-      "document": "Die Auswertung liegt vor. Die Teilnahme korreliert mit höheren Abschlussquoten. Eine Ursache wurde nicht untersucht.",
-      "span": "Die Teilnahme korreliert mit höheren Abschlussquoten.",
-      "requires_all_groups": [["korreliert", "Zusammenhang", "assoziiert", "geht einher"]],
-      "forbids": ["\\bverursacht\\b", "\\bbewirkt\\b", "\\bführt zu\\b", "\\berhöht\\b"],
-      "forbidden_claim_types": ["causal"],
-      "min_claims_on_span": 1,
-      "must_preserve": "Statistischer Zusammenhang, keine Ursache. Die Quelle sagt ausdrücklich, dass eine Ursache nicht untersucht wurde.",
-      "permitted_readings": ["Zwischen Teilnahme und Abschlussquote besteht ein Zusammenhang."],
-      "forbidden_readings": ["Die Teilnahme erhöht die Abschlussquote."]
-    },
-    {
-      "case_id": "cor-01-en",
-      "pair_id": "cor-01",
-      "language": "en",
-      "phenomenon": "correlation_not_causation",
-      "document": "The analysis is available. Participation correlates with higher completion rates. No cause was investigated.",
-      "span": "Participation correlates with higher completion rates.",
-      "requires_all_groups": [["correlates", "correlation", "associated", "association", "goes together"]],
-      "forbids": ["\\bcauses\\b", "\\bleads to\\b", "\\braises\\b", "\\bincreases\\b"],
-      "forbidden_claim_types": ["causal"],
-      "min_claims_on_span": 1,
-      "must_preserve": "A statistical association, not a cause. The source states that no cause was investigated.",
-      "permitted_readings": ["Participation is associated with higher completion rates."],
-      "forbidden_readings": ["Participation increases completion rates."]
-    },
-    {
-      "case_id": "cor-02-de",
-      "pair_id": "cor-02",
-      "language": "de",
-      "phenomenon": "correlation_not_causation",
-      "document": "Der Haushalt wurde angepasst. Die Kürzung verursachte den Wegfall zweier Kurse. Das ist im Protokoll vermerkt.",
-      "span": "Die Kürzung verursachte den Wegfall zweier Kurse.",
-      "requires_all_groups": [["verursachte", "verursacht", "führte zu", "bewirkte", "Folge"]],
-      "forbids": ["\\bkorreliert\\b", "\\bZusammenhang\\b", "\\bassoziiert\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Die Ursache. Sie zu einem Zusammenhang abzuschwächen unterschlägt, was die Quelle feststellt.",
-      "permitted_readings": ["Die Kürzung führte zum Wegfall zweier Kurse."],
-      "forbidden_readings": ["Kürzung und Wegfall zweier Kurse korrelieren."]
-    },
-    {
-      "case_id": "cor-02-en",
-      "pair_id": "cor-02",
-      "language": "en",
-      "phenomenon": "correlation_not_causation",
-      "document": "The budget was adjusted. The cut caused two courses to be dropped. This is noted in the minutes.",
-      "span": "The cut caused two courses to be dropped.",
-      "requires_all_groups": [["caused", "causes", "led to", "resulted in", "consequence"]],
-      "forbids": ["\\bcorrelates\\b", "\\bcorrelation\\b", "\\bassociated\\b"],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "The cause. Weakening it to an association understates what the source states.",
-      "permitted_readings": ["The cut led to two courses being dropped."],
-      "forbidden_readings": ["The cut and the dropped courses are correlated."]
-    },
-    {
-      "case_id": "sco-01-de",
-      "pair_id": "sco-01",
-      "language": "de",
-      "phenomenon": "scope",
-      "document": "Die Auswertung unterscheidet Regionen. In ländlichen Gebieten senkt das Programm die Quote. Für Städte liegen keine Daten vor.",
-      "span": "In ländlichen Gebieten senkt das Programm die Quote.",
-      "requires_all_groups": [["ländlich", "ländlichen", "Land", "außerhalb der Städte"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Den Geltungsbereich. Ohne ihn wird aus einem regionalen Befund eine allgemeine Aussage.",
-      "permitted_readings": ["Auf dem Land senkt das Programm die Quote."],
-      "forbidden_readings": ["Das Programm senkt die Quote."]
-    },
-    {
-      "case_id": "sco-01-en",
-      "pair_id": "sco-01",
-      "language": "en",
-      "phenomenon": "scope",
-      "document": "The analysis distinguishes regions. In rural areas the programme lowers the rate. No data exists for cities.",
-      "span": "In rural areas the programme lowers the rate.",
-      "requires_all_groups": [["rural", "countryside", "outside cities", "non-urban"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "The scope. Without it a regional finding becomes a general one.",
-      "permitted_readings": ["In the countryside the programme lowers the rate."],
-      "forbidden_readings": ["The programme lowers the rate."]
-    },
-    {
-      "case_id": "sco-02-de",
-      "pair_id": "sco-02",
-      "language": "de",
-      "phenomenon": "condition",
-      "document": "Der Zeitplan hängt an der Finanzierung. Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr. Ein Ersatztermin ist nicht vorgesehen.",
-      "span": "Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr.",
-      "requires_all_groups": [["wenn", "falls", "sofern", "unter der Bedingung", "voraussetzt"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Die Bedingung. Ein Claim, der den Nachsatz unbedingt behauptet, erfindet eine Zusage.",
-      "permitted_readings": ["Falls die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr."],
-      "forbidden_readings": ["Der Ausbau beginnt im Frühjahr."]
-    },
-    {
-      "case_id": "sco-02-en",
-      "pair_id": "sco-02",
-      "language": "en",
-      "phenomenon": "condition",
-      "document": "The schedule depends on funding. If the funds are granted, construction begins in spring. No fallback date is planned.",
-      "span": "If the funds are granted, construction begins in spring.",
-      "requires_all_groups": [["if", "provided", "should the", "conditional", "subject to"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "The condition. A claim asserting the consequent unconditionally invents a commitment.",
-      "permitted_readings": ["Provided the funds are granted, construction begins in spring."],
-      "forbidden_readings": ["Construction begins in spring."]
-    },
-    {
-      "case_id": "spk-01-de",
-      "pair_id": "spk-01",
-      "language": "de",
-      "phenomenon": "speaker",
-      "document": "Zum Rechtsweg äußerten sich beide Seiten. Die Regierung trug vor, der Rechtsweg sei wirksam. Der Beschwerdeführer bestritt das.",
-      "span": "Die Regierung trug vor, der Rechtsweg sei wirksam.",
-      "requires_all_groups": [["Regierung", "Government"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Wer es sagt. Ohne den Sprecher wird aus einer Parteibehauptung eine Tatsachenfeststellung.",
-      "permitted_readings": ["Nach Vortrag der Regierung ist der Rechtsweg wirksam."],
-      "forbidden_readings": ["Der Rechtsweg ist wirksam."]
-    },
-    {
-      "case_id": "spk-01-en",
-      "pair_id": "spk-01",
-      "language": "en",
-      "phenomenon": "speaker",
-      "document": "Both sides addressed the remedy. The Government submitted that the remedy was effective. The applicant disputed this.",
-      "span": "The Government submitted that the remedy was effective.",
-      "requires_all_groups": [["Government", "Regierung"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 1,
-      "must_preserve": "Who says it. Without the speaker a party's submission becomes a finding of fact.",
-      "permitted_readings": ["On the Government's submission the remedy was effective."],
-      "forbidden_readings": ["The remedy was effective."]
-    },
-    {
-      "case_id": "spk-02-de",
-      "pair_id": "spk-02",
-      "language": "de",
-      "phenomenon": "speaker",
-      "document": "Die Akte enthält beide Positionen. Die Regierung trug vor, der Rechtsweg sei wirksam. Der Gerichtshof stellte fest, dass er es nicht war. Damit endete der Streit.",
-      "span": "Die Regierung trug vor, der Rechtsweg sei wirksam. Der Gerichtshof stellte fest, dass er es nicht war.",
-      "requires_all_groups": [],
-      "requires_distinct_groups": [["Regierung"], ["Gerichtshof"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 2,
-      "must_preserve": "Zwei Sprechakte zu derselben Proposition. Sie zu einem Claim zu verschmelzen löscht den Widerspruch, den die Stelle trägt.",
-      "permitted_readings": ["Zwei Claims: Vortrag der Regierung, und Feststellung des Gerichtshofs."],
-      "forbidden_readings": ["Ein einziger Claim über die Wirksamkeit des Rechtswegs."]
-    },
-    {
-      "case_id": "spk-02-en",
-      "pair_id": "spk-02",
-      "language": "en",
-      "phenomenon": "speaker",
-      "document": "The file holds both positions. The Government submitted that the remedy was effective. The Court found that it was not. The dispute ended there.",
-      "span": "The Government submitted that the remedy was effective. The Court found that it was not.",
-      "requires_all_groups": [],
-      "requires_distinct_groups": [["Government"], ["Court"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 2,
-      "must_preserve": "Two speech acts about one proposition. Merging them into one claim erases the contradiction the passage carries.",
-      "permitted_readings": ["Two claims: the Government's submission, and the Court's finding."],
-      "forbidden_readings": ["A single claim about whether the remedy was effective."]
-    },
-    {
-      "case_id": "mul-01-de",
-      "pair_id": "mul-01",
-      "language": "de",
-      "phenomenon": "multiple_assertions",
-      "document": "Der Beschluss ist knapp gefasst. Der Haushalt steigt um vier Prozent, und die Schulen erhalten den größeren Anteil. Weitere Angaben fehlen.",
-      "span": "Der Haushalt steigt um vier Prozent, und die Schulen erhalten den größeren Anteil.",
-      "requires_all_groups": [],
-      "requires_distinct_groups": [["Haushalt", "vier Prozent"], ["Schulen", "Anteil"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 2,
-      "must_preserve": "Zwei Aussagen in einer Textstelle. Eine davon zu verlieren halbiert den Inhalt der Stelle.",
-      "permitted_readings": ["Zwei Claims an derselben Stelle."],
-      "forbidden_readings": ["Ein Claim, der nur eine der beiden Aussagen trägt."]
-    },
-    {
-      "case_id": "mul-01-en",
-      "pair_id": "mul-01",
-      "language": "en",
-      "phenomenon": "multiple_assertions",
-      "document": "The resolution is briefly worded. The budget rises by four per cent, and the schools receive the larger share. No further detail is given.",
-      "span": "The budget rises by four per cent, and the schools receive the larger share.",
-      "requires_all_groups": [],
-      "requires_distinct_groups": [["budget", "four per cent"], ["schools", "share"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 2,
-      "must_preserve": "Two assertions in one passage. Losing one halves the content of the passage.",
-      "permitted_readings": ["Two claims at the same passage."],
-      "forbidden_readings": ["One claim carrying only one of the two assertions."]
-    },
-    {
-      "case_id": "mul-02-de",
-      "pair_id": "mul-02",
-      "language": "de",
-      "phenomenon": "multiple_assertions",
-      "document": "Der Vorgang ist abgeschlossen. Die Mittel wurden bewilligt, der Ausbau begann im Frühjahr. Eine Abnahme steht aus.",
-      "span": "Die Mittel wurden bewilligt, der Ausbau begann im Frühjahr.",
-      "requires_all_groups": [],
-      "requires_distinct_groups": [["Mittel", "bewilligt"], ["Ausbau", "Frühjahr"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 2,
-      "must_preserve": "Zwei Ereignisse, zeitlich geordnet. Ein einziger Claim verliert die Reihenfolge oder eines der Ereignisse.",
-      "permitted_readings": ["Zwei Claims: Bewilligung, und Beginn des Ausbaus."],
-      "forbidden_readings": ["Ein Claim über den Ausbau ohne die Bewilligung."]
-    },
-    {
-      "case_id": "mul-02-en",
-      "pair_id": "mul-02",
-      "language": "en",
-      "phenomenon": "multiple_assertions",
-      "document": "The matter is closed. The funds were granted, construction began in spring. Acceptance is outstanding.",
-      "span": "The funds were granted, construction began in spring.",
-      "requires_all_groups": [],
-      "requires_distinct_groups": [["funds", "granted"], ["construction", "spring"]],
-      "forbids": [],
-      "forbidden_claim_types": [],
-      "min_claims_on_span": 2,
-      "must_preserve": "Two events in order. A single claim loses the ordering or one of the events.",
-      "permitted_readings": ["Two claims: the grant, and the start of construction."],
-      "forbidden_readings": ["One claim about construction without the grant."]
-    }
-  ]
+  {
+   "case_id": "neg-01-en",
+   "pair_id": "neg-01",
+   "language": "en",
+   "phenomenon": "negation",
+   "document": "The interim report is available. The measure does not affect the dropout rate. Data collection ended in June.",
+   "span": "The measure does not affect the dropout rate.",
+   "requires_all_groups": [
+    [
+     "not",
+     "no ",
+     "does not",
+     "without effect"
+    ]
+   ],
+   "forbids": [
+    "\\bnot only\\b",
+    "\\bbut also\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "That the measure does not affect it. A negation token alone is not enough: 'does not only affect X, but also Y' carries the token and asserts the opposite.",
+   "permitted_readings": [
+    "The measure has no effect on the dropout rate."
+   ],
+   "forbidden_readings": [
+    "The measure affects the dropout rate.",
+    "The measure does not only affect the dropout rate, but also the grades."
+   ]
+  },
+  {
+   "case_id": "neg-02-de",
+   "pair_id": "neg-02",
+   "language": "de",
+   "phenomenon": "negation",
+   "document": "Die Zuteilung ist beschlossen. Nicht alle Schulen erhalten den Zuschlag. Die Liste folgt im Herbst.",
+   "span": "Nicht alle Schulen erhalten den Zuschlag.",
+   "requires_all_groups": [
+    [
+     "nicht alle",
+     "nur ein Teil",
+     "ein Teil",
+     "einige",
+     "manche",
+     "nicht jede"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Dass die Zuteilung nicht alle erfasst. Ein Claim, der sie universell behauptet, widerspricht der Quelle. Dass einige sie erhalten, ist eine pragmatische Implikatur und nicht der Satzinhalt, und wird hier deshalb nicht geprueft.",
+   "permitted_readings": [
+    "Nur ein Teil der Schulen erhält den Zuschlag."
+   ],
+   "forbidden_readings": [
+    "Die Schulen erhalten den Zuschlag."
+   ]
+  },
+  {
+   "case_id": "neg-02-en",
+   "pair_id": "neg-02",
+   "language": "en",
+   "phenomenon": "negation",
+   "document": "The allocation is settled. Not all schools receive the supplement. The list follows in autumn.",
+   "span": "Not all schools receive the supplement.",
+   "requires_all_groups": [
+    [
+     "not all",
+     "only some",
+     "some",
+     "not every",
+     "a fraction",
+     "part of"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "That the allocation does not cover all. A claim asserting it universally contradicts the source. That some do receive it is a pragmatic implicature rather than the sentence's content, and is therefore not tested here.",
+   "permitted_readings": [
+    "Only some schools receive the supplement."
+   ],
+   "forbidden_readings": [
+    "Schools receive the supplement."
+   ]
+  },
+  {
+   "case_id": "mod-01-de",
+   "pair_id": "mod-01",
+   "language": "de",
+   "phenomenon": "modality",
+   "document": "Der Antrag nennt ein Ziel. Das Programm könnte die Abbrecherquote senken. Belege werden nachgereicht.",
+   "span": "Das Programm könnte die Abbrecherquote senken.",
+   "requires_all_groups": [
+    [
+     "könnte",
+     "kann",
+     "möglicherweise",
+     "unter Umständen",
+     "denkbar"
+    ]
+   ],
+   "forbids": [
+    "\\bsenkt\\b",
+    "\\breduziert\\b",
+    "\\bverringert\\b",
+    "\\bsenkte\\b",
+    "\\bSenkung\\b",
+    "\\breduzierte\\b",
+    "\\bwird\\b.{0,20}\\bsenken\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Die Moeglichkeit. Ein Claim im Indikativ behauptet eine Wirkung, die die Quelle offenlaesst -- in jeder Zeitform und auch als Nominalisierung.",
+   "permitted_readings": [
+    "Das Programm kann die Abbrecherquote möglicherweise senken."
+   ],
+   "forbidden_readings": [
+    "Das Programm senkt die Abbrecherquote.",
+    "Das Programm senkte die Abbrecherquote.",
+    "Die Senkung der Quote durch das Programm.",
+    "Das Programm wird die Abbrecherquote senken."
+   ]
+  },
+  {
+   "case_id": "mod-01-en",
+   "pair_id": "mod-01",
+   "language": "en",
+   "phenomenon": "modality",
+   "document": "The proposal names a target. The programme could lower the dropout rate. Evidence will follow.",
+   "span": "The programme could lower the dropout rate.",
+   "requires_all_groups": [
+    [
+     "could",
+     "might",
+     "may",
+     "possibly",
+     "potentially"
+    ]
+   ],
+   "forbids": [
+    "\\blowers\\b",
+    "\\breduces\\b",
+    "\\bdecreases\\b",
+    "\\blowered\\b",
+    "\\breduction\\b",
+    "\\breduced\\b",
+    "\\bwill\\b.{0,20}\\blower\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "The possibility. An indicative claim asserts an effect the source leaves open, in any tense and as a nominalisation too.",
+   "permitted_readings": [
+    "The programme may lower the dropout rate."
+   ],
+   "forbidden_readings": [
+    "The programme lowers the dropout rate.",
+    "The programme lowered the dropout rate.",
+    "The reduction of the rate by the programme.",
+    "The programme will lower the dropout rate."
+   ]
+  },
+  {
+   "case_id": "mod-02-de",
+   "pair_id": "mod-02",
+   "language": "de",
+   "phenomenon": "modality",
+   "document": "Die Begleitstudie ist abgeschlossen. Die Studie zeigt, dass das Programm die Quote senkt. Der Bericht ist öffentlich.",
+   "span": "Die Studie zeigt, dass das Programm die Quote senkt.",
+   "requires_all_groups": [
+    [
+     "Studie"
+    ],
+    [
+     "senkt",
+     "sinkt",
+     "geht zurueck",
+     "geht zurück",
+     "Senkung",
+     "verringert",
+     "reduziert",
+     "niedriger"
+    ]
+   ],
+   "forbids": [
+    "\\bkönnte\\b",
+    "\\bmöglicherweise\\b",
+    "\\bvielleicht\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Die Behauptungsstaerke und die Quelle. Ein abgeschwaechter Claim unterschlaegt, was die Quelle behauptet; ein Claim ohne die Studie macht aus einem Befund eine Tatsache. Welches Berichtsverb dabei steht, ist gleichgueltig.",
+   "permitted_readings": [
+    "Die Studie belegt, dass das Programm die Quote senkt.",
+    "Laut Studie senkt das Programm die Quote."
+   ],
+   "forbidden_readings": [
+    "Das Programm könnte die Quote senken."
+   ]
+  },
+  {
+   "case_id": "mod-02-en",
+   "pair_id": "mod-02",
+   "language": "en",
+   "phenomenon": "modality",
+   "document": "The accompanying study is complete. The study shows that the programme lowers the rate. The report is public.",
+   "span": "The study shows that the programme lowers the rate.",
+   "requires_all_groups": [
+    [
+     "study"
+    ],
+    [
+     "lowers",
+     "lower",
+     "reduces",
+     "reduction",
+     "falls",
+     "decline",
+     "declines"
+    ]
+   ],
+   "forbids": [
+    "\\bcould\\b",
+    "\\bmight\\b",
+    "\\bpossibly\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "The assertion strength and the source. A hedged claim understates what the source asserts; a claim without the study turns a finding into a fact. Which reporting verb is used does not matter.",
+   "permitted_readings": [
+    "The study demonstrates that the programme lowers the rate.",
+    "According to the study, the programme lowers the rate."
+   ],
+   "forbidden_readings": [
+    "The programme might lower the rate."
+   ]
+  },
+  {
+   "case_id": "cor-01-de",
+   "pair_id": "cor-01",
+   "language": "de",
+   "phenomenon": "correlation_not_causation",
+   "document": "Die Auswertung liegt vor. Die Teilnahme korreliert mit höheren Abschlussquoten. Eine Ursache wurde nicht untersucht.",
+   "span": "Die Teilnahme korreliert mit höheren Abschlussquoten.",
+   "requires_all_groups": [
+    [
+     "korreliert",
+     "Zusammenhang",
+     "assoziiert",
+     "geht einher",
+     "gemeinsam",
+     "zusammen auf"
+    ]
+   ],
+   "forbids": [
+    "\\bverursacht\\b",
+    "\\bbewirkt\\b",
+    "\\bführt zu\\b",
+    "\\berhöht\\b",
+    "\\bträgt dazu bei\\b",
+    "\\bsteigert\\b"
+   ],
+   "forbidden_claim_types": [
+    "causal"
+   ],
+   "min_claims_on_span": 1,
+   "must_preserve": "Statistischer Zusammenhang, keine Ursache. Die Quelle sagt ausdrücklich, dass eine Ursache nicht untersucht wurde.",
+   "permitted_readings": [
+    "Teilnahme korreliert mit höheren Abschlussquoten.",
+    "Teilnahme und höhere Abschlussquoten treten gemeinsam auf."
+   ],
+   "forbidden_readings": [
+    "Die Teilnahme erhöht die Abschlussquote.",
+    "Die Teilnahme trägt dazu bei, die Abschlussquote zu verbessern."
+   ]
+  },
+  {
+   "case_id": "cor-01-en",
+   "pair_id": "cor-01",
+   "language": "en",
+   "phenomenon": "correlation_not_causation",
+   "document": "The analysis is available. Participation correlates with higher completion rates. No cause was investigated.",
+   "span": "Participation correlates with higher completion rates.",
+   "requires_all_groups": [
+    [
+     "correlates",
+     "correlation",
+     "associated",
+     "association",
+     "goes together",
+     "co-occur"
+    ]
+   ],
+   "forbids": [
+    "\\bcauses\\b",
+    "\\bleads to\\b",
+    "\\bincreases\\b",
+    "\\braises\\b",
+    "\\bcontributes to\\b",
+    "\\bboosts\\b"
+   ],
+   "forbidden_claim_types": [
+    "causal"
+   ],
+   "min_claims_on_span": 1,
+   "must_preserve": "A statistical association, not a cause. The source states that no cause was investigated.",
+   "permitted_readings": [
+    "Participation correlates with higher completion rates.",
+    "Participation and higher completion rates co-occur."
+   ],
+   "forbidden_readings": [
+    "Participation increases the completion rate.",
+    "Participation contributes to higher completion rates."
+   ]
+  },
+  {
+   "case_id": "cor-02-de",
+   "pair_id": "cor-02",
+   "language": "de",
+   "phenomenon": "correlation_not_causation",
+   "document": "Der Haushalt wurde angepasst. Die Kürzung verursachte den Wegfall zweier Kurse. Das ist im Protokoll vermerkt.",
+   "span": "Die Kürzung verursachte den Wegfall zweier Kurse.",
+   "requires_all_groups": [
+    [
+     "verursachte",
+     "verursacht",
+     "führte zu",
+     "bewirkte",
+     "Folge",
+     "wegen",
+     "aufgrund"
+    ]
+   ],
+   "forbids": [
+    "\\bkorreliert\\b",
+    "\\bZusammenhang\\b",
+    "\\bassoziiert\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Die Ursache. Sie zu einem Zusammenhang abzuschwächen unterschlägt, was die Quelle feststellt.",
+   "permitted_readings": [
+    "Die Kürzung führte zum Wegfall zweier Kurse.",
+    "Wegen der Kürzung fielen zwei Kurse weg."
+   ],
+   "forbidden_readings": [
+    "Kürzung und Wegfall zweier Kurse korrelieren."
+   ]
+  },
+  {
+   "case_id": "cor-02-en",
+   "pair_id": "cor-02",
+   "language": "en",
+   "phenomenon": "correlation_not_causation",
+   "document": "The budget was adjusted. The cut caused two courses to be dropped. This is noted in the minutes.",
+   "span": "The cut caused two courses to be dropped.",
+   "requires_all_groups": [
+    [
+     "caused",
+     "causes",
+     "led to",
+     "resulted in",
+     "consequence",
+     "because of",
+     "due to"
+    ]
+   ],
+   "forbids": [
+    "\\bcorrelates\\b",
+    "\\bcorrelation\\b",
+    "\\bassociated\\b"
+   ],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "The cause. Weakening it to an association understates what the source states.",
+   "permitted_readings": [
+    "The cut led to two courses being dropped.",
+    "Because of the cut, two courses were dropped."
+   ],
+   "forbidden_readings": [
+    "The cut and the dropped courses are correlated."
+   ]
+  },
+  {
+   "case_id": "sco-01-de",
+   "pair_id": "sco-01",
+   "language": "de",
+   "phenomenon": "scope",
+   "document": "Die Auswertung unterscheidet Regionen. In ländlichen Gebieten senkt das Programm die Quote. Für Städte liegen keine Daten vor.",
+   "span": "In ländlichen Gebieten senkt das Programm die Quote.",
+   "requires_all_groups": [
+    [
+     "ländlich",
+     "ländlichen",
+     "Land",
+     "außerhalb der Städte"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Den Geltungsbereich. Ohne ihn wird aus einem regionalen Befund eine allgemeine Aussage.",
+   "permitted_readings": [
+    "Auf dem Land senkt das Programm die Quote."
+   ],
+   "forbidden_readings": [
+    "Das Programm senkt die Quote."
+   ]
+  },
+  {
+   "case_id": "sco-01-en",
+   "pair_id": "sco-01",
+   "language": "en",
+   "phenomenon": "scope",
+   "document": "The analysis distinguishes regions. In rural areas the programme lowers the rate. No data exists for cities.",
+   "span": "In rural areas the programme lowers the rate.",
+   "requires_all_groups": [
+    [
+     "rural",
+     "countryside",
+     "outside cities",
+     "non-urban"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "The scope. Without it a regional finding becomes a general one.",
+   "permitted_readings": [
+    "In the countryside the programme lowers the rate."
+   ],
+   "forbidden_readings": [
+    "The programme lowers the rate."
+   ]
+  },
+  {
+   "case_id": "sco-02-de",
+   "pair_id": "sco-02",
+   "language": "de",
+   "phenomenon": "condition",
+   "document": "Der Zeitplan hängt an der Finanzierung. Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr. Ein Ersatztermin ist nicht vorgesehen.",
+   "span": "Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr.",
+   "requires_all_groups": [
+    [
+     "wenn",
+     "falls",
+     "sofern",
+     "unter der Bedingung",
+     "voraussetzt",
+     "vorausgesetzt",
+     "vorbehaltlich"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Die Bedingung. Ein Claim, der den Nachsatz unbedingt behauptet, erfindet eine Zusage.",
+   "permitted_readings": [
+    "Falls die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr.",
+    "Vorbehaltlich der Mittelbewilligung beginnt der Ausbau im Frühjahr."
+   ],
+   "forbidden_readings": [
+    "Der Ausbau beginnt im Frühjahr."
+   ]
+  },
+  {
+   "case_id": "sco-02-en",
+   "pair_id": "sco-02",
+   "language": "en",
+   "phenomenon": "condition",
+   "document": "The schedule depends on funding. If the funds are granted, construction begins in spring. No fallback date is planned.",
+   "span": "If the funds are granted, construction begins in spring.",
+   "requires_all_groups": [
+    [
+     "if",
+     "provided",
+     "should the",
+     "conditional",
+     "subject to",
+     "contingent",
+     "on condition"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "The condition. A claim asserting the consequent unconditionally invents a commitment.",
+   "permitted_readings": [
+    "Provided the funds are granted, construction begins in spring.",
+    "Subject to the funds being granted, construction begins in spring."
+   ],
+   "forbidden_readings": [
+    "Construction begins in spring."
+   ]
+  },
+  {
+   "case_id": "spk-01-de",
+   "pair_id": "spk-01",
+   "language": "de",
+   "phenomenon": "speaker",
+   "document": "Zum Rechtsweg äußerten sich beide Seiten. Die Regierung trug vor, der Rechtsweg sei wirksam. Der Beschwerdeführer bestritt das.",
+   "span": "Die Regierung trug vor, der Rechtsweg sei wirksam.",
+   "requires_all_groups": [
+    [
+     "Regierung"
+    ],
+    [
+     "trug vor",
+     "Vortrag",
+     "machte geltend",
+     "argumentierte",
+     "vorgetragen"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Wer es sagt, und dass er es sagt. Ohne Sprecher und Sprechakt wird aus einer Parteibehauptung eine Tatsachenfeststellung. Den Sprecher allein zu nennen genuegt nicht, denn 'Die Regierung ist wirksam' nennt ihn auch.",
+   "permitted_readings": [
+    "Nach Vortrag der Regierung ist der Rechtsweg wirksam."
+   ],
+   "forbidden_readings": [
+    "Der Rechtsweg ist wirksam.",
+    "Die Regierung ist wirksam."
+   ]
+  },
+  {
+   "case_id": "spk-01-en",
+   "pair_id": "spk-01",
+   "language": "en",
+   "phenomenon": "speaker",
+   "document": "Both sides addressed the remedy. The Government submitted that the remedy was effective. The applicant disputed this.",
+   "span": "The Government submitted that the remedy was effective.",
+   "requires_all_groups": [
+    [
+     "Government"
+    ],
+    [
+     "submitted",
+     "submission",
+     "argued",
+     "contended"
+    ]
+   ],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 1,
+   "must_preserve": "Who says it, and that they say it. Without both the speaker and the speech act a party's submission becomes a finding of fact. Naming the speaker alone is not enough, since 'The Government was effective' names it too.",
+   "permitted_readings": [
+    "On the Government's submission the remedy was effective."
+   ],
+   "forbidden_readings": [
+    "The remedy was effective.",
+    "The Government was effective."
+   ]
+  },
+  {
+   "case_id": "spk-02-de",
+   "pair_id": "spk-02",
+   "language": "de",
+   "phenomenon": "speaker",
+   "document": "Die Akte enthält beide Positionen. Die Regierung trug vor, der Rechtsweg sei wirksam. Der Gerichtshof stellte fest, dass er es nicht war. Damit endete der Streit.",
+   "span": "Die Regierung trug vor, der Rechtsweg sei wirksam. Der Gerichtshof stellte fest, dass er es nicht war.",
+   "requires_all_groups": [],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 2,
+   "must_preserve": "Zwei Sprechakte zu derselben Proposition, jeder mit Sprecher, Akt und Inhalt. Sie zu einem Claim zu verschmelzen loescht den Widerspruch. Zwei Claims, die nur die beiden Namen tragen, tragen den Widerspruch ebenfalls nicht.",
+   "permitted_readings": [
+    "Zwei Claims: Vortrag der Regierung, und Feststellung des Gerichtshofs."
+   ],
+   "forbidden_readings": [
+    "Ein einziger Claim ueber die Wirksamkeit des Rechtswegs.",
+    "Die Regierung ist eine Behoerde.",
+    "Der Gerichtshof steht in Strassburg."
+   ],
+   "requires_distinct_claims": [
+    [
+     [
+      "Regierung"
+     ],
+     [
+      "trug vor",
+      "Vortrag",
+      "machte geltend"
+     ],
+     [
+      "wirksam"
+     ]
+    ],
+    [
+     [
+      "Gerichtshof"
+     ],
+     [
+      "stellte fest",
+      "Feststellung",
+      "befand"
+     ],
+     [
+      "nicht",
+      "unwirksam"
+     ]
+    ]
+   ]
+  },
+  {
+   "case_id": "spk-02-en",
+   "pair_id": "spk-02",
+   "language": "en",
+   "phenomenon": "speaker",
+   "document": "The file holds both positions. The Government submitted that the remedy was effective. The Court found that it was not. The dispute ended there.",
+   "span": "The Government submitted that the remedy was effective. The Court found that it was not.",
+   "requires_all_groups": [],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 2,
+   "must_preserve": "Two speech acts about one proposition, each with speaker, act and content. Merging them into one claim erases the contradiction. Two claims carrying only the two names do not carry it either.",
+   "permitted_readings": [
+    "Two claims: the Government's submission, and the Court's finding."
+   ],
+   "forbidden_readings": [
+    "A single claim about whether the remedy was effective.",
+    "The Government is an authority.",
+    "The Court sits in Strasbourg."
+   ],
+   "requires_distinct_claims": [
+    [
+     [
+      "Government"
+     ],
+     [
+      "submitted",
+      "submission"
+     ],
+     [
+      "effective"
+     ]
+    ],
+    [
+     [
+      "Court"
+     ],
+     [
+      "found",
+      "finding"
+     ],
+     [
+      "not",
+      "ineffective"
+     ]
+    ]
+   ]
+  },
+  {
+   "case_id": "mul-01-de",
+   "pair_id": "mul-01",
+   "language": "de",
+   "phenomenon": "multiple_assertions",
+   "document": "Der Beschluss ist knapp gefasst. Der Haushalt steigt um vier Prozent, und die Schulen erhalten den größeren Anteil. Weitere Angaben fehlen.",
+   "span": "Der Haushalt steigt um vier Prozent, und die Schulen erhalten den größeren Anteil.",
+   "requires_all_groups": [],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 2,
+   "must_preserve": "Zwei Aussagen in einer Textstelle, jede mit Subjekt und Praedikat. Ein Schluesselwort je Claim genuegt nicht: zwei Fragmente tragen keine Aussage.",
+   "permitted_readings": [
+    "Zwei Claims an derselben Stelle."
+   ],
+   "forbidden_readings": [
+    "Ein Claim, der nur eine der beiden Aussagen traegt.",
+    "Haushalt.",
+    "Schulen."
+   ],
+   "requires_distinct_claims": [
+    [
+     [
+      "Haushalt"
+     ],
+     [
+      "steigt",
+      "Anstieg",
+      "waechst",
+      "wächst",
+      "erhoeht",
+      "erhöht",
+      "Erhoehung",
+      "Erhöhung"
+     ],
+     [
+      "vier Prozent",
+      "4 Prozent"
+     ]
+    ],
+    [
+     [
+      "Schulen"
+     ],
+     [
+      "groesseren Anteil",
+      "größeren Anteil",
+      "groesserer Anteil",
+      "größerer Anteil",
+      "mehr"
+     ]
+    ]
+   ]
+  },
+  {
+   "case_id": "mul-01-en",
+   "pair_id": "mul-01",
+   "language": "en",
+   "phenomenon": "multiple_assertions",
+   "document": "The resolution is briefly worded. The budget rises by four per cent, and the schools receive the larger share. No further detail is given.",
+   "span": "The budget rises by four per cent, and the schools receive the larger share.",
+   "requires_all_groups": [],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 2,
+   "must_preserve": "Two assertions in one passage, each with a subject and a predicate. One keyword per claim is not enough: two fragments carry no assertion.",
+   "permitted_readings": [
+    "Two claims at the same passage."
+   ],
+   "forbidden_readings": [
+    "One claim carrying only one of the two assertions.",
+    "Budget.",
+    "Schools."
+   ],
+   "requires_distinct_claims": [
+    [
+     [
+      "budget"
+     ],
+     [
+      "rises",
+      "rise",
+      "increases",
+      "increase",
+      "grows",
+      "growth"
+     ],
+     [
+      "four per cent",
+      "4 per cent",
+      "four percent"
+     ]
+    ],
+    [
+     [
+      "schools"
+     ],
+     [
+      "larger share",
+      "greater share",
+      "more",
+      "majority"
+     ]
+    ]
+   ]
+  },
+  {
+   "case_id": "mul-02-de",
+   "pair_id": "mul-02",
+   "language": "de",
+   "phenomenon": "multiple_assertions",
+   "document": "Der Vorgang ist abgeschlossen. Die Mittel wurden bewilligt, der Ausbau begann im Frühjahr. Eine Abnahme steht aus.",
+   "span": "Die Mittel wurden bewilligt, der Ausbau begann im Frühjahr.",
+   "requires_all_groups": [],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 2,
+   "must_preserve": "Zwei Ereignisse, zeitlich geordnet, jedes mit Subjekt und Praedikat. Ein Schluesselwort je Claim genuegt nicht.",
+   "permitted_readings": [
+    "Zwei Claims: Bewilligung, und Beginn des Ausbaus."
+   ],
+   "forbidden_readings": [
+    "Ein Claim ueber den Ausbau ohne die Bewilligung.",
+    "Mittel.",
+    "Ausbau."
+   ],
+   "requires_distinct_claims": [
+    [
+     [
+      "Mittel"
+     ],
+     [
+      "bewilligt",
+      "Bewilligung"
+     ]
+    ],
+    [
+     [
+      "Ausbau"
+     ],
+     [
+      "begann",
+      "Beginn",
+      "startete"
+     ],
+     [
+      "Fruehjahr",
+      "Frühjahr"
+     ]
+    ]
+   ]
+  },
+  {
+   "case_id": "mul-02-en",
+   "pair_id": "mul-02",
+   "language": "en",
+   "phenomenon": "multiple_assertions",
+   "document": "The matter is closed. The funds were granted, construction began in spring. Acceptance is outstanding.",
+   "span": "The funds were granted, construction began in spring.",
+   "requires_all_groups": [],
+   "forbids": [],
+   "forbidden_claim_types": [],
+   "min_claims_on_span": 2,
+   "must_preserve": "Two events in order, each with a subject and a predicate. One keyword per claim is not enough.",
+   "permitted_readings": [
+    "Two claims: the grant, and the start of construction."
+   ],
+   "forbidden_readings": [
+    "One claim about construction without the grant.",
+    "Funds.",
+    "Construction."
+   ],
+   "requires_distinct_claims": [
+    [
+     [
+      "funds"
+     ],
+     [
+      "granted",
+      "grant"
+     ]
+    ],
+    [
+     [
+      "construction"
+     ],
+     [
+      "began",
+      "begin",
+      "started",
+      "start"
+     ],
+     [
+      "spring"
+     ]
+    ]
+   ]
+  }
+ ]
 }
