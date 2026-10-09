@@ -9,6 +9,66 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Measured
+
+- **Six fields a dossier carries are written and never read by the product**, plus
+  one that is never even set. `anchor_ambiguous` was the one known case and it was
+  found by accident; `scripts/unread_fields.py` now asks for every field over the
+  syntax tree rather than waiting for the next accident — and finds six where a
+  grep over the same tree found four. The two it missed were `finding_id` and
+  `relation_id`.
+  **Unread does not mean wrong**, and that belongs before the list: four of the six
+  are provenance (`anchor_normalised`, `proposed_span`) or identifiers nothing
+  resolves (`finding_id`, `relation_id`), and are correct as they are.
+  `Finding.state` is never set and never read at all, which is a stronger statement
+  and is reported apart.
+- **`semantic_state` is a state machine with no transitions.** Two values the gate
+  can set, exactly one observed across all 242 stored claims, no reader anywhere,
+  and nothing able to change it once the gate has run. Named by arXiv 2610.06496,
+  whose finding is that models confuse "mentioned" with "still in force" — the
+  rejected content reappears in 59.63 per cent of new errors.
+  Checked against this codebase, the good half holds by construction: a proposal
+  the gate refuses reaches neither the deterministic rules nor the reviewers, so
+  provenance and force are already separate **before** admission. What is missing
+  is the case after it, which is the already-listed open problem that a finding's
+  state is never resolved. The paper supplies the failure mode and a vocabulary
+  rather than a new defect.
+
+### Added
+
+- `scripts/unread_fields.py` and its tests. Two defects in it were found rather
+  than assumed. It first keyed by field name, and `semantic_state` is declared on
+  two carriers, so the map silently kept the last and reported the field as the
+  relation's alone — now keyed by the pair, with a test for both carriers. And a
+  mutation removing the `models.py` exclusion **survived**: measured rather than
+  patched, that file contains zero per-field reads of a carrier field, so the
+  exclusion is inert today and the mutation is a no-op. The test says so and trips
+  the day a carrier gains a `from_dict`. Three of four mutations caught, the fourth
+  proven a no-op.
+
+### Fixed
+
+- The report's script count and test count, both stale again. **The currency test
+  added yesterday caught the first one on the very next change** — 25 scripts on
+  disk against 24 claimed — and the section range on the one after that. It also
+  gained a static lower bound: the claimed test count may not fall below the
+  `def test_` functions on disk, which would have caught the drift that actually
+  happened (384 claimed against 404 functions) while plainly not catching a near
+  miss.
+
+### Not done
+
+- Deciding what becomes of `semantic_state`. It either becomes a real state with
+  transitions, which needs the versioned-overlay schema decision open since §4.5,
+  or it is removed. A field with one observed value that nothing reads is
+  decoration that looks like a safeguard.
+- `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
+  unapplied.
+- Nothing from U-Space, which needs activations this project does not have, and
+  nothing new from the epistemic-humility paper, whose effect §4.15 has already
+  measured in this system's terms.
+
+
 ### Changed
 
 - **The log's sections are in chronological order again.** Two branches each

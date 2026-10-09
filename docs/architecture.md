@@ -2372,6 +2372,8 @@ Claim-Text, und nur zwei der vierzehn stehen auf dem undefinierten Label.
 steht im Code: `anchor_ambiguous` wird vom Gate seit seinem Bau gesetzt und von
 **keinem Teil des Produkts gelesen** — nur von einem Messskript. Eine vierte
 Flagge dieser Art wäre Dekoration, die wie eine Sicherung aussieht.
+**Nachgetragen in 3an:** das Muster ist größer — sechs Felder werden geschrieben
+und nie gelesen, und dieser Zufallsbefund ist dort durch eine Messung ersetzt.
 
 **Ohne Zahl.** Die 8 von 24 stammen von Fällen aus einem bis drei Sätzen; sie an
 einen Befund auf 26.000 Zeichen Gerichtstext zu hängen wäre geliehene Präzision
@@ -2925,6 +2927,139 @@ das siebte Phänomen — zeitlicher Geltungsbereich gegen Zahlen und Einheiten, 
 beiden sind uneins —, und die Relationen (M-3), für die auch auf Nachfrage keine
 Durchsicht eine Kante vorgeschlagen hat.
 
+
+## 3an. Sechs Felder, die niemand liest — und eines davon ist ein Zustandsautomat ohne Übergänge
+
+Anlass war ein fremdes Paper ([arXiv 2610.06496](https://arxiv.org/abs/2610.06496),
+5. Okt. 2026): Modelle verwechseln „erwähnt" mit „weiterhin wirksam". Nachdem ein
+Vorschlag zurückgewiesen wurde, taucht der inaktive Inhalt in **59,63 %** der neu
+entstandenen Fehler wieder auf.
+
+### Die gute Hälfte zuerst, denn sie ist die Hälfte
+
+Die Trennung, die das Paper fordert, hält bei uns **vor der Zulassung**, und zwar
+konstruktionsbedingt:
+
+| | |
+|---|---|
+| Erreichen abgelehnte Vorschläge die deterministischen Regeln? | **Nein.** `checks.py` kennt `rejections` nicht, und das Gate nimmt sie nicht in `claims` auf |
+| Erreichen sie die Reviewer? | **Nein.** `prompts.py` erwähnt `rejections` an keiner Stelle |
+
+Ein Vorschlag, den das Gate ablehnt, ist im Dossier vermerkt (3r) und löst
+nirgends etwas aus. Das ist genau die Trennung zwischen Provenienz und Wirksamkeit,
+und sie war nicht Absicht als Antwort auf dieses Problem — sie fällt daraus, dass
+das Gate eine Schranke ist und keine Markierung.
+
+### Die andere Hälfte: für einen zugelassenen Claim gibt es keinen Zustand
+
+Was fehlt, ist der Fall *nach* der Zulassung. Ein Claim, der zugelassen und später
+von einem Menschen verworfen oder durch eine bessere Lesart ersetzt wird, hat bei
+uns keinen Zustand, der das sagt.
+
+`semantic_state` wäre die Stelle. Es ist **ein Zustandsautomat ohne Übergänge:**
+zwei Werte, die das Gate setzen kann (`proposed`, `human_review_required`), über
+alle 242 gespeicherten Claims genau *einer* beobachtet, und **kein Leser irgendwo
+im Produkt.** Nach dem Gate kann ihn nichts mehr ändern.
+
+Damit landet das Paper auf einem Problem, das im Bericht längst als ungelöst
+steht — „Der Zustand eines Befunds wird nie aufgelöst: braucht ein versioniertes
+Overlay und eine Schemaentscheidung". Es liefert keinen neuen Mangel, sondern
+**den Fehlermodus, der erklärt, warum die Lücke kostet**, samt Vokabel
+(`proposed → accepted | rejected → superseded`) und einer gemessenen Rate.
+
+### Beim Nachsehen: das Muster ist größer, als ich dachte
+
+`anchor_ambiguous` wurde in 3ai als write-only entdeckt — durch Zufall, beim
+Einbau einer anderen Markierung. Die Lehre damals: eine Markierung, die nichts
+rendert, ist keine Sicherung. Statt auf den nächsten Zufall zu warten, fragt
+`scripts/unread_fields.py` das jetzt für **jedes** Feld, über den Syntaxbaum statt
+über einen Grep.
+
+| | geschrieben, nie gelesen |
+|---|---|
+| **Provenienz, zu Recht ungelesen** | `anchor_normalised`, `proposed_span` — im JSON zu stehen *ist* die Aufgabe; nichts soll darauf verzweigen |
+| **Bezeichner, die nichts auflöst** | `finding_id`, `relation_id` — ein Primärschlüssel ohne Fremdschlüssel. Für einen Menschen, der zitiert, richtig; für das Produkt tot |
+| **grenzwertig** | `anchor_ambiguous` — das Gate rechnet die Bedingung inline nochmal, und gerendert wird sie nicht. Dieselbe Lehre wie 3ai, nie angewandt |
+| **der eine, der zählt** | `semantic_state` — siehe oben |
+
+Dazu eines, das noch tiefer liegt: **`Finding.state` wird nie gesetzt und nie
+gelesen.** Es trägt nur seinen Vorgabewert `human_review_required`. Das ist eine
+stärkere Aussage als „ungelesen", und das Skript berichtet es getrennt.
+
+**Mein Grep von gestern fand vier, das Skript findet sechs.** Übersehen hatte ich
+`finding_id` und `relation_id`. Das ist der Grund, aus dem der Grep durch ein
+Skript ersetzt wurde, und nicht umgekehrt.
+
+**Ungelesen heißt nicht falsch**, und das gehört vor die Liste und nicht hinter
+sie. Vier der sechs sind Provenienz oder Bezeichner und richtig so. Daraus eine
+Mängelliste von sechs zu machen wäre genau die Übertreibung, gegen die dieses Log
+geschrieben ist.
+
+### Zwei Fehler im Skript selbst, beide gefunden statt vermutet
+
+**Der erste war eine Fehlzuordnung.** Die erste Fassung schlüsselte nach
+Feldnamen, und `semantic_state` ist auf **zwei** Trägern deklariert — der
+Claim und die Relation. Die Map behielt stillschweigend den letzten und berichtete
+das Feld als das der Relation allein. Behoben durch Schlüsselung nach dem Paar,
+und ein Test prüft, dass beide Träger erscheinen.
+
+**Der zweite war eine Attrappe von Test.** Eine Mutation, die den Ausschluss von
+`models.py` entfernt, hat **überlebt**. Statt den Test zu flicken, habe ich
+gemessen, warum: `models.py` enthält **null** Lesezugriffe auf ein Trägerfeld. Die
+Träger haben kein `from_dict`, und `to_dict` geht über `asdict`. Der Ausschluss
+ist also **heute wirkungslos**, die Mutation ist eine No-Op und kein überlebender
+Mangel.
+
+Der Test sagt das jetzt, statt Deckung zu behaupten, die er nicht hat: er prüft
+die gemessene Tatsache und schlägt an dem Tag an, an dem ein Träger ein
+`from_dict` bekommt — also an dem Tag, an dem der Ausschluss zu arbeiten beginnt.
+Drei von vier Mutationen gefangen, die vierte als No-Op bewiesen.
+
+### Zwei fremde Paper, die hier nichts zu holen haben, und warum
+
+**[U-Space](https://arxiv.org/abs/2610.09087)** gewinnt vier
+Unsicherheitsrichtungen aus dem Residual Stream. **Wir haben keine
+Aktivierungen** — wir rufen eine API und bekommen Text. Das ist keine Hürde,
+sondern eine Grenze.
+
+Übertragbar ist nur die methodische Lehre: ein Prädiktor, der gut aussieht, kann
+bloß Länge nachspuren (68,6 % AUROC, nach Längenkontrolle 52,4 %). Die wenden wir
+schon an — 3n vergleicht die Warnleuchte über *vier Paper ähnlicher Länge* und
+benennt den verbliebenen Störfaktor selbst. Der dort offene Nachlauf ist **nicht
+gratis**: nachgesehen, nur `A24` liegt gespeichert, `A40`/`A21`/`A34` nicht.
+
+**[Accurate but Not Humble](https://arxiv.org/abs/2610.12360)** haben wir in
+unseren Begriffen schon gemessen. Dass ein früh erkannter Konflikt später
+verschwindet: 3ak, `internal_contradiction` mit Schweregrad *high* läuft 2, 7, 5
+über byte-identische Läufe. Unsere Version liegt *zwischen* Läufen, ihre
+*innerhalb* einer Trajektorie — und innerhalb eines Laufs kann der Verfall bei uns
+nicht auftreten, weil eine `CONTRADICTS`-Kante den Befund deterministisch erzeugt.
+Der Demut-gegen-Genauigkeit-Handel (Eskalation 1,6 → 60,7 %, Genauigkeit
+30,1 → 23,2 %) ist hier **nicht messbar**: 3aj hat festgehalten, dass es für
+Befunde kein Gold gibt.
+
+### Die Entscheidung, die ich nicht treffe
+
+`semantic_state` wird entweder ein **echter** Zustand mit Übergängen — und das
+verlangt die Schemaentscheidung über das versionierte Overlay, die seit 3z offen
+ist — **oder es wird entfernt**. Ein Feld, das nur einen Wert annimmt und das
+nichts liest, ist Dekoration, die wie eine Sicherung aussieht. Das ist dieselbe
+Lehre, die `anchor_ambiguous` gekostet hat, und sie gilt hier ein zweites Mal.
+
+Für `anchor_ambiguous` selbst gilt die Lehre aus 3ai unverändert und unangewandt:
+entweder rendern oder streichen.
+
+### Nebenbefund, und er ist der erste Beleg für den Test von gestern
+
+Der Aktualitätstest aus 3am hat beim **ersten** neuen Skript angeschlagen: 25 auf
+der Platte gegen 24 im Bericht. Er hat getan, wofür er gebaut ist, am ersten Tag.
+
+Was er nicht fängt, steht jetzt auch dort: die Testzahl. Eine Schranke lässt sich
+statisch ziehen — 404 `def test_`-Funktionen sind eine untere Grenze für 464
+gesammelte Fälle, weil Parametrisierung nur addiert —, und die hätte den
+historischen Fehler („384" gegen 404 Funktionen) gefangen. Einen Beinahe-Treffer
+wie 455 gegen 463 fängt sie nicht, und der Test sagt das ausdrücklich, statt
+Deckung zu behaupten.
 
 ## 4. ClaimGraph
 

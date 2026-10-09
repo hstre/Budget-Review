@@ -31,14 +31,34 @@ def test_the_script_count_matches_the_scripts() -> None:
         assert {int(n) for n in claimed} == {actual}, (pattern, claimed, actual)
 
 
-def test_the_test_file_count_is_not_claimed_as_a_test_count() -> None:
-    # The report states a test count, which only a run can establish, so this
-    # asserts the shape rather than the number: one figure, stated identically in
-    # both language halves. A mismatch between the halves means one was edited.
+def test_the_claimed_test_count_agrees_between_the_language_halves() -> None:
+    # A mismatch between the halves means one of them was edited and the other
+    # forgotten, which is how §4.16 came to exist in English only.
     english = re.findall(r"(\d+) tests and one skipped", REPORT)
     german = re.findall(r"(\d+) Tests und einer übersprungen", REPORT)
     assert english and german
     assert set(english) == set(german), (english, german)
+
+
+def test_the_claimed_test_count_is_at_least_the_test_functions_on_disk() -> None:
+    """A necessary condition, and worth being plain about its limit.
+
+    Only a run establishes the real count, and a test cannot run the suite inside
+    itself. But every `def test_` is at least one case and parametrisation only
+    adds, so the claimed figure must not fall below the functions on disk. That
+    catches the drift that actually happened — the report said 384 where the
+    files already held 404 — and it does **not** catch a near miss such as 448
+    against 455. For that, the figure has to be set from a run, which is what the
+    changelog entry beside this test says.
+    """
+    functions = sum(
+        len(re.findall(r"^def test_", path.read_text(encoding="utf-8"), re.M))
+        for path in (ROOT / "tests").glob("test_*.py")
+    )
+    assert functions > 0
+    claimed = {int(n) for n in re.findall(r"(\d+) tests and one skipped", REPORT)}
+    assert claimed, "the report states no test count"
+    assert min(claimed) >= functions, (claimed, functions)
 
 
 def test_the_claimed_log_range_ends_at_the_last_section_the_log_has() -> None:
