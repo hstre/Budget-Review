@@ -2287,6 +2287,15 @@ gemessen.** Also offline aus den 72 bereits bezahlten Dossiers von 3ah,
 | `unsupported_assumption`: Typ-Vorbedingung wechselt | **1 von 24** (`sco-02-en`) |
 | `logical_gap`: Typ-Vorbedingung wechselt | 0 von 24 |
 
+> **Korrektur (3aj).** Diese Tabelle misst **Vorbedingungen**, nicht Befunde, und
+> die letzte Zeile ist nahezu leer: In allen 72 Dossiers stehen *drei* Claims vom
+> Typ `thesis`/`inference`/`recommendation`, alle in `neg-01-de`. Die Vorbedingung
+> ist also fast nie erfüllt — und dass sie nicht wechselt, hat verdeckt, dass der
+> **Befund** `logical_gap` auf genau diesem Dokument in 2 von 3 identischen Läufen
+> feuert und im dritten nicht. Als ganze Befunde gemessen wechselt
+> `unsupported_assumption` in **2 von 24** statt 1, und es kommt
+> `internal_contradiction` dazu. Siehe 3aj.
+
 ```
 mod-01-de   delivery,fact,forecast   | delivery,forecast,target | delivery,forecast,target
 neg-02-de   fact,fact,forecast       | fact,fact,forecast       | fact,forecast,scope
@@ -2353,6 +2362,12 @@ steht.
 es: `coverage_gap` rechnet aus Dokument und Ankern, die Budgetregeln aus dem
 Claim-Text, und nur zwei der vierzehn stehen auf dem undefinierten Label.
 
+> **Korrektur (3ak).** `coverage_gap` bekam hier `("document",)` — das stabilste
+> Etikett der Tabelle — und das ist falsch. Die Lückenliste rechnet
+> deterministisch, aber *welche* Anker existieren, ist ein Extraktionsergebnis:
+> die Regel feuert auf die **Abwesenheit** eines zugelassenen Claims. Die Tabelle
+> trägt dafür jetzt eine fünfte Art, `absence`, und drei Regeln tragen sie.
+
 **Und sie wird gerendert**, in Markdown und HTML, in beiden Sprachen. Der Grund
 steht im Code: `anchor_ambiguous` wird vom Gate seit seinem Bau gesetzt und von
 **keinem Teil des Produkts gelesen** — nur von einem Messskript. Eine vierte
@@ -2376,6 +2391,8 @@ erste Fassung eines Tests falsch annehmen ließ.
 **`relation_type`.** 14 Namen, 7 mit Glosse, und drei Befunde stehen allein
 darauf (`internal_contradiction`, `scope_tension`, `overgeneralization`). Dieselbe
 Messung darauf anzuwenden kostet nichts und ist nicht gemacht.
+**Nachgetragen in 3aj:** gemacht, und die Relationshälfte ist auf diesem Bestand
+der *größere* Beitrag — drei der vier wechselnden Befunde liegen dort.
 
 **Lange Dokumente.** 24 Fälle aus einem bis drei Sätzen. Dass `logical_gap` hier
 0 von 24 wechselt, sagt über eine Gerichtsentscheidung mit 108 Claims nichts.
@@ -2386,6 +2403,232 @@ naheliegende Weg wäre falsch gewesen: unser Bedeutungsbestand prüft `claim_typ
 in **2 von 24 Fällen** (`cor-01-de/en`). Gegen `meaning_preserved` gemessen hätte
 die Permutation 216 bezahlte Aufrufe für eine Achse gekostet, die den Typ fast
 nicht sieht. Das richtige Instrument ist Typstabilität, und die läuft gratis.
+
+## 3aj. Vier von 24 Dokumenten liefern eine andere Befundmenge — und die Relationshälfte ist die größere
+
+Anlass war wieder ein fremdes Paper ([arXiv 2610.07753](https://arxiv.org/abs/2610.07753),
+6. Okt. 2026). Seine Unterscheidung: dass ein Ergebnis stimmt, zeigt nicht, dass
+die Evidenz dafür **vor** der Handlung etabliert war. Dieselben Fälle statisch
+95–99 %, interaktiv 28–52 %; und wenn entscheidende Evidenz verborgen wird,
+handeln die Agenten immer noch in 46,5–53,5 % der Episoden.
+
+Das traf eine Stelle, die 3ai offen gelassen hat, ohne es zu merken.
+
+### Die Korrektur an 3ai
+
+3ai hat die **Vorbedingungen** gemessen und nicht die Befunde. Zwei Zahlen daraus
+sind damit schwächer, als sie dort aussahen:
+
+**„`logical_gap`: Typ-Vorbedingung wechselt 0 von 24."** Wahr und nahezu leer. In
+allen 72 Dossiers stehen **drei** Claims vom Typ `thesis`/`inference`/
+`recommendation` — alle in `neg-01-de`, einer je Lauf. Die Vorbedingung ist also
+fast nie erfüllt, und „sie wechselt nicht" sagt beinahe nichts. Schlimmer: sie hat
+verdeckt, dass der **Befund selbst** auf genau diesem Dokument wechselt.
+
+**„`unsupported_assumption`: 1 von 24."** Das war die Typhälfte. Als ganzer Befund
+sind es **2 von 24**.
+
+`logical_gap` ist ein **Schluss aus Schweigen**: er feuert, wenn ein Claim dieser
+Typen *keine* eingehende `SUPPORTS`/`ENTAILS` und *keine* ausgehende
+`EVIDENCED_BY` hat. Abwesenheit ist der Auslöser. Und dieses Projekt hat
+mehrfach gemessen, dass die Extraktion viel Argumentstruktur verliert. Der Befund
+liest sich als Eigenschaft des Dokuments und ist zum Teil eine Eigenschaft dieses
+Laufs.
+
+### Die Messung, mit den echten Regeln
+
+`scripts/finding_warrant.py` baut aus einem gespeicherten Dossier das Paket
+zurück, gatet gegen das Dokument neu und ruft **`deterministic_checks` selbst
+auf** — keine nachgebaute Regellogik. Dann vergleicht es die Befundmenge über die
+Wiederholungen.
+
+| | |
+|---|---|
+| Dokumente mit drei byte-identischen Läufen | 24 |
+| identische Befundmenge | 20 |
+| **wechselnde Befundmenge** | **4** |
+
+| Dokument | Befund | je Lauf | Ursache |
+|---|---|---|---|
+| `mul-02-de` | `internal_contradiction` (**high**) | 1, 0, 0 | Claim-Typen in allen drei Läufen **identisch**; Lauf 1 liefert eine Kante `C01 CONTRADICTS C04`, Läufe 2–3 drei andere Kanten und keine `CONTRADICTS` |
+| `neg-01-de` | `logical_gap` (0,9) | 0, 1, 1 | dieselbe Kante `C02→C01` heißt einmal `EVIDENCED_BY` und zweimal `DEPENDS_ON` |
+| `sco-02-de` | `unsupported_assumption` (0,95) | 1, 0, 0 | `assumption` ist in allen drei Läufen da, die Kante `ASSUMPTION_FOR` nur in Lauf 1 |
+| `sco-02-en` | `unsupported_assumption` (0,95) | 1, 1, 0 | die Typhälfte wechselt (3ai) |
+
+**Vier verschiedene Mechanismen, und drei davon liegen auf der Relationshälfte**
+— die 3ai als „nicht gemessen" eingetragen hat. `mul-02-de` ist der reinste Fall:
+am Claim-Satz bewegt sich **nichts**, und ein Befund mit Schweregrad *high*
+erscheint und verschwindet.
+
+Damit ist auch die offene Zeile aus 3ai beantwortet: `relation_type` ist nicht
+stabiler als `claim_type`, sondern auf diesem Bestand der größere Beitrag.
+
+### Was die naheliegende Übertragung nicht leisten kann
+
+Das Paper misst Ergebnis **gegen** Geltung. Die naheliegende Übertragung — jeden
+Befund zweimal bewerten, einmal nach Ergebnis und einmal nach nachweisbarer
+Geltung — ist hier **nicht verfügbar**: Es gibt in diesem Projekt nirgends eine
+Gold-Antwort darauf, ob ein `logical_gap` *richtig* ist. Der Benchmark hat
+Aufgabenerfolg, wir haben nichts Vergleichbares. Eine „Erfolg-gegen-Geltung-Rate"
+lässt sich daraus nicht rechnen, und ich habe es nicht versucht.
+
+Was sich rechnen lässt, ist **Reproduzierbarkeit, und sie ist eine untere
+Schranke**: Ein Befund, der unter identischer Eingabe nicht wiederkehrt, kann vom
+Dokument nicht gedeckt sein. Umgekehrt gilt es nicht — ein Befund, der dreimal
+wiederkehrt, ist damit nicht gedeckt. Die 4 von 24 sind also ein Boden, keine
+Rate.
+
+### Warum eine Evidenzkarte am Emissionszeitpunkt nicht gebaut werden kann
+
+Der zweite Vorschlag aus derselben Zulieferung ([EviSkill,
+arXiv 2610.05030](https://arxiv.org/abs/2610.05030)) war, den Befund samt
+Instabilität als vorläufiges, evidenzgebundenes Objekt zu speichern, mit den drei
+Dossiers als Replay-Kontext.
+
+Das geht an einer Konstruktionstatsache vorbei: **Im Produktionslauf gibt es die
+drei Dossiers nicht.** Extrahiert wird einmal je Dokument. Zum Zeitpunkt, an dem
+ein Befund emittiert wird, existieren Lauf 2 und 3 nicht, und ob *dieser* Befund
+wechselt, ist nicht wissbar.
+
+Das ist die ehrliche Grenze der Entscheidung (b) aus 3ai, und sie war dort nicht
+benannt: **(b) markiert die Art der Abhängigkeit, nicht die beobachtete
+Instabilität** — weil die beobachtete Instabilität am Emissionszeitpunkt
+konstruktiv nicht vorliegt. Ein Leser sieht denselben Hinweis an einem Befund,
+dessen Typ über drei Läufe felsenfest war, und an einem, der wechselt.
+
+Damit ist (b) das Maximum ohne eine **Wiederholungspolitik** — und die hat einen
+Preis: dreifache Extraktionskosten je Dokument. Das ist eine Entscheidung mit
+Preisschild und steht als solche im Bericht, nicht als Nebensatz.
+
+Die Evidenzkarte selbst existiert übrigens schon, nur an der richtigen Stelle:
+`--json` beider Messskripte schreibt genau diesen Querschnitt. Was fehlt, ist
+**keine Datenstruktur, sondern eine Verknüpfung** von einem ausgelieferten Befund
+zu diesem Datensatz — und die ist erst sinnvoll, wenn es Wiederholungen gibt.
+
+### Was weiter nicht gemessen ist
+
+**Lange Dokumente.** 24 Fälle aus einem bis drei Sätzen, mit vier bis fünf Claims
+und null bis drei Kanten. Eine Gerichtsentscheidung mit 108 Claims hat ungleich
+mehr Kanten, auf denen dasselbe passieren kann, und die Messung dort kostet
+nichts außer einem Lauf, der schon gespeichert ist.
+**Nachgetragen in 3ak:** gemessen, über drei Sätze auf zwei langen Dokumenten —
+und dort bleibt **keine einzige Befundart** stehen. Die 4 von 24 hier sind nicht
+die kleine Version desselben Befunds; kurze Fälle sind der Sonderfall, in dem
+überhaupt etwas stillsteht.
+
+**Die Reviewer-Befunde.** Gemessen sind nur die deterministischen. Die beiden
+LLM-Arme haben eine eigene, separat gemessene Streuung (3ad: 0,27 nach der
+strengen Regel), und beide Zahlen gehören nicht addiert.
+
+## 3ak. Auf langen Dokumenten bleibt keine einzige Befundart stehen
+
+3aj hat auf 24 kurzen Fällen gemessen: 4 von 24 Dokumenten liefern eine andere
+Befundmenge. Der offene Punkt dort lautete, dass eine Entscheidung mit über
+hundert Claims ungleich mehr Kanten hat, auf denen dasselbe passieren kann. Die
+Läufe lagen gespeichert, die Messung hat nichts gekostet.
+
+### Welche Läufe, und warum der `prompt_hash` das entscheidet
+
+Drei Sätze, jeder mit **identischem `prompt_hash` über alle Läufe** — das ist die
+Bedingung, unter der ein Vergleich Laufstreuung misst und nicht
+Konfigurationsunterschied.
+
+| Satz | Dokument | Läufe | Claims | Kanten | Modell |
+|---|---|---|---|---|---|
+| A24, zweistufig | 21.789 Zeichen | 3 | 115/116/108 | 67/60/65 | `deepseek-flash` |
+| A24, Variante | 21.789 Zeichen | 2 | 111/111 | 29/35 | `deepseek-flash` |
+| 001-141170 | 10.371 Zeichen | 3 | 53/59/54 | 30/45/41 | `deepseek-v4-flash` |
+
+**Und der Wächter hat gleich zugeschlagen.** Das Forschungsprotokoll beschreibt
+Experiment 18 als „drei Läufe je Arm". Von den drei Artefakten des einstufigen
+Arms teilen nur **zwei** einen `prompt_hash`; das dritte ist eine andere
+Konfiguration. Hätte ich sie zusammengeworfen, wäre ein
+Konfigurationsunterschied als Laufstreuung berichtet worden. Das Skript
+verweigert das jetzt und nennt die Hashes.
+
+### Das Ergebnis
+
+```
+A24, zweistufig, 3 Läufe          A24, Variante, 2 Läufe
+  coverage_gap            6/10/10   coverage_gap             7/13
+  internal_contradiction   1/1/0    logical_gap              9/15
+  logical_gap           16/19/13
+  overgeneralization       6/6/5    001-141170, 3 Läufe
+  scope_tension            0/0/1      internal_contradiction  2/7/5
+  unsupported_assumption   0/1/0      logical_gap             2/6/3
+                                      scope_tension           0/1/0
+```
+
+**In allen drei Sätzen: null Befundarten, die über die Läufe gleich bleiben.**
+
+Die Spitzen, und sie sind keine Rundungsfehler:
+
+- **`internal_contradiction` auf der Entscheidung: 2, 7, 5.** Schweregrad
+  **high**, und das Maximum ist das Dreieinhalbfache des Minimums. Ein Prüfer,
+  der zweimal denselben Text einreicht, bekommt zwei bis sieben Widersprüche
+  gemeldet.
+- **`logical_gap` auf A24: 16, 19, 13.** Konfidenz 0,9, Streuung 6 Befunde.
+- **`coverage_gap`: 6 gegen 10, und in der Variante 7 gegen 13.** Beide fast
+  verdoppelt.
+
+Gegenüber 3aj ist das keine Steigerung um einen Faktor, sondern ein anderer
+Zustand: kurze Fälle mit vier Claims und null bis drei Kanten sind der
+Sonderfall, in dem überhaupt etwas stillsteht.
+
+### Was das an der Tabelle aus 3ai korrigiert
+
+`coverage_gap` stand dort auf `("document",)` — dem stabilsten Etikett, das die
+Tabelle hat. Das ist falsch, und die Messung zeigt es: die Lückenliste rechnet
+deterministisch über Dokument und Anker, aber **welche** Anker existieren, ist ein
+Extraktionsergebnis. `coverage_gap` feuert auf die *Abwesenheit* eines
+zugelassenen Claims — genau wie `logical_gap` auf die Abwesenheit einer
+Stützkante und `unsupported_assumption` auf die Abwesenheit eines Belegs.
+
+Deshalb trägt die Tabelle jetzt eine fünfte Art: **`absence`**. Drei der vierzehn
+Regeln feuern, weil etwas **nicht** da ist, und sie sind in dieser Messung die
+größten Wanderer. Das ist kein Etikett aus Vorsicht, sondern das gemessene
+Ergebnis: Schweigen ist der schwächste Eingang, weil die Extraktion
+nachweislich Argumentstruktur verliert — die Abwesenheit kann die des Laufs sein
+und nicht die des Dokuments.
+
+Die Markierung unterscheidet weiter: die elf Regeln, die auf *Anwesenheit*
+feuern, tragen `absence` nicht, und ein Test prüft beides.
+
+### Drei Einschränkungen, und eine davon ist unauflösbar
+
+**Die Entscheidungsläufe sind nach dem Reparaturlauf.** Der stellt nachweislich
+Dubletten her (3z), also könnte ein Teil jener Streuung von ihm kommen und nicht
+von der Extraktion. Trennen lässt sich das hier nicht. **Aber die beiden
+A24-Sätze sind unrepariert und zeigen dasselbe Bild**, also hängt der Befund
+nicht am Reparaturlauf.
+
+**Die Pakete sind mit dem heutigen Gate neu gegatet.** Diese Zahlen sagen, was
+dieselben Vorschläge unter der toleranten Verankerung aus #18 ergeben — nicht,
+was die Läufe damals gemeldet haben. Derselbe Post-hoc-Vorbehalt wie in 3z.
+
+**Und weiter kein Gold für Befunde.** Reproduzierbarkeit bleibt eine untere
+Schranke: Was nicht wiederkehrt, kann nicht gedeckt sein; was wiederkehrt, ist
+damit nicht gedeckt. Es gibt in diesem Projekt keine Gold-Antwort darauf, ob ein
+`logical_gap` *richtig* ist, und solange gibt es auch keine
+Erfolg-gegen-Geltung-Rate. Die Zahlen oben sind Böden.
+
+### Was daraus folgt, und was nicht
+
+Nicht: „die deterministischen Regeln sind kaputt." Sie rechnen, was sie rechnen
+sollen. Was wandert, sind ihre **Eingänge** — und bei den drei Abwesenheitsregeln
+wandert die Abwesenheit selbst.
+
+Was folgt, ist die Entscheidung aus 3aj mit härterem Preis. Dort stand, die
+Markierung nenne die Art der Abhängigkeit und nicht die beobachtete Instabilität,
+weil es im Produktionslauf einen Lauf gibt. Auf kurzen Fällen war das eine
+Feinheit. Auf einem Dokument, auf dem **keine** Befundart stillsteht, ist ein
+einzelner Lauf keine Stichprobe, sondern eine Ziehung — und ein Dossier, das 16
+`logical_gap` meldet, wo ein zweiter Lauf 13 gemeldet hätte, sieht genauso
+endgültig aus.
+
+Damit ist die Wiederholungspolitik keine Sparvariante mehr, sondern die Frage, ob
+ein Befund überhaupt als Zahl berichtet werden darf. Sie steht als offene
+Entscheidung 7 im Bericht, jetzt mit dieser Messung dahinter.
 
 ## 4. ClaimGraph
 
