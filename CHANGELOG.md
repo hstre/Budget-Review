@@ -11,6 +11,13 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **A reviewer finding that could not be substantiated, which is itself a finding.**
+  Across two run sets of the same arm — same model, same profile, same graph, same
+  contract — the confidence values move from six on a strict 0.05 grid to fifteen
+  off it, and the only named difference is the output budget (8,192 against 65,536).
+  Calling that a more differentiated judgement would mean reading an artefact of the
+  budget as evidence. The artefacts cannot settle it: the reviewer runs recorded
+  neither the prompt nor the budget they were given.
 - **Six fields a dossier carries are written and never read by the product**, plus
   one that is never even set. `anchor_ambiguous` was the one known case and it was
   found by accident; `scripts/unread_fields.py` now asks for every field over the
@@ -36,6 +43,26 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **`prompt_hash` and `max_tokens` on every reviewer run**, on the failed path as
+  well as the completed one. The extraction has recorded a prompt hash since it
+  existed and that guard earned itself once, separating two runs of one arm from a
+  third that had been configured differently; the reviewer arms had no such field,
+  so every reviewer comparison rested on an unverifiable assumption. The hash is
+  computed before the call, because the prompt was sent either way and an arm that
+  was asked and said nothing is the case a comparison most needs to separate.
+  `prompt_fingerprint(system, user)` gives the convention one name rather than two
+  expressions that almost agree, and `REVIEWER_MAX_TOKENS` names the budget that a
+  literal in three places had kept uncomparable.
+  **This does not apply retroactively.** Every reviewer run stored so far carries no
+  hash, so the measurement above stays unproven until a new paid run.
+  Seven mutations, six caught at once. The survivor removed the joining separator,
+  and the test for it compared a pair that differs with the separator and without it
+  — so it asserted nothing. The discriminating pair is `("ab","c")` against
+  `("a","bc")`. The same measurement exposed a limitation now asserted outright
+  rather than assumed: the convention is **not injective**, since a prompt
+  containing the separator makes two different splits collide. Harmless here,
+  because the system half is a fixed role prompt — but a property of this
+  repository, not of the hash.
 - `scripts/unread_fields.py` and its tests. Two defects in it were found rather
   than assumed. It first keyed by field name, and `semantic_state` is declared on
   two carriers, so the map silently kept the last and reported the field as the
@@ -55,6 +82,12 @@ says when it moves them. Their current values are `polished` 5 claims /
   `def test_` functions on disk, which would have caught the drift that actually
   happened (384 claimed against 404 functions) while plainly not catching a near
   miss.
+- A false alarm I raised myself, recorded because the correction matters: I reported
+  that the report on the default branch claimed 448 tests against a suite of 455 and
+  blamed the currency test for letting a near miss through. The default branch was
+  correct at 463; this branch was still based on the commit before that merge, and I
+  read its report for the other's. The test had worked, and there was nothing to
+  tighten.
 
 ### Not done
 
@@ -64,6 +97,9 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
+- Re-running the budget comparison under the new provenance, which is the only way
+  the confidence-grid finding becomes provable. That is a paid run and needs a
+  pre-registered criterion first.
 - Nothing from U-Space, which needs activations this project does not have, and
   nothing new from the epistemic-humility paper, whose effect §4.15 has already
   measured in this system's terms.

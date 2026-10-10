@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .checks import deterministic_checks, rules_model_id
+from .gate import prompt_fingerprint
 from .models import (
     Finding,
     FindingCategory,
@@ -16,6 +17,12 @@ from .models import (
 from .profiles import BUDGET, GENERAL, ReviewProfile, authority_note, get_profile
 from .prompts import reviewer_prompt
 from .provider import DeepSeekProvider, ModelConfig, ProviderError
+
+# The output budget the arms are given. A literal in three places is a condition
+# nobody can compare against, which is the whole point of recording it, so it has
+# a name here. PR #16 turns it into a parameter; this keeps the shipped value
+# unchanged and gives that change one line to land on.
+REVIEWER_MAX_TOKENS = 8192
 
 
 @dataclass(frozen=True)
@@ -68,12 +75,16 @@ def review_claim_graph(
     if provider is not None:
         for arm in selected_arms:
             system, user = reviewer_prompt(dossier, arm.role, selected, language)
+            # Recorded before the call, so a failed arm carries it too: the
+            # prompt was sent either way, and an arm that did not answer is
+            # exactly the case a later comparison needs to identify.
+            fingerprint = prompt_fingerprint(system, user)
             try:
                 payload, metadata = provider.complete_json(
                     system=system,
                     user=user,
                     config=arm.config,
-                    max_tokens=8192,
+                    max_tokens=REVIEWER_MAX_TOKENS,
                 )
                 served = str(metadata["model"])
                 admitted, rejected = govern_review_payload(dossier, arm, payload)
@@ -90,6 +101,13 @@ def review_claim_graph(
                         # provider can suppress the comparison by omitting a
                         # flag.
                         "model_substituted": served != arm.config.model_id,
+                        # The two conditions a comparison across reviewer runs
+                        # has to hold equal before it means anything. Without
+                        # them, a difference in what the arms said is
+                        # indistinguishable from a difference in what they were
+                        # asked, or in how much room they had to answer.
+                        "prompt_hash": fingerprint,
+                        "max_tokens": REVIEWER_MAX_TOKENS,
                         "status": "completed",
                         "finding_count": len(admitted),
                         "rejection_count": len(rejected),
@@ -105,8 +123,11 @@ def review_claim_graph(
                         "kind": "llm",
                         # No answer arrived, so no served model is known. Naming
                         # the requested one here would be the audit claiming to
-                        # know which model ran.
+                        # know which model ran. The prompt and the budget are
+                        # known regardless, because they are what was sent.
                         "requested_model_id": arm.config.model_id,
+                        "prompt_hash": fingerprint,
+                        "max_tokens": REVIEWER_MAX_TOKENS,
                         "status": "failed",
                         "error_type": type(exc).__name__,
                     }

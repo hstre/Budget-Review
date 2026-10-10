@@ -3135,3 +3135,84 @@ Content Review bewertet interne inhaltliche Tragfähigkeit. Externe Faktenprüfu
 ist nicht stillschweigend eingebaut, weil sie Quellenwahl, Aktualität und einen
 eigenen Provenienzvertrag benötigt. Sie kann später als getrennte Schicht an den
 zugelassenen ClaimGraph angeschlossen werden.
+
+## 3ao. Ein Wächter für Reviewer-Vergleiche — gebaut, weil mir genau er gefehlt hat
+
+Anlass war kein fremdes Paper, sondern ein eigener Befund, den ich **nicht belegen
+konnte**. Bei der Durchsicht von [BeliefScope](https://arxiv.org/abs/2610.11305)
+fiel auf, dass dieselbe gemessene Achse ihren Charakter mit einer Bedingung
+wechselt, die mit der Evidenz nichts zu tun hat:
+
+| Satz | Reviewer-Budget | `flash-evidence-skeptic`, Konfidenzwerte |
+|---|---|---|
+| `rv54` | 8.192 | 6 Werte, strikt im 0,05-Raster |
+| `rb55` | 65.536 | 15 Werte, außerhalb des Rasters (0,82 · 0,87 · 0,88 · 0,91 …) |
+
+Gleiches Modell, gleiches Profil, gleicher Graph, gleicher Vertrag. Der einzige
+*benannte* Unterschied ist das Ausgabebudget. „Die Konfidenz ist differenzierter
+geworden" wäre hier ein Artefakt des Budgets und kein besseres Urteil.
+
+**Nur: belegen kann ich den Satz nicht.** Die Provenienz zeichnet für die
+Extraktion seit immer einen `prompt_hash` auf — und dieser Wächter hat sich
+einmal bezahlt (3x: von drei Artefakten, die das Log als „drei Läufe eines Arms"
+führte, teilten nur zwei den Hash; ein Pooling hätte einen
+Konfigurationsunterschied als Lauf-zu-Lauf-Instabilität berichtet). Für die
+**Reviewer-Arme existierte er nicht.** Jeder Reviewer-Vergleich, den dieses Log
+anstellt, ruht damit auf der Annahme, die Arme seien gleich gefragt worden.
+
+### Gebaut wurde das Kleinste, was den Satz künftig prüfbar macht
+
+| | |
+|---|---|
+| `prompt_fingerprint(system, user)` in `gate.py` | die Konvention bekommt **einen** Namen. Zwei Ausdrücke, die dasselbe fast bedeuten, sind schlechter als ein fehlender Hash: sie vergleichen sich als ungleich und melden einen Unterschied, der nicht da ist |
+| `prompt_hash` auf **beiden** Reviewer-Pfaden | auch auf dem fehlgeschlagenen. Vor dem Aufruf berechnet, denn gesendet wurde er so oder so — und „der Arm wurde gefragt und hat geschwiegen" ist genau der Fall, den ein späterer Vergleich auseinanderhalten muss |
+| `max_tokens` wird aufgezeichnet | die Bedingung, die den Befund oben erzeugt hat, stand nirgends im Artefakt. Ein Literal an drei Stellen ist eine Bedingung, gegen die niemand vergleichen kann; `REVIEWER_MAX_TOKENS` gibt ihr einen Namen und PR #16 eine Zeile zum Landen |
+
+### Was er nicht kann, und das ist die Hälfte, die zählt
+
+**Rückwirkend gilt er nicht.** Jeder bisher gespeicherte Reviewer-Lauf trägt
+keinen Hash — definitionsgemäß, der Code schrieb keinen. Der `rv54`/`rb55`-Satz
+oben bleibt damit unbelegt, und kein künftiger Code macht ihn belegbar; es
+braucht einen neuen, bezahlten Lauf. Die Sicherung wirkt **ab hier**, und ein
+Vergleich über die Grenze hinweg ist weiter ungeschützt. Das gehört vor die
+Tabelle und nicht in eine Fußnote.
+
+### Die Mutation, die einen schlechten Test von mir fand — das fünfte Mal
+
+Sieben Mutationen, sechs sofort gefangen. **Überlebt hat die, die das Trennzeichen
+entfernt** (`system + user` statt `system + "\n" + user`). Mein Test dafür
+verglich `("a", "b")` gegen `("a\nb", "")` — und dieses Paar unterscheidet sich
+mit Trennzeichen *und* ohne. Gemessen statt vermutet:
+
+| Paar | mit Trenner | ohne Trenner |
+|---|---|---|
+| `("a","b")` ↔ `("a\nb","")` | ungleich | **ungleich** — prüft nichts |
+| `("ab","c")` ↔ `("a","bc")` | ungleich | **gleich** — das ist das Paar |
+| `("a","b\nc")` ↔ `("a\nb","c")` | **gleich** | ungleich |
+
+Die dritte Zeile ist der unangenehme Teil: die Konvention ist **nicht injektiv**.
+Enthält ein Prompt das Trennzeichen selbst, kollidieren zwei verschiedene
+Aufteilungen. Hier ist das harmlos — die Systemhälfte ist ein festes Rollenprompt
+aus `prompts.py` und nie ein Präfix einer Graphserialisierung —, aber das ist eine
+Eigenschaft *dieses Repositorys* und nicht des Hashes. Ein Test behauptet sie
+deshalb ausdrücklich, statt sie anzunehmen; wer die Konvention mit dem Argument
+ändert, sie sei injektiv, muss an ihm vorbei.
+
+Vorher war es schon einmal derselbe Fehler, eine Stufe gröber: der Test verglich
+die Prompts, die der Recorder gesehen hatte, statt die Hashes, die aufgezeichnet
+wurden — ein Fingerprint, der die Nutzerhälfte ignoriert, kam durch. **Mutationen
+finden schlechte Tests, nicht schlechten Code**, und bei mir inzwischen
+fünfmal.
+
+### Ein Basisfehler von mir, und er ist lehrreicher als er aussieht
+
+Ich habe berichtet, auf **main** behaupte der Bericht 448 Tests, während die Suite
+455 laufe, und meinen Aktualitätstest beschuldigt, einen Beinahe-Treffer
+durchgelassen zu haben. **Das war falsch.** main stand bei 463 und §3an, also
+richtig. Mein Branch hing noch auf dem Stand vor #23, und ich habe *dessen*
+Bericht für den von main gelesen.
+
+Die Lehre ist nicht „sorgfältiger lesen". Sie ist dieselbe wie die aus 3am: eine
+Zahl, die gegen die falsche Wirklichkeit geprüft wird, sieht wie ein Treffer aus.
+Der Test selbst hat korrekt gearbeitet — die Grenze, die sein Docstring benennt,
+blieb unberührt, und es gab nichts zu verschärfen.

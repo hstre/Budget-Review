@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3an, which is a log rather than a synthesis.
+§3a–§3ao, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -100,6 +100,7 @@ withdrawals in §7 have that one cause.
 | 18 | On long documents **no finding category holds still** — contradictions at severity high run 2, 7, 5 on one decision | open, and the sharpest open problem in this report (§4.15) |
 | 19 | Half the meaning set could be passed without preserving the meaning; rewritten, and the figures do not move | **resolved** (§4.16). The set is examined rather than a draft, and 69 of 72 survives a strictly harder instrument |
 | 20 | Six fields the dossier carries are written and never read, and `semantic_state` is a state machine with no transitions | open; audited rather than noticed (§4.17), and blocked on the schema decision from §4.5 |
+| 21 | Reviewer comparisons rest on an assumption the artefacts could not confirm: the arms recorded no prompt hash and no output budget | both are recorded now (§4.18), but only from here on — every stored reviewer run predates the guard |
 
 ---
 
@@ -941,6 +942,57 @@ transitions — which requires the versioned-overlay schema decision open since 
 that looks like a safeguard, which is exactly what `anchor_ambiguous` cost, and the
 lesson now applies a second time.
 
+### 4.18 A guard for reviewer comparisons, built because exactly it was missing
+
+A reviewer finding this work could not prove is what prompted the change. While
+reading [BeliefScope](https://arxiv.org/abs/2610.11305), one measured axis turned
+out to change its character with a condition that has nothing to do with the
+evidence:
+
+| Run set | Reviewer budget | `flash-evidence-skeptic` confidence values |
+|---|---|---|
+| `rv54` | 8,192 | 6 values, strictly on a 0.05 grid |
+| `rb55` | 65,536 | 15 values, off that grid (0.82 · 0.87 · 0.88 · 0.91 …) |
+
+Same model, same profile, same graph, same contract. The only *named* difference
+is the output budget, and "the confidence became more differentiated" would here
+be an artefact of the budget rather than a better judgement.
+
+**That sentence cannot be substantiated.** The extraction has recorded a
+`prompt_hash` since it existed, and that guard has earned itself once: of three
+artefacts the log described as one arm's three runs, only two shared a hash, and
+pooling them would have reported a configuration difference as run-to-run
+instability. For the reviewer arms no such field existed, so every reviewer
+comparison in this record rests on the assumption that the arms were asked the
+same question.
+
+What is now recorded is the smallest thing that makes the question answerable:
+`prompt_fingerprint(system, user)` gives the convention a single name, because two
+expressions that almost agree are worse than one missing hash — they compare as
+unequal and report a difference that is not there. The hash is written on **both**
+reviewer paths, the failed one included, and computed before the call, since the
+prompt was sent either way and "the arm was asked and said nothing" is the case a
+later comparison most needs to separate. Alongside it, `max_tokens` — the very
+condition that produced the finding above and appeared nowhere in the artefact.
+
+**It does not apply retroactively**, and that is the half that counts. Every
+reviewer run stored so far carries no hash, by construction, so the `rv54`/`rb55`
+sentence stays unproven and no later code can change that: it needs a new paid
+run. The guard works from here forward, and a comparison across that boundary is
+still unguarded.
+
+Seven mutations were run against the new tests and six were caught at once. The
+survivor removed the joining separator, and the test meant to catch it compared a
+pair that differs with the separator *and* without it — so it asserted nothing.
+Measured instead of assumed, the discriminating pair is `("ab","c")` against
+`("a","bc")`, which collide without a separator. The same measurement exposed an
+honest limitation: the convention is **not injective**, because a prompt
+containing the separator makes two different splits collide. That is harmless in
+this repository, where the system half is a fixed role prompt, but it is a
+property of the repository rather than of the hash, so a test now asserts it
+outright. Mutations keep finding bad tests rather than bad code — this is the
+fifth time in this record.
+
 ---
 
 ## 5. What we do not know
@@ -1119,7 +1171,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 25 measurement scripts, each tested
-docs/architecture.md §3a–§3an            the chronological record, run by run
+docs/architecture.md §3a–§3ao            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1128,7 +1180,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-463 tests and one skipped, `ruff check` clean.
+472 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1179,7 +1231,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3an und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ao und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1273,6 +1325,7 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 18 | Auf langen Dokumenten bleibt **keine Befundart stehen** — Widersprüche mit Schweregrad high laufen 2, 7, 5 auf einer Entscheidung | offen, und das schärfste ungelöste Problem dieses Berichts (§4.15) |
 | 19 | Die Hälfte des Bedeutungsbestands war bestehbar, ohne die Bedeutung zu erhalten; umgeschrieben, und die Zahlen bewegen sich nicht | **gelöst** (§4.16). Der Bestand ist geprüft statt Entwurf, und 69 von 72 übersteht ein strikt härteres Instrument |
 | 20 | Sechs Felder des Dossiers werden geschrieben und nie gelesen, und `semantic_state` ist ein Zustandsautomat ohne Übergänge | offen; geprüft statt bemerkt (§4.17), und blockiert von der Schemaentscheidung aus §4.5 |
+| 21 | Reviewer-Vergleiche ruhen auf einer Annahme, die die Artefakte nicht belegen konnten: die Arme zeichneten weder Prompt-Hash noch Ausgabebudget auf | beides wird jetzt aufgezeichnet (§4.18), aber erst von hier an — jeder gespeicherte Reviewer-Lauf liegt vor dem Wächter |
 
 ## 2. Was das System ist
 
@@ -2119,6 +2172,60 @@ beobachteten Wert, das nichts liest, ist Dekoration, die wie eine Sicherung
 aussieht; genau das hat `anchor_ambiguous` gekostet, und die Lehre gilt hier ein
 zweites Mal.
 
+### 4.18 Ein Wächter für Reviewer-Vergleiche, gebaut weil genau er fehlte
+
+Anlass war ein eigener Befund, der sich **nicht belegen** ließ. Bei der Durchsicht
+von [BeliefScope](https://arxiv.org/abs/2610.11305) zeigte sich, dass eine
+gemessene Achse ihren Charakter mit einer Bedingung wechselt, die mit der Evidenz
+nichts zu tun hat:
+
+| Satz | Reviewer-Budget | Konfidenzwerte von `flash-evidence-skeptic` |
+|---|---|---|
+| `rv54` | 8.192 | 6 Werte, strikt im 0,05-Raster |
+| `rb55` | 65.536 | 15 Werte, außerhalb dieses Rasters (0,82 · 0,87 · 0,88 · 0,91 …) |
+
+Gleiches Modell, gleiches Profil, gleicher Graph, gleicher Vertrag. Der einzige
+*benannte* Unterschied ist das Ausgabebudget, und „die Konfidenz ist
+differenzierter geworden" wäre hier ein Artefakt des Budgets und kein besseres
+Urteil.
+
+**Dieser Satz ist nicht belegbar.** Die Extraktion zeichnet seit immer einen
+`prompt_hash` auf, und dieser Wächter hat sich einmal bezahlt: von drei
+Artefakten, die das Log als drei Läufe eines Arms führte, teilten nur zwei den
+Hash — ein Pooling hätte einen Konfigurationsunterschied als
+Lauf-zu-Lauf-Instabilität berichtet. Für die Reviewer-Arme gab es das Feld nicht,
+also ruht jeder Reviewer-Vergleich dieser Aufzeichnung auf der Annahme, die Arme
+seien gleich gefragt worden.
+
+Aufgezeichnet wird jetzt das Kleinste, was die Frage beantwortbar macht:
+`prompt_fingerprint(system, user)` gibt der Konvention **einen** Namen, denn zwei
+Ausdrücke, die fast dasselbe bedeuten, sind schlechter als ein fehlender Hash —
+sie vergleichen sich als ungleich und melden einen Unterschied, der nicht da ist.
+Der Hash steht auf **beiden** Reviewer-Pfaden, auch auf dem fehlgeschlagenen, und
+wird vor dem Aufruf berechnet: gesendet wurde der Prompt so oder so, und „der Arm
+wurde gefragt und hat geschwiegen" ist der Fall, den ein späterer Vergleich am
+dringendsten trennen muss. Daneben `max_tokens` — genau die Bedingung, die den
+Befund oben erzeugt hat und im Artefakt nirgends stand.
+
+**Rückwirkend gilt er nicht**, und das ist die Hälfte, die zählt. Jeder bisher
+gespeicherte Reviewer-Lauf trägt konstruktionsbedingt keinen Hash; der
+`rv54`/`rb55`-Satz bleibt also unbelegt, und kein späterer Code ändert das — es
+braucht einen neuen, bezahlten Lauf. Die Sicherung wirkt ab hier, und ein
+Vergleich über diese Grenze hinweg ist weiterhin ungeschützt.
+
+Sieben Mutationen liefen gegen die neuen Tests, sechs wurden sofort gefangen. Die
+überlebende entfernte das verbindende Trennzeichen, und der Test, der sie fangen
+sollte, verglich ein Paar, das sich mit Trennzeichen *und* ohne unterscheidet —
+er prüfte also nichts. Gemessen statt vermutet ist das unterscheidende Paar
+`("ab","c")` gegen `("a","bc")`, das ohne Trenner kollidiert. Dieselbe Messung
+legte eine ehrliche Grenze offen: die Konvention ist **nicht injektiv**, denn ein
+Prompt, der das Trennzeichen enthält, lässt zwei verschiedene Aufteilungen
+zusammenfallen. In diesem Repository ist das harmlos, weil die Systemhälfte ein
+festes Rollenprompt ist — aber es ist eine Eigenschaft des Repositorys und nicht
+des Hashes, und ein Test behauptet sie deshalb ausdrücklich. Mutationen finden
+weiter schlechte Tests statt schlechten Code; in dieser Aufzeichnung zum fünften
+Mal.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2293,7 +2400,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 25 Messskripte, jedes getestet
-docs/architecture.md §3a–§3an            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3ao            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2303,7 +2410,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-463 Tests und einer übersprungen, `ruff check` sauber.
+472 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

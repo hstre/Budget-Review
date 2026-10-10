@@ -12,7 +12,7 @@ import uuid
 from dataclasses import dataclass, replace
 from typing import Any
 
-from .gate import sha256_text
+from .gate import prompt_fingerprint, sha256_text
 from .models import (
     ClaimProposal,
     Rejection,
@@ -196,7 +196,7 @@ class DeepSeekProvider:
                     "provider": "deepseek",
                     "model_id": str(metadata["model"]),
                     "run_id": str(uuid.uuid4()),
-                    "prompt_hash": sha256_text(active_system + "\n" + user),
+                    "prompt_hash": prompt_fingerprint(active_system, user),
                     "output_hash": str(metadata["output_hash"]),
                     "temperature": 0.0,
                 },
