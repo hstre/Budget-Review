@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3am, which is a log rather than a synthesis.
+§3a–§3an, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -99,6 +99,7 @@ withdrawals in §7 have that one cause.
 | 17 | **4 of 24 documents emit a different finding set** across byte-identical runs, including one at severity high | open; measured with the real rules (§4.14), and three of the four causes sit on the relation half |
 | 18 | On long documents **no finding category holds still** — contradictions at severity high run 2, 7, 5 on one decision | open, and the sharpest open problem in this report (§4.15) |
 | 19 | Half the meaning set could be passed without preserving the meaning; rewritten, and the figures do not move | **resolved** (§4.16). The set is examined rather than a draft, and 69 of 72 survives a strictly harder instrument |
+| 20 | Six fields the dossier carries are written and never read, and `semantic_state` is a state machine with no transitions | open; audited rather than noticed (§4.17), and blocked on the schema decision from §4.5 |
 
 ---
 
@@ -881,6 +882,67 @@ stay unannotated because neither proposed an edge when asked.
 
 ---
 
+### 4.17 Six fields the product never reads, and one state machine with no transitions
+
+`anchor_ambiguous` was found to be write-only by accident, while a different flag
+was being added (§4.13). The lesson taken from it was that a marker nothing renders
+is not a safeguard. `scripts/unread_fields.py` now asks the question for every
+field over the syntax tree, instead of waiting for the next accident — and finds
+**six** written and never read, where a grep over the same tree found four.
+
+| | written, never read |
+|---|---|
+| **provenance, correctly unread** | `anchor_normalised`, `proposed_span` — sitting in the JSON is the whole job |
+| **identifiers nothing resolves** | `finding_id`, `relation_id` — a primary key with no foreign key; right for a human citing a dossier, dead for the product |
+| **borderline** | `anchor_ambiguous` — the gate recomputes the condition inline and it is not rendered. §4.13's lesson, never applied |
+| **the one that matters** | `semantic_state` |
+
+One more sits deeper: **`Finding.state` is never set and never read**, carrying only
+its default. That is a stronger statement than unread, and the audit reports it
+apart.
+
+**Unread does not mean wrong**, and that belongs before the list rather than after
+it. Four of the six are provenance or identifiers and correct as they are.
+
+**The one that matters** was named by [arXiv 2610.06496](https://arxiv.org/abs/2610.06496),
+whose finding is that models confuse "mentioned" with "still in force": after a
+proposal is rejected, the inactive content reappears in 59.63 per cent of the new
+errors. Checked against this codebase, the good half holds by construction — a
+proposal the gate refuses reaches neither the deterministic rules nor the reviewers,
+so provenance and force are already separate **before** admission.
+
+What is missing is the case *after* admission. A claim admitted and later withdrawn
+by a human, or superseded by a better reading, has no state that says so.
+`semantic_state` is where it would live, and it is **a state machine with no
+transitions**: two values the gate can set, exactly one observed across all 242
+stored claims, no reader anywhere, and nothing able to change it once the gate has
+run. So the paper reveals no new defect; it names the failure mode that makes an
+already-listed gap cost something, and supplies a vocabulary for it.
+
+Two papers from the same batch have nothing to take here, and the reason is worth
+recording. [U-Space](https://arxiv.org/abs/2610.09087) derives uncertainty
+directions from the residual stream; **we have no activations**, since we call an
+API and get text, which is a boundary rather than an obstacle. Its transferable
+lesson — that a predictor may be tracking length (68.6 % AUROC, 52.4 % under length
+control) — is already applied in §4.4, which compares across four papers of similar
+length and names its own remaining confound; the re-run open there is **not free**,
+because only one of those four documents is still stored.
+[Accurate but Not Humble](https://arxiv.org/abs/2610.12360) describes a conflict
+noticed early and dropped later, which §4.15 has measured in this system's terms:
+`internal_contradiction` at severity high runs 2, 7, 5 across identical runs. Ours
+is between runs and theirs within a trajectory, and within one run the decay cannot
+happen here because the rule is deterministic. Its humility-against-accuracy
+trade-off is not measurable here, since §4.14 established there is no gold for
+findings.
+
+**The decision is not mine.** `semantic_state` either becomes a real state with
+transitions — which requires the versioned-overlay schema decision open since §4.5
+— or it is removed. A field with one observed value that nothing reads is decoration
+that looks like a safeguard, which is exactly what `anchor_ambiguous` cost, and the
+lesson now applies a second time.
+
+---
+
 ## 5. What we do not know
 
 Stated as questions, because each is a measurement nobody has made.
@@ -953,7 +1015,7 @@ Stated as questions, because each is a measurement nobody has made.
 | Truncation on long documents | The cliff moves with the budget; it does not go away |
 | Genuine paraphrase in quotations | 11 of 465 proposals, correctly refused, permanently lost |
 | Relation expressivity | Four of six families covered; the gap is untested |
-| A finding's state is never resolved | Needs a versioned overlay and a schema decision |
+| A finding's state is never resolved | Needs a versioned overlay and a schema decision. §4.17 names what it costs: `semantic_state` exists, takes one observed value across 242 claims, and nothing reads it — so a claim withdrawn by a human after admission leaves no trace that it was |
 | Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12) |
 | The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
 | A finding can appear and vanish under identical input | On 24 short cases 4 of 24 documents emit a different finding set. On two long documents **no category holds still**: contradictions at severity high run 2, 7, 5 and logical gaps 16, 19, 13 across identical runs. Three rules fire on an *absence*, and extraction is known to lose argument structure, so the absence may be the run's (§4.14, §4.15) |
@@ -1056,8 +1118,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 24 measurement scripts, each tested
-docs/architecture.md §3a–§3am            the chronological record, run by run
+scripts/                                 25 measurement scripts, each tested
+docs/architecture.md §3a–§3an            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1066,7 +1128,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-448 tests and one skipped, `ruff check` clean.
+463 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1117,7 +1179,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3am und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3an und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1210,6 +1272,7 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 17 | **4 von 24 Dokumenten liefern eine andere Befundmenge** über byte-identische Läufe, einer davon mit Schweregrad high | offen; mit den echten Regeln gemessen (§4.14), und drei der vier Ursachen liegen auf der Relationshälfte |
 | 18 | Auf langen Dokumenten bleibt **keine Befundart stehen** — Widersprüche mit Schweregrad high laufen 2, 7, 5 auf einer Entscheidung | offen, und das schärfste ungelöste Problem dieses Berichts (§4.15) |
 | 19 | Die Hälfte des Bedeutungsbestands war bestehbar, ohne die Bedeutung zu erhalten; umgeschrieben, und die Zahlen bewegen sich nicht | **gelöst** (§4.16). Der Bestand ist geprüft statt Entwurf, und 69 von 72 übersteht ein strikt härteres Instrument |
+| 20 | Sechs Felder des Dossiers werden geschrieben und nie gelesen, und `semantic_state` ist ein Zustandsautomat ohne Übergänge | offen; geprüft statt bemerkt (§4.17), und blockiert von der Schemaentscheidung aus §4.5 |
 
 ## 2. Was das System ist
 
@@ -1996,6 +2059,66 @@ Durchsichten sind zwei Modelle und kein Fachgutachten. Das siebte Phänomen blei
 offen, weil die Durchsichten darüber uneins sind, und die Relationen bleiben
 unannotiert, weil keine der beiden auf Nachfrage eine Kante vorgeschlagen hat.
 
+### 4.17 Sechs Felder, die das Produkt nie liest, und ein Zustandsautomat ohne Übergänge
+
+Dass `anchor_ambiguous` write-only ist, war ein Zufallsbefund beim Einbau einer
+anderen Markierung (§4.13). Die Lehre daraus: eine Markierung, die nichts rendert,
+ist keine Sicherung. `scripts/unread_fields.py` stellt die Frage jetzt für **jedes**
+Feld über den Syntaxbaum, statt auf den nächsten Zufall zu warten — und findet
+**sechs** geschrieben und nie gelesen, wo ein Grep über denselben Baum vier fand.
+
+| | geschrieben, nie gelesen |
+|---|---|
+| **Provenienz, zu Recht ungelesen** | `anchor_normalised`, `proposed_span` — im JSON zu stehen *ist* die Aufgabe |
+| **Bezeichner, die nichts auflöst** | `finding_id`, `relation_id` — ein Primärschlüssel ohne Fremdschlüssel |
+| **grenzwertig** | `anchor_ambiguous` — das Gate rechnet die Bedingung inline nochmal, gerendert wird sie nicht |
+| **der eine, der zählt** | `semantic_state` |
+
+Eines liegt noch tiefer: **`Finding.state` wird nie gesetzt und nie gelesen** und
+trägt nur seinen Vorgabewert. Das ist eine stärkere Aussage als „ungelesen", und
+die Prüfung berichtet es getrennt.
+
+**Ungelesen heißt nicht falsch**, und das gehört vor die Liste. Vier der sechs sind
+Provenienz oder Bezeichner und richtig so.
+
+**Der eine, der zählt**, wurde von [arXiv 2610.06496](https://arxiv.org/abs/2610.06496)
+benannt: Modelle verwechseln „erwähnt" mit „weiterhin wirksam" — nach einer
+Zurückweisung taucht der inaktive Inhalt in 59,63 % der neuen Fehler wieder auf.
+Gegen diesen Code geprüft hält die gute Hälfte konstruktionsbedingt: ein Vorschlag,
+den das Gate ablehnt, erreicht weder die deterministischen Regeln noch die
+Reviewer — Provenienz und Wirksamkeit sind **vor** der Zulassung schon getrennt.
+
+Es fehlt der Fall *nach* der Zulassung. Ein Claim, der zugelassen und später von
+einem Menschen verworfen oder durch eine bessere Lesart ersetzt wird, hat keinen
+Zustand, der das sagt. `semantic_state` wäre die Stelle und ist **ein
+Zustandsautomat ohne Übergänge**: zwei Werte, die das Gate setzen kann, über alle
+242 gespeicherten Claims genau einer beobachtet, kein Leser irgendwo, und nach dem
+Gate kann ihn nichts mehr ändern. Das Paper liefert also keinen neuen Mangel,
+sondern den Fehlermodus, der eine schon gelistete Lücke etwas kosten lässt.
+
+Zwei Paper aus derselben Zulieferung haben hier nichts zu holen, und der Grund
+gehört festgehalten. [U-Space](https://arxiv.org/abs/2610.09087) gewinnt
+Unsicherheitsrichtungen aus dem Residual Stream; **wir haben keine
+Aktivierungen**, weil wir eine API rufen und Text bekommen — eine Grenze, keine
+Hürde. Die übertragbare Lehre, dass ein Prädiktor bloß Länge nachspuren kann
+(68,6 % AUROC, 52,4 % nach Längenkontrolle), wendet §4.4 schon an und benennt den
+eigenen Reststörfaktor; der dort offene Nachlauf ist **nicht gratis**, weil nur
+eines der vier Dokumente noch gespeichert ist.
+[Accurate but Not Humble](https://arxiv.org/abs/2610.12360) beschreibt einen früh
+erkannten und später verlorenen Konflikt, was §4.15 in unseren Begriffen gemessen
+hat: `internal_contradiction` mit Schweregrad high läuft 2, 7, 5 über identische
+Läufe. Unsere Version liegt zwischen Läufen, ihre innerhalb einer Trajektorie, und
+innerhalb eines Laufs kann der Verfall hier nicht auftreten, weil die Regel
+deterministisch ist. Der Demut-gegen-Genauigkeit-Handel ist hier nicht messbar,
+weil §4.14 festgehalten hat, dass es für Befunde kein Gold gibt.
+
+**Die Entscheidung ist nicht meine.** `semantic_state` wird entweder ein echter
+Zustand mit Übergängen — was die seit §4.5 offene Schemaentscheidung über das
+versionierte Overlay verlangt — oder es wird entfernt. Ein Feld mit einem
+beobachteten Wert, das nichts liest, ist Dekoration, die wie eine Sicherung
+aussieht; genau das hat `anchor_ambiguous` gekostet, und die Lehre gilt hier ein
+zweites Mal.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2065,7 +2188,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Abbruch auf langen Dokumenten | Die Grenze wandert mit dem Budget, sie verschwindet nicht |
 | Echte Umformulierung im Zitat | 11 von 465 Vorschlägen, zu Recht abgelehnt, dauerhaft verloren |
 | Relations-Ausdruckskraft | Vier von sechs Familien gedeckt; die Lücke ist ungeprüft |
-| Der Zustand eines Befunds wird nie aufgelöst | Braucht ein versioniertes Overlay und eine Schemaentscheidung |
+| Der Zustand eines Befunds wird nie aufgelöst | Braucht ein versioniertes Overlay und eine Schemaentscheidung. §4.17 benennt, was es kostet: `semantic_state` existiert, nimmt über 242 Claims einen Wert an, und nichts liest es — ein nach der Zulassung von einem Menschen verworfener Claim hinterlässt also keine Spur davon |
 | Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12) |
 | Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
 | Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | Auf 24 kurzen Fällen liefern 4 von 24 Dokumenten eine andere Befundmenge. Auf zwei langen Dokumenten bleibt **keine Befundart stehen**: Widersprüche mit Schweregrad high laufen 2, 7, 5 und logische Lücken 16, 19, 13 über identische Läufe. Drei Regeln feuern auf eine *Abwesenheit*, und die Extraktion verliert bekanntlich Argumentstruktur — die Abwesenheit kann die des Laufs sein (§4.14, §4.15) |
@@ -2169,8 +2292,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 24 Messskripte, jedes getestet
-docs/architecture.md §3a–§3am            die chronologische Aufzeichnung
+scripts/                                 25 Messskripte, jedes getestet
+docs/architecture.md §3a–§3an            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2180,7 +2303,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-448 Tests und einer übersprungen, `ruff check` sauber.
+463 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

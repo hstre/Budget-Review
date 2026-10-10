@@ -341,7 +341,7 @@ Everything below was run against a paid API on real documents, each with a
 success mark fixed *before* dispatch. The status column is the point of the
 table: several results that read well at the time did not survive being
 repeated, and they are listed as withdrawn rather than quietly dropped. Full
-detail per experiment is in `docs/architecture.md` §3a–§3am.
+detail per experiment is in `docs/architecture.md` §3a–§3an.
 
 | # | Experiment | Mark fixed beforehand | Result | Status |
 |---|---|---|---|---|
@@ -376,6 +376,7 @@ detail per experiment is in `docs/architecture.md` §3a–§3am.
 | 29 | The same comparison on two **long** documents, three stored run sets with an identical prompt hash each | none — the open item from §28; the runs were already paid for | **Nought stable finding categories in all three sets.** `internal_contradiction` (severity **high**) 2, 7, 5 on the decision · `logical_gap` 16, 19, 13 on the paper · `coverage_gap` 6, 10, 10 and 7, 13 | Short cases are the special case in which anything holds still. **A single run is a draw, not a sample.** Also **corrects §27**: `coverage_gap` was labelled `document`, the most trusted input, while it fires on an *absence* — a fifth kind added, declared by the three absence rules |
 | 30 | Two independent **blind** reviews of the meaning set, then their sixteen counterexamples checked against the real validator | none — the set was a draft until two reviews were recorded | **12 confirmed, 4 refuted.** All five "unfaithful passes" hold: `neg-01-de` passes with the meaning reversed, `mul-*` with bare fragments. The four "slips through the forbids" claims are wrong — both reviews argued from `forbids` alone and forgot `requires_all_groups` | Agreement *against* the draft on `spk-02` and `mul-*`: as written they measure nothing. `speaker 12/12` and `multiple assertions 12/12` **stand but lose evidential weight**. Found three holes in my own scorer; re-scoring all 72 dossiers moved **nothing** |
 | 31 | The twelve cases both reviews found unfit, rewritten — then the 72 paid dossiers scored again | the nine confirmed unfaithful renderings must fail and the seven confirmed faithful ones must pass | **9 fail, 7 pass, all sixteen separated.** Then: **69 of 72 before, 69 of 72 after**, with twelve of 24 cases strictly harder | **"the numbers hold but their evidential weight does not" is refuted** — by a measurement. Documents and spans were left untouched so the paid runs stayed scorable, which is what made the measurement possible at all |
+| 32 | Every field a dossier carries, counted for writes against reads over the syntax tree | none — a first audit; the one precedent was found by accident | **Six fields written and never read by the product**, plus one never even set. Four are provenance or identifiers and correct that way. `semantic_state` is a state machine with no transitions: two possible values, one observed across 242 claims, no reader | Replaces an accidental finding with a measurement. My own grep had found four of the six. The distinction between provenance and a dead safeguard is prose, not grep — and the open schema decision is now the thing blocking it |
 
 #### What we believe we know
 
@@ -940,7 +941,7 @@ Mal mit einem Erfolgsmaß, das *vor* dem Start festgelegt wurde. Die
 Status-Spalte ist der Zweck der Tabelle: Mehrere Ergebnisse, die damals gut
 aussahen, haben die Wiederholung nicht überstanden — sie stehen hier als
 zurückgezogen und nicht stillschweigend gestrichen. Die Einzelheiten je Versuch
-stehen in `docs/architecture.md` §3a–§3am.
+stehen in `docs/architecture.md` §3a–§3an.
 
 | # | Versuch | Vorab festgelegt | Ergebnis | Status |
 |---|---|---|---|---|
@@ -975,6 +976,7 @@ stehen in `docs/architecture.md` §3a–§3am.
 | 29 | Derselbe Vergleich auf zwei **langen** Dokumenten, drei gespeicherte Laufsätze mit je identischem prompt_hash | keines — der offene Punkt aus 28; die Läufe waren schon bezahlt | **Null stabile Befundarten in allen drei Sätzen.** `internal_contradiction` (Schweregrad **high**) 2, 7, 5 auf der Entscheidung · `logical_gap` 16, 19, 13 auf dem Paper · `coverage_gap` 6, 10, 10 und 7, 13 | Kurze Fälle sind der Sonderfall, in dem überhaupt etwas stillsteht. **Ein einzelner Lauf ist eine Ziehung, keine Stichprobe.** Außerdem **korrigiert 27**: `coverage_gap` trug `document`, den vertrauenswürdigsten Eingang, feuert aber auf eine *Abwesenheit* — eine fünfte Art ergänzt, von den drei Abwesenheitsregeln deklariert |
 | 30 | Zwei unabhängige **blinde** Durchsichten des Bedeutungsbestands, danach ihre sechzehn Gegenbeispiele gegen den echten Validator geprüft | keines — der Bestand war Entwurf, bis zwei Durchsichten vermerkt sind | **12 bestätigt, 4 widerlegt.** Alle fünf „untreu besteht" halten: `neg-01-de` besteht mit umgekehrter Bedeutung, `mul-*` mit nackten Fragmenten. Die vier „rutscht durch die Verbote" sind falsch — beide argumentierten allein über `forbids` und übersahen `requires_all_groups` | Übereinstimmung *gegen* den Entwurf bei `spk-02` und `mul-*`: so messen sie nichts. `Sprecher 12/12` und `mehrere Aussagen 12/12` **stehen, verlieren aber Beweiskraft**. Drei Löcher in meinem eigenen Scorer gefunden; die Neubewertung aller 72 Dossiers bewegte **nichts** |
 | 31 | Die zwölf Fälle, die beide Durchsichten für untauglich hielten, umgeschrieben — dann die 72 bezahlten Dossiers erneut bewertet | die neun bestätigt untreuen Wiedergaben müssen durchfallen, die sieben bestätigt treuen bestehen | **9 fallen, 7 bestehen, alle sechzehn getrennt.** Dann: **69 von 72 vorher, 69 von 72 nachher**, bei zwölf von 24 strikt härteren Fällen | **„die Zahlen stehen, ihre Beweiskraft nicht" ist widerlegt** — durch eine Messung. Dokumente und Spannen blieben unangetastet, damit die bezahlten Läufe bewertbar bleiben; genau das hat die Messung überhaupt möglich gemacht |
+| 32 | Jedes Feld, das ein Dossier trägt, Schreib- gegen Lesezugriffe über den Syntaxbaum | keines — eine erste Prüfung; der eine Präzedenzfall war ein Zufallsbefund | **Sechs Felder werden geschrieben und vom Produkt nie gelesen**, eines wird nie gesetzt. Vier sind Provenienz oder Bezeichner und so richtig. `semantic_state` ist ein Zustandsautomat ohne Übergänge: zwei mögliche Werte, einer über 242 Claims beobachtet, kein Leser | Ersetzt einen Zufallsbefund durch eine Messung. Mein eigener Grep fand vier der sechs. Die Unterscheidung zwischen Provenienz und toter Sicherung trifft die Prosa, nicht der Grep — und die offene Schemaentscheidung blockiert sie jetzt |
 
 #### Was wir zu wissen glauben
 
