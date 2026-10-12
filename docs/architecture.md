@@ -3025,8 +3025,14 @@ sondern eine Grenze.
 Übertragbar ist nur die methodische Lehre: ein Prädiktor, der gut aussieht, kann
 bloß Länge nachspuren (68,6 % AUROC, nach Längenkontrolle 52,4 %). Die wenden wir
 schon an — 3n vergleicht die Warnleuchte über *vier Paper ähnlicher Länge* und
-benennt den verbliebenen Störfaktor selbst. Der dort offene Nachlauf ist **nicht
-gratis**: nachgesehen, nur `A24` liegt gespeichert, `A40`/`A21`/`A34` nicht.
+benennt den verbliebenen Störfaktor selbst.
+
+> **Korrektur, nachgetragen.** Hier stand, der dort offene Nachlauf sei „nicht
+> gratis, nur `A24` liegt gespeichert". **Das war falsch.** Alle vier Paper liegen
+> als Artefakt vor, jeweils mit Dokumenttext, Gold und Vorschlagspaket — der
+> Nachlauf braucht keinen bezahlten Aufruf, nur das heutige Gate. Ich hatte die
+> Artefaktliste nach dem falschen Namen durchsucht und aus dem Nichtfinden auf
+> Nichtvorhandensein geschlossen.
 
 **[Accurate but Not Humble](https://arxiv.org/abs/2610.12360)** haben wir in
 unseren Begriffen schon gemessen. Dass ein früh erkannter Konflikt später

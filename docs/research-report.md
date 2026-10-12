@@ -926,8 +926,11 @@ directions from the residual stream; **we have no activations**, since we call a
 API and get text, which is a boundary rather than an obstacle. Its transferable
 lesson — that a predictor may be tracking length (68.6 % AUROC, 52.4 % under length
 control) — is already applied in §4.4, which compares across four papers of similar
-length and names its own remaining confound; the re-run open there is **not free**,
-because only one of those four documents is still stored.
+length and names its own remaining confound. (An earlier version of this section
+said the re-run open there was not free because only one of the four documents was
+still stored. **That was wrong**: all four are stored, each with its document text,
+its gold and its proposal packet, so the re-run needs no paid call — only today's
+gate.)
 [Accurate but Not Humble](https://arxiv.org/abs/2610.12360) describes a conflict
 noticed early and dropped later, which §4.15 has measured in this system's terms:
 `internal_contradiction` at severity high runs 2, 7, 5 across identical runs. Ours
@@ -2155,8 +2158,11 @@ Unsicherheitsrichtungen aus dem Residual Stream; **wir haben keine
 Aktivierungen**, weil wir eine API rufen und Text bekommen — eine Grenze, keine
 Hürde. Die übertragbare Lehre, dass ein Prädiktor bloß Länge nachspuren kann
 (68,6 % AUROC, 52,4 % nach Längenkontrolle), wendet §4.4 schon an und benennt den
-eigenen Reststörfaktor; der dort offene Nachlauf ist **nicht gratis**, weil nur
-eines der vier Dokumente noch gespeichert ist.
+eigenen Reststörfaktor. (Eine frühere Fassung dieses Abschnitts behauptete, der
+dort offene Nachlauf sei nicht gratis, weil nur eines der vier Dokumente noch
+gespeichert sei. **Das war falsch**: alle vier liegen gespeichert, jeweils mit
+Dokumenttext, Gold und Vorschlagspaket — der Nachlauf braucht keinen bezahlten
+Aufruf, nur das heutige Gate.)
 [Accurate but Not Humble](https://arxiv.org/abs/2610.12360) beschreibt einen früh
 erkannten und später verlorenen Konflikt, was §4.15 in unseren Begriffen gemessen
 hat: `internal_contradiction` mit Schweregrad high läuft 2, 7, 5 über identische
