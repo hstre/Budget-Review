@@ -3025,8 +3025,14 @@ sondern eine Grenze.
 Übertragbar ist nur die methodische Lehre: ein Prädiktor, der gut aussieht, kann
 bloß Länge nachspuren (68,6 % AUROC, nach Längenkontrolle 52,4 %). Die wenden wir
 schon an — 3n vergleicht die Warnleuchte über *vier Paper ähnlicher Länge* und
-benennt den verbliebenen Störfaktor selbst. Der dort offene Nachlauf ist **nicht
-gratis**: nachgesehen, nur `A24` liegt gespeichert, `A40`/`A21`/`A34` nicht.
+benennt den verbliebenen Störfaktor selbst.
+
+> **Korrektur, nachgetragen.** Hier stand, der dort offene Nachlauf sei „nicht
+> gratis, nur `A24` liegt gespeichert". **Das war falsch.** Alle vier Paper liegen
+> als Artefakt vor, jeweils mit Dokumenttext, Gold und Vorschlagspaket — der
+> Nachlauf braucht keinen bezahlten Aufruf, nur das heutige Gate. Ich hatte die
+> Artefaktliste nach dem falschen Namen durchsucht und aus dem Nichtfinden auf
+> Nichtvorhandensein geschlossen.
 
 **[Accurate but Not Humble](https://arxiv.org/abs/2610.12360)** haben wir in
 unseren Begriffen schon gemessen. Dass ein früh erkannter Konflikt später
@@ -3135,3 +3141,233 @@ Content Review bewertet interne inhaltliche Tragfähigkeit. Externe Faktenprüfu
 ist nicht stillschweigend eingebaut, weil sie Quellenwahl, Aktualität und einen
 eigenen Provenienzvertrag benötigt. Sie kann später als getrennte Schicht an den
 zugelassenen ClaimGraph angeschlossen werden.
+
+## 3ao. Ein Wächter für Reviewer-Vergleiche — gebaut, weil mir genau er gefehlt hat
+
+Anlass war kein fremdes Paper, sondern ein eigener Befund, den ich **nicht belegen
+konnte**. Bei der Durchsicht von [BeliefScope](https://arxiv.org/abs/2610.11305)
+fiel auf, dass dieselbe gemessene Achse ihren Charakter mit einer Bedingung
+wechselt, die mit der Evidenz nichts zu tun hat:
+
+| Satz | Reviewer-Budget | `flash-evidence-skeptic`, Konfidenzwerte |
+|---|---|---|
+| `rv54` | 8.192 | 6 Werte, strikt im 0,05-Raster |
+| `rb55` | 65.536 | 15 Werte, außerhalb des Rasters (0,82 · 0,87 · 0,88 · 0,91 …) |
+
+Gleiches Modell, gleiches Profil, gleicher Graph, gleicher Vertrag. Der einzige
+*benannte* Unterschied ist das Ausgabebudget. „Die Konfidenz ist differenzierter
+geworden" wäre hier ein Artefakt des Budgets und kein besseres Urteil.
+
+**Nur: belegen kann ich den Satz nicht.** Die Provenienz zeichnet für die
+Extraktion seit immer einen `prompt_hash` auf — und dieser Wächter hat sich
+einmal bezahlt (3x: von drei Artefakten, die das Log als „drei Läufe eines Arms"
+führte, teilten nur zwei den Hash; ein Pooling hätte einen
+Konfigurationsunterschied als Lauf-zu-Lauf-Instabilität berichtet). Für die
+**Reviewer-Arme existierte er nicht.** Jeder Reviewer-Vergleich, den dieses Log
+anstellt, ruht damit auf der Annahme, die Arme seien gleich gefragt worden.
+
+### Gebaut wurde das Kleinste, was den Satz künftig prüfbar macht
+
+| | |
+|---|---|
+| `prompt_fingerprint(system, user)` in `gate.py` | die Konvention bekommt **einen** Namen. Zwei Ausdrücke, die dasselbe fast bedeuten, sind schlechter als ein fehlender Hash: sie vergleichen sich als ungleich und melden einen Unterschied, der nicht da ist |
+| `prompt_hash` auf **beiden** Reviewer-Pfaden | auch auf dem fehlgeschlagenen. Vor dem Aufruf berechnet, denn gesendet wurde er so oder so — und „der Arm wurde gefragt und hat geschwiegen" ist genau der Fall, den ein späterer Vergleich auseinanderhalten muss |
+| `max_tokens` wird aufgezeichnet | die Bedingung, die den Befund oben erzeugt hat, stand nirgends im Artefakt. Ein Literal an drei Stellen ist eine Bedingung, gegen die niemand vergleichen kann; `REVIEWER_MAX_TOKENS` gibt ihr einen Namen und PR #16 eine Zeile zum Landen |
+
+### Was er nicht kann, und das ist die Hälfte, die zählt
+
+**Rückwirkend gilt er nicht.** Jeder bisher gespeicherte Reviewer-Lauf trägt
+keinen Hash — definitionsgemäß, der Code schrieb keinen. Der `rv54`/`rb55`-Satz
+oben bleibt damit unbelegt, und kein künftiger Code macht ihn belegbar; es
+braucht einen neuen, bezahlten Lauf. Die Sicherung wirkt **ab hier**, und ein
+Vergleich über die Grenze hinweg ist weiter ungeschützt. Das gehört vor die
+Tabelle und nicht in eine Fußnote.
+
+### Die Mutation, die einen schlechten Test von mir fand — das fünfte Mal
+
+Sieben Mutationen, sechs sofort gefangen. **Überlebt hat die, die das Trennzeichen
+entfernt** (`system + user` statt `system + "\n" + user`). Mein Test dafür
+verglich `("a", "b")` gegen `("a\nb", "")` — und dieses Paar unterscheidet sich
+mit Trennzeichen *und* ohne. Gemessen statt vermutet:
+
+| Paar | mit Trenner | ohne Trenner |
+|---|---|---|
+| `("a","b")` ↔ `("a\nb","")` | ungleich | **ungleich** — prüft nichts |
+| `("ab","c")` ↔ `("a","bc")` | ungleich | **gleich** — das ist das Paar |
+| `("a","b\nc")` ↔ `("a\nb","c")` | **gleich** | ungleich |
+
+Die dritte Zeile ist der unangenehme Teil: die Konvention ist **nicht injektiv**.
+Enthält ein Prompt das Trennzeichen selbst, kollidieren zwei verschiedene
+Aufteilungen. Hier ist das harmlos — die Systemhälfte ist ein festes Rollenprompt
+aus `prompts.py` und nie ein Präfix einer Graphserialisierung —, aber das ist eine
+Eigenschaft *dieses Repositorys* und nicht des Hashes. Ein Test behauptet sie
+deshalb ausdrücklich, statt sie anzunehmen; wer die Konvention mit dem Argument
+ändert, sie sei injektiv, muss an ihm vorbei.
+
+Vorher war es schon einmal derselbe Fehler, eine Stufe gröber: der Test verglich
+die Prompts, die der Recorder gesehen hatte, statt die Hashes, die aufgezeichnet
+wurden — ein Fingerprint, der die Nutzerhälfte ignoriert, kam durch. **Mutationen
+finden schlechte Tests, nicht schlechten Code**, und bei mir inzwischen
+fünfmal.
+
+### Ein Basisfehler von mir, und er ist lehrreicher als er aussieht
+
+Ich habe berichtet, auf **main** behaupte der Bericht 448 Tests, während die Suite
+455 laufe, und meinen Aktualitätstest beschuldigt, einen Beinahe-Treffer
+durchgelassen zu haben. **Das war falsch.** main stand bei 463 und §3an, also
+richtig. Mein Branch hing noch auf dem Stand vor #23, und ich habe *dessen*
+Bericht für den von main gelesen.
+
+Die Lehre ist nicht „sorgfältiger lesen". Sie ist dieselbe wie die aus 3am: eine
+Zahl, die gegen die falsche Wirklichkeit geprüft wird, sieht wie ein Treffer aus.
+Der Test selbst hat korrekt gearbeitet — die Grenze, die sein Docstring benennt,
+blieb unberührt, und es gab nichts zu verschärfen.
+
+## 3ap. Die Regel, die vor der Messung entscheidet — und wie wenig sie bei uns entscheidet
+
+Anlass war [A Better Metric Will Not Save You](https://arxiv.org/abs/2610.13476)
+(9. Okt. 2026): In einem Repräsentationsvergleich bewegte die Zusammensetzung des
+Vergleichsraums den gemessenen Abstand um **0,146**, während der untersuchte
+Effekt **0,0545** betrug — mehr als das 2,5-Fache. Die Anzahl der Kategorien
+dagegen bewegte praktisch nichts. Die Empfehlung der Autoren ist nicht eine
+bessere Metrik, sondern den Bedingungsraum offenzulegen und seine zulässigen
+Varianten durchzurechnen.
+
+Bei uns gibt es genau eine solche Bedingung, und sie ist eine Zahl: der Anteil
+der Zeichen einer Gold-Spanne, den ein zugelassener Claim decken muss, damit die
+Spanne als *erreicht* zählt. `measure_recall.py` berichtete zwei Werte,
+`compare_runs.py` und `gold_ceiling.py` trugen **0,8 hart kodiert**, einmal
+gesetzt und nie als Bedingung ausgewiesen.
+
+### Die Zahl, die man vor jedem Sweep lesen muss
+
+Ein Sweep über Schwellen ist nur interessant, wenn überhaupt Spannen *die Seite
+wechseln* können. Eine Spanne, die zu 0 % oder zu 100 % gedeckt ist, zählt bei
+jeder Schwelle gleich. Was dazwischen liegt, entscheidet die Regel und nicht die
+Extraktion — das **Entscheidungsband**.
+
+Gemessen auf fünf gespeicherten Fällen, ohne einen einzigen bezahlten Aufruf:
+
+| Fall | Gold | Entscheidungsband | Schwellenspanne |
+|---|---:|---:|---:|
+| A40 (Sci-Arg-Paper) | 250 | **0** | 0 |
+| A24 | 219 | **0** | 0 |
+| A21 | 257 | **0** | 0 |
+| A34 | 267 | **0** | 0 |
+| ECHR 001-110144 (langer Entscheid) | 49 | **38 = 78 %** | **38** |
+
+**Auf den vier Papern entscheidet die Schwelle nichts** — 993 Gold-Spannen, keine
+einzige im Band. Jede erreichte Spanne ist zu *exakt* 100 % gedeckt. Der Grund
+ist strukturell und nicht Zufall: beide Seiten zitieren wörtlich aus demselben
+Text, also hat der Extraktor die Passage genommen oder nicht.
+
+**Auf dem langen Gerichtsentscheid kippt es vollständig:** 49 von 49 bei 5 %
+Schwelle, **11 von 49 bei 100 %**. Dort schreibt der Extraktor 186 lange Claims,
+die Gold-Grenzen überschneiden, und fast jede Gold-Spanne ist teilweise gedeckt.
+
+> Die Effekte, die §4.1 und §4.7 auf diesem Dokument berichten, sind 4 bis 10
+> Spannen groß. Die Zuordnungsregel bewegt **38**. Das ist unsere Version des
+> Papers, und sie ist stärker als deren 2,5-Faches — mit dem Unterschied, dass sie
+> bei uns an *einer* Dokumentklasse hängt und an der anderen gar nicht.
+
+Ein Recall-Wert auf den Gerichtsentscheiden ist damit keine Eigenschaft der
+Extraktion allein. `compare_runs.py` sagt jetzt nicht nur Zahlen je Schwelle,
+sondern ob das **Urteil** sie überlebt — „strikte Verbesserung" gegen „Tausch"
+ist die Aussage, auf der das Anti-Delphi-Argument ruht, und ein Urteil, das nur
+bei 0,8 gilt, ist eine Aussage über die Regel.
+
+Nachgeprüft am einzigen gespeicherten Variantenpaar (`vocabulary` gegen
+`decompose` auf 001-141170, verschiedene Prompt-Hashes, gleiches Modell): das
+Urteil lautet **identisch** bei 50 %, 80 % und 95 %. Es hält. Das ist ein Datum
+und kein Freispruch — es ist ein Paar.
+
+### §4.4s offener Nachlauf, nachgeholt
+
+Dass die Artefakte alle vier Paper enthalten, hatte ich bestritten (siehe die
+Korrektur in 3an). Sie tun es, mit Dokument, Gold und Vorschlagspaket. Durch das
+heutige Gate:
+
+| Paper | Recall §4.4 → jetzt | verankerter Anteil §4.4 → jetzt | abgelehnt |
+|---|---|---|---:|
+| A40 | 50 → **70** von 250 | 0,25 → **0,30** | 32 % |
+| A24 | 80 → **107** von 219 | 0,37 → **0,43** | 44 % |
+| A21 | 112 → **141** von 257 | 0,39 → **0,46** | 7 % |
+| A34 | 184 → **246** von 267 | 0,75 → **0,87** | 4 % |
+
+**Die Warnleuchte ordnet unverändert:** A40 < A24 < A21 < A34, nach beiden Größen,
+dieselbe Reihenfolge wie in §4.4. Was *nicht* beantwortet ist: die Tautologie. Der
+Vorbehalt dort lautete, eine abgelehnte Verankerung senke mechanisch beide Größen
+— und die Ablehnungsquoten stehen weiter zwischen 4 % und 44 %. Gemessen ist „sie
+ordnet noch", nicht „die Korrelation ist echt".
+
+### Paper 1: das Signal existiert, der Bestand trägt es nicht
+
+[How Reliable are AMR Parser Outputs?](https://arxiv.org/abs/2610.13236) gewinnt
+Unsicherheit aus der *Streuung mehrerer Kandidaten* statt aus dem Selbstbericht
+eines Laufs, und prüft sie mit der Prediction Rejection Ratio: werden gerade die
+schlechten Projektionen zurückgewiesen?
+
+Zuerst der Weg, der nicht geht: der verankerte Anteil **sättigt** auf dem
+Bedeutungsbestand — 0,96 bis 1,00, 62 von 72 bei genau 1,00. Auf
+Ein-Satz-Dokumenten hat er keinen Hub. Das ist dieselbe Lehre wie die 25-von-25
+aus §4.1, nur an einer anderen Größe.
+
+Der Weg, der geht, ist der des Papers: drei Wiederholungen pro Fall liegen vor.
+
+| | Übereinstimmung der 3 Läufe | Gold |
+|---|---|---|
+| 22 von 24 Fällen | **1,00**, identische Claim-Menge | alle 3 bestehen |
+| `sco-02-de` | 0,83, Menge uneinheitlich | 1 von 3 fällt |
+| `sco-02-en` | 0,80, Menge *und* Zahl uneinheitlich | 2 von 3 fallen |
+
+**Kein falscher Alarm, kein unmarkierter Fehlschlag.** Jeder Fall mit
+uneinheitlicher Claim-Menge verfehlt Gold, jeder einheitliche besteht.
+
+Und jetzt die Hälfte, die zählt: **das ruht auf 3 Fehlschlägen in 72 Läufen, und
+beide markierten Fälle sind `sco-02` in zwei Sprachen — ein Phänomen, nicht
+zwei.** Eine perfekte Trennung bei zwei Beobachtungen ist von einem Zufall nicht
+zu unterscheiden. Das Skript gibt diesen Satz selbst aus, nicht die Prosa um es
+herum, und ein Test prüft, dass er dort steht.
+
+Für die offene Frage „Extraktionswiederholungen als Politik, 3× Kosten" heißt das
+genau eines: **nicht einführen, bevor es einen Bestand gibt, der ein Signal von
+Zufall trennen kann.** Was fehlt, sind härtere Fälle, nicht mehr Wiederholungen —
+und das Paper warnt ausdrücklich, dass mehr Kandidaten die Unsicherheit
+verschlechtern können (bei einem Parser war k=10 schädlich).
+
+### Paper 2: trifft unsere kleinste Fehlerklasse, gemessen
+
+[Structural Automata](https://arxiv.org/abs/2610.13896) setzt die Zulässigkeit
+während des Dekodierens durch, statt sie danach zu prüfen. Der billige Test
+zuerst, über die fünf Fälle, 120 abgelehnte Claims:
+
+| Grund | Anteil |
+|---|---:|
+| **Verankerung** — das Zitat steht nicht wörtlich im Dokument | 85 = **71 %** |
+| `duplicate_claim_node` — zwei Vorschläge fallen zusammen | 27 = 23 %, das ist der Merge bei der Arbeit |
+| Schema/Typ | 8 = **7 %** |
+
+Ein Automat garantiert Struktur. Die 71 % sind keine Strukturverletzung, sondern
+**Untreue zum Text** — der Vorschlag ist wohlgeformt und zitiert etwas, das nicht
+dasteht. Kein Dekodierzwang verhindert das. APD adressiert bei uns 7 %, und
+unsere Nachprüfung ist deterministisch und fängt die 71 % vollständig. Deshalb
+lassen wir es, mit dieser Zahl als Begründung statt mit einer Einschätzung.
+
+### Zwei Fehler in meiner eigenen Arbeit, beide von Tests gefunden
+
+**Der erste war ein Entwurfsfehler.** Die Bandgrenze stand als freie Konstante
+`0,95`, während der Sweep bis 100 % läuft. Eine Spanne mit 98 % Deckung galt damit
+als „entschieden" und wechselte trotzdem zwischen den letzten zwei Schwellen die
+Seite — das Band **untertrieb** genau die Hebelwirkung, die es benennen soll. Die
+Grenze wird jetzt aus dem Sweep abgeleitet, und ein Test hält beide zusammen.
+Nebenbei wurde der Befund dadurch stärker: die erreichten Spannen der vier Paper
+liegen nicht bei „≥ 95 %", sondern bei exakt 100 %.
+
+**Der zweite war ein zu schwacher Test.** Eine Mutation, die jede Schwelle bei 0,8
+zählt, hat **überlebt**: mein Test prüfte, dass es *eine Zahl je Schwelle* gibt,
+und nichts über die Zahlen. Die Reparatur war keine Testflickung, sondern
+**eine Zählfunktion statt drei Ausdrücken** — dieselbe Lehre wie bei
+`prompt_fingerprint` in 3ao, und derselbe Grund: drei Kopien sind der Weg, auf dem
+zwei Skripte eine harte Schwelle behielten, während das dritte zwei berichtete.
+
+Dreizehn Mutationen, dreizehn gefangen.

@@ -21,6 +21,24 @@ def sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def prompt_fingerprint(system: str, user: str) -> str:
+    """One hash for the pair of prompts a call was made with.
+
+    The extraction has recorded this since it existed, as its own expression at
+    the call site. The reviewer arms recorded no prompt hash at all, so a
+    comparison across reviewer runs could not be guarded the way a comparison
+    across extraction runs can — and that guard has already earned itself once,
+    catching two artifacts the log described as one arm's three runs while only
+    two shared a hash.
+
+    Naming the convention once is the point. Writing the same expression a second
+    time in the reviewer path would let the two drift, and two hashes that mean
+    slightly different things are worse than one missing hash: they compare as
+    unequal and the comparison then reports a difference that is not there.
+    """
+    return sha256_text(system + "\n" + user)
+
+
 def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
     """Admit anchored claims and then relations between admitted endpoints.
 

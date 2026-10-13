@@ -46,7 +46,9 @@ def _gold(*spans: str) -> dict:
 def test_a_reference_the_gate_can_anchor_is_fully_reachable() -> None:
     result = ceiling.ceiling(_gold("The method is fast.", "the result is new"), DOCUMENT, "d")
 
-    assert (result["reached"], result["spans"]) == (2, 2)
+    assert result["spans"] == 2
+    # Fully reachable means reachable at every threshold, not just the loose end.
+    assert set(result["reached"].values()) == {2}
     assert result["rejections"] == {}
 
 
@@ -62,7 +64,7 @@ def test_two_identical_fragments_collapse_and_cost_the_ceiling() -> None:
     result = ceiling.ceiling(gold, DOCUMENT, "d")
 
     assert result["rejections"] == {"duplicate_claim_node": 1}
-    assert result["reached"] < result["spans"]
+    assert all(reached < result["spans"] for reached in result["reached"].values())
 
 
 def test_a_repeated_fragment_is_reported_as_ambiguously_anchored() -> None:

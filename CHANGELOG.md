@@ -11,6 +11,40 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **The matching rule decides 38 of 49 spans on one long court decision and 0 of
+  993 on four argument-annotated papers.** A recall figure counts a gold span as
+  reached when some admitted claim covers a share of its characters, and that
+  share was 0.8 in two scripts, set once and never declared. Measured on stored
+  artefacts: on the papers every reached span is covered to exactly 100 per cent,
+  so the threshold has no leverage at all; on the decision 78 per cent of gold
+  spans sit in the band where it decides, and recall runs from 49 of 49 at a
+  5 per cent threshold to 11 of 49 at 100 per cent. The effects published on that
+  document are 4 to 10 spans, so the rule moves roughly ten times the effect.
+- **The anchored-share warning light still orders the four papers after the
+  anchoring repair.** Recall rises on all four (50 → 70, 80 → 107, 112 → 141,
+  184 → 246 of 250/219/257/267) and the anchored share with it (0.25 → 0.30,
+  0.37 → 0.43, 0.39 → 0.46, 0.75 → 0.87), in the same order as before. The
+  tautology it warns about is **not** dissolved: refusal rates still run from 4 to
+  44 per cent, so a refused anchor still lowers both terms.
+- **The spread across repeats separates every failing case on the meaning set,
+  and rests on one phenomenon.** 22 of 24 cases agree completely across three
+  runs and pass all three; `sco-02-de` and `sco-02-en` disagree and are the only
+  cases that fail. No false alarm, no unflagged failure — and 3 failures in 72
+  runs, both flagged cases being one phenomenon in two languages. A perfect
+  separation on two observations is not distinguishable from luck.
+  The anchored share cannot play that role at all here: it saturates at 0.96 to
+  1.00, 62 of 72 at exactly 1.00, because the case documents are one sentence
+  long.
+- **71 per cent of refused claims are unfaithful quotes, 7 per cent are schema
+  violations.** Across five documents, 120 refusals: 85 anchoring, 27 duplicate
+  claim nodes (the merge working), 8 schema or type.
+- **A reviewer finding that could not be substantiated, which is itself a finding.**
+  Across two run sets of the same arm — same model, same profile, same graph, same
+  contract — the confidence values move from six on a strict 0.05 grid to fifteen
+  off it, and the only named difference is the output budget (8,192 against 65,536).
+  Calling that a more differentiated judgement would mean reading an artefact of the
+  budget as evidence. The artefacts cannot settle it: the reviewer runs recorded
+  neither the prompt nor the budget they were given.
 - **Six fields a dossier carries are written and never read by the product**, plus
   one that is never even set. `anchor_ambiguous` was the one known case and it was
   found by accident; `scripts/unread_fields.py` now asks for every field over the
@@ -36,6 +70,36 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- `scripts/alignment_space.py` and `scripts/candidate_agreement.py`, with tests.
+  Thirteen mutations, thirteen caught — after two of my own errors that the tests
+  found rather than guessed. The band's upper mark was a free constant (0.95)
+  while the sweep ran to 1.0, so a span covered 98 per cent was reported as
+  settled and still changed sides; it is derived from the sweep now, and the
+  finding got stronger for it. And a mutation that counted every threshold at one
+  value **survived**: the test asserted one figure per threshold and nothing about
+  the figures. The fix was not a patched test but one counting function in
+  `measure_recall.py` for all three scripts — three copies are how two of them
+  kept a hard-coded threshold while the third reported two.
+- **`prompt_hash` and `max_tokens` on every reviewer run**, on the failed path as
+  well as the completed one. The extraction has recorded a prompt hash since it
+  existed and that guard earned itself once, separating two runs of one arm from a
+  third that had been configured differently; the reviewer arms had no such field,
+  so every reviewer comparison rested on an unverifiable assumption. The hash is
+  computed before the call, because the prompt was sent either way and an arm that
+  was asked and said nothing is the case a comparison most needs to separate.
+  `prompt_fingerprint(system, user)` gives the convention one name rather than two
+  expressions that almost agree, and `REVIEWER_MAX_TOKENS` names the budget that a
+  literal in three places had kept uncomparable.
+  **This does not apply retroactively.** Every reviewer run stored so far carries no
+  hash, so the measurement above stays unproven until a new paid run.
+  Seven mutations, six caught at once. The survivor removed the joining separator,
+  and the test for it compared a pair that differs with the separator and without it
+  — so it asserted nothing. The discriminating pair is `("ab","c")` against
+  `("a","bc")`. The same measurement exposed a limitation now asserted outright
+  rather than assumed: the convention is **not injective**, since a prompt
+  containing the separator makes two different splits collide. Harmless here,
+  because the system half is a fixed role prompt — but a property of this
+  repository, not of the hash.
 - `scripts/unread_fields.py` and its tests. Two defects in it were found rather
   than assumed. It first keyed by field name, and `semantic_state` is declared on
   two carriers, so the map silently kept the last and reported the field as the
@@ -46,6 +110,16 @@ says when it moves them. Their current values are `polished` 5 claims /
   the day a carrier gains a `from_dict`. Three of four mutations caught, the fourth
   proven a no-op.
 
+### Changed
+
+- `compare_runs.py` and `gold_ceiling.py` sweep the overlap threshold instead of
+  fixing it at 0.8, and `compare_runs` now says whether its **verdict** survives
+  the sweep. "Strict improvement" against "trade" is the claim the union argument
+  rests on, and a verdict that holds only at one threshold is a statement about
+  the matching rule rather than about the runs. On the one stored pair of prompt
+  variants the verdict is identical at 50, 80 and 95 per cent — it holds, on one
+  pair. Their existing tests now run every case at every threshold.
+
 ### Fixed
 
 - The report's script count and test count, both stale again. **The currency test
@@ -55,6 +129,12 @@ says when it moves them. Their current values are `polished` 5 claims /
   `def test_` functions on disk, which would have caught the drift that actually
   happened (384 claimed against 404 functions) while plainly not catching a near
   miss.
+- A false alarm I raised myself, recorded because the correction matters: I reported
+  that the report on the default branch claimed 448 tests against a suite of 455 and
+  blamed the currency test for letting a near miss through. The default branch was
+  correct at 463; this branch was still based on the commit before that merge, and I
+  read its report for the other's. The test had worked, and there was nothing to
+  tighten.
 
 ### Not done
 
@@ -64,6 +144,15 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
+- Adopting extraction repeats as policy at triple cost. The spread across repeats
+  looks like exactly the signal for it, and the set that would prove it has three
+  failures in 72 runs. Harder cases first.
+- Anything from the structural decoder, which addresses 7 per cent of our refusals
+  while the deterministic check already catches the 71 per cent that an automaton
+  cannot prevent.
+- Re-running the budget comparison under the new provenance, which is the only way
+  the confidence-grid finding becomes provable. That is a paid run and needs a
+  pre-registered criterion first.
 - Nothing from U-Space, which needs activations this project does not have, and
   nothing new from the epistemic-humility paper, whose effect §4.15 has already
   measured in this system's terms.

@@ -51,7 +51,11 @@ recall = _load("measure_recall")
 from budget_review.gate import govern_packet  # noqa: E402
 from budget_review.models import SemanticPacket  # noqa: E402
 
-THRESHOLD = 0.8
+# Several thresholds rather than one. What counts as a reached span is a
+# condition of this diagnostic and not a property of the reference, and on a
+# long court decision it decides half the spans (arXiv 2610.13476). Stating one
+# number would hide which of the two the figure is about.
+SWEEP = (0.5, 0.8, 0.95)
 
 
 def as_packet(gold: dict, document_id: str) -> dict:
@@ -87,11 +91,11 @@ def ceiling(gold: dict, document: str, document_id: str) -> dict:
     semantic = govern_packet(document, SemanticPacket.from_dict(as_packet(gold, document_id)))
     union = recall.merged([(c.anchor_start, c.anchor_end) for c in semantic.claims])
     located = recall.gold_spans(gold, document)
-    reached = sum(
-        1
+    shares = [
+        recall.covered_characters(span, union) / max(1, span[1] - span[0])
         for _, span, _ in located
-        if recall.covered_characters(span, union) / max(1, span[1] - span[0]) >= THRESHOLD
-    )
+    ]
+    reached = recall.hits_by_threshold(shares, SWEEP)
     return {
         "spans": len(located),
         "admitted": len(semantic.claims),
@@ -108,10 +112,18 @@ def main() -> int:
     gold = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     document = Path(sys.argv[2]).read_text(encoding="utf-8")
     result = ceiling(gold, document, gold.get("document_id", "gold"))
-    print(
-        f"Decke der Messung: {result['reached']}/{result['spans']} = "
-        f"{result['reached'] / max(1, result['spans']):.0%}"
-    )
+    spans = max(1, result["spans"])
+    print("Was die Referenz gegen sich selbst erreicht, je Schwelle:")
+    for threshold in SWEEP:
+        reached = result["reached"][threshold]
+        print(f"  bei {threshold:>4.0%}: {reached}/{result['spans']} = {reached / spans:.0%}")
+    values = list(result["reached"].values())
+    if max(values) == min(values):
+        print("  → Die Schwelle entscheidet hier nichts.")
+    else:
+        print(f"  → Die Schwelle bewegt {max(values) - min(values)} Spannen. Die Zahl ist")
+        print("    eine Aussage über Referenz *und* Zuordnungsregel, nicht über")
+        print("    die Referenz allein.")
     print(f"  Gate laesst zu:  {result['admitted']}/{result['spans']}")
     print(f"  mehrdeutig:      {result['ambiguous']}")
     for reason, count in sorted(result["rejections"].items()):
