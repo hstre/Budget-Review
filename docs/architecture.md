@@ -3371,3 +3371,85 @@ und nichts über die Zahlen. Die Reparatur war keine Testflickung, sondern
 zwei Skripte eine harte Schwelle behielten, während das dritte zwei berichtete.
 
 Dreizehn Mutationen, dreizehn gefangen.
+
+## 3aq. Vier Stellen, die eine fremde Durchsicht gefunden hat — und eine davon ist meine zweite No-Op-Ersetzung
+
+Der Bericht im Stand `7ef21f3` wurde von außen gelesen. Vier Beanstandungen, alle
+gegen die Datei geprüft, **alle vier berechtigt.** Keine davon betraf eine Messung;
+alle vier betrafen Sätze, die der Bericht über sich selbst sagt.
+
+| Stelle | Was dastand | Warum es falsch war |
+|---|---|---|
+| §4.12, §10.6 | „wartet auf zwei unabhängige Durchsichten, die nicht stattgefunden haben" | Sie haben stattgefunden, haben die Hälfte des Bestands zerlegt und stehen in §1, §4.16 und §6. Die verbliebene Grenze ist enger: **beide waren modellbasiert, ein menschliches Fachgutachten gibt es nicht.** |
+| §4.12 | `assumption` sei „eine zulässige Lesart" | §4.13 hält fest, dass die 21 Typen nirgends definiert sind. Die Typisierung treffend zu nennen schreibt einem Label Gehalt zu, das es nicht hat — und in einem der Läufe lautet sie gar nicht `assumption`. Zurückgezogen; gemessen ist die unbedingte Behauptung des Nachsatzes. |
+| §8 | relative Häufigkeit „per Konstruktion kalibriert, weil sie gezählt wird" | Zu stark, und dem Folgeabsatz widersprechend. |
+| §8 englisch | „Two external inputs", danach drei genannt | Meine Änderung war nie geschrieben. Siehe unten. |
+
+### Die dritte ist die inhaltlich wichtigste, und sie ist mit eigenen Zahlen belegbar
+
+„Gezählt statt behauptet" ist den Konfidenzzahlen eines Modells vorzuziehen — aber
+*kalibriert* ist eine Häufigkeit damit nicht, und eine Verteilung über **Lesarten**
+ist sie schon gar nicht. Was sie vermischt, steht verstreut in diesem Log und
+gehört an eine Stelle:
+
+| Bestandteil | wo gemessen |
+|---|---|
+| echte Interpretationsmehrdeutigkeit | das Gesuchte |
+| Sampling-Instabilität | §4.2 |
+| Anbieter tauscht das bediente Modell | §4.8 |
+| Fragmentierung und Typisierung | §4.13 |
+| was das Gate ablehnt | §4.3 |
+| was die Zuordnungsregel als dieselbe Antwort zählt | §4.19 |
+
+Die letzten zwei Zeilen sind das Unangenehme: **ich habe erst in 3ap gemessen, dass
+die Zuordnungsregel auf einem Dokument 38 von 49 Spannen entscheidet — und dann im
+selben Bericht stehen lassen, eine Häufigkeit über Wiederholungen sei per
+Konstruktion kalibriert.** Die eigene Messung widerlegt den eigenen Satz zwei
+Abschnitte weiter. Das ist ein beobachtetes Stabilitätssignal, und es in seine
+Bestandteile zu trennen ist das offene Problem.
+
+### Die vierte ist eine No-Op-Ersetzung, und es ist die zweite
+
+Mein erstes Patch-Skript für §8 enthielt die Änderung von „Two" auf „Three". Es
+hat `8 intro EN` als erledigt **gemeldet** — und ist danach an einer anderen
+Zusicherung abgebrochen, **bevor** es schrieb. Im Nachfolgeskript habe ich die
+Zeile weggelassen. Anschließend habe ich „beide Hälften symmetrisch" berichtet,
+geprüft über §4er-Abschnitte, Statuszeilen und Querverweise — nicht über diesen
+Satz.
+
+Das ist genau die Lehre, die im Docstring von `test_report_is_current.py` steht
+(„eine No-Op-Ersetzung sieht aus wie ein Erfolg, wenn das Ergebnis nicht gegen die
+Wirklichkeit geprüft wird"), ein zweites Mal, von mir, in derselben Datei. Der
+Unterschied zum ersten Mal: damals passte das Suchmuster nicht, diesmal passte es
+und der Schreibvorgang kam nie.
+
+Der Aktualitätstest prüft jetzt diese Klasse: **die Zahl, die §8 über sich selbst
+behauptet, gegen die Zahl der Eingaben, die der Abschnitt einführt** — in beiden
+Hälften, und er weist nach, *welche* Hälfte er gelesen hat.
+
+Letzteres kam aus einer Mutation. Solange beide Hälften übereinstimmen, besteht ein
+Test, der die englische zweimal liest; die Mutation, die die Hälftenauswahl
+zusammenfaltet, **hat überlebt.** Behoben, indem die Funktion die gefundene Sprache
+mitgibt und der Test sie prüft.
+
+Zwei weitere Mutationen haben überlebt und sind **keine** Mängel: beide entfernen
+eine Zusicherung *aus dem Test*. Eine Zusicherung kann ihre eigene Entfernung nicht
+fangen. Dass die beiden arbeiten, zeigen M1 (die Hälften widersprechen sich) und M5
+(dieselbe Hälfte zweimal gelesen). Fünf von sieben gefangen, zwei als No-Op
+bewiesen — dieselbe Unterscheidung wie beim `models.py`-Ausschluss in 3an.
+
+### Was die Durchsicht als nächsten Schritt vorschlägt, und was ich davon halte
+
+Ein kleiner, gezielt schwieriger Referenzbestand für **Lesartenidentität**: mehrere
+gültige Lesarten derselben Passage, echte Paraphrasen, Konditionale, Negations- und
+Skopus-Varianten, Fälle mit unbekannter Relation.
+
+Das ist nicht neu — Statuszeile 23 und §4.19 sagen „härtere Fälle, nicht mehr
+Wiederholungen". Neu und nützlich ist die **Spezifikation**: *welche* Fälle. Genau
+die fünf Sorten trennen Ambiguität von Rauschen, und „mehrere gültige Lesarten
+derselben Passage" ist die Sorte, die der jetzige Bestand überhaupt nicht hat —
+dort hat jeder Fall eine richtige Antwort. Ein Bestand ohne diese Sorte kann die
+Frage nicht beantworten, für die die Wiederholungsstreuung gedacht ist.
+
+Der Vorschlag, diesen Stand danach einzufrieren, ist richtig. Der Bericht hat in
+den letzten Durchgängen mehr redaktionelle Fläche gewonnen als Messungen.

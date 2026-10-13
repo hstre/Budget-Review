@@ -122,6 +122,34 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Fixed
 
+- **Four things an outside reading of the report found, all of them about what the
+  report says of itself rather than about a measurement.** Two were claims and are
+  withdrawn: that the typing `assumption` is "a defensible reading", which
+  attributes content to a label with no definition anywhere in the contract and is
+  not even the typing one of the six runs produced; and that a relative frequency
+  across repeats is "calibrated by construction because it is counted", which is
+  too strong and contradicted the paragraph after it. Counted beats asserted, but
+  the frequency mixes interpretive ambiguity with sampling instability, a provider
+  substituting the served model, fragmentation and typing differences, what the
+  gate refuses, and what the matching rule counts as the same answer — the last of
+  which this same release measured at 38 of 49 spans on one document while leaving
+  the calibration claim standing two sections away. The other two were stale: a
+  limit saying the two independent reviews had not happened, and an English count
+  of "two external inputs" where three are named. The remaining limit on the
+  meaning set is now stated as what it is — both reviews were model-based, and no
+  human subject-matter reviewer has seen it.
+- **A no-op replacement reported as a success, for the second time in this file's
+  history.** The patch that would have fixed the input count printed its label as
+  applied and then aborted on a later assertion, before writing; the follow-up
+  script dropped the line. The symmetry I then reported was checked over section
+  numbering and cross-references, not over that sentence. The currency test now
+  checks the number §8 claims about itself against the number of inputs it
+  introduces, in both halves, and proves which half it read — that last part
+  because a mutation collapsing the half selection survived, since two agreeing
+  halves make reading one of them twice pass. Five of seven mutations caught; the
+  two survivors delete an assertion from a test, which no assertion can catch, and
+  are exercised by the two that are caught.
+
 - The report's script count and test count, both stale again. **The currency test
   added yesterday caught the first one on the very next change** — 25 scripts on
   disk against 24 claimed — and the section range on the one after that. It also

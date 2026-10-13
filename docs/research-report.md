@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ap, which is a log rather than a synthesis.
+§3a–§3aq, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -591,8 +591,13 @@ is needed.
 **What the instruction did not touch: the conditional.** "If the funds are
 granted, construction begins in spring." In three of six runs the extractor
 **splits the sentence at the comma**: the antecedent becomes its own claim, typed
-`assumption`, which is a defensible reading, and the consequent becomes its own
-claim, typed `forecast`, asserted **unconditionally**. "Construction begins in
+`assumption`, and the consequent becomes its own claim, typed `forecast`,
+asserted **unconditionally**. An earlier version of this section called that
+typing "a defensible reading". That reading is withdrawn: §4.13 establishes that
+the 21 claim types have no definitions anywhere in the contract, so calling one
+of them apt attributes semantic content to a label that has none — and in one of
+these very runs the typing is not `assumption` at all. What is measured here is
+the unconditional emission of the consequent, and nothing about the types. "Construction begins in
 spring" with no condition attached is an invented commitment — for a proposal
 review, the error class the product exists to catch, produced by the product. In
 the other three runs one claim carries the whole conditional sentence. 2 of 6
@@ -606,10 +611,13 @@ project that worked — one more contract line, is the next pre-registered
 question.
 
 **Limits.** Relations remain unmeasurable: the set annotates no edges, found by
-trying to implement the axis. The set is a **draft** pending two independent
-reviews, which have not happened. Each case is one to three sentences, so a
-contract line that works on 24 short sentences says nothing about 26,000
-characters of court text.
+trying to implement the axis. The set was a draft pending two independent reviews
+when this was written; both have since been run, and they broke half of it before
+it was rewritten and re-scored (§4.16). What remains is a narrower limit and worth
+stating as such: **both reviews were model-based, and no human subject-matter
+reviewer has seen the set.** Each case is one to three sentences, so a contract
+line that works on 24 short sentences says nothing about 26,000 characters of
+court text.
 
 ---
 
@@ -1257,11 +1265,31 @@ stored; all four are, with document, gold and proposal packet, so the re-run cos
 nothing and is now done (§4.19). The first claim blamed a test that had worked.
 The second deferred a measurement for a reason that did not exist.
 
+An outside reading of this report found four more, none of them about a
+measurement and all about what the report says of itself. Two were claims and are
+withdrawn here. **"The typing `assumption` is a defensible reading"** attributed
+semantic content to a label §4.13 shows has no definition anywhere in the
+contract — and in one of the six runs the typing is not `assumption` at all; what
+is measured is the unconditional emission of the consequent, and nothing about the
+types. **"A relative frequency across repeats is calibrated by construction,
+because it is counted rather than asserted"** is too strong, and the paragraph
+after it contradicted it. Counted beats asserted, but a frequency across repeats
+mixes genuine interpretive ambiguity with sampling instability (§4.2), a provider
+substituting the served model (§4.8), differences in fragmentation and typing
+(§4.13), what the gate refuses (§4.3) and what the matching rule counts as the
+same answer (§4.19). That last one is the uncomfortable part: §4.19 measured the
+matching rule deciding 38 of 49 spans on one document, and this report then left
+the calibration claim standing two sections away. The other two were stale rather
+than wrong — a limit that said the two independent reviews had not happened when
+§4.16 records both, and a count that said two external inputs where three are
+named — and the second of those was a replacement my own tooling reported as
+applied and never wrote.
+
 ---
 
 ## 8. What the external work contributed
 
-Two external inputs shaped the work, and it is worth being precise about how.
+Three external inputs shaped the work, and it is worth being precise about how.
 
 **The annotated corpora did the real work.** Without expert annotation there is no
 recall figure, and without a recall figure the coverage measurement is a number
@@ -1288,10 +1316,18 @@ Its concrete prescriptions did not transfer:
   thresholds need empirical calibration that was never done.
 
 The one adaptation worth keeping: **the repeats we already pay for are an
-empirical distribution.** Five runs give, per claim, a relative frequency that is
-calibrated by construction because it is counted rather than asserted. That turns
-the spread from the thing that ruins every measurement into the thing the paper's
-emission rules wanted. **Half of it is built now** (§4.19): the spread across the
+empirical sampling distribution over outputs.** Five runs give, per claim, a
+relative frequency that is counted rather than asserted, which is strictly better
+than the confidence floats a model writes. It is **not** thereby calibrated, and
+it is not yet a distribution over readings — an earlier version of this paragraph
+said "calibrated by construction because it is counted", which is too strong and
+contradicted the paragraph after it. What a frequency across repeats actually
+mixes is measurable in this report's own terms: genuine interpretive ambiguity,
+sampling instability (§4.2), a provider substituting the served model (§4.8),
+differences in fragmentation and in typing (§4.13), what the gate refuses (§4.3)
+and what the matching rule counts as the same answer (§4.19). It is an observed
+stability signal, and separating it into those components is the open problem, not
+a detail of presentation. **Half of it is built now** (§4.19): the spread across the
 three stored repeats of each meaning case is computed and put beside the gold
 outcome, and it separates every failing case. What is not built is the part the
 paper actually wanted — a calibrated probability per reading — and the obstacle is
@@ -1324,7 +1360,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 27 measurement scripts, each tested
-docs/architecture.md §3a–§3ap            the chronological record, run by run
+docs/architecture.md §3a–§3aq            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1333,7 +1369,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-536 tests and one skipped, `ruff check` clean.
+537 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1357,9 +1393,11 @@ reader knows what is waiting.
    of a proposition. The language problem turned out not to need them (§4.12);
    the conditional is the remaining candidate, and it is the only measured
    meaning failure left.
-6. **Who reviews the meaning set.** It is a draft by design: two independent
-   reviews were asked for and none has happened, and until then every figure in
-   §4.12 rests on cases written by the same party that built the system.
+6. **Who reviews the meaning set.** Two independent reviews have been run and
+   acted on (§4.16), so it is examined rather than a draft. What is still open is
+   narrower: both were model-based, and **no human subject-matter reviewer has
+   seen the set.** Until one has, every figure in §4.12 rests on cases written by
+   the party that built the system and checked by two systems of the same kind.
 7. **Whether extraction repeats become policy.** §4.14 showed that the marker from
    §4.13 names the kind of dependency and not the observed instability, because at
    emission there is only one run and whether *this* finding moves is not knowable.
@@ -1384,7 +1422,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ap und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3aq und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1966,8 +2004,14 @@ anzufassen. Für das Sprachproblem braucht es keine explizite Projektionsschicht
 **Was die Anweisung nicht angefasst hat: die Bedingung.** „Wenn die Mittel
 bewilligt werden, beginnt der Ausbau im Frühjahr." In drei von sechs Läufen
 **zerlegt der Extraktor den Satz am Komma**: der Vordersatz wird ein eigener
-Claim, getypt als `assumption`, was eine zulässige Lesart ist, und der Nachsatz
-wird ein eigener Claim, getypt als `forecast`, **unbedingt behauptet.** „Der
+Claim, getypt als `assumption`, und der Nachsatz wird ein eigener Claim, getypt
+als `forecast`, **unbedingt behauptet.** Eine frühere Fassung dieses Abschnitts
+nannte diese Typisierung „eine zulässige Lesart". Diese Lesart ist
+zurückgezogen: §4.13 hält fest, dass die 21 Claim-Typen nirgends im Vertrag
+definiert sind — eine von ihnen treffend zu nennen schreibt also einem Label
+semantischen Gehalt zu, das keinen hat, und in einem dieser Läufe lautet die
+Typisierung gar nicht `assumption`. Gemessen ist hier die unbedingte Behauptung
+des Nachsatzes, und nichts über die Typen. „Der
 Ausbau beginnt im Frühjahr" ohne jede Bedingung ist eine erfundene Zusage — für
 eine Antragsprüfung genau die Fehlerklasse, für deren Entdeckung das Produkt
 existiert, erzeugt vom Produkt. In den anderen drei Läufen trägt ein Claim den
@@ -1982,10 +2026,14 @@ braucht oder — wie bei jeder kleinen Änderung dieses Projekts, die gewirkt ha
 eine weitere Vertragszeile, ist die nächste Vorab-Frage.
 
 **Grenzen.** Relationen bleiben nicht messbar: der Bestand annotiert keine Kanten,
-aufgefallen beim Implementieren der Achse. Der Bestand ist ein **Entwurf** und
-wartet auf zwei unabhängige Durchsichten, die nicht stattgefunden haben. Jeder
-Fall ist ein bis drei Sätze; dass eine Vertragszeile auf 24 kurzen Sätzen greift,
-sagt nichts über 26.000 Zeichen Gerichtstext.
+aufgefallen beim Implementieren der Achse. Der Bestand war beim Schreiben dieses
+Abschnitts ein Entwurf und wartete auf zwei unabhängige Durchsichten; beide sind
+inzwischen gelaufen und haben die Hälfte davon zerlegt, bevor er umgeschrieben und
+neu bewertet wurde (§4.16). Was bleibt, ist eine engere Grenze, und sie gehört so
+benannt: **beide Durchsichten waren modellbasiert, und kein menschliches
+Fachgutachten hat den Bestand gesehen.** Jeder Fall ist ein bis drei Sätze; dass
+eine Vertragszeile auf 24 kurzen Sätzen greift, sagt nichts über 26.000 Zeichen
+Gerichtstext.
 
 ### 4.13 Der Typ eines Claims ist die dritte erzeugte Komponente, und zwei Befunde stehen darauf
 
@@ -2652,6 +2700,28 @@ Dokument, Gold und Vorschlagspaket, der Nachlauf kostete also nichts und ist jet
 getan (§4.19). Die erste Aussage beschuldigte einen Test, der funktioniert hatte.
 Die zweite verschob eine Messung aus einem Grund, der nicht existierte.
 
+Eine Durchsicht dieses Berichts von außen hat vier weitere gefunden, keine davon
+über eine Messung, alle darüber, was der Bericht über sich selbst sagt. Zwei waren
+Aussagen und werden hier zurückgezogen. **„Die Typisierung `assumption` ist eine
+zulässige Lesart"** schrieb einem Label semantischen Gehalt zu, das laut §4.13
+nirgends im Vertrag definiert ist — und in einem der sechs Läufe lautet die
+Typisierung gar nicht `assumption`; gemessen ist die unbedingte Behauptung des
+Nachsatzes, nichts über die Typen. **„Eine relative Häufigkeit über Wiederholungen
+ist per Konstruktion kalibriert, weil sie gezählt und nicht behauptet wird"** ist
+zu stark, und der Absatz danach widersprach ihr. Gezählt ist besser als behauptet,
+aber eine Häufigkeit über Wiederholungen vermischt echte
+Interpretationsmehrdeutigkeit mit Sampling-Instabilität (§4.2), einem Anbieter,
+der das bediente Modell austauscht (§4.8), Unterschieden in Fragmentierung und
+Typisierung (§4.13), dem, was das Gate ablehnt (§4.3), und dem, was die
+Zuordnungsregel als dieselbe Antwort zählt (§4.19). Das Letzte ist das
+Unangenehme: §4.19 hat gemessen, dass die Zuordnungsregel auf einem Dokument 38
+von 49 Spannen entscheidet, und dieser Bericht ließ die Kalibrierungsaussage zwei
+Abschnitte weiter stehen. Die anderen zwei waren veraltet statt falsch — eine
+Grenze, die behauptete, die zwei unabhängigen Durchsichten hätten nicht
+stattgefunden, wo §4.16 beide festhält, und eine Zahl, die zwei externe Eingaben
+nannte, wo drei stehen — und die zweite davon war eine Ersetzung, die mein eigenes
+Werkzeug als angewandt meldete und nie geschrieben hat.
+
 ## 8. Was die externe Arbeit beigetragen hat
 
 Drei externe Eingaben haben die Arbeit geformt, und es lohnt sich, genau zu sagen
@@ -2686,10 +2756,19 @@ Seine konkreten Vorschriften haben sich nicht übertragen:
   Kalibrierung brauchen, die nie gemacht wurde.
 
 Die eine Anpassung, die es wert ist: **Die Wiederholungen, die wir ohnehin
-bezahlen, sind eine empirische Verteilung.** Fünf Läufe geben pro Claim eine
-relative Häufigkeit, die per Konstruktion kalibriert ist, weil sie gezählt und
-nicht behauptet wird. Das verwandelt die Streuung von dem, was jede Messung
-ruiniert, in das, was die Emissionsregeln des Papers wollten. **Die Hälfte davon
+bezahlen, sind eine empirische Stichprobenverteilung über Ausgaben.** Fünf Läufe
+geben pro Claim eine relative Häufigkeit, die gezählt und nicht behauptet wird,
+und das ist den Konfidenzzahlen, die ein Modell schreibt, deutlich vorzuziehen.
+Kalibriert ist sie damit **nicht**, und eine Verteilung über Lesarten ist sie
+auch noch nicht — eine frühere Fassung dieses Absatzes schrieb „per Konstruktion
+kalibriert, weil sie gezählt wird", was zu stark ist und dem folgenden Absatz
+widersprach. Was eine Häufigkeit über Wiederholungen tatsächlich vermischt, ist
+in den Begriffen dieses Berichts benennbar: echte Interpretationsmehrdeutigkeit,
+Sampling-Instabilität (§4.2), einen Anbieter, der das bediente Modell austauscht
+(§4.8), Unterschiede in Fragmentierung und Typisierung (§4.13), was das Gate
+ablehnt (§4.3) und was die Zuordnungsregel als dieselbe Antwort zählt (§4.19).
+Sie ist ein beobachtetes Stabilitätssignal, und sie in diese Bestandteile zu
+trennen ist das offene Problem und keine Frage der Darstellung. **Die Hälfte davon
 ist jetzt gebaut** (§4.19): die Streuung über die drei gespeicherten
 Wiederholungen jedes Bedeutungsfalls wird berechnet und neben das Gold-Ergebnis
 gestellt, und sie trennt jeden durchgefallenen Fall. Ungebaut ist, was das Paper
@@ -2723,7 +2802,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 27 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ap            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3aq            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2733,7 +2812,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-536 Tests und einer übersprungen, `ruff check` sauber.
+537 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 
@@ -2754,10 +2833,12 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    überlassen. Für das Sprachproblem waren sie nicht nötig (§4.12); die Bedingung
    ist der verbleibende Kandidat und der einzige noch gemessene
    Bedeutungsfehler.
-6. **Wer den Bedeutungsbestand durchsieht.** Er ist absichtlich ein Entwurf: zwei
-   unabhängige Durchsichten sind angefragt und keine hat stattgefunden, und
-   solange ruht jede Zahl in §4.12 auf Fällen, die dieselbe Partei geschrieben
-   hat, die das System gebaut hat.
+6. **Wer den Bedeutungsbestand durchsieht.** Zwei unabhängige Durchsichten sind
+   gelaufen und verarbeitet (§4.16), er ist also geprüft und kein Entwurf mehr.
+   Offen ist das Engere: beide waren modellbasiert, und **kein menschliches
+   Fachgutachten hat den Bestand gesehen.** Solange ruht jede Zahl in §4.12 auf
+   Fällen, die die Partei geschrieben hat, die das System gebaut hat, geprüft von
+   zwei Systemen derselben Art.
 7. **Ob Extraktionswiederholungen Politik werden.** §4.14 hat gezeigt, dass die
    Markierung aus §4.13 die Art der Abhängigkeit nennt und nicht die beobachtete
    Instabilität — am Emissionszeitpunkt gibt es einen Lauf, und ob *dieser* Befund
