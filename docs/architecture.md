@@ -3222,3 +3222,152 @@ Die Lehre ist nicht „sorgfältiger lesen". Sie ist dieselbe wie die aus 3am: e
 Zahl, die gegen die falsche Wirklichkeit geprüft wird, sieht wie ein Treffer aus.
 Der Test selbst hat korrekt gearbeitet — die Grenze, die sein Docstring benennt,
 blieb unberührt, und es gab nichts zu verschärfen.
+
+## 3ap. Die Regel, die vor der Messung entscheidet — und wie wenig sie bei uns entscheidet
+
+Anlass war [A Better Metric Will Not Save You](https://arxiv.org/abs/2610.13476)
+(9. Okt. 2026): In einem Repräsentationsvergleich bewegte die Zusammensetzung des
+Vergleichsraums den gemessenen Abstand um **0,146**, während der untersuchte
+Effekt **0,0545** betrug — mehr als das 2,5-Fache. Die Anzahl der Kategorien
+dagegen bewegte praktisch nichts. Die Empfehlung der Autoren ist nicht eine
+bessere Metrik, sondern den Bedingungsraum offenzulegen und seine zulässigen
+Varianten durchzurechnen.
+
+Bei uns gibt es genau eine solche Bedingung, und sie ist eine Zahl: der Anteil
+der Zeichen einer Gold-Spanne, den ein zugelassener Claim decken muss, damit die
+Spanne als *erreicht* zählt. `measure_recall.py` berichtete zwei Werte,
+`compare_runs.py` und `gold_ceiling.py` trugen **0,8 hart kodiert**, einmal
+gesetzt und nie als Bedingung ausgewiesen.
+
+### Die Zahl, die man vor jedem Sweep lesen muss
+
+Ein Sweep über Schwellen ist nur interessant, wenn überhaupt Spannen *die Seite
+wechseln* können. Eine Spanne, die zu 0 % oder zu 100 % gedeckt ist, zählt bei
+jeder Schwelle gleich. Was dazwischen liegt, entscheidet die Regel und nicht die
+Extraktion — das **Entscheidungsband**.
+
+Gemessen auf fünf gespeicherten Fällen, ohne einen einzigen bezahlten Aufruf:
+
+| Fall | Gold | Entscheidungsband | Schwellenspanne |
+|---|---:|---:|---:|
+| A40 (Sci-Arg-Paper) | 250 | **0** | 0 |
+| A24 | 219 | **0** | 0 |
+| A21 | 257 | **0** | 0 |
+| A34 | 267 | **0** | 0 |
+| ECHR 001-110144 (langer Entscheid) | 49 | **38 = 78 %** | **38** |
+
+**Auf den vier Papern entscheidet die Schwelle nichts** — 993 Gold-Spannen, keine
+einzige im Band. Jede erreichte Spanne ist zu *exakt* 100 % gedeckt. Der Grund
+ist strukturell und nicht Zufall: beide Seiten zitieren wörtlich aus demselben
+Text, also hat der Extraktor die Passage genommen oder nicht.
+
+**Auf dem langen Gerichtsentscheid kippt es vollständig:** 49 von 49 bei 5 %
+Schwelle, **11 von 49 bei 100 %**. Dort schreibt der Extraktor 186 lange Claims,
+die Gold-Grenzen überschneiden, und fast jede Gold-Spanne ist teilweise gedeckt.
+
+> Die Effekte, die §4.1 und §4.7 auf diesem Dokument berichten, sind 4 bis 10
+> Spannen groß. Die Zuordnungsregel bewegt **38**. Das ist unsere Version des
+> Papers, und sie ist stärker als deren 2,5-Faches — mit dem Unterschied, dass sie
+> bei uns an *einer* Dokumentklasse hängt und an der anderen gar nicht.
+
+Ein Recall-Wert auf den Gerichtsentscheiden ist damit keine Eigenschaft der
+Extraktion allein. `compare_runs.py` sagt jetzt nicht nur Zahlen je Schwelle,
+sondern ob das **Urteil** sie überlebt — „strikte Verbesserung" gegen „Tausch"
+ist die Aussage, auf der das Anti-Delphi-Argument ruht, und ein Urteil, das nur
+bei 0,8 gilt, ist eine Aussage über die Regel.
+
+Nachgeprüft am einzigen gespeicherten Variantenpaar (`vocabulary` gegen
+`decompose` auf 001-141170, verschiedene Prompt-Hashes, gleiches Modell): das
+Urteil lautet **identisch** bei 50 %, 80 % und 95 %. Es hält. Das ist ein Datum
+und kein Freispruch — es ist ein Paar.
+
+### §4.4s offener Nachlauf, nachgeholt
+
+Dass die Artefakte alle vier Paper enthalten, hatte ich bestritten (siehe die
+Korrektur in 3an). Sie tun es, mit Dokument, Gold und Vorschlagspaket. Durch das
+heutige Gate:
+
+| Paper | Recall §4.4 → jetzt | verankerter Anteil §4.4 → jetzt | abgelehnt |
+|---|---|---|---:|
+| A40 | 50 → **70** von 250 | 0,25 → **0,30** | 32 % |
+| A24 | 80 → **107** von 219 | 0,37 → **0,43** | 44 % |
+| A21 | 112 → **141** von 257 | 0,39 → **0,46** | 7 % |
+| A34 | 184 → **246** von 267 | 0,75 → **0,87** | 4 % |
+
+**Die Warnleuchte ordnet unverändert:** A40 < A24 < A21 < A34, nach beiden Größen,
+dieselbe Reihenfolge wie in §4.4. Was *nicht* beantwortet ist: die Tautologie. Der
+Vorbehalt dort lautete, eine abgelehnte Verankerung senke mechanisch beide Größen
+— und die Ablehnungsquoten stehen weiter zwischen 4 % und 44 %. Gemessen ist „sie
+ordnet noch", nicht „die Korrelation ist echt".
+
+### Paper 1: das Signal existiert, der Bestand trägt es nicht
+
+[How Reliable are AMR Parser Outputs?](https://arxiv.org/abs/2610.13236) gewinnt
+Unsicherheit aus der *Streuung mehrerer Kandidaten* statt aus dem Selbstbericht
+eines Laufs, und prüft sie mit der Prediction Rejection Ratio: werden gerade die
+schlechten Projektionen zurückgewiesen?
+
+Zuerst der Weg, der nicht geht: der verankerte Anteil **sättigt** auf dem
+Bedeutungsbestand — 0,96 bis 1,00, 62 von 72 bei genau 1,00. Auf
+Ein-Satz-Dokumenten hat er keinen Hub. Das ist dieselbe Lehre wie die 25-von-25
+aus §4.1, nur an einer anderen Größe.
+
+Der Weg, der geht, ist der des Papers: drei Wiederholungen pro Fall liegen vor.
+
+| | Übereinstimmung der 3 Läufe | Gold |
+|---|---|---|
+| 22 von 24 Fällen | **1,00**, identische Claim-Menge | alle 3 bestehen |
+| `sco-02-de` | 0,83, Menge uneinheitlich | 1 von 3 fällt |
+| `sco-02-en` | 0,80, Menge *und* Zahl uneinheitlich | 2 von 3 fallen |
+
+**Kein falscher Alarm, kein unmarkierter Fehlschlag.** Jeder Fall mit
+uneinheitlicher Claim-Menge verfehlt Gold, jeder einheitliche besteht.
+
+Und jetzt die Hälfte, die zählt: **das ruht auf 3 Fehlschlägen in 72 Läufen, und
+beide markierten Fälle sind `sco-02` in zwei Sprachen — ein Phänomen, nicht
+zwei.** Eine perfekte Trennung bei zwei Beobachtungen ist von einem Zufall nicht
+zu unterscheiden. Das Skript gibt diesen Satz selbst aus, nicht die Prosa um es
+herum, und ein Test prüft, dass er dort steht.
+
+Für die offene Frage „Extraktionswiederholungen als Politik, 3× Kosten" heißt das
+genau eines: **nicht einführen, bevor es einen Bestand gibt, der ein Signal von
+Zufall trennen kann.** Was fehlt, sind härtere Fälle, nicht mehr Wiederholungen —
+und das Paper warnt ausdrücklich, dass mehr Kandidaten die Unsicherheit
+verschlechtern können (bei einem Parser war k=10 schädlich).
+
+### Paper 2: trifft unsere kleinste Fehlerklasse, gemessen
+
+[Structural Automata](https://arxiv.org/abs/2610.13896) setzt die Zulässigkeit
+während des Dekodierens durch, statt sie danach zu prüfen. Der billige Test
+zuerst, über die fünf Fälle, 120 abgelehnte Claims:
+
+| Grund | Anteil |
+|---|---:|
+| **Verankerung** — das Zitat steht nicht wörtlich im Dokument | 85 = **71 %** |
+| `duplicate_claim_node` — zwei Vorschläge fallen zusammen | 27 = 23 %, das ist der Merge bei der Arbeit |
+| Schema/Typ | 8 = **7 %** |
+
+Ein Automat garantiert Struktur. Die 71 % sind keine Strukturverletzung, sondern
+**Untreue zum Text** — der Vorschlag ist wohlgeformt und zitiert etwas, das nicht
+dasteht. Kein Dekodierzwang verhindert das. APD adressiert bei uns 7 %, und
+unsere Nachprüfung ist deterministisch und fängt die 71 % vollständig. Deshalb
+lassen wir es, mit dieser Zahl als Begründung statt mit einer Einschätzung.
+
+### Zwei Fehler in meiner eigenen Arbeit, beide von Tests gefunden
+
+**Der erste war ein Entwurfsfehler.** Die Bandgrenze stand als freie Konstante
+`0,95`, während der Sweep bis 100 % läuft. Eine Spanne mit 98 % Deckung galt damit
+als „entschieden" und wechselte trotzdem zwischen den letzten zwei Schwellen die
+Seite — das Band **untertrieb** genau die Hebelwirkung, die es benennen soll. Die
+Grenze wird jetzt aus dem Sweep abgeleitet, und ein Test hält beide zusammen.
+Nebenbei wurde der Befund dadurch stärker: die erreichten Spannen der vier Paper
+liegen nicht bei „≥ 95 %", sondern bei exakt 100 %.
+
+**Der zweite war ein zu schwacher Test.** Eine Mutation, die jede Schwelle bei 0,8
+zählt, hat **überlebt**: mein Test prüfte, dass es *eine Zahl je Schwelle* gibt,
+und nichts über die Zahlen. Die Reparatur war keine Testflickung, sondern
+**eine Zählfunktion statt drei Ausdrücken** — dieselbe Lehre wie bei
+`prompt_fingerprint` in 3ao, und derselbe Grund: drei Kopien sind der Weg, auf dem
+zwei Skripte eine harte Schwelle behielten, während das dritte zwei berichtete.
+
+Dreizehn Mutationen, dreizehn gefangen.

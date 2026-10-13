@@ -37,6 +37,20 @@ def merged(spans: list[tuple[int, int]]) -> list[list[int]]:
     return out
 
 
+def hits_by_threshold(
+    shares: list[float], thresholds: tuple[float, ...]
+) -> dict[float, int]:
+    """How many gold spans count as reached, at each threshold.
+
+    One home for the count, because three scripts need it and a second copy is
+    how two of them came to carry a single hard-coded threshold while this one
+    reported two. A mutation that made every threshold score at 0.8 survived
+    the first test written for it, which is the argument for having one
+    function rather than three expressions.
+    """
+    return {threshold: sum(1 for share in shares if share >= threshold) for threshold in thresholds}
+
+
 def covered_characters(span: tuple[int, int], union: list[list[int]]) -> int:
     start, end = span
     return sum(max(0, min(end, u_end) - max(start, u_start)) for u_start, u_end in union)

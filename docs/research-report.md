@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ao, which is a log rather than a synthesis.
+§3a–§3ap, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -101,6 +101,8 @@ withdrawals in §7 have that one cause.
 | 19 | Half the meaning set could be passed without preserving the meaning; rewritten, and the figures do not move | **resolved** (§4.16). The set is examined rather than a draft, and 69 of 72 survives a strictly harder instrument |
 | 20 | Six fields the dossier carries are written and never read, and `semantic_state` is a state machine with no transitions | open; audited rather than noticed (§4.17), and blocked on the schema decision from §4.5 |
 | 21 | Reviewer comparisons rest on an assumption the artefacts could not confirm: the arms recorded no prompt hash and no output budget | both are recorded now (§4.18), but only from here on — every stored reviewer run predates the guard |
+| 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
+| 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats |
 
 ---
 
@@ -996,6 +998,93 @@ property of the repository rather than of the hash, so a test now asserts it
 outright. Mutations keep finding bad tests rather than bad code — this is the
 fifth time in this record.
 
+### 4.19 The rule that decides before the measurement, and how little it decides here
+
+A recall figure is not a property of the extraction alone. Before any span is
+counted, a rule has decided when a live span *reaches* a gold span, and in this
+project that rule is one number: the share of the gold span's characters some
+admitted claim must cover. `measure_recall.py` reported two values;
+`compare_runs.py` and `gold_ceiling.py` carried 0.8 hard-coded, set once and
+never declared as a condition.
+
+[arXiv 2610.13476](https://arxiv.org/abs/2610.13476) is the general form of the
+worry: in a comparison of representations the composition of the compared space
+moved the measured distance by 0.146 while the effect under study was 0.0545 —
+more than 2.5 times — and the number of categories moved almost nothing. The
+recommendation is to disclose the condition space rather than argue about the
+metric.
+
+The quantity that settles whether the worry applies is the **decision band**: the
+share of gold spans whose verdict the threshold decides rather than the
+extraction. A span covered 0 per cent or in full counts the same at every
+threshold; only a partially covered span can change sides. Measured on five
+stored cases, with no paid call:
+
+| Case | Gold spans | Decision band | Threshold swing |
+|---|---:|---:|---:|
+| A40 (argument-annotated paper) | 250 | **0** | 0 |
+| A24 | 219 | **0** | 0 |
+| A21 | 257 | **0** | 0 |
+| A34 | 267 | **0** | 0 |
+| ECHR 001-110144 (long court decision) | 49 | **38 = 78 %** | **38** |
+
+On the four papers the threshold decides nothing: 993 gold spans, none in the
+band, and every reached span covered to exactly 100 per cent. That is structural
+rather than lucky — both sides quote verbatim from one text, so the extractor
+either took the passage or did not.
+
+On the long court decision it decides almost everything: **49 of 49 spans at a
+5 per cent threshold, 11 of 49 at 100 per cent.** There the extractor writes 186
+long claims that cross gold boundaries, and nearly every gold span is partially
+covered. The effects §4.1 and §4.7 report on that document are 4 to 10 spans; the
+matching rule moves 38. So a recall figure there is a joint property of the
+extraction and of the threshold, and stating it without the threshold states it
+incompletely.
+
+`compare_runs.py` now reports whether the **verdict** survives the sweep, not
+just the counts, because "strict improvement" against "trade" is the claim the
+union argument rests on. On the one stored pair of prompt variants — `vocabulary`
+against `decompose` on 001-141170, different prompt hashes, same model — the
+verdict is *identical* at 50, 80 and 95 per cent. It holds. That is one pair, and
+no more than that.
+
+**§4.4's open re-run, done.** All four papers are stored with document, gold and
+proposal packet, so the re-run cost nothing. Through today's gate recall rises on
+all four (50 → 70, 80 → 107, 112 → 141, 184 → 246) and so does the anchored share
+(0.25 → 0.30, 0.37 → 0.43, 0.39 → 0.46, 0.75 → 0.87), and **the ordering is
+unchanged**: A40 < A24 < A21 < A34 by both measures, as in §4.4. What is not
+answered is the tautology §4.4 names: refusal rates still run from 4 to 44 per
+cent, so a refused anchor still lowers both terms. "It still orders" is measured;
+"the correlation is real" is not.
+
+**A signal that exists, on a set too clean to calibrate it.**
+[arXiv 2610.13236](https://arxiv.org/abs/2610.13236) derives uncertainty from the
+spread of several candidate parses rather than from one parse's self-report, and
+judges it by whether rejecting the uncertain cases removes the bad ones. The
+anchored share cannot play that role here: on the meaning set it saturates at
+0.96 to 1.00, 62 of 72 at exactly 1.00, because the documents are one sentence
+long — the §4.1 lesson about short documents, on a different quantity. The spread
+across the three stored repeats can: 22 of 24 cases agree completely and pass all
+three runs, while `sco-02-de` and `sco-02-en` disagree and are the only cases that
+fail. No false alarm, no unflagged failure. **And it rests on 3 failures in 72
+runs, both flagged cases being one phenomenon in two languages** — a perfect
+separation on two observations is not distinguishable from luck. For the open
+question of whether extraction repeats become policy at triple cost, that settles
+one thing only: not before a case set exists that could tell a signal from
+chance. What is missing is harder cases, not more repeats, and the paper warns
+that more candidates can make the uncertainty worse.
+
+**Why the structural decoder is left.**
+[arXiv 2610.13896](https://arxiv.org/abs/2610.13896) enforces admissibility
+during decoding instead of checking it afterwards. Across the same five cases,
+120 refused claims break down as 85 anchoring (71 %), 27 duplicate claim nodes
+(23 %, the merge working) and 8 schema or type (7 %). An automaton guarantees
+structure, and the 71 per cent are not a structural violation but unfaithfulness
+to the text: the proposal is well-formed and quotes something the document does
+not contain. No decoding constraint prevents that, and the deterministic check
+catches all of it. The paper addresses 7 per cent here, which is the reason to
+leave it — a figure rather than a judgement.
+
 ---
 
 ## 5. What we do not know
@@ -1173,8 +1262,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 25 measurement scripts, each tested
-docs/architecture.md §3a–§3ao            the chronological record, run by run
+scripts/                                 27 measurement scripts, each tested
+docs/architecture.md §3a–§3ap            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1183,7 +1272,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-472 tests and one skipped, `ruff check` clean.
+536 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1234,7 +1323,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ao und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ap und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1329,6 +1418,8 @@ Rücknahmen in §7 haben genau diese Ursache.
 | 19 | Die Hälfte des Bedeutungsbestands war bestehbar, ohne die Bedeutung zu erhalten; umgeschrieben, und die Zahlen bewegen sich nicht | **gelöst** (§4.16). Der Bestand ist geprüft statt Entwurf, und 69 von 72 übersteht ein strikt härteres Instrument |
 | 20 | Sechs Felder des Dossiers werden geschrieben und nie gelesen, und `semantic_state` ist ein Zustandsautomat ohne Übergänge | offen; geprüft statt bemerkt (§4.17), und blockiert von der Schemaentscheidung aus §4.5 |
 | 21 | Reviewer-Vergleiche ruhen auf einer Annahme, die die Artefakte nicht belegen konnten: die Arme zeichneten weder Prompt-Hash noch Ausgabebudget auf | beides wird jetzt aufgezeichnet (§4.18), aber erst von hier an — jeder gespeicherte Reviewer-Lauf liegt vor dem Wächter |
+| 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
+| 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen |
 
 ## 2. Was das System ist
 
@@ -2232,6 +2323,96 @@ des Hashes, und ein Test behauptet sie deshalb ausdrücklich. Mutationen finden
 weiter schlechte Tests statt schlechten Code; in dieser Aufzeichnung zum fünften
 Mal.
 
+### 4.19 Die Regel, die vor der Messung entscheidet, und wie wenig sie hier entscheidet
+
+Ein Recall-Wert ist keine Eigenschaft der Extraktion allein. Bevor eine Spanne
+gezählt wird, hat eine Regel entschieden, wann eine Live-Spanne eine Gold-Spanne
+*erreicht*, und diese Regel ist hier eine Zahl: der Anteil der Zeichen der
+Gold-Spanne, den ein zugelassener Claim decken muss. `measure_recall.py`
+berichtete zwei Werte; `compare_runs.py` und `gold_ceiling.py` trugen 0,8 hart
+kodiert, einmal gesetzt und nie als Bedingung ausgewiesen.
+
+[arXiv 2610.13476](https://arxiv.org/abs/2610.13476) ist die allgemeine Form des
+Problems: in einem Repräsentationsvergleich bewegte die Zusammensetzung des
+Vergleichsraums den gemessenen Abstand um 0,146, während der untersuchte Effekt
+0,0545 betrug — mehr als das 2,5-Fache —, und die Anzahl der Kategorien bewegte
+fast nichts. Die Empfehlung ist, den Bedingungsraum offenzulegen, statt über die
+Metrik zu streiten.
+
+Was entscheidet, ob das Problem überhaupt greift, ist das **Entscheidungsband**:
+der Anteil der Gold-Spannen, über die die Schwelle befindet und nicht die
+Extraktion. Eine zu 0 % oder vollständig gedeckte Spanne zählt bei jeder Schwelle
+gleich; nur eine teilweise gedeckte kann die Seite wechseln. Gemessen an fünf
+gespeicherten Fällen, ohne bezahlten Aufruf:
+
+| Fall | Gold-Spannen | Entscheidungsband | Schwellenspanne |
+|---|---:|---:|---:|
+| A40 (argumentannotiertes Paper) | 250 | **0** | 0 |
+| A24 | 219 | **0** | 0 |
+| A21 | 257 | **0** | 0 |
+| A34 | 267 | **0** | 0 |
+| ECHR 001-110144 (langer Gerichtsentscheid) | 49 | **38 = 78 %** | **38** |
+
+Auf den vier Papern entscheidet die Schwelle nichts: 993 Gold-Spannen, keine im
+Band, und jede erreichte Spanne zu exakt 100 % gedeckt. Das ist strukturell und
+nicht Glück — beide Seiten zitieren wörtlich aus demselben Text, der Extraktor hat
+die Passage also genommen oder nicht.
+
+Auf dem langen Gerichtsentscheid entscheidet sie fast alles: **49 von 49 Spannen
+bei 5 % Schwelle, 11 von 49 bei 100 %.** Dort schreibt der Extraktor 186 lange
+Claims, die Gold-Grenzen überschneiden, und fast jede Gold-Spanne ist teilweise
+gedeckt. Die Effekte, die §4.1 und §4.7 auf diesem Dokument berichten, sind 4 bis
+10 Spannen groß; die Zuordnungsregel bewegt 38. Ein Recall-Wert dort ist damit
+eine gemeinsame Eigenschaft von Extraktion und Schwelle, und ihn ohne die Schwelle
+anzugeben heißt, ihn unvollständig anzugeben.
+
+`compare_runs.py` berichtet jetzt, ob das **Urteil** den Sweep übersteht, und
+nicht bloß die Zahlen — „strikte Verbesserung" gegen „Tausch" ist die Aussage, auf
+der das Vereinigungsargument ruht. Am einzigen gespeicherten Variantenpaar
+(`vocabulary` gegen `decompose` auf 001-141170, verschiedene Prompt-Hashes,
+gleiches Modell) lautet das Urteil bei 50, 80 und 95 % *identisch*. Es hält. Das
+ist ein Paar und nicht mehr.
+
+**§4.4s offener Nachlauf, nachgeholt.** Alle vier Paper liegen mit Dokument, Gold
+und Vorschlagspaket gespeichert, der Nachlauf kostete also nichts. Durch das
+heutige Gate steigt der Recall auf allen vier (50 → 70, 80 → 107, 112 → 141,
+184 → 246) und der verankerte Anteil ebenso (0,25 → 0,30, 0,37 → 0,43,
+0,39 → 0,46, 0,75 → 0,87), und **die Reihenfolge bleibt**: A40 < A24 < A21 < A34
+nach beiden Größen, wie in §4.4. Nicht beantwortet ist die Tautologie, die §4.4
+benennt: die Ablehnungsquoten laufen weiter von 4 bis 44 %, eine abgelehnte
+Verankerung senkt also weiter beide Größen. Gemessen ist „sie ordnet noch", nicht
+„die Korrelation ist echt".
+
+**Ein Signal, das es gibt, auf einem Bestand, der es nicht kalibrieren kann.**
+[arXiv 2610.13236](https://arxiv.org/abs/2610.13236) gewinnt Unsicherheit aus der
+Streuung mehrerer Kandidaten statt aus dem Selbstbericht eines Laufs und
+beurteilt sie daran, ob das Zurückweisen der unsicheren Fälle die schlechten
+entfernt. Der verankerte Anteil kann das hier nicht leisten: auf dem
+Bedeutungsbestand sättigt er bei 0,96 bis 1,00, 62 von 72 bei genau 1,00, weil
+die Dokumente einen Satz lang sind — die Lehre aus §4.1 über kurze Dokumente, an
+einer anderen Größe. Die Streuung über die drei gespeicherten Wiederholungen kann
+es: 22 von 24 Fällen stimmen vollständig überein und bestehen alle drei Läufe,
+während `sco-02-de` und `sco-02-en` abweichen und die einzigen Fälle sind, die
+durchfallen. Kein falscher Alarm, kein unmarkierter Fehlschlag. **Und es ruht auf
+3 Fehlschlägen in 72 Läufen, wobei beide markierten Fälle ein Phänomen in zwei
+Sprachen sind** — eine perfekte Trennung bei zwei Beobachtungen ist von Zufall
+nicht zu unterscheiden. Für die offene Frage, ob Extraktionswiederholungen bei
+dreifachen Kosten Politik werden, folgt daraus genau eines: nicht, bevor es einen
+Bestand gibt, der ein Signal von Zufall trennen kann. Es fehlen härtere Fälle,
+nicht mehr Wiederholungen, und das Paper warnt, dass mehr Kandidaten die
+Unsicherheit verschlechtern können.
+
+**Warum der strukturelle Dekoder bleibt, wo er ist.**
+[arXiv 2610.13896](https://arxiv.org/abs/2610.13896) erzwingt Zulässigkeit
+während des Dekodierens, statt sie danach zu prüfen. Über dieselben fünf Fälle
+verteilen sich 120 abgelehnte Claims auf 85 Verankerung (71 %), 27 doppelte
+Claim-Knoten (23 %, der Merge bei der Arbeit) und 8 Schema oder Typ (7 %). Ein
+Automat garantiert Struktur, und die 71 % sind keine Strukturverletzung, sondern
+Untreue zum Text: der Vorschlag ist wohlgeformt und zitiert etwas, das im Dokument
+nicht steht. Kein Dekodierzwang verhindert das, und die deterministische
+Nachprüfung fängt es vollständig. Das Paper adressiert hier 7 %, und das ist der
+Grund, es zu lassen — eine Zahl statt einer Einschätzung.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2405,8 +2586,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 25 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ao            die chronologische Aufzeichnung
+scripts/                                 27 Messskripte, jedes getestet
+docs/architecture.md §3a–§3ap            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2416,7 +2597,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-472 Tests und einer übersprungen, `ruff check` sauber.
+536 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

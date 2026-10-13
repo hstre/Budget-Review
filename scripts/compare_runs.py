@@ -16,6 +16,17 @@ reason the coverage case lacked: the independence is measured rather than
 assumed. Merging costs little, because the gate addresses claims by content, so
 a claim both runs found collapses into one node and its edges survive.
 
+**The verdict is not read off the spans alone.** Whether a run is a strict
+improvement or a trade depends on which spans count as reached, and that is
+decided by an overlap threshold this script used to fix at one value. On the
+argument-annotated papers that choice decides nothing — every gold span is
+anchored either not at all or in full. On a long court decision it decides half
+of them, and a recall figure stated without it is stated incompletely
+(arXiv 2610.13476). So the comparison now runs at every threshold in the sweep
+and says whether the verdict survives it. A verdict that holds across the
+condition space is a finding about the runs; one that does not is a finding
+about the threshold.
+
 Usage:
     compare_runs.py <gold-packet.json> <source-document> <dossier.json> <dossier.json> [...]
 """
@@ -34,10 +45,17 @@ _spec = importlib.util.spec_from_file_location(
 recall = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(recall)
 
-THRESHOLD = 0.8
+# The condition space of this comparison, not a single setting. The two values
+# the project publishes sit inside it, so a reader can place a published figure
+# in the sweep rather than beside it.
+SWEEP = (0.5, 0.8, 0.95)
 
 
-def found_spans(dossier_path: Path, gold: list[tuple[str, tuple[int, int], str]]) -> set[str]:
+def found_spans(
+    dossier_path: Path,
+    gold: list[tuple[str, tuple[int, int], str]],
+    threshold: float,
+) -> set[str]:
     data = json.loads(dossier_path.read_text(encoding="utf-8"))
     semantic = data["semantic"] if "semantic" in data else data
     union = recall.merged(
@@ -46,8 +64,20 @@ def found_spans(dossier_path: Path, gold: list[tuple[str, tuple[int, int], str]]
     return {
         proposal_id
         for proposal_id, span, _ in gold
-        if recall.covered_characters(span, union) / max(1, span[1] - span[0]) >= THRESHOLD
+        if recall.covered_characters(span, union) / max(1, span[1] - span[0]) >= threshold
     }
+
+
+def verdict_for(found_left: set[str], found_right: set[str]) -> str:
+    only_left = found_left - found_right
+    only_right = found_right - found_left
+    if not only_left and only_right:
+        return "strikte Verbesserung"
+    if only_left and not only_right:
+        return "strikte Verschlechterung"
+    if only_left and only_right:
+        return "Tausch"
+    return "identisch"
 
 
 def main() -> int:
@@ -61,41 +91,49 @@ def main() -> int:
         print("no gold spans located", file=sys.stderr)
         return 1
 
-    runs = {}
-    for argument in sys.argv[3:]:
-        path = Path(argument)
-        runs[path.stem] = found_spans(path, gold)
+    paths = [Path(argument) for argument in sys.argv[3:]]
+    per_threshold = {
+        threshold: {path.stem: found_spans(path, gold, threshold) for path in paths}
+        for threshold in SWEEP
+    }
 
     total = len(gold)
-    print(f"Gold-Spannen: {total}   Schwelle: {THRESHOLD:.0%} Span-Überlappung\n")
-    for name, found in runs.items():
-        print(f"  {name:34} {len(found):>3}/{total} = {len(found) / total:.0%}")
+    print(f"Gold-Spannen: {total}   Schwellen: "
+          + ", ".join(f"{t:.0%}" for t in SWEEP) + " Span-Überlappung\n")
+    names = [path.stem for path in paths]
+    print(f"  {'Lauf':34} " + " ".join(f"{t:>7.0%}" for t in SWEEP))
+    for name in names:
+        print(f"  {name:34} "
+              + " ".join(f"{len(per_threshold[t][name]):>7}" for t in SWEEP))
     print()
 
-    for (left, found_left), (right, found_right) in combinations(runs.items(), 2):
-        only_left = found_left - found_right
-        only_right = found_right - found_left
-        verdict = (
-            "strikte Verbesserung"
-            if not only_left and only_right
-            else "strikte Verschlechterung"
-            if only_left and not only_right
-            else "Tausch"
-            if only_left and only_right
-            else "identisch"
-        )
-        print(f"  {left}  gegen  {right}: {verdict}")
-        print(f"    nur {left}: {len(only_left)} {sorted(only_left)}")
-        print(f"    nur {right}: {len(only_right)} {sorted(only_right)}")
-        print(f"    Vereinigung: {len(found_left | found_right)}/{total}")
+    for left, right in combinations(names, 2):
+        verdicts = {
+            threshold: verdict_for(per_threshold[threshold][left], per_threshold[threshold][right])
+            for threshold in SWEEP
+        }
+        stable = len(set(verdicts.values())) == 1
+        print(f"  {left}  gegen  {right}:")
+        for threshold in SWEEP:
+            found_left = per_threshold[threshold][left]
+            found_right = per_threshold[threshold][right]
+            only_left = found_left - found_right
+            only_right = found_right - found_left
+            print(f"    bei {threshold:>4.0%}: {verdicts[threshold]:<24} "
+                  f"nur {left}: {len(only_left)}, nur {right}: {len(only_right)}, "
+                  f"Vereinigung: {len(found_left | found_right)}/{total}")
+        if stable:
+            print(f"    → Urteil hält über die Schwellen: {verdicts[SWEEP[0]]}")
+        else:
+            print("    → **Das Urteil hängt an der Schwelle.** Es ist damit keine")
+            print("      Aussage über die Läufe, sondern über die Zuordnungsregel.")
         print()
 
-    if len(runs) > 2:
-        union = set().union(*runs.values())
-        print(
-            f"  Vereinigung aller {len(runs)} Läufe: "
-            f"{len(union)}/{total} = {len(union) / total:.0%}"
-        )
+    if len(names) > 2:
+        print(f"  {'Vereinigung aller Läufe':34} "
+              + " ".join(
+                  f"{len(set().union(*per_threshold[t].values())):>7}" for t in SWEEP
+              ))
     return 0
 
 
