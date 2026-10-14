@@ -3453,3 +3453,122 @@ Frage nicht beantworten, für die die Wiederholungsstreuung gedacht ist.
 
 Der Vorschlag, diesen Stand danach einzufrieren, ist richtig. Der Bericht hat in
 den letzten Durchgängen mehr redaktionelle Fläche gewonnen als Messungen.
+
+## 3ar. Derselbe Typname — und die Frage ist nicht beantwortbar, weil die Grundlinie größer ist als der Effekt
+
+Anlass sind drei fremde Paper vom 12. Oktober. Eines liefert eine Methode, eines
+einen Gegenbefund gegen einen Befund von mir, und eines eine Taxonomie, deren
+Werkzeug ich nicht aufnehmen würde.
+
+### Paper 1 fragt das Richtige, und drei Viertel seiner Methode gehen hier nicht
+
+[Fear Is Not Always Fear](https://arxiv.org/abs/2610.12841) trennt vier Fälle,
+wenn zwei Systeme dasselbe Label benutzen: Basisratenunterschied, affine
+Skalenverschiebung, monotone nichtlineare Abbildung, abweichende Ordnung — nur das
+Letzte heißt verschiedene Konstrukte.
+
+**Drei der vier sind hier nicht verfügbar, und das zu sagen ist der Punkt.** Alle
+vier ruhen auf einem *Score* je Element. Ein `claim_type` ist eine nackte
+Kategorie: es gibt keine Ordnung zu erhalten oder zu verlieren, und 3y/§4.13 hat
+gemessen, dass die Konfidenz stabile von instabilen Fällen nicht trennt, kann also
+nicht als Score einstehen.
+
+Übertragbar ist die **Struktur** der Abweichung, die ohne Ordnung auskommt:
+
+| | |
+|---|---|
+| **konsistente Umbenennung** | jeder Typ der einen Seite geht auf genau einen der anderen, in *beiden* Richtungen. Ein Merge ist nach Anwendung der Abbildung möglich |
+| **keine konsistente Abbildung** | ein Typ geht auf mehrere. Der Typ der einen Seite bestimmt den der anderen nicht, ein Rename rettet den Merge nicht |
+
+Dass beide Richtungen zählen, ist kein Formalismus. `fact` und `method`, die beide
+zu `fact` werden, sind vorwärts eine Funktion — ein Vorwärts-Test allein würde das
+Umbenennung nennen und einen Merge erlauben. Es ist aber der Verlust einer
+Unterscheidung; nichts holt zurück, welchen der zwei ein Claim trug.
+
+### Gemessen, aus gespeicherten Artefakten, ohne einen Aufruf
+
+| Vergleich | Dokument | was variiert | gemeinsame Spannen | gleich getypt |
+|---|---|---|---:|---:|
+| 24 Bedeutungsfälle, 3 Wiederholungen | ein Satz | **nur Sampling** | 229 | **94 %** |
+| A40, 2 Wiederholungen | langes Paper | **nur Sampling** | 74 | **81 %** |
+| 141170, `vocabulary` gegen `decompose` | Gerichtsentscheid | Prompt + Sampling | 43 | 95 % |
+| 141170, `vocabulary` gegen dritte Variante | Gerichtsentscheid | Prompt + Sampling | 29 | 86 % |
+| 141170, `decompose` gegen dritte Variante | Gerichtsentscheid | Prompt + Sampling | 33 | 94 % |
+
+> **Der Prompt-Effekt liegt vollständig innerhalb der Spanne, die Sampling allein
+> erzeugt.** 86 bis 95 Prozent gegen 81 bis 94 Prozent. Paper 1s Frage — meinen
+> zwei Builder dasselbe mit einem Typnamen — ist aus diesen Daten **nicht
+> beantwortbar**, weil die Grundlinie für „nichts geändert" so groß ist wie die
+> Änderung. Das ist 3f und §4.2 eine Ebene tiefer, an einer anderen Größe.
+
+Und: **in keinem der fünf Vergleiche ist die Abweichung eine konsistente
+Umbenennung.** Immer geht mindestens ein Typ auf mehrere. Auf A40 ist `fact` ein
+Attraktor — fünf verschiedene Typen fallen hinein (`limitation`, `scope`,
+`recommendation`, `assumption`, `definition`), und `fact ↔ method` läuft in beide
+Richtungen. Das ist genau die Lage, die Paper 1 als „verschiedene Konstrukte"
+liest — nur erzeugt sie bei uns **dasselbe Modell mit demselben Prompt**, der
+Schluss auf die Definitionen ist also nicht gedeckt.
+
+Ein Nebenbefund, kontrolliert und sauber, weil beide Zahlen nur Sampling
+enthalten: **94 Prozent auf Ein-Satz-Dokumenten gegen 81 Prozent auf einem langen
+Paper.** Die Typstabilität fällt mit der Dokumentlänge, wie in §4.15 die
+Befundstabilität.
+
+Was **nicht** kontrolliert ist und so dasteht: die Prompt-Zahlen stehen auf dem
+Gerichtsentscheid, die Sampling-Zahlen auf einem Paper und auf den kurzen Fällen.
+Eine gleich-Prompt-Wiederholung auf 141170 liegt nicht gespeichert; nachgesehen,
+die dortigen Artefakte tragen drei verschiedene Prompt-Hashes.
+
+### Paper 3 trifft einen Befund von mir, der zwei Tage alt ist
+
+[Activating the Annotator](https://arxiv.org/abs/2610.12701): eine vorgeschaltete
+Kontextaktivierung erhöht die Labelentropie und senkt die Übereinstimmung — und
+die Lesart ist nicht „mehr Unsicherheit", sondern dass gültige perspektivische
+Unterschiede sichtbar werden, statt auf Konsens nivelliert zu sein.
+
+In §4.19 habe ich berichtet: jeder Fall mit uneinheitlicher Claim-Menge verfehlt
+Gold, jeder einheitliche besteht. Daraus habe ich „Streuung markiert Fehler"
+gelesen. **Auf unserem Bestand ist das nicht unterscheidbar, und zwar
+konstruktionsbedingt.**
+
+Nachgesehen — und mein Satz dazu war erst falsch: **8 von 24 Fällen tragen zwei
+`permitted_readings`.** Aber die acht Paare sind durchweg Formulierungsvarianten
+*derselben* Lesart:
+
+> `mod-02-de`: „Die Studie belegt, dass das Programm die Quote senkt." gegen
+> „Laut Studie senkt das Programm die Quote."
+
+Kein Fall lässt zwei semantisch verschiedene Lesarten zu. Auf einem Bestand, in
+dem jeder Fall genau eine richtige Antwort hat, **ist Uneinigkeit gleichbedeutend
+mit Fehler, weil der Bestand es so festlegt.** Die perfekte Trennung aus §4.19
+zeigt also, dass Streuung Fehler findet, wo Ambiguität ausgeschlossen wurde — und
+nicht, dass sie Ambiguität erkennt. Das ist keine Widerlegung der Messung, sondern
+ihre Grenze, und sie stand nicht dort.
+
+Dazu eine Schemaeinsicht, die klein ist und zählt: das Feld kann mehrere Einträge
+tragen, **kann aber nicht sagen, ob zwei Einträge dieselbe Lesart anders
+formuliert oder zwei zulässige Lesarten sind.** Genau diese Unterscheidung
+bräuchte der härtere Bestand. Sie kostet ein Feld, keinen Umbau.
+
+### Paper 2: die Taxonomie ja, die Bibliothek nicht
+
+[perturber](https://arxiv.org/abs/2610.12667) liefert 68 deterministische
+Textperturbationen. Die Zerlegung — typografisch, lexikalisch, echte Paraphrase,
+Samplingvariation — ist richtig und hier besonders einschlägig, weil §4.3 die
+typografische Achse schon brutal gemessen hat: ein Zeilenumbruch im Satz kostete
+Recall von 194 auf 124.
+
+Aufgenommen wird sie trotzdem nicht. Die vier Operationen, die wir bräuchten, sind
+drei Dutzend Zeilen, und eine steht schon im Gate. Eine Abhängigkeit für 68
+Operationen, von denen wir vier nutzen, ist keine. Wichtiger ist ihr eigener
+Vorbehalt, und er ist genau unser Engpass: **die Bibliothek liefert kein Gold
+dafür, dass eine Paraphrase die Bedeutung erhält.** Die Messung kostet außerdem
+rund 432 Aufrufe, etwa sechs Läufe des Bedeutungsbestands.
+
+### Ein Fehler im Skript, den der Test gefunden hat
+
+Zwei Läufe **ohne eine einzige gemeinsame Spanne** wurden als „identisch"
+berichtet: `agreed == len(shared)` gilt bei null. Das liest sich wie perfekte
+Übereinstimmung und ist das Gegenteil. Behoben, und ein Test hält es.
+
+Acht Mutationen, acht gefangen.

@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3aq, which is a log rather than a synthesis.
+§3a–§3ar, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -115,7 +115,8 @@ compute its variants** — which costs nothing and had not been done.
 | 20 | Six fields the dossier carries are written and never read, and `semantic_state` is a state machine with no transitions | open; audited rather than noticed (§4.17), and blocked on the schema decision from §4.5 |
 | 21 | Reviewer comparisons rest on an assumption the artefacts could not confirm: the arms recorded no prompt hash and no output budget | both are recorded now (§4.18), but only from here on — every stored reviewer run predates the guard |
 | 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
-| 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats |
+| 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats — and §4.20 sharpens why: no case admits two semantically different readings, so on this set disagreement *is* error by construction and the separation cannot show that spread detects ambiguity |
+| 24 | Whether two runs mean the same by a claim type is not answerable from the stored data | the prompt effect (86–95 % agreement) lies inside the range sampling alone produces (81–94 %), and no comparison is a consistent renaming (§4.20). Controlled side finding: type stability falls with document length, 94 % on one sentence against 81 % on a long paper |
 
 ---
 
@@ -1112,6 +1113,78 @@ not contain. No decoding constraint prevents that, and the deterministic check
 catches all of it. The paper addresses 7 per cent here, which is the reason to
 leave it — a figure rather than a judgement.
 
+### 4.20 The same type name, and a baseline larger than the effect
+
+[arXiv 2610.12841](https://arxiv.org/abs/2610.12841) asks the right question of a
+vocabulary with no definitions: when two builders use one label, is the
+disagreement a boundary drawn elsewhere or a different construct? It separates
+four cases — base rate, affine shift, monotone non-linear mapping, divergent
+ordering — and **three of the four are unavailable here.** All rest on a score per
+item; a claim type is a bare category, and §4.13 measured that the confidence
+float cannot stand in for one. What transfers is the structure of the
+disagreement: a *consistent renaming* (every type maps to exactly one, in both
+directions, so a merge survives applying the map) against *no consistent mapping*
+(one type goes to several, and no rename rescues a merge). Both directions
+matter: two types collapsing into one is a function forward and a lost
+distinction backward.
+
+Measured on stored artefacts, no paid call:
+
+| Comparison | Document | What varies | Shared spans | Same type |
+|---|---|---|---:|---:|
+| 24 meaning cases, three repeats | one sentence | **sampling only** | 229 | **94 %** |
+| A40, two repeats | long paper | **sampling only** | 74 | **81 %** |
+| 001-141170, `vocabulary` vs `decompose` | court decision | prompt + sampling | 43 | 95 % |
+| 001-141170, `vocabulary` vs a third variant | court decision | prompt + sampling | 29 | 86 % |
+| 001-141170, `decompose` vs a third variant | court decision | prompt + sampling | 33 | 94 % |
+
+**The prompt effect lies entirely inside the range sampling alone produces** — 86
+to 95 per cent against 81 to 94. The paper's question is therefore not answerable
+from these data: the baseline for changing nothing is as large as the change. That
+is §4.2 one layer down, on a different quantity.
+
+**In none of the five comparisons is the disagreement a consistent renaming.** At
+least one type always goes to several. On A40 `fact` is an attractor, taking in
+`limitation`, `scope`, `recommendation`, `assumption` and `definition`, and
+`fact ↔ method` runs both ways. That is exactly the picture the paper reads as
+different constructs — except here one model produces it with one prompt, so the
+inference to differing definitions is not warranted.
+
+One controlled side finding, because both figures contain sampling only: **94 per
+cent on one-sentence documents against 81 per cent on a long paper.** Type
+stability falls with document length, as finding stability does in §4.15.
+
+What is **not** controlled, stated as such: the prompt figures come from the court
+decision and the sampling figures from a paper and from the short cases. No
+same-prompt repeat on 001-141170 is stored — its artefacts carry three different
+prompt hashes.
+
+**A limit this report should have carried on §4.19.** That section reported that
+every meaning case whose repeats disagree fails its gold and every case that
+agrees passes, and read it as spread marking error.
+[arXiv 2610.12701](https://arxiv.org/abs/2610.12701) is the counter-case: context
+activation raises label entropy and lowers agreement, and the reading is not more
+uncertainty but valid perspectival difference becoming visible instead of being
+flattened to consensus. Checked against the set: 8 of the 24 cases do carry two
+`permitted_readings`, but all eight pairs are two wordings of **one** reading —
+"Die Studie belegt, dass …" against "Laut Studie …". No case admits two
+semantically different readings. On a set where every case has exactly one right
+answer, disagreement *is* error by construction, so §4.19's separation shows that
+spread finds error where ambiguity was excluded, not that it detects ambiguity.
+The schema allows several entries per case but cannot say whether two entries are
+one reading reworded or two admissible readings — which is the distinction the
+harder set needs, and it costs a field rather than a rebuild.
+
+**Why the perturbation library is not taken.**
+[arXiv 2610.12667](https://arxiv.org/abs/2610.12667) supplies 68 deterministic
+text perturbations, and its decomposition — typographic, lexical, true paraphrase,
+sampling — is apt here, since §4.3 measured the typographic axis taking recall
+from 194 to 124 on one paper. The four operations needed are a few dozen lines and
+one already sits in the gate, so a dependency for 68 of which we use four is not
+one. Its own caveat is the real obstacle and it is ours: the library supplies test
+inputs but no gold that their meaning survived. The measurement would also cost
+roughly 432 calls, about six runs of the meaning set.
+
 ---
 
 ## 5. What we do not know
@@ -1359,8 +1432,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 27 measurement scripts, each tested
-docs/architecture.md §3a–§3aq            the chronological record, run by run
+scripts/                                 28 measurement scripts, each tested
+docs/architecture.md §3a–§3ar            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1369,7 +1442,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-537 tests and one skipped, `ruff check` clean.
+554 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1422,7 +1495,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3aq und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ar und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1533,7 +1606,8 @@ und nicht getan war.
 | 20 | Sechs Felder des Dossiers werden geschrieben und nie gelesen, und `semantic_state` ist ein Zustandsautomat ohne Übergänge | offen; geprüft statt bemerkt (§4.17), und blockiert von der Schemaentscheidung aus §4.5 |
 | 21 | Reviewer-Vergleiche ruhen auf einer Annahme, die die Artefakte nicht belegen konnten: die Arme zeichneten weder Prompt-Hash noch Ausgabebudget auf | beides wird jetzt aufgezeichnet (§4.18), aber erst von hier an — jeder gespeicherte Reviewer-Lauf liegt vor dem Wächter |
 | 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
-| 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen |
+| 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen — und §4.20 verschärft, warum: kein Fall lässt zwei semantisch verschiedene Lesarten zu, Uneinigkeit *ist* auf diesem Bestand konstruktionsbedingt Fehler, und die Trennung kann nicht zeigen, dass Streuung Ambiguität erkennt |
+| 24 | Ob zwei Läufe dasselbe mit einem Claim-Typ meinen, ist aus den gespeicherten Daten nicht beantwortbar | der Prompt-Effekt (86–95 % Übereinstimmung) liegt innerhalb der Spanne, die Sampling allein erzeugt (81–94 %), und kein Vergleich ist eine konsistente Umbenennung (§4.20). Kontrollierter Nebenbefund: die Typstabilität fällt mit der Dokumentlänge, 94 % auf einem Satz gegen 81 % auf einem langen Paper |
 
 ## 2. Was das System ist
 
@@ -2546,6 +2620,81 @@ nicht steht. Kein Dekodierzwang verhindert das, und die deterministische
 Nachprüfung fängt es vollständig. Das Paper adressiert hier 7 %, und das ist der
 Grund, es zu lassen — eine Zahl statt einer Einschätzung.
 
+### 4.20 Derselbe Typname, und eine Grundlinie größer als der Effekt
+
+[arXiv 2610.12841](https://arxiv.org/abs/2610.12841) stellt einem Vokabular ohne
+Definitionen die richtige Frage: Wenn zwei Systeme dasselbe Label benutzen, ist
+die Abweichung eine anders gezogene Grenze oder ein anderes Konstrukt? Es trennt
+vier Fälle — Basisrate, affine Verschiebung, monotone nichtlineare Abbildung,
+abweichende Ordnung — und **drei der vier sind hier nicht verfügbar.** Alle ruhen
+auf einem Score je Element; ein `claim_type` ist eine nackte Kategorie, und §4.13
+hat gemessen, dass die Konfidenz nicht als Score einstehen kann. Übertragbar ist
+die Struktur der Abweichung: eine *konsistente Umbenennung* (jeder Typ geht auf
+genau einen, in beiden Richtungen, ein Merge übersteht die Abbildung) gegen *keine
+konsistente Abbildung* (ein Typ geht auf mehrere, kein Rename rettet den Merge).
+Beide Richtungen zählen: zwei Typen, die in einen fallen, sind vorwärts eine
+Funktion und rückwärts eine verlorene Unterscheidung.
+
+Gemessen an gespeicherten Artefakten, ohne bezahlten Aufruf:
+
+| Vergleich | Dokument | was variiert | gemeinsame Spannen | gleich getypt |
+|---|---|---|---:|---:|
+| 24 Bedeutungsfälle, drei Wiederholungen | ein Satz | **nur Sampling** | 229 | **94 %** |
+| A40, zwei Wiederholungen | langes Paper | **nur Sampling** | 74 | **81 %** |
+| 001-141170, `vocabulary` gegen `decompose` | Gerichtsentscheid | Prompt + Sampling | 43 | 95 % |
+| 001-141170, `vocabulary` gegen dritte Variante | Gerichtsentscheid | Prompt + Sampling | 29 | 86 % |
+| 001-141170, `decompose` gegen dritte Variante | Gerichtsentscheid | Prompt + Sampling | 33 | 94 % |
+
+**Der Prompt-Effekt liegt vollständig innerhalb der Spanne, die Sampling allein
+erzeugt** — 86 bis 95 Prozent gegen 81 bis 94. Die Frage des Papers ist aus diesen
+Daten also nicht beantwortbar: die Grundlinie für „nichts geändert" ist so groß
+wie die Änderung. Das ist §4.2 eine Ebene tiefer, an einer anderen Größe.
+
+**In keinem der fünf Vergleiche ist die Abweichung eine konsistente Umbenennung.**
+Immer geht mindestens ein Typ auf mehrere. Auf A40 ist `fact` ein Attraktor und
+nimmt `limitation`, `scope`, `recommendation`, `assumption` und `definition` auf,
+und `fact ↔ method` läuft in beide Richtungen. Das ist genau das Bild, das das
+Paper als verschiedene Konstrukte liest — nur erzeugt es hier ein Modell mit einem
+Prompt, der Schluss auf abweichende Definitionen ist also nicht gedeckt.
+
+Ein kontrollierter Nebenbefund, weil beide Zahlen nur Sampling enthalten: **94
+Prozent auf Ein-Satz-Dokumenten gegen 81 Prozent auf einem langen Paper.** Die
+Typstabilität fällt mit der Dokumentlänge, wie die Befundstabilität in §4.15.
+
+Was **nicht** kontrolliert ist und so dasteht: die Prompt-Zahlen stammen vom
+Gerichtsentscheid, die Sampling-Zahlen von einem Paper und von den kurzen Fällen.
+Eine gleich-Prompt-Wiederholung auf 001-141170 liegt nicht gespeichert — die
+dortigen Artefakte tragen drei verschiedene Prompt-Hashes.
+
+**Eine Grenze, die bei §4.19 hätte stehen müssen.** Dort stand, jeder
+Bedeutungsfall mit uneinheitlichen Wiederholungen verfehle sein Gold und jeder
+einheitliche bestehe, gelesen als: Streuung markiert Fehler.
+[arXiv 2610.12701](https://arxiv.org/abs/2610.12701) ist der Gegenfall: eine
+Kontextaktivierung erhöht die Labelentropie und senkt die Übereinstimmung, und die
+Lesart ist nicht mehr Unsicherheit, sondern gültige perspektivische Differenz, die
+sichtbar wird statt auf Konsens nivelliert zu sein. Gegen den Bestand geprüft: 8
+der 24 Fälle tragen zwei `permitted_readings`, aber alle acht Paare sind zwei
+Formulierungen **einer** Lesart — „Die Studie belegt, dass …" gegen „Laut Studie
+…". Kein Fall lässt zwei semantisch verschiedene Lesarten zu. Auf einem Bestand,
+in dem jeder Fall genau eine richtige Antwort hat, *ist* Uneinigkeit
+konstruktionsbedingt Fehler; §4.19s Trennung zeigt also, dass Streuung Fehler
+findet, wo Ambiguität ausgeschlossen wurde, und nicht, dass sie Ambiguität
+erkennt. Das Schema erlaubt mehrere Einträge je Fall, kann aber nicht sagen, ob
+zwei Einträge eine umformulierte Lesart oder zwei zulässige Lesarten sind — genau
+die Unterscheidung, die der härtere Bestand braucht, und sie kostet ein Feld und
+keinen Umbau.
+
+**Warum die Perturbationsbibliothek nicht aufgenommen wird.**
+[arXiv 2610.12667](https://arxiv.org/abs/2610.12667) liefert 68 deterministische
+Textperturbationen, und ihre Zerlegung — typografisch, lexikalisch, echte
+Paraphrase, Sampling — ist hier einschlägig, nachdem §4.3 die typografische Achse
+gemessen hat, die den Recall auf einem Paper von 194 auf 124 nahm. Die vier
+Operationen, die wir brauchen, sind einige Dutzend Zeilen, und eine steht schon im
+Gate; eine Abhängigkeit für 68, von denen wir vier nutzen, ist keine. Ihr eigener
+Vorbehalt ist das eigentliche Hindernis und unser eigenes: die Bibliothek liefert
+Testeingaben, aber kein Gold dafür, dass deren Bedeutung erhalten blieb. Die
+Messung kostet zudem rund 432 Aufrufe, etwa sechs Läufe des Bedeutungsbestands.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2801,8 +2950,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 27 Messskripte, jedes getestet
-docs/architecture.md §3a–§3aq            die chronologische Aufzeichnung
+scripts/                                 28 Messskripte, jedes getestet
+docs/architecture.md §3a–§3ar            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2812,7 +2961,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-537 Tests und einer übersprungen, `ruff check` sauber.
+554 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

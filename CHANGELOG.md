@@ -11,6 +11,31 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **Whether two runs mean the same thing by a claim type is not answerable from the
+  stored data, because the baseline is as large as the effect.** Agreement on
+  byte-identical spans: 86 to 95 per cent across three prompt variants of one court
+  decision, against 81 to 94 per cent where nothing changes at all — three repeats
+  of 24 one-sentence cases and two repeats of one long paper. The prompt effect sits
+  inside the sampling range. Three of the four diagnostic cases the method offers
+  need a score per item, and a claim type is a bare category whose confidence float
+  cannot stand in for one.
+  **In none of the five comparisons is the disagreement a consistent renaming**: at
+  least one type always goes to several, and on one paper `fact` is an attractor
+  taking in `limitation`, `scope`, `recommendation`, `assumption` and `definition`.
+  That is the picture the method reads as differing constructs — produced here by
+  one model with one prompt.
+  One controlled side finding, both figures containing sampling only: **type
+  stability falls with document length**, 94 per cent on one sentence against 81 on
+  a long paper.
+- **A limit the report should have carried on the repeat-spread finding.** It
+  reported that every meaning case whose repeats disagree fails its gold and read
+  that as spread marking error. Checked against the set: 8 of 24 cases carry two
+  permitted readings, and all eight pairs are two wordings of **one** reading. No
+  case admits two semantically different readings, so on this set disagreement *is*
+  error by construction, and the separation shows that spread finds error where
+  ambiguity was excluded — not that it detects ambiguity. The schema allows several
+  entries per case but cannot say whether two are one reading reworded or two
+  admissible readings, which is the distinction a harder set needs.
 - **The matching rule decides 38 of 49 spans on one long court decision and 0 of
   993 on four argument-annotated papers.** A recall figure counts a gold span as
   reached when some admitted claim covers a share of its characters, and that
@@ -70,6 +95,11 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- `scripts/type_construct.py` and its tests, with a second mode that supplies the
+  baseline the first one needs: it groups repeats of one prompt and **refuses any
+  case whose repeats do not share a prompt hash** rather than averaging them in.
+  Eight mutations, eight caught — after a test found the script reporting two runs
+  with no span in common as identical, since `agreed == len(shared)` holds at zero.
 - `scripts/alignment_space.py` and `scripts/candidate_agreement.py`, with tests.
   Thirteen mutations, thirteen caught — after two of my own errors that the tests
   found rather than guessed. The band's upper mark was a free constant (0.95)
@@ -172,6 +202,10 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
+- Taking the 68-operation perturbation library. The four operations needed are a
+  few dozen lines and one already sits in the gate; more to the point, its own
+  caveat is our bottleneck — it supplies test inputs but no gold that their meaning
+  survived — and the measurement would cost about six runs of the meaning set.
 - Adopting extraction repeats as policy at triple cost. The spread across repeats
   looks like exactly the signal for it, and the set that would prove it has three
   failures in 72 runs. Harder cases first.
