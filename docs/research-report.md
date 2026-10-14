@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ar, which is a log rather than a synthesis.
+§3a–§3as, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -117,6 +117,8 @@ compute its variants** — which costs nothing and had not been done.
 | 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
 | 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats — and §4.20 sharpens why: no case admits two semantically different readings, so on this set disagreement *is* error by construction and the separation cannot show that spread detects ambiguity |
 | 24 | Whether two runs mean the same by a claim type is not answerable from the stored data | the prompt effect (86–95 % agreement) lies inside the range sampling alone produces (81–94 %), and no comparison is a consistent renaming (§4.20). Controlled side finding: type stability falls with document length, 94 % on one sentence against 81 % on a long paper |
+| 25 | A reference set that could tell interpretive ambiguity from noise now exists, and has never been run | built (§4.21): 16 cases, 8 pairs, four reading statuses, with the quantifier controls that make the status measurable. 48 calls and a pre-registered criterion away from a figure. It annotates no edges |
+| 26 | Relations are now structurally checkable, and the check is nearly idle | the vocabulary's reversal table says two labels are symmetric, one pair inverse, ten with no inverse at all (§4.21). Across 1,041 stored relations both directions appear four times, all consistent — 0.4 per cent, so it cannot fail. Establishing anything needs the endpoints actively swapped, which is a paid run |
 
 ---
 
@@ -1185,6 +1187,90 @@ one. Its own caveat is the real obstacle and it is ours: the library supplies te
 inputs but no gold that their meaning survived. The measurement would also cost
 roughly 432 calls, about six runs of the meaning set.
 
+### 4.21 A harder set, built around a category the first one could not express
+
+The first meaning set measures whether a projection preserves *the* reading of a
+span, and on that set there always is one: every case has exactly one right
+answer, which is why §4.20 found that its repeat-spread separation cannot show
+what it looked like showing. A second set was built for that, and reading
+[arXiv 2610.14438](https://arxiv.org/abs/2610.14438) changed its design before it
+existed.
+
+That paper builds 1,000 minimal pairs where a plural statement is neither true nor
+false: with three of five children having run, "the children ran" and "the children
+did not run" are both gaps under a homogeneity semantics, while "all ran" is false
+and "not all ran" is true. Seven models resolve the underlying set relations almost
+perfectly and still force the plural into a binary verdict — negated plurals come
+back as false 84 per cent of the time. **Truth is not this product's business**:
+the extraction contract says never to judge whether a claim is true. What the paper
+changes is what a reference set has to keep apart, and the fourth of these would
+have been folded into the second:
+
+| Status | What the span does |
+|---|---|
+| `determinate` | settles one reading |
+| `ambiguous` | admits several and chooses none |
+| `underdetermined_quantifier` | leaves a plural open, so **both** resolutions add a commitment |
+| `evidence_absent` | asserts what the document does not support, and must not be softened |
+
+An open plural is not an ambiguity between two readings. It is one reading without
+a quantifier, and "all" and "not all" are both additions to it.
+
+The set is 16 cases, 8 pairs, German and English, in its own file so that neither
+set's figures can be reported as the other's: 4 ambiguous (attachment and
+quantifier-scope, each with two readings whose renderings are disjoint), 4 open
+plurals (bare and **negated** bare, which is the paper's polarity asymmetry), 6
+determinate (including the controls) and 2 evidence-absent.
+
+**The controls are what make the status measurable rather than asserted.**
+`plu-03` and `plu-04` say "all" and "not all" explicitly, so an extractor that
+*drops* a quantifier fails them; `plu-01` and `plu-02` leave it open, so one that
+*adds* a quantifier fails those. Both documents also state the mixed situation
+("three of the five sites"), so a projection that resolves the plural from context
+rather than from the span is caught. The validator refuses an open-plural case that
+forbids only one of the two resolutions — a set without that would pass exactly the
+error the paper measures.
+
+Renderings are grouped under the reading they express, which is the distinction the
+first set cannot make: eight of its 24 cases declare two permitted readings and all
+eight are two wordings of one. A test requires the ambiguous cases' renderings to be
+disjoint across readings. The matching convention is imported from the first set
+rather than written again, and a test forbids a second copy.
+
+**The relation axis is now structurally checkable, and that exposed the
+vocabulary.** [arXiv 2610.14442](https://arxiv.org/abs/2610.14442) determines a
+relation twice, for (A,B) and (B,A): symmetric must return itself, asymmetric its
+defined inverse, anything else is a structural failure rather than a confidence
+problem. That was not expressible here — fourteen labels, a direction gloss for
+seven, and nothing saying which are symmetric or what any inverse is. Writing the
+table shows why: **two labels are symmetric, one pair are each other's inverse, and
+ten have no inverse in the vocabulary at all.** For those ten the invariant keeps
+only its negative half — the same label with the endpoints swapped is wrong, and
+omission is the correct output, which the contract already asks for.
+
+The inverse pair was found in the data rather than invented: across 90 stored
+dossiers and **1,041 relations**, both directions were emitted **four times** — two
+`CONTRADICTS`/`CONTRADICTS`, correctly symmetric, and two
+`DEPENDS_ON`/`ASSUMPTION_FOR`, correctly inverse. Zero violations. **And that is
+nearly vacuous**: the situation arises in 0.4 per cent of relations, so a check
+that cannot fail proves nothing — the same distinction §4.14 drew about a
+precondition that flipped nothing. The paper's method needs the endpoints actively
+swapped, which is a paid run. The check exists now and costs nothing; what it
+establishes is still nothing.
+
+**Nothing from the memory paper.**
+[arXiv 2610.14431](https://arxiv.org/abs/2610.14431) decomposes persistent memory
+formation into five attackable interfaces. This project has no persistent memory,
+no reflection runs and no consolidation — every run starts at the document. Its
+transferable lesson, that formation needs provenance and not only the end state, is
+already applied: §4.18 records what a reviewer was asked, not just what came back.
+
+**The set has never been run.** Every figure above is a figure about the set, not a
+result. A run is 16 cases times three repeats, 48 calls, about two thirds of a
+meaning-set run, and needs a pre-registered criterion first. And it still annotates
+no edges, so the relation axis is structurally checkable without being checkable
+against gold.
+
 ---
 
 ## 5. What we do not know
@@ -1432,8 +1518,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 28 measurement scripts, each tested
-docs/architecture.md §3a–§3ar            the chronological record, run by run
+scripts/                                 29 measurement scripts, each tested
+docs/architecture.md §3a–§3as            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1442,7 +1528,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-554 tests and one skipped, `ruff check` clean.
+599 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1495,7 +1581,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ar und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3as und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1608,6 +1694,8 @@ und nicht getan war.
 | 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
 | 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen — und §4.20 verschärft, warum: kein Fall lässt zwei semantisch verschiedene Lesarten zu, Uneinigkeit *ist* auf diesem Bestand konstruktionsbedingt Fehler, und die Trennung kann nicht zeigen, dass Streuung Ambiguität erkennt |
 | 24 | Ob zwei Läufe dasselbe mit einem Claim-Typ meinen, ist aus den gespeicherten Daten nicht beantwortbar | der Prompt-Effekt (86–95 % Übereinstimmung) liegt innerhalb der Spanne, die Sampling allein erzeugt (81–94 %), und kein Vergleich ist eine konsistente Umbenennung (§4.20). Kontrollierter Nebenbefund: die Typstabilität fällt mit der Dokumentlänge, 94 % auf einem Satz gegen 81 % auf einem langen Paper |
+| 25 | Ein Referenzbestand, der Interpretationsmehrdeutigkeit von Rauschen trennen könnte, existiert jetzt und ist nie gelaufen | gebaut (§4.21): 16 Fälle, 8 Paare, vier Lesartstatus, mit den Quantorenkontrollen, die den Status messbar machen. 48 Aufrufe und ein vorregistriertes Kriterium von einer Zahl entfernt. Er annotiert keine Kanten |
+| 26 | Relationen sind jetzt strukturell prüfbar, und die Prüfung ist beinahe untätig | die Umkehrtabelle des Vokabulars nennt zwei Labels symmetrisch, ein Paar invers, zehn ohne jedes Inverses (§4.21). Über 1041 gespeicherte Relationen treten beide Richtungen viermal auf, alle konsistent — 0,4 Prozent, sie kann also nicht scheitern. Etwas zu belegen verlangt aktives Vertauschen der Enden, und das ist ein bezahlter Lauf |
 
 ## 2. Was das System ist
 
@@ -2695,6 +2783,94 @@ Vorbehalt ist das eigentliche Hindernis und unser eigenes: die Bibliothek liefer
 Testeingaben, aber kein Gold dafür, dass deren Bedeutung erhalten blieb. Die
 Messung kostet zudem rund 432 Aufrufe, etwa sechs Läufe des Bedeutungsbestands.
 
+### 4.21 Ein härterer Bestand, um eine Kategorie gebaut, die der erste nicht ausdrücken kann
+
+Der erste Bedeutungsbestand misst, ob eine Projektion *die* Lesart einer Spanne
+erhält, und dort gibt es immer eine: jeder Fall hat genau eine richtige Antwort,
+weshalb §4.20 festhält, dass seine Wiederholungs-Trennung nicht zeigen kann, wonach
+sie aussah. Für genau das wurde ein zweiter Bestand gebaut, und die Lektüre von
+[arXiv 2610.14438](https://arxiv.org/abs/2610.14438) hat seinen Entwurf geändert,
+bevor er existierte.
+
+Das Paper baut 1.000 Minimalpaare, in denen eine Pluralaussage weder wahr noch
+falsch ist: Sind drei von fünf Kindern gelaufen, sind „Die Kinder liefen" und „Die
+Kinder liefen nicht" unter Homogenitätssemantik beide Lücken, während „Alle liefen"
+falsch und „Nicht alle liefen" wahr ist. Sieben Modelle lösen die Mengenverhältnisse
+fast fehlerfrei und pressen den Plural trotzdem in ein binäres Urteil — negierte
+Plurale kommen zu 84 Prozent als falsch zurück. **Wahrheit ist nicht die Sache
+dieses Produkts**: der Extraktionsvertrag verbietet ausdrücklich, über die Wahrheit
+eines Claims zu urteilen. Was das Paper ändert, ist, was ein Referenzbestand
+trennen muss — und die vierte dieser Kategorien hätte ich in die zweite
+hineingezogen:
+
+| Status | was die Spanne tut |
+|---|---|
+| `determinate` | legt eine Lesart fest |
+| `ambiguous` | lässt mehrere zu und entscheidet keine |
+| `underdetermined_quantifier` | lässt einen Plural offen, also fügen **beide** Auflösungen eine Zusage hinzu |
+| `evidence_absent` | behauptet, was das Dokument nicht stützt, und darf nicht abgeschwächt werden |
+
+Ein offener Plural ist keine Ambiguität zwischen zwei Lesarten. Er ist *eine* Lesart
+ohne Quantor, und „alle" wie „nicht alle" sind Zusätze dazu.
+
+Der Bestand hat 16 Fälle, 8 Paare, deutsch und englisch, in eigener Datei, damit
+keine Zahl des einen als Zahl des anderen berichtet werden kann: 4 ambig
+(Anbindung und Quantorenskopus, je zwei Lesarten mit disjunkten Formulierungen), 4
+offene Plurale (bloß und **negiert** bloß, die Polaritätsasymmetrie des Papers), 6
+determinate samt den Kontrollen und 2 ohne Stütze.
+
+**Die Kontrollen machen den Status messbar statt behauptet.** `plu-03` und `plu-04`
+sagen ausdrücklich „alle" beziehungsweise „nicht alle", ein Extraktor, der einen
+Quantor *streicht*, fällt dort durch; `plu-01` und `plu-02` lassen ihn offen, einer
+der einen *hinzufügt*, fällt dort durch. Beide Dokumente nennen zudem die gemischte
+Lage („drei der fünf Standorte"), sodass eine Projektion auffällt, die den Plural aus
+dem Kontext statt aus der Spanne auflöst. Der Validator lehnt einen offenen Plural
+ab, der nur eine der beiden Auflösungen verbietet — ein Bestand ohne das würde genau
+den Fehler durchlassen, den das Paper messt.
+
+Formulierungen sind unter der Lesart gruppiert, die sie ausdrücken, und das ist die
+Unterscheidung, die der erste Bestand nicht treffen kann: acht seiner 24 Fälle
+erklären zwei zulässige Lesarten, und alle acht sind zwei Formulierungen einer. Ein
+Test verlangt, dass die Formulierungsmengen der ambigen Fälle über die Lesarten
+hinweg disjunkt sind. Die Trefferkonvention wird aus dem ersten Bestand importiert
+statt neu geschrieben, und ein Test verbietet eine zweite Fassung.
+
+**Die Relationsachse ist jetzt strukturell prüfbar, und das hat das Vokabular
+offengelegt.** [arXiv 2610.14442](https://arxiv.org/abs/2610.14442) bestimmt eine
+Relation zweimal, für (A,B) und (B,A): symmetrisch muss sie sich selbst ergeben,
+asymmetrisch ihr definiertes Inverses, alles andere ist ein struktureller Fehler und
+keine Konfidenzfrage. Hier war das nicht ausdrückbar — vierzehn Labels, eine
+Richtungsglosse für sieben, und nichts sagt, welche symmetrisch sind oder was ein
+Inverses wäre. Das Schreiben der Tabelle zeigt, warum: **zwei Labels sind
+symmetrisch, ein Paar ist sein eigenes Inverses, und zehn haben im Vokabular
+überhaupt kein Inverses.** Für diese zehn behält die Invariante nur ihre negative
+Hälfte — dasselbe Label mit vertauschten Enden ist falsch, und die richtige Ausgabe
+ist das Auslassen, das der Vertrag ohnehin verlangt.
+
+Das Inverspaar ist in den Daten gefunden und nicht ausgedacht: über 90 gespeicherte
+Dossiers und **1041 Relationen** wurden beide Richtungen **viermal** emittiert — zwei
+`CONTRADICTS`/`CONTRADICTS`, korrekt symmetrisch, und zwei
+`DEPENDS_ON`/`ASSUMPTION_FOR`, korrekt invers. Null Verstöße. **Und das ist beinahe
+vakuant**: die Lage tritt in 0,4 Prozent der Relationen auf, eine Prüfung, die nicht
+scheitern kann, belegt also nichts — dieselbe Unterscheidung, die §4.14 über eine
+Vorbedingung gezogen hat, die nichts kippte. Die Methode des Papers verlangt
+aktives Vertauschen der Enden, und das ist ein bezahlter Lauf. Die Prüfung ist jetzt
+da und kostet nichts; was sie belegt, ist noch nichts.
+
+**Nichts aus dem Gedächtnis-Paper.**
+[arXiv 2610.14431](https://arxiv.org/abs/2610.14431) zerlegt die Bildung
+persistenten Gedächtnisses in fünf angreifbare Schnittstellen. Dieses Projekt hat
+kein persistentes Gedächtnis, keine Reflexionsläufe und keine Konsolidierung — jeder
+Lauf beginnt beim Dokument. Seine übertragbare Lehre, dass die Bildung Provenienz
+braucht und nicht bloß der Endzustand, wird schon angewandt: §4.18 zeichnet auf,
+wonach ein Reviewer gefragt wurde, und nicht nur, was zurückkam.
+
+**Der Bestand ist nie gelaufen.** Jede Zahl oben ist eine Zahl über den Bestand und
+kein Ergebnis. Ein Lauf sind 16 Fälle mal drei Wiederholungen, 48 Aufrufe, etwa zwei
+Drittel eines Bedeutungsbestand-Laufs, und braucht vorher ein vorregistriertes
+Kriterium. Und er annotiert weiterhin keine Kanten, die Relationsachse ist also
+strukturell prüfbar, ohne gegen Gold prüfbar zu sein.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2950,8 +3126,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 28 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ar            die chronologische Aufzeichnung
+scripts/                                 29 Messskripte, jedes getestet
+docs/architecture.md §3a–§3as            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2961,7 +3137,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-554 Tests und einer übersprungen, `ruff check` sauber.
+599 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

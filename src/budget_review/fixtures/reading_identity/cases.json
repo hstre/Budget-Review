@@ -1,0 +1,447 @@
+{
+  "schema_version": "content-review.reading-identity/0.1",
+  "note": "A second, deliberately harder set, separate from semantic_cases so that neither set's figures are reported as the other's. Every case declares a reading_status, and renderings are grouped under the reading they express, so two wordings of one reading are distinguishable from two admissible readings. Documents and spans are written to be scorable by the same anchoring and meaning machinery as the first set.",
+  "reading_statuses": {
+    "determinate": "the span settles one reading; a projection that picks any other is wrong",
+    "ambiguous": "the span admits several readings and does not decide between them; a projection that silently commits to one has added information",
+    "underdetermined_quantifier": "the span leaves a plural open, so both the universal resolution and the explicit non-universal one add a commitment the source does not make",
+    "evidence_absent": "the span asserts something the document does not support; the projection must still render the assertion, and must not soften it into a hedge"
+  },
+  "requirement_types": {
+    "readings": "each entry is one reading, with every rendering that expresses it; a determinate case has one, an ambiguous case has at least two",
+    "requires_all_groups": "each group is an OR over acceptable renderings; one claim on the span must satisfy every group",
+    "forbids": "regexes that must not match a claim's canonical_content",
+    "forbidden_readings": "example propositions that would be meaning errors here",
+    "min_claims_on_span": "how many distinct claims the span must carry"
+  },
+  "cases": [
+    {
+      "case_id": "amb-01-de",
+      "pair_id": "amb-01",
+      "language": "de",
+      "phenomenon": "attachment_ambiguity",
+      "reading_status": "ambiguous",
+      "document": "Der Trägerverein beantragt Mittel für die Betreuung der Kinder aus dem Stadtteil. Über die Höhe entscheidet der Ausschuss.",
+      "span": "Mittel für die Betreuung der Kinder aus dem Stadtteil",
+      "readings": [
+        {
+          "gloss": "die Kinder stammen aus dem Stadtteil",
+          "renderings": [
+            "Der Trägerverein beantragt Mittel für die Betreuung der Kinder, die aus dem Stadtteil stammen.",
+            "Beantragt werden Mittel für die Betreuung von Kindern aus dem Stadtteil."
+          ]
+        },
+        {
+          "gloss": "die Mittel stammen aus dem Stadtteil",
+          "renderings": [
+            "Der Trägerverein beantragt Mittel aus dem Stadtteil für die Betreuung der Kinder."
+          ]
+        }
+      ],
+      "requires_all_groups": [["Betreuung"], ["Stadtteil"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Der Trägerverein beantragt Mittel für die Betreuung aller Kinder des Stadtteils."
+      ],
+      "forbids": ["\\balle[rsnm]?\\b"]
+    },
+    {
+      "case_id": "amb-01-en",
+      "pair_id": "amb-01",
+      "language": "en",
+      "phenomenon": "attachment_ambiguity",
+      "reading_status": "ambiguous",
+      "document": "The association requests funds for the care of the children from the district. The committee decides on the amount.",
+      "span": "funds for the care of the children from the district",
+      "readings": [
+        {
+          "gloss": "the children are from the district",
+          "renderings": [
+            "The association requests funds for the care of the children who are from the district.",
+            "Funds are requested for the care of children from the district."
+          ]
+        },
+        {
+          "gloss": "the funds are from the district",
+          "renderings": [
+            "The association requests funds from the district for the care of the children."
+          ]
+        }
+      ],
+      "requires_all_groups": [["care"], ["district"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "The association requests funds for the care of all children in the district."
+      ],
+      "forbids": ["\\ball\\b"]
+    },
+    {
+      "case_id": "amb-02-de",
+      "pair_id": "amb-02",
+      "language": "de",
+      "phenomenon": "quantifier_scope_ambiguity",
+      "reading_status": "ambiguous",
+      "document": "Jeder Antrag wird von einem Prüfer bewertet. Die Zuordnung erfolgt im Januar.",
+      "span": "Jeder Antrag wird von einem Prüfer bewertet.",
+      "readings": [
+        {
+          "gloss": "je Antrag ein eigener Prüfer",
+          "renderings": [
+            "Jeder Antrag wird von einem Prüfer bewertet.",
+            "Für jeden Antrag bewertet ein Prüfer den Antrag."
+          ]
+        },
+        {
+          "gloss": "ein einziger Prüfer bewertet alle Anträge",
+          "renderings": [
+            "Ein Prüfer bewertet jeden Antrag."
+          ]
+        }
+      ],
+      "requires_all_groups": [["Antrag", "Anträge"], ["Prüfer"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Jeder Antrag wird von mehreren Prüfern bewertet.",
+        "Anträge werden bewertet."
+      ],
+      "forbids": ["\\bmehrere[nr]?\\b", "\\bzwei\\b"]
+    },
+    {
+      "case_id": "amb-02-en",
+      "pair_id": "amb-02",
+      "language": "en",
+      "phenomenon": "quantifier_scope_ambiguity",
+      "reading_status": "ambiguous",
+      "document": "Every application is assessed by a reviewer. The assignment happens in January.",
+      "span": "Every application is assessed by a reviewer.",
+      "readings": [
+        {
+          "gloss": "one reviewer per application",
+          "renderings": [
+            "Every application is assessed by a reviewer.",
+            "For every application, a reviewer assesses the application."
+          ]
+        },
+        {
+          "gloss": "a single reviewer assesses all applications",
+          "renderings": [
+            "One reviewer assesses every application."
+          ]
+        }
+      ],
+      "requires_all_groups": [["application", "applications"], ["reviewer"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Every application is assessed by several reviewers.",
+        "Applications are assessed."
+      ],
+      "forbids": ["\\bseveral\\b", "\\btwo\\b"]
+    },
+    {
+      "case_id": "plu-01-de",
+      "pair_id": "plu-01",
+      "language": "de",
+      "phenomenon": "bare_plural",
+      "reading_status": "underdetermined_quantifier",
+      "document": "Die Schulen des Bezirks haben den Zuschlag erhalten. Drei der fünf Standorte melden den Mittelabruf für das erste Quartal.",
+      "span": "Die Schulen des Bezirks haben den Zuschlag erhalten.",
+      "readings": [
+        {
+          "gloss": "der Satz sagt nicht, ob alle oder nur einige",
+          "renderings": [
+            "Die Schulen des Bezirks haben den Zuschlag erhalten.",
+            "Der Zuschlag ist an die Schulen des Bezirks ergangen."
+          ]
+        }
+      ],
+      "requires_all_groups": [["Schulen"], ["Zuschlag"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Alle Schulen des Bezirks haben den Zuschlag erhalten.",
+        "Nicht alle Schulen des Bezirks haben den Zuschlag erhalten.",
+        "Einige Schulen des Bezirks haben den Zuschlag erhalten."
+      ],
+      "forbids": ["\\balle\\b", "\\bnicht alle\\b", "\\beinige\\b", "\\bdrei\\b"]
+    },
+    {
+      "case_id": "plu-01-en",
+      "pair_id": "plu-01",
+      "language": "en",
+      "phenomenon": "bare_plural",
+      "reading_status": "underdetermined_quantifier",
+      "document": "The schools in the district received the supplement. Three of the five sites report the drawdown for the first quarter.",
+      "span": "The schools in the district received the supplement.",
+      "readings": [
+        {
+          "gloss": "the sentence does not say whether all or only some",
+          "renderings": [
+            "The schools in the district received the supplement.",
+            "The supplement went to the schools in the district."
+          ]
+        }
+      ],
+      "requires_all_groups": [["schools"], ["supplement"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "All schools in the district received the supplement.",
+        "Not all schools in the district received the supplement.",
+        "Some schools in the district received the supplement."
+      ],
+      "forbids": ["\\ball\\b", "\\bnot all\\b", "\\bsome\\b", "\\bthree\\b"]
+    },
+    {
+      "case_id": "plu-02-de",
+      "pair_id": "plu-02",
+      "language": "de",
+      "phenomenon": "negated_bare_plural",
+      "reading_status": "underdetermined_quantifier",
+      "document": "Die Standorte haben den Mittelabruf nicht gemeldet. Zwei der fünf Meldungen liegen dem Amt inzwischen vor.",
+      "span": "Die Standorte haben den Mittelabruf nicht gemeldet.",
+      "readings": [
+        {
+          "gloss": "der negierte Satz sagt nicht, ob keiner oder nur manche nicht",
+          "renderings": [
+            "Die Standorte haben den Mittelabruf nicht gemeldet.",
+            "Eine Meldung des Mittelabrufs durch die Standorte ist nicht erfolgt."
+          ]
+        }
+      ],
+      "requires_all_groups": [["Standorte"], ["nicht"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Kein Standort hat den Mittelabruf gemeldet.",
+        "Nicht alle Standorte haben den Mittelabruf gemeldet.",
+        "Die Standorte haben den Mittelabruf gemeldet."
+      ],
+      "forbids": ["\\bkein[esnmr]?\\b", "\\bnicht alle\\b", "\\bzwei\\b"]
+    },
+    {
+      "case_id": "plu-02-en",
+      "pair_id": "plu-02",
+      "language": "en",
+      "phenomenon": "negated_bare_plural",
+      "reading_status": "underdetermined_quantifier",
+      "document": "The sites did not report the drawdown. Two of the five reports have since reached the office.",
+      "span": "The sites did not report the drawdown.",
+      "readings": [
+        {
+          "gloss": "the negated sentence does not say whether none or only some did not",
+          "renderings": [
+            "The sites did not report the drawdown.",
+            "No report of the drawdown by the sites was made."
+          ]
+        }
+      ],
+      "requires_all_groups": [["sites"], ["not", "no"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "None of the sites reported the drawdown.",
+        "Not all sites reported the drawdown.",
+        "The sites reported the drawdown."
+      ],
+      "forbids": ["\\bnone\\b", "\\bnot all\\b", "\\btwo\\b"]
+    },
+    {
+      "case_id": "plu-03-de",
+      "pair_id": "plu-03",
+      "language": "de",
+      "phenomenon": "explicit_universal",
+      "reading_status": "determinate",
+      "document": "Alle Schulen des Bezirks haben den Zuschlag erhalten. Drei der fünf Standorte melden den Mittelabruf.",
+      "span": "Alle Schulen des Bezirks haben den Zuschlag erhalten.",
+      "readings": [
+        {
+          "gloss": "der Satz sagt ausdrücklich alle",
+          "renderings": [
+            "Alle Schulen des Bezirks haben den Zuschlag erhalten.",
+            "Der Zuschlag ist an alle Schulen des Bezirks ergangen."
+          ]
+        }
+      ],
+      "requires_all_groups": [["alle"], ["Zuschlag"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Die Schulen des Bezirks haben den Zuschlag erhalten.",
+        "Einige Schulen des Bezirks haben den Zuschlag erhalten."
+      ],
+      "forbids": ["\\beinige\\b", "\\bdrei\\b"]
+    },
+    {
+      "case_id": "plu-03-en",
+      "pair_id": "plu-03",
+      "language": "en",
+      "phenomenon": "explicit_universal",
+      "reading_status": "determinate",
+      "document": "All schools in the district received the supplement. Three of the five sites report the drawdown.",
+      "span": "All schools in the district received the supplement.",
+      "readings": [
+        {
+          "gloss": "the sentence says all explicitly",
+          "renderings": [
+            "All schools in the district received the supplement.",
+            "The supplement went to all schools in the district."
+          ]
+        }
+      ],
+      "requires_all_groups": [["all"], ["supplement"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "The schools in the district received the supplement.",
+        "Some schools in the district received the supplement."
+      ],
+      "forbids": ["\\bsome\\b", "\\bthree\\b"]
+    },
+    {
+      "case_id": "plu-04-de",
+      "pair_id": "plu-04",
+      "language": "de",
+      "phenomenon": "explicit_non_universal",
+      "reading_status": "determinate",
+      "document": "Nicht alle Standorte haben den Mittelabruf gemeldet. Das Amt prüft die eingegangenen Meldungen.",
+      "span": "Nicht alle Standorte haben den Mittelabruf gemeldet.",
+      "readings": [
+        {
+          "gloss": "der Satz sagt ausdrücklich nicht alle, und damit auch nicht keiner",
+          "renderings": [
+            "Nicht alle Standorte haben den Mittelabruf gemeldet.",
+            "Ein Teil der Standorte hat den Mittelabruf nicht gemeldet."
+          ]
+        }
+      ],
+      "requires_all_groups": [["nicht alle", "ein teil"], ["Mittelabruf"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Kein Standort hat den Mittelabruf gemeldet.",
+        "Die Standorte haben den Mittelabruf nicht gemeldet."
+      ],
+      "forbids": ["\\bkein[esnmr]?\\b"]
+    },
+    {
+      "case_id": "plu-04-en",
+      "pair_id": "plu-04",
+      "language": "en",
+      "phenomenon": "explicit_non_universal",
+      "reading_status": "determinate",
+      "document": "Not all sites reported the drawdown. The office is reviewing the reports it received.",
+      "span": "Not all sites reported the drawdown.",
+      "readings": [
+        {
+          "gloss": "the sentence says not all explicitly, and so also not none",
+          "renderings": [
+            "Not all sites reported the drawdown.",
+            "Some of the sites did not report the drawdown."
+          ]
+        }
+      ],
+      "requires_all_groups": [["not all", "some of"], ["drawdown"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "None of the sites reported the drawdown.",
+        "The sites did not report the drawdown."
+      ],
+      "forbids": ["\\bnone\\b"]
+    },
+    {
+      "case_id": "par-01-de",
+      "pair_id": "par-01",
+      "language": "de",
+      "phenomenon": "one_reading_several_wordings",
+      "reading_status": "determinate",
+      "document": "Der Ausbau wird im Frühjahr abgeschlossen. Der Zeitplan wurde im Juli bestätigt.",
+      "span": "Der Ausbau wird im Frühjahr abgeschlossen.",
+      "readings": [
+        {
+          "gloss": "ein Abschluss im Frühjahr, als Aussage und nicht als Absicht",
+          "renderings": [
+            "Der Ausbau wird im Frühjahr abgeschlossen.",
+            "Der Abschluss des Ausbaus erfolgt im Frühjahr.",
+            "Im Frühjahr ist der Ausbau abgeschlossen."
+          ]
+        }
+      ],
+      "requires_all_groups": [["Frühjahr"], ["Ausbau", "Abschluss"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Der Ausbau soll im Frühjahr abgeschlossen werden.",
+        "Der Ausbau könnte im Frühjahr abgeschlossen werden."
+      ],
+      "forbids": ["\\bsoll\\b", "\\bkönnte\\b", "\\bgeplant\\b"]
+    },
+    {
+      "case_id": "par-01-en",
+      "pair_id": "par-01",
+      "language": "en",
+      "phenomenon": "one_reading_several_wordings",
+      "reading_status": "determinate",
+      "document": "Construction is completed in spring. The schedule was confirmed in July.",
+      "span": "Construction is completed in spring.",
+      "readings": [
+        {
+          "gloss": "a completion in spring, asserted rather than intended",
+          "renderings": [
+            "Construction is completed in spring.",
+            "The completion of construction takes place in spring.",
+            "In spring, construction is complete."
+          ]
+        }
+      ],
+      "requires_all_groups": [["spring"], ["construction", "completion"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Construction is intended to be completed in spring.",
+        "Construction could be completed in spring."
+      ],
+      "forbids": ["\\bintended\\b", "\\bcould\\b", "\\bplanned\\b"]
+    },
+    {
+      "case_id": "evi-01-de",
+      "pair_id": "evi-01",
+      "language": "de",
+      "phenomenon": "assertion_without_support",
+      "reading_status": "evidence_absent",
+      "document": "Das Programm senkt die Abbrecherquote deutlich. Weitere Angaben zur Wirkung enthält der Antrag nicht.",
+      "span": "Das Programm senkt die Abbrecherquote deutlich.",
+      "readings": [
+        {
+          "gloss": "die Behauptung wird unverändert wiedergegeben, ohne Belegangabe und ohne Abschwächung",
+          "renderings": [
+            "Das Programm senkt die Abbrecherquote deutlich.",
+            "Eine deutliche Senkung der Abbrecherquote durch das Programm wird behauptet."
+          ]
+        }
+      ],
+      "requires_all_groups": [["senkt", "Senkung"], ["Abbrecherquote"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "Das Programm könnte die Abbrecherquote senken.",
+        "Studien zeigen, dass das Programm die Abbrecherquote senkt."
+      ],
+      "forbids": ["\\bkönnte\\b", "\\bStudien\\b", "\\bmöglicherweise\\b"]
+    },
+    {
+      "case_id": "evi-01-en",
+      "pair_id": "evi-01",
+      "language": "en",
+      "phenomenon": "assertion_without_support",
+      "reading_status": "evidence_absent",
+      "document": "The programme lowers the dropout rate substantially. The application gives no further detail on the effect.",
+      "span": "The programme lowers the dropout rate substantially.",
+      "readings": [
+        {
+          "gloss": "the assertion is rendered unchanged, with no source attached and no hedge added",
+          "renderings": [
+            "The programme lowers the dropout rate substantially.",
+            "A substantial reduction of the dropout rate by the programme is asserted."
+          ]
+        }
+      ],
+      "requires_all_groups": [["lowers", "reduction"], ["dropout"]],
+      "min_claims_on_span": 1,
+      "forbidden_readings": [
+        "The programme could lower the dropout rate.",
+        "Studies show that the programme lowers the dropout rate."
+      ],
+      "forbids": ["\\bcould\\b", "\\bstudies\\b", "\\bpossibly\\b"]
+    }
+  ]
+}

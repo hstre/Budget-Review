@@ -11,6 +11,18 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **The relation vocabulary can express only four of its fourteen labels in both
+  directions.** Writing down, for the first time, which labels are symmetric and
+  what any label's inverse is: two are symmetric (`CONTRADICTS`, `SCOPE_TENSION`),
+  one pair are each other's inverse (`DEPENDS_ON` / `ASSUMPTION_FOR`) and ten have
+  no inverse at all. For those ten the structural invariant keeps only its negative
+  half — the same label with the endpoints swapped is wrong, and omission is the
+  correct output the contract already asks for.
+  Across 90 stored dossiers and **1,041 relations**, both directions were emitted
+  **four times**: two correctly symmetric, two correctly inverse, zero violations.
+  **That is nearly vacuous** — the situation arises in 0.4 per cent of relations, so
+  a check that cannot fail establishes nothing. The inverse pair was found in those
+  four rather than invented.
 - **Whether two runs mean the same thing by a claim type is not answerable from the
   stored data, because the baseline is as large as the effect.** Agreement on
   byte-identical spans: 86 to 95 per cent across three prompt variants of one court
@@ -95,6 +107,26 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **A second case set, `reading_identity`: 16 cases, 8 pairs, four reading
+  statuses.** It exists because the first set has exactly one right answer per case,
+  which is why its repeat-spread separation cannot show what it looked like showing.
+  Reading an outside paper on plural predication added a fourth status that would
+  otherwise have been folded into ambiguity: an open plural is **one** reading
+  without a quantifier, not a choice between two, so "all" and "not all" are both
+  additions to it. The set carries the controls that make this measurable — `plu-03`
+  and `plu-04` say "all" and "not all" explicitly, so an extractor that drops a
+  quantifier fails there while one that adds a quantifier fails the open cases, and
+  both documents state the mixed situation so that resolving the plural from context
+  is caught. Renderings are grouped under the reading they express, which the first
+  set cannot do: eight of its 24 cases declare two permitted readings and all eight
+  are two wordings of one. The matching convention is imported rather than written
+  again, and a test forbids a second copy. **The set has never been run**: a run is
+  48 calls and needs a pre-registered criterion, and it annotates no edges.
+- `src/budget_review/relation_algebra.py` and its tests: the reversal table above,
+  plus the consistency check it makes expressible. Fifteen mutations across both new
+  files, fifteen caught — after a test found a self-relation being reported as its
+  own violated swap, and a mutation found a validator check with no test for its
+  failure path, which is the second time that shape has appeared.
 - `scripts/type_construct.py` and its tests, with a second mode that supplies the
   baseline the first one needs: it groups repeats of one prompt and **refuses any
   case whose repeats do not share a prompt hash** rather than averaging them in.
@@ -202,6 +234,11 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
+- Running the new set. 48 calls, and a pre-registered criterion has to come first.
+- Anything from the memory-formation paper: this project has no persistent memory,
+  no reflection runs and no consolidation, so it is a boundary rather than a gap.
+  Its transferable lesson — that formation needs provenance, not only the end state
+  — is already applied in the reviewer prompt hash.
 - Taking the 68-operation perturbation library. The four operations needed are a
   few dozen lines and one already sits in the gate; more to the point, its own
   caveat is our bottleneck — it supplies test inputs but no gold that their meaning

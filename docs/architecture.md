@@ -3572,3 +3572,137 @@ berichtet: `agreed == len(shared)` gilt bei null. Das liest sich wie perfekte
 Übereinstimmung und ist das Gegenteil. Behoben, und ein Test hält es.
 
 Acht Mutationen, acht gefangen.
+
+## 3as. Der härtere Bestand — und eine vierte Kategorie, die ich mit Ambiguität verwechselt hätte
+
+Drei fremde Paper vom 10. Oktober. Eines ändert den Entwurf des Bestands, bevor er
+gebaut war, eines macht die Relationsachse erstmals prüfbar, eines gehört in ein
+anderes Projekt.
+
+### Paper 1 fügt eine Kategorie hinzu, die ich nicht vorgesehen hatte
+
+[Neither True nor False](https://arxiv.org/abs/2610.14438) baut 1.000
+Minimalpaare: Sind drei von fünf Kindern gelaufen, sind „Die Kinder liefen" und
+„Die Kinder liefen nicht" unter Homogenitätssemantik **beide** weder wahr noch
+falsch, während „Alle liefen" falsch und „Nicht alle liefen" wahr ist. Sieben
+Modelle lösen die Mengenverhältnisse fast fehlerfrei und pressen die Pluralaussage
+trotzdem in ein binäres Urteil; negierte Plurale kommen zu **84 %** als falsch
+zurück.
+
+**Für uns ist das keine Wahrheitsfrage** — der Vertrag sagt ausdrücklich „Never
+judge whether a claim is true". Was es trifft, ist die Bauordnung des Bestands:
+vier Dinge müssen getrennt bleiben, und ich hätte sie zu zwei zusammengezogen.
+
+| | |
+|---|---|
+| `determinate` | die Spanne legt eine Lesart fest |
+| `ambiguous` | mehrere Lesarten, und die Spanne entscheidet nicht |
+| `underdetermined_quantifier` | die Spanne lässt einen Plural offen, also fügen **beide** Auflösungen eine Zusage hinzu |
+| `evidence_absent` | die Spanne behauptet, was das Dokument nicht stützt; die Projektion muss behaupten und darf nicht abschwächen |
+
+Die dritte Zeile ist die, die ich übersehen hätte. Ich hatte „mehrere gültige
+Lesarten" geplant — aber ein offener Plural ist **keine** Ambiguität zwischen zwei
+Lesarten, sondern *eine* Lesart ohne Quantor, und sowohl „alle" als auch „nicht
+alle" sind Zusätze.
+
+### Gebaut: 16 Fälle, 8 Paare, mit den Kontrollen, die die Messung erst ermöglichen
+
+`src/budget_review/fixtures/reading_identity/cases.json` — eigene Datei, eigenes
+Schema, damit „69 von 72" eindeutig bleibt und nicht versehentlich mit dem neuen
+Bestand verrechnet wird.
+
+| Status | Fälle | wofür |
+|---|---:|---|
+| `ambiguous` | 4 | Anbindungs- und Quantorenskopus-Ambiguität, je zwei Lesarten mit disjunkten Formulierungen |
+| `underdetermined_quantifier` | 4 | bloßer Plural und **negierter** bloßer Plural — Paper 1s Polaritätsasymmetrie |
+| `determinate` | 6 | die Kontrollen `alle` und `nicht alle`, plus eine Lesart mit drei Formulierungen |
+| `evidence_absent` | 2 | Behauptung ohne Stütze, die nicht zum Hedge werden darf |
+
+**Die Kontrollen sind das, was den Status messbar macht statt behauptet.**
+`plu-03`/`plu-04` sagen ausdrücklich „alle" beziehungsweise „nicht alle" — ein
+Extraktor, der einen Quantor *streicht*, fällt dort durch. `plu-01`/`plu-02`
+lassen ihn offen — ein Extraktor, der einen *hinzufügt*, fällt dort durch. Und
+beide Dokumente nennen die gemischte Lage („drei der fünf Standorte"), sodass eine
+Projektion, die den Plural aus dem Kontext statt aus der Spanne auflöst, auffällt.
+
+Das neue Feld, das der alte Bestand nicht konnte: **Formulierungen sind unter der
+Lesart gruppiert, die sie ausdrücken.** `par-01` trägt eine Lesart mit drei
+Formulierungen; `amb-01` trägt zwei Lesarten mit disjunkten Formulierungsmengen.
+Ein Test prüft die Disjunktheit — genau die Verwechslung, die der alte Bestand
+achtmal enthält.
+
+Die Trefferkonvention wird **nicht** ein zweites Mal geschrieben: `satisfies` und
+`violates` kommen aus `semantic_cases`, und ein Test verbietet eine eigene
+Fassung. Dieselbe Lehre wie `hits_by_threshold` in 3ap.
+
+### Paper 2 macht die Relationsachse prüfbar, und deckt dabei die Lage des Vokabulars auf
+
+[Bidirectional Relation Prediction](https://arxiv.org/abs/2610.14442) bestimmt
+eine Relation zweimal, für (A,B) und (B,A): symmetrisch muss dasselbe Label
+kommen, asymmetrisch das definierte Inverse, sonst ist es ein **struktureller**
+Fehler und keine Konfidenzfrage.
+
+Das war hier nicht ausdrückbar. Das Vokabular hat 14 Labels, der Vertrag glossiert
+die Richtung von 7, und **nichts sagt, welche symmetrisch sind oder was ein
+Inverses wäre.** `relation_algebra.py` sagt es jetzt — und beim Schreiben der
+Tabelle wird die Lage sichtbar:
+
+| | Anzahl | |
+|---|---:|---|
+| symmetrisch | **2** | `CONTRADICTS`, `SCOPE_TENSION` |
+| invertierbar | **2** | `DEPENDS_ON` ⟷ `ASSUMPTION_FOR` |
+| einseitig, kein Inverses im Vokabular | **10** | `SUPPORTS`, `ENTAILS`, `PART_OF`, `GENERALIZES` … |
+
+Für zehn von vierzehn hat die Invariante also nur ihre **negative Hälfte**:
+dasselbe Label mit vertauschten Enden ist falsch, und die richtige Ausgabe ist das
+Auslassen, das der Vertrag ohnehin verlangt. Dass zwei Siebtel des Vokabulars
+überhaupt in beide Richtungen ausdrückbar sind, ist ein Befund über das Vokabular.
+
+Das Inverspaar habe ich **nicht ausgedacht, sondern in den Daten gefunden**:
+
+| | Dossiers/Pakete mit Relationen | 90 |
+|---|---|---|
+| Relationen insgesamt | | **1041** |
+| Paare, in denen beide Richtungen emittiert wurden | | **4** |
+| davon `CONTRADICTS / CONTRADICTS` | korrekt symmetrisch | 2 |
+| davon `DEPENDS_ON / ASSUMPTION_FOR` und Spiegel | korrekt invers | 2 |
+| **Verstöße** | | **0** |
+
+> **Und das ist beinahe vakuant.** Die Lage tritt in 4 von 1041 Relationen auf,
+> also 0,4 Prozent. Ein Test, der nicht scheitern *kann*, belegt nichts — dieselbe
+> Unterscheidung wie bei der `logical_gap`-Vorbedingung in 3aj. Paper 2s Methode
+> verlangt **aktives** Vertauschen der Argumente, und das ist ein bezahlter Lauf.
+> Die Prüfung ist jetzt da und kostet nichts; was sie belegt, ist noch nichts.
+
+### Paper 3 gehört nicht hierher
+
+[MemForm](https://arxiv.org/abs/2610.14431) zerlegt die Bildung persistenten
+Gedächtnisses in fünf angreifbare Schnittstellen. Dieses Projekt hat **kein
+persistentes Gedächtnis, keine Reflexionsläufe und keine Konsolidierung** — jeder
+Lauf beginnt beim Dokument. Übertragbar ist nur die Lehre, dass die *Bildung*
+Provenienz braucht und nicht bloß der Endzustand, und die wenden wir an: der
+Prompt-Hash aus 3ao zeichnet auf, wonach gefragt wurde, nicht nur was zurückkam.
+Für das Gedächtnisprojekt ist das Paper wahrscheinlich wichtig; hier ist es eine
+Grenze und keine Lücke.
+
+### Zwei Fehler, beide von Tests gefunden
+
+**Im Relationsmodul:** eine Selbstrelation ist ihr eigener Tausch, also verglich
+sie sich mit sich selbst und wurde als Verstoß gemeldet. Das Gate lehnt
+Selbstrelationen ab, der Falschbefund wäre also nie entstanden — aber erfunden
+hätte er sich.
+
+**In meinen Tests:** eine Mutation, die die Prüfung „ist dieser Status überhaupt
+deklariert" entfernt, hat **überlebt.** Alle 16 Fälle benutzen gültige Statuswerte,
+also ändert das Entfernen nichts. Dieselbe Form wie die Hälftenauswahl in 3aq: eine
+Prüfung ohne Test für ihren Fehlerpfad. Zwei Tests nachgezogen, einer je Richtung.
+
+Fünfzehn Mutationen, fünfzehn gefangen.
+
+### Was der Bestand noch nicht kann
+
+Er ist **nie gelaufen.** Alle Zahlen oben sind Zahlen über den Bestand, keine
+Messergebnisse. Ein Lauf kostet 16 Fälle × 3 Wiederholungen = 48 Aufrufe, zwei
+Drittel eines Bedeutungsbestand-Laufs, und braucht vorher ein vorregistriertes
+Kriterium. Und er annotiert weiterhin **keine Kanten** — die Relationsachse ist
+jetzt strukturell prüfbar, aber nicht gegen Gold.
