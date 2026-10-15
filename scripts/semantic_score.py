@@ -45,6 +45,7 @@ import importlib.util
 import json
 import re
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 
@@ -61,6 +62,30 @@ def _load(name: str):
 
 cases_module = _load("semantic_cases")
 reading_identity = _load("reading_identity")
+
+# A run whose first calls all fail will fail the rest the same way, and the one
+# that prompted this ground on for 45 minutes to deliver a single line. Three in
+# a row is the signal that the next 45 are not worth paying for.
+CONSECUTIVE_FAILURE_LIMIT = 3
+
+
+class Breaker:
+    """Stops a run once calls fail in an unbroken row.
+
+    A class rather than two lines inside the loop, because the two lines had no
+    test: a mutation removing the reset and a mutation removing the check both
+    survived, since nothing could drive the loop without a provider. One
+    implementation, driven by the run and by the tests alike.
+    """
+
+    def __init__(self, limit: int = CONSECUTIVE_FAILURE_LIMIT) -> None:
+        self.limit = limit
+        self.consecutive = 0
+
+    def record(self, succeeded: bool) -> bool:
+        """Note one outcome. True means the run should stop paying for more."""
+        self.consecutive = 0 if succeeded else self.consecutive + 1
+        return self.consecutive >= self.limit
 
 # Two case sets, one scorer. The second set was built because the first has
 # exactly one right answer per case; scoring it through a second implementation
@@ -266,14 +291,30 @@ def main() -> int:
     provider = DeepSeekProvider()
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
+    breaker = Breaker()
     for index in range(1, args.repeats + 1):
         for case in cases:
+            started = time.monotonic()
             try:
                 dossier = extract(provider, case, args.profile)
             except (ProviderError, SystemExit, KeyError, ValueError) as exc:
                 failures[case["case_id"]] += 1
-                print(f"  {case['case_id']} Lauf {index}: fehlgeschlagen ({exc})", flush=True)
+                print(
+                    f"  {case['case_id']} Lauf {index}: fehlgeschlagen nach "
+                    f"{time.monotonic() - started:.0f}s ({exc})",
+                    flush=True,
+                )
+                if breaker.record(succeeded=False):
+                    print(
+                        f"\nAbgebrochen: {breaker.consecutive} Aufrufe hintereinander "
+                        f"fehlgeschlagen. Die übrigen würden dasselbe kosten und "
+                        f"dasselbe ergeben.",
+                        flush=True,
+                    )
+                    report(cases, rows, failures, args.out_dir)
+                    return 2
                 continue
+            breaker.record(succeeded=True)
             (args.out_dir / f"{case['case_id']}-{index}.json").write_text(
                 json.dumps(dossier, ensure_ascii=False, indent=1), encoding="utf-8"
             )

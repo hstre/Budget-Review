@@ -42,7 +42,50 @@ def _transport_reason(error: Exception | None) -> str:
         return f"HTTP {error.code}"
     if isinstance(error, ProviderError):
         return str(error)
+    if isinstance(error, KeyError):
+        # A bare "KeyError" cost 45 minutes of a paid run and said nothing about
+        # why: the envelope had arrived and simply lacked the key. The key's name
+        # is ours, not the provider's, so it reveals nothing.
+        return f"KeyError {error.args[0]!r}" if error.args else "KeyError"
     return type(error).__name__
+
+
+def _envelope_complaint(envelope: dict[str, Any]) -> str:
+    """Why a response carried no completion, in terms a log can be read with.
+
+    An envelope without `choices` is almost always an error envelope, and the
+    old code let that surface as a bare KeyError. What goes in here is the
+    provider's own error type and code plus the envelope's top-level key names —
+    never a header, never the request body, never the key. The provider's
+    message is included, truncated, because without it the next failure of this
+    kind is as undiagnosable as the last one was.
+    """
+    error = envelope.get("error")
+    if isinstance(error, dict):
+        kind = error.get("type") or error.get("code") or "unspecified"
+        message = str(error.get("message") or "")[:160]
+        return f"provider error {kind!r}: {message!r}"
+    return f"response carried no choices; top-level keys {sorted(envelope)!r}"
+
+
+def _read_within(response: Any, deadline: float, budget: float) -> str:
+    """Read a response body in chunks, giving up when the wall clock runs out.
+
+    `urlopen(timeout=...)` bounds each socket operation, not the response. A peer
+    that sends a few bytes at a time resets that timer on every chunk, so the
+    read itself has to watch the clock. This is where a paid run lost 45 minutes
+    on one call.
+    """
+    chunks: list[bytes] = []
+    while True:
+        if time.monotonic() >= deadline:
+            raise ProviderError(
+                f"DeepSeek response body did not complete within {budget:.0f}s"
+            )
+        chunk = response.read(65536)
+        if not chunk:
+            return b"".join(chunks).decode("utf-8")
+        chunks.append(chunk)
 
 
 @dataclass(frozen=True)
@@ -61,6 +104,7 @@ class DeepSeekProvider:
         base_url: str | None = None,
         timeout: float = 120.0,
         retries: int = 2,
+        budget: float = 180.0,
     ) -> None:
         self.api_key = api_key or effective_api_key()
         if not self.api_key:
@@ -70,6 +114,12 @@ class DeepSeekProvider:
         ).rstrip("/")
         self.timeout = timeout
         self.retries = retries
+        # A wall-clock bound on one call, retries included. `timeout` is per
+        # socket operation, so a response that trickles bytes resets it on every
+        # read and a single call ran 45 minutes in a paid run. Three attempts at
+        # the socket timeout come to six minutes; anything beyond this budget is
+        # not a slow answer but a stuck one.
+        self.budget = budget
 
     def complete_json(
         self,
@@ -105,11 +155,22 @@ class DeepSeekProvider:
             method="POST",
         )
         last_error: Exception | None = None
+        deadline = time.monotonic() + self.budget
         for attempt in range(self.retries + 1):
+            if time.monotonic() >= deadline:
+                raise ProviderError(
+                    f"DeepSeek call exceeded its {self.budget:.0f}s budget before "
+                    f"attempt {attempt + 1}"
+                )
             try:
                 with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                    envelope = json.loads(response.read().decode("utf-8"))
-                choice = envelope["choices"][0]
+                    envelope = json.loads(_read_within(response, deadline, self.budget))
+                choices = envelope.get("choices")
+                if not choices:
+                    raise ProviderError(
+                        f"DeepSeek returned no completion: {_envelope_complaint(envelope)}"
+                    )
+                choice = choices[0]
                 if choice.get("finish_reason") == "length":
                     # Same request at temperature 0: a retry ends the same way.
                     raise _FatalProviderError("DeepSeek output was truncated; raise max_tokens")
