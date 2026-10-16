@@ -12,7 +12,8 @@
     "requires_all_groups": "each group is an OR over acceptable renderings; one claim on the span must satisfy every group",
     "forbids": "regexes that must not match a claim's canonical_content",
     "forbidden_readings": "example propositions that would be meaning errors here",
-    "min_claims_on_span": "how many distinct claims the span must carry"
+    "min_claims_on_span": "how many distinct claims the span must carry",
+    "forbidden_anywhere": "regexes that must not match any claim in the dossier, not only those on the span: the first run showed a forbidden resolution being produced one sentence over, where a scorer looking only at the span cannot see it. A verbatim quote of another sentence stays legitimate, so these patterns name the inferred resolution rather than the document's own wording."
   },
   "cases": [
     {
@@ -113,8 +114,8 @@
       "language": "de",
       "phenomenon": "quantifier_scope_ambiguity",
       "reading_status": "ambiguous",
-      "document": "Jeder Antrag wird von einem Prüfer bewertet. Die Zuordnung erfolgt im Januar.",
-      "span": "Jeder Antrag wird von einem Prüfer bewertet.",
+      "document": "Die Geschäftsstelle teilt mit, dass jeder Antrag von einem Prüfer bewertet wird, und nennt den Januar als Termin für die Zuordnung.",
+      "span": "dass jeder Antrag von einem Prüfer bewertet wird",
       "readings": [
         {
           "gloss": "je Antrag ein eigener Prüfer",
@@ -162,8 +163,8 @@
       "language": "en",
       "phenomenon": "quantifier_scope_ambiguity",
       "reading_status": "ambiguous",
-      "document": "Every application is assessed by a reviewer. The assignment happens in January.",
-      "span": "Every application is assessed by a reviewer.",
+      "document": "The office states that every application is assessed by a reviewer, and names January as the date for the assignment.",
+      "span": "that every application is assessed by a reviewer",
       "readings": [
         {
           "gloss": "one reviewer per application",
@@ -211,8 +212,8 @@
       "language": "de",
       "phenomenon": "bare_plural",
       "reading_status": "underdetermined_quantifier",
-      "document": "Die Schulen des Bezirks haben den Zuschlag erhalten. Drei der fünf Standorte melden den Mittelabruf für das erste Quartal.",
-      "span": "Die Schulen des Bezirks haben den Zuschlag erhalten.",
+      "document": "Der Träger bestätigt im Zwischenbericht, dass die Schulen des Bezirks den Zuschlag erhalten haben, und kündigt den Mittelabruf an; drei der fünf Standorte haben ihn für das erste Quartal gemeldet.",
+      "span": "dass die Schulen des Bezirks den Zuschlag erhalten haben",
       "readings": [
         {
           "gloss": "der Satz sagt nicht, ob alle oder nur einige",
@@ -248,7 +249,12 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bnicht gemeldet\\b",
+        "\\bzwei Standorte\\b",
+        "\\bnur drei\\b"
+      ]
     },
     {
       "case_id": "plu-01-en",
@@ -256,8 +262,8 @@
       "language": "en",
       "phenomenon": "bare_plural",
       "reading_status": "underdetermined_quantifier",
-      "document": "The schools in the district received the supplement. Three of the five sites report the drawdown for the first quarter.",
-      "span": "The schools in the district received the supplement.",
+      "document": "The provider confirms in its interim report that the schools in the district received the supplement, and announces the drawdown; three of the five sites have reported it for the first quarter.",
+      "span": "that the schools in the district received the supplement",
       "readings": [
         {
           "gloss": "the sentence does not say whether all or only some",
@@ -293,7 +299,13 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bdo not report\\b",
+        "\\btwo sites do not\\b",
+        "\\bonly three\\b",
+        "\\bimplying\\b"
+      ]
     },
     {
       "case_id": "plu-02-de",
@@ -301,8 +313,8 @@
       "language": "de",
       "phenomenon": "negated_bare_plural",
       "reading_status": "underdetermined_quantifier",
-      "document": "Die Standorte haben den Mittelabruf nicht gemeldet. Zwei der fünf Meldungen liegen dem Amt inzwischen vor.",
-      "span": "Die Standorte haben den Mittelabruf nicht gemeldet.",
+      "document": "Das Amt hält fest, dass die Standorte den Mittelabruf nicht gemeldet haben, und prüft die eingegangenen Unterlagen; zwei der fünf Meldungen liegen inzwischen vor.",
+      "span": "dass die Standorte den Mittelabruf nicht gemeldet haben",
       "readings": [
         {
           "gloss": "der negierte Satz sagt nicht, ob keiner oder nur manche nicht",
@@ -337,7 +349,11 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bnoch nicht vor\\b",
+        "\\bdrei der fünf Meldungen liegen\\b"
+      ]
     },
     {
       "case_id": "plu-02-en",
@@ -345,8 +361,8 @@
       "language": "en",
       "phenomenon": "negated_bare_plural",
       "reading_status": "underdetermined_quantifier",
-      "document": "The sites did not report the drawdown. Two of the five reports have since reached the office.",
-      "span": "The sites did not report the drawdown.",
+      "document": "The office records that the sites did not report the drawdown, and is reviewing the documents it received; two of the five reports have since arrived.",
+      "span": "that the sites did not report the drawdown",
       "readings": [
         {
           "gloss": "the negated sentence does not say whether none or only some did not",
@@ -382,7 +398,12 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bhave not reached\\b",
+        "\\bnot yet reached\\b",
+        "\\bthree of the five reports have not\\b"
+      ]
     },
     {
       "case_id": "plu-03-de",
@@ -390,8 +411,8 @@
       "language": "de",
       "phenomenon": "explicit_universal",
       "reading_status": "determinate",
-      "document": "Alle Schulen des Bezirks haben den Zuschlag erhalten. Drei der fünf Standorte melden den Mittelabruf.",
-      "span": "Alle Schulen des Bezirks haben den Zuschlag erhalten.",
+      "document": "Der Träger bestätigt, dass alle Schulen des Bezirks den Zuschlag erhalten haben, und nennt den Mittelabruf für das erste Quartal; drei der fünf Standorte haben ihn gemeldet.",
+      "span": "dass alle Schulen des Bezirks den Zuschlag erhalten haben",
       "readings": [
         {
           "gloss": "der Satz sagt ausdrücklich alle",
@@ -424,7 +445,11 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bzwei Standorte\\b",
+        "\\bnur drei\\b"
+      ]
     },
     {
       "case_id": "plu-03-en",
@@ -432,8 +457,8 @@
       "language": "en",
       "phenomenon": "explicit_universal",
       "reading_status": "determinate",
-      "document": "All schools in the district received the supplement. Three of the five sites report the drawdown.",
-      "span": "All schools in the district received the supplement.",
+      "document": "The provider confirms that all schools in the district received the supplement, and names the drawdown for the first quarter; three of the five sites have reported it.",
+      "span": "that all schools in the district received the supplement",
       "readings": [
         {
           "gloss": "the sentence says all explicitly",
@@ -466,7 +491,12 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\btwo sites do not\\b",
+        "\\bonly three\\b",
+        "\\bimplying\\b"
+      ]
     },
     {
       "case_id": "plu-04-de",
@@ -474,8 +504,8 @@
       "language": "de",
       "phenomenon": "explicit_non_universal",
       "reading_status": "determinate",
-      "document": "Nicht alle Standorte haben den Mittelabruf gemeldet. Das Amt prüft die eingegangenen Meldungen.",
-      "span": "Nicht alle Standorte haben den Mittelabruf gemeldet.",
+      "document": "Das Amt hält fest, dass nicht alle Standorte den Mittelabruf gemeldet haben, und prüft die eingegangenen Meldungen.",
+      "span": "dass nicht alle Standorte den Mittelabruf gemeldet haben",
       "readings": [
         {
           "gloss": "der Satz sagt ausdrücklich nicht alle, und damit auch nicht keiner",
@@ -508,7 +538,10 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bkein Standort\\b"
+      ]
     },
     {
       "case_id": "plu-04-en",
@@ -516,8 +549,8 @@
       "language": "en",
       "phenomenon": "explicit_non_universal",
       "reading_status": "determinate",
-      "document": "Not all sites reported the drawdown. The office is reviewing the reports it received.",
-      "span": "Not all sites reported the drawdown.",
+      "document": "The office records that not all sites reported the drawdown, and is reviewing the reports it received.",
+      "span": "that not all sites reported the drawdown",
       "readings": [
         {
           "gloss": "the sentence says not all explicitly, and so also not none",
@@ -550,7 +583,10 @@
         "polarity": "stated",
         "modality": "stated"
       },
-      "turns_on": "quantifier"
+      "turns_on": "quantifier",
+      "forbidden_anywhere": [
+        "\\bnone of the sites\\b"
+      ]
     },
     {
       "case_id": "par-01-de",
@@ -558,8 +594,8 @@
       "language": "de",
       "phenomenon": "one_reading_several_wordings",
       "reading_status": "determinate",
-      "document": "Der Ausbau wird im Frühjahr abgeschlossen. Der Zeitplan wurde im Juli bestätigt.",
-      "span": "Der Ausbau wird im Frühjahr abgeschlossen.",
+      "document": "Der Antrag hält fest, dass der Ausbau im Frühjahr abgeschlossen wird, und verweist auf den im Juli bestätigten Zeitplan.",
+      "span": "dass der Ausbau im Frühjahr abgeschlossen wird",
       "readings": [
         {
           "gloss": "ein Abschluss im Frühjahr, als Aussage und nicht als Absicht",
@@ -603,8 +639,8 @@
       "language": "en",
       "phenomenon": "one_reading_several_wordings",
       "reading_status": "determinate",
-      "document": "Construction is completed in spring. The schedule was confirmed in July.",
-      "span": "Construction is completed in spring.",
+      "document": "The application records that construction is completed in spring, and refers to the schedule confirmed in July.",
+      "span": "that construction is completed in spring",
       "readings": [
         {
           "gloss": "a completion in spring, asserted rather than intended",
@@ -648,8 +684,8 @@
       "language": "de",
       "phenomenon": "assertion_without_support",
       "reading_status": "evidence_absent",
-      "document": "Das Programm senkt die Abbrecherquote deutlich. Weitere Angaben zur Wirkung enthält der Antrag nicht.",
-      "span": "Das Programm senkt die Abbrecherquote deutlich.",
+      "document": "Der Antrag behauptet, dass das Programm die Abbrecherquote deutlich senkt, und enthält keine weiteren Angaben zur Wirkung.",
+      "span": "dass das Programm die Abbrecherquote deutlich senkt",
       "readings": [
         {
           "gloss": "die Behauptung wird unverändert wiedergegeben, ohne Belegangabe und ohne Abschwächung",
@@ -692,8 +728,8 @@
       "language": "en",
       "phenomenon": "assertion_without_support",
       "reading_status": "evidence_absent",
-      "document": "The programme lowers the dropout rate substantially. The application gives no further detail on the effect.",
-      "span": "The programme lowers the dropout rate substantially.",
+      "document": "The application asserts that the programme lowers the dropout rate substantially, and gives no further detail on the effect.",
+      "span": "that the programme lowers the dropout rate substantially",
       "readings": [
         {
           "gloss": "the assertion is rendered unchanged, with no source attached and no hedge added",
@@ -743,5 +779,6 @@
     "absent": "the claim makes no commitment of this kind at all"
   },
   "interpretation_note": "arXiv 2610.20457 records nine interpretation fields per claim and marks each stated, inferred or default. Four are kept here and five are not, for two different reasons. The support threshold and the comparison basis are refused on principle: they decide what evidence suffices, which belongs to verification rather than to sentence semantics, and the extraction contract already forbids judging whether a claim is true. The entity, the observed measure and the unit are dropped because they do not vary across these 16 cases — the entity is stated in all of them and no case makes a quantitative claim, so recording them would measure nothing. The paper's third value, `inferred` against `default`, is a property of a run and not of a span: a case can say only whether the span states a field, so there are two values here plus `absent`.",
-  "turns_on_note": "`turns_on` names what each pair's difficulty actually consists in, and it is recorded because the field list does not cover all of it. Attachment and quantifier scope are not among the paper's nine fields at all, and evidential support is the one field refused above — so four of the eight pairs turn on something a claim card as published would not localise."
+  "turns_on_note": "`turns_on` names what each pair's difficulty actually consists in, and it is recorded because the field list does not cover all of it. Attachment and quantifier scope are not among the paper's nine fields at all, and evidential support is the one field refused above — so four of the eight pairs turn on something a claim card as published would not localise.",
+  "span_note": "Every span is a clause rather than a complete sentence, and that is the instrument and not a style choice. In the first run the 14 cases whose span was a whole sentence had the extractor return it verbatim in 42 of 42 claims, so the projection was the identity function and no question about how it resolves anything could arise. The one case whose span was already a fragment had 0 of 14 verbatim. The validator refuses a span that looks like a complete sentence."
 }

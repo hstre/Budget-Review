@@ -3923,3 +3923,80 @@ Es folgt dreierlei, und alles davon ist Arbeit am Instrument:
 Der Lauf hat also geliefert, was ein Lauf liefern soll: er hat meine zwei
 Hypothesen widerlegt und drei Mängel am Messgerät gezeigt. Dass alle Zahlen
 perfekt aussehen, ist das Gegenteil eines Erfolgs.
+
+## 3av. Die drei Mängel repariert — und meine eigene Diagnose war die falsche von zwei
+
+Aus 3au folgten drei Reparaturen am Messgerät. Beim Messen, *wo* genau die
+Identitätsfunktion zuschlägt, stellte sich heraus, dass ich die Ursache falsch
+benannt hatte.
+
+### Nicht die Dokumentlänge. Die Spanne
+
+| | wörtlich kopiert |
+|---|---|
+| `amb-01`, Spanne ist ein **Fragment** | **0 von 14** Claims; 5 und 9 Claims erzeugt |
+| die 14 Fälle, deren Spanne ein **ganzer Satz** ist | **42 von 42** |
+
+In 3au steht „die Dokumente müssen länger sein als die Spanne". **Das war die
+falsche Diagnose.** `amb-01`s Dokument ist genauso kurz wie die anderen und
+verhält sich vollständig anders — der Unterschied ist, dass seine Spanne ein
+Fragment ist. Ein vollständiger Satz *ist* schon eine atomare Proposition, also
+gibt es nichts zu projizieren; ein Nebensatz zwingt den Extraktor, Subjekt und
+Verbform zu ergänzen, und dort kann die Frage überhaupt erst entstehen.
+
+Vierzehn Spannen sind jetzt Nebensätze in längeren Sätzen, und eine
+Validatorregel hält es fest: **eine Spanne, die wie ein vollständiger Satz
+aussieht, wird abgelehnt.** Die Heuristik ist Großbuchstabe am Anfang plus
+Satzzeichen am Ende, sie hat alle 16 Fälle richtig einsortiert, und das ist die
+ganze Evidenz, die für sie spricht.
+
+Eine Mutation hat dabei einen schwachen Test von mir gefunden: die Heuristik nur
+auf das Satzzeichen zu reduzieren **überlebte**, weil kein Testfall klein begann
+und mit Punkt endete — also genau der Nebensatz, der das Satzende mitnimmt.
+Nachgezogen.
+
+### `forbidden_anywhere`: das Verbot gilt im ganzen Dossier
+
+Der alte Scorer bewertete `claims_on_span`. Die verbotene Auflösung erschien einen
+Satz weiter. Das neue Feld prüft gegen **jeden** Claim — und es nennt die
+*gefolgerte* Auflösung, nicht den Wortlaut des Dokuments, denn ein wörtliches
+Zitat des zweiten Satzes ist korrekte Extraktion und darf nicht bestraft werden.
+Eine Validatorregel lehnt ein Muster ab, das das Dokument selbst trifft.
+
+Gegen die echten Claims des bezahlten Laufs geprüft, also nicht an erfundenen
+Beispielen:
+
+| | |
+|---|---:|
+| Claims, die der reparierte Scorer fängt und der alte nicht sah | **10** |
+| davon als `fact` getypt | **2** |
+| wörtliche Zitate des zweiten Satzes, zu Recht nicht gefangen | alle |
+
+> `plu-03-en`: „Three of the five sites report the drawdown, **implying two sites
+> do not report it**." — als `fact`
+> `plu-02-de`: „Drei der fünf Meldungen liegen dem Amt **noch nicht** vor." — als
+> `inference`
+
+### Die Typisierung wandert in die Bewertung
+
+Jede Verzerrung trägt jetzt den `claim_type` und die Angabe, ob sie auf der Spanne
+lag. Zwei Felder berichten getrennt: `distortions_off_span` ist das, was das alte
+Instrument nicht sehen konnte, und `inferences_typed_as_fact` ist die schärfere
+Fehlerklasse — eine Folgerung, die das Dokument nicht macht, als Tatsache
+behauptet.
+
+Ein Test hält fest, dass ein Fall **ohne** das neue Feld sich unverändert
+verhält. Der erste Bedeutungsbestand hat keines, und seine 69 von 72 dürfen sich
+nicht bewegen, weil sonst eine Instrumentenänderung eine veröffentlichte Zahl
+verschoben hätte.
+
+### Was der nächste Lauf ist, und was er nicht wiederholt
+
+Die Dokumente und Spannen haben sich geändert, die gespeicherten Dossiers des
+ersten Laufs sind also **nicht neu bewertbar**. Das ist der Preis dafür, das
+Instrument nach einem Ergebnis zu ändern, und genau deshalb braucht der nächste
+Lauf eine **neue Vorregistrierung** — mit der Hälfte der Regel, die der ersten
+fehlte: *ein Bestand, der beim ersten Kontakt vollständig besteht, ist so
+verdächtig wie ein Fall, der immer durchfällt.*
+
+Acht Mutationen, acht gefangen, 645 Tests.

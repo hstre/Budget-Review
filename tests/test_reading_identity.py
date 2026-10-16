@@ -370,3 +370,79 @@ def test_the_scorer_does_not_read_the_interpretation_record(data: dict) -> None:
     source = (ROOT / "scripts" / "semantic_score.py").read_text(encoding="utf-8")
     assert "interpretation" not in source
     assert "turns_on" not in source
+
+
+# --- the three repairs the first paid run forced ---
+
+
+@pytest.mark.parametrize(
+    ("span", "is_sentence"),
+    [
+        ("Die Schulen des Bezirks haben den Zuschlag erhalten.", True),
+        ("The schools in the district received the supplement.", True),
+        ("dass die Schulen des Bezirks den Zuschlag erhalten haben", False),
+        ("that the schools in the district received the supplement", False),
+        ("Mittel für die Betreuung der Kinder aus dem Stadtteil", False),
+        # A clause that happens to swallow the sentence's final full stop. Both
+        # halves of the test are needed: punctuation alone calls this a
+        # sentence, and a mutation dropping the capital-letter half survived
+        # until this case existed.
+        ("dass die Schulen den Zuschlag erhalten haben.", False),
+        ("that construction is completed in spring.", False),
+        # And the mirror: a capitalised noun phrase with no full stop.
+        ("Mittel für die Betreuung", False),
+        ("", False),
+    ],
+)
+def test_a_complete_sentence_is_told_from_a_clause(span: str, is_sentence: bool) -> None:
+    assert reading_identity.looks_like_a_sentence(span) is is_sentence
+
+
+def test_no_span_in_the_set_is_a_complete_sentence(data: dict) -> None:
+    """The repair, as a property of the set rather than a note about it.
+
+    In the first run the 14 cases whose span was a whole sentence had it returned
+    verbatim in 42 of 42 claims: a complete sentence is already an atomic
+    proposition, so the projection is the identity and the case measures nothing.
+    The one fragment span had 0 of 14 verbatim.
+    """
+    offenders = [
+        case["case_id"]
+        for case in data["cases"]
+        if reading_identity.looks_like_a_sentence(case["span"])
+    ]
+    assert offenders == [], offenders
+
+
+def test_a_sentence_span_is_refused(data: dict) -> None:
+    case = _case(data, "plu-01-de")
+    case["document"] = "Die Schulen haben den Zuschlag erhalten. Drei Standorte melden."
+    case["span"] = "Die Schulen haben den Zuschlag erhalten."
+    case["requires_all_groups"] = [["Schulen"], ["Zuschlag"]]
+
+    problems = reading_identity.validate(data)
+
+    assert any("complete sentence" in problem for problem in problems), problems
+
+
+def test_a_pattern_matching_the_document_itself_is_refused(data: dict) -> None:
+    """Otherwise the instrument punishes a verbatim quote, which is the job.
+
+    The forbidden-anywhere patterns name the *inferred* resolution. A pattern
+    that also matched the document's own second sentence would fail a run for
+    quoting the source correctly.
+    """
+    case = _case(data, "plu-01-de")
+    case["forbidden_anywhere"] = ["\\bdrei der fünf\\b"]
+
+    problems = reading_identity.validate(data)
+
+    assert any("own wording" in problem for problem in problems), problems
+
+
+def test_the_open_plural_cases_forbid_something_off_the_span(data: dict) -> None:
+    # The whole point of the repair: the resolution appeared one sentence over,
+    # 23 times across 24 runs, where nothing was looking.
+    for case in data["cases"]:
+        if case["reading_status"] == "underdetermined_quantifier":
+            assert case.get("forbidden_anywhere"), case["case_id"]

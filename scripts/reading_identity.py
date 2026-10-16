@@ -78,6 +78,25 @@ SINGLE_READING_STATUSES = frozenset(
     {"determinate", "underdetermined_quantifier", "evidence_absent"}
 )
 
+SENTENCE_END = (".", "!", "?")
+
+
+def looks_like_a_sentence(span: str) -> bool:
+    """Whether a span is a complete sentence, which makes the case measure nothing.
+
+    The first paid run settled this. Of the 14 cases whose span was a whole
+    sentence, the extractor returned it verbatim in 42 of 42 claims on the span:
+    a complete sentence is already an atomic proposition, so the projection is
+    the identity function and no question about what it supplies can arise. The
+    one case whose span was a clause had 0 of 14 verbatim. A heuristic — capital
+    first letter and sentence-final punctuation — and it classified all 16
+    correctly, which is the only evidence offered for it.
+    """
+    stripped = span.strip()
+    if not stripped:
+        return False
+    return stripped[0].isupper() and stripped.endswith(SENTENCE_END)
+
 
 def load(path: Path = CASES) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -104,6 +123,19 @@ def validate(data: dict) -> list[str]:
         occurrences = document.count(span)
         if occurrences != 1:
             problems.append(f"{name}: span occurs {occurrences} times in the document")
+
+        if looks_like_a_sentence(span):
+            problems.append(
+                f"{name}: the span is a complete sentence, so the projection can "
+                f"copy it and the case measures the identity function"
+            )
+
+        for pattern in case.get("forbidden_anywhere") or []:
+            if semantic_cases.violates(document, [pattern]):
+                problems.append(
+                    f"{name}: forbidden_anywhere {pattern!r} matches the document's "
+                    f"own wording, so a verbatim quote would be punished"
+                )
 
         readings = case["readings"]
         if status == "ambiguous" and len(readings) < 2:

@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3au, which is a log rather than a synthesis.
+§3a–§3av, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -1390,7 +1390,9 @@ That half of the rule was missing, and this run exposed it.
 What does **not** follow is that the extractor handles plurals correctly. What was
 measured is that it returns the span verbatim where the span is one sentence.
 Three things follow, and all of them are work on the instrument: the documents
-have to be longer than the span, or the set measures the identity function; a
+have to be longer than the span, or the set measures the identity function
+(**withdrawn in §4.24**: the measurement says it is the span being a complete
+sentence, not the document's length); a
 forbidden reading has to be checked against every claim in the dossier rather than
 only those on the span, which is a change to the instrument and needs a new
 pre-registered run rather than a re-score of this one; and the typing of an
@@ -1400,6 +1402,55 @@ different error from one arriving as `inference`.
 The run did what a run should: it refuted two hypotheses and exposed three defects
 in the measuring device. That every figure looks perfect is the opposite of a
 success.
+
+### 4.24 The three defects repaired, and my own diagnosis was the wrong one of two
+
+§4.23 named three defects in the instrument. Measuring *where* the identity
+function bites showed that the first of them was wrongly diagnosed.
+
+| | Claims returned verbatim |
+|---|---|
+| `amb-01`, whose span is a **clause** | **0 of 14**; it produced 5 and 9 claims |
+| the 14 cases whose span is a **whole sentence** | **42 of 42** |
+
+§4.23 says the documents have to be longer than the span. **That was wrong.**
+`amb-01`'s document is exactly as short as the others and behaves completely
+differently; what differs is that its span is a fragment. A complete sentence
+already *is* an atomic proposition, so there is nothing to project, while a
+subordinate clause forces the extractor to supply a subject and a verb form —
+and only there can the question arise.
+
+Fourteen spans are now clauses inside longer sentences, and a validator rule
+makes it permanent: **a span that looks like a complete sentence is refused.**
+The heuristic is a capital first letter plus sentence-final punctuation; it
+classified all 16 cases correctly, and that is the whole of the evidence for it.
+A mutation found a weak test on the way — reducing the heuristic to the
+punctuation alone survived, because no case began lowercase and ended with a full
+stop, which is exactly the clause that swallows the sentence's end.
+
+**The forbidden reading is now checked against the whole dossier.** The old
+scorer judged claims on the span; the forbidden resolution appeared one sentence
+over. The new field checks every claim, and it names the *inferred* resolution
+rather than the document's own wording, because a verbatim quote of the second
+sentence is correct extraction and must not be punished — a validator rule
+refuses a pattern that matches the document itself. Checked against the paid
+run's real output rather than invented examples: **10 claims that the repaired
+scorer catches and the old one could not see, 2 of them typed `fact`**, and every
+verbatim quote correctly left alone.
+
+**The typing of an inference now enters the score.** Each distortion carries the
+claim's type and whether it sat on the span, and two fields report separately:
+what the old instrument could not see, and the sharper class of an inference the
+document does not make being asserted as a fact. A test holds that a case
+*without* the new field behaves exactly as before, because the first meaning set
+has none and its 69 of 72 must not move — an instrument change that shifted a
+published figure would be the worst of both.
+
+The documents and spans have changed, so the first run's stored dossiers are **not
+re-scorable**. That is the price of changing an instrument after a result, and it
+is why the next run needs a **new pre-registration** — carrying the half of the
+rule the first one lacked: a set that passes completely on first contact is as
+suspect as a case that always fails.
 
 ---
 
@@ -1554,6 +1605,14 @@ stored; all four are, with document, gold and proposal packet, so the re-run cos
 nothing and is now done (§4.19). The first claim blamed a test that had worked.
 The second deferred a measurement for a reason that did not exist.
 
+A third of the same kind, and this one cost a wrong repair before it was caught:
+**"the set measures the identity function because its documents are too short"**.
+Measured, the cause is that the span is a complete sentence — the one case whose
+span was a clause produced 0 of 14 verbatim claims on a document exactly as short
+as the rest. The repair that followed from the wrong diagnosis would have
+lengthened documents and changed nothing. **Withdrawn, and the right property is
+now a validator rule** (§4.24).
+
 An outside reading of this report found four more, none of them about a
 measurement and all about what the report says of itself. Two were claims and are
 withdrawn here. **"The typing `assumption` is a defensible reading"** attributed
@@ -1649,7 +1708,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 29 measurement scripts, each tested
-docs/architecture.md §3a–§3au            the chronological record, run by run
+docs/architecture.md §3a–§3av            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1658,7 +1717,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-625 tests and one skipped, `ruff check` clean.
+645 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1711,7 +1770,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3au und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3av und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -3130,7 +3189,9 @@ Regel fehlte, und dieser Lauf hat sie freigelegt.
 Was **nicht** folgt, ist, dass der Extraktor Plurale korrekt behandelt. Gemessen
 ist, dass er die Spanne wörtlich zurückgibt, wo sie ein Satz ist. Es folgt
 dreierlei, und alles davon ist Arbeit am Messgerät: die Dokumente müssen länger
-sein als die Spanne, sonst misst der Bestand die Identitätsfunktion; eine
+sein als die Spanne, sonst misst der Bestand die Identitätsfunktion
+(**in §4.24 zurückgezogen**: die Messung sagt, es liegt daran, dass die Spanne ein
+vollständiger Satz ist, und nicht an der Länge des Dokuments); eine
 verbotene Lesart muss gegen *jeden* Claim des Dossiers geprüft werden und nicht
 nur gegen die auf der Spanne, was eine Änderung am Instrument ist und einen neuen
 vorregistrierten Lauf verlangt statt einer Neubewertung dieses einen; und die
@@ -3140,6 +3201,57 @@ Typisierung einer Folgerung gehört in die Bewertung, denn eine Folgerung, die a
 Der Lauf hat getan, was ein Lauf tun soll: er hat zwei Hypothesen widerlegt und
 drei Mängel am Messgerät gezeigt. Dass jede Zahl perfekt aussieht, ist das
 Gegenteil eines Erfolgs.
+
+### 4.24 Die drei Mängel repariert, und meine eigene Diagnose war die falsche von zwei
+
+§4.23 nennt drei Mängel am Instrument. Beim Messen, *wo* die Identitätsfunktion
+zuschlägt, zeigte sich, dass der erste falsch diagnostiziert war.
+
+| | wörtlich zurückgegebene Claims |
+|---|---|
+| `amb-01`, dessen Spanne ein **Nebensatz** ist | **0 von 14**; 5 und 9 Claims erzeugt |
+| die 14 Fälle, deren Spanne ein **ganzer Satz** ist | **42 von 42** |
+
+In §4.23 steht, die Dokumente müssten länger sein als die Spanne. **Das war
+falsch.** `amb-01`s Dokument ist genauso kurz wie die anderen und verhält sich
+vollständig anders; der Unterschied ist, dass seine Spanne ein Fragment ist. Ein
+vollständiger Satz *ist* schon eine atomare Proposition, es gibt also nichts zu
+projizieren, während ein Nebensatz den Extraktor zwingt, Subjekt und Verbform zu
+ergänzen — und erst dort kann die Frage entstehen.
+
+Vierzehn Spannen sind jetzt Nebensätze in längeren Sätzen, und eine
+Validatorregel hält das fest: **eine Spanne, die wie ein vollständiger Satz
+aussieht, wird abgelehnt.** Die Heuristik ist Großbuchstabe am Anfang plus
+Satzzeichen am Ende; sie hat alle 16 Fälle richtig einsortiert, und das ist die
+ganze Evidenz für sie. Eine Mutation fand dabei einen schwachen Test: die
+Heuristik auf das Satzzeichen allein zu reduzieren überlebte, weil kein Fall klein
+begann und mit Punkt endete — genau der Nebensatz, der das Satzende mitnimmt.
+
+**Die verbotene Lesart wird jetzt gegen das ganze Dossier geprüft.** Der alte
+Scorer bewertete Claims auf der Spanne; die verbotene Auflösung erschien einen
+Satz weiter. Das neue Feld prüft jeden Claim und nennt die *gefolgerte* Auflösung
+statt des Wortlauts des Dokuments, denn ein wörtliches Zitat des zweiten Satzes
+ist korrekte Extraktion und darf nicht bestraft werden — eine Validatorregel
+lehnt ein Muster ab, das das Dokument selbst trifft. Gegen die echte Ausgabe des
+bezahlten Laufs geprüft und nicht an erfundenen Beispielen: **10 Claims, die der
+reparierte Scorer fängt und der alte nicht sehen konnte, 2 davon als `fact`
+getypt**, und jedes wörtliche Zitat zu Recht unangetastet.
+
+**Die Typisierung einer Folgerung geht in die Bewertung ein.** Jede Verzerrung
+trägt den Typ des Claims und die Angabe, ob sie auf der Spanne lag, und zwei
+Felder berichten getrennt: was das alte Instrument nicht sehen konnte, und die
+schärfere Klasse einer Folgerung, die das Dokument nicht macht und die als
+Tatsache behauptet wird. Ein Test hält fest, dass ein Fall *ohne* das neue Feld
+sich unverändert verhält, denn der erste Bedeutungsbestand hat keines und seine 69
+von 72 dürfen sich nicht bewegen — eine Instrumentenänderung, die eine
+veröffentlichte Zahl verschiebt, wäre das Schlechteste aus beidem.
+
+Dokumente und Spannen haben sich geändert, die gespeicherten Dossiers des ersten
+Laufs sind also **nicht neu bewertbar**. Das ist der Preis dafür, ein Instrument
+nach einem Ergebnis zu ändern, und deshalb braucht der nächste Lauf eine **neue
+Vorregistrierung** — mit der Hälfte der Regel, die der ersten fehlte: ein Bestand,
+der beim ersten Kontakt vollständig besteht, ist so verdächtig wie ein Fall, der
+immer durchfällt.
 
 ## 5. Was wir nicht wissen
 
@@ -3295,6 +3407,14 @@ Dokument, Gold und Vorschlagspaket, der Nachlauf kostete also nichts und ist jet
 getan (§4.19). Die erste Aussage beschuldigte einen Test, der funktioniert hatte.
 Die zweite verschob eine Messung aus einem Grund, der nicht existierte.
 
+Eine dritte derselben Art, und diese hätte eine falsche Reparatur gekostet:
+**„der Bestand misst die Identitätsfunktion, weil seine Dokumente zu kurz sind"**.
+Gemessen liegt es daran, dass die Spanne ein vollständiger Satz ist — der eine
+Fall, dessen Spanne ein Nebensatz war, erzeugte 0 von 14 wörtlichen Claims, auf
+einem Dokument genau so kurz wie die übrigen. Die Reparatur aus der falschen
+Diagnose hätte Dokumente verlängert und nichts geändert. **Zurückgezogen, und die
+richtige Eigenschaft ist jetzt eine Validatorregel** (§4.24).
+
 Eine Durchsicht dieses Berichts von außen hat vier weitere gefunden, keine davon
 über eine Messung, alle darüber, was der Bericht über sich selbst sagt. Zwei waren
 Aussagen und werden hier zurückgezogen. **„Die Typisierung `assumption` ist eine
@@ -3397,7 +3517,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 29 Messskripte, jedes getestet
-docs/architecture.md §3a–§3au            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3av            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -3407,7 +3527,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-625 Tests und einer übersprungen, `ruff check` sauber.
+645 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

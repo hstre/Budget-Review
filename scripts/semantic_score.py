@@ -185,6 +185,27 @@ def score(case: dict, claims: list[dict]) -> dict:
                 {"claim": claim["canonical_content"][:90], "forbidden_reading": True}
             )
 
+    # The repair the first run forced. A forbidden resolution was produced one
+    # sentence over, where a scorer judging only claims on the span cannot see
+    # it: 23 such claims across 24 runs. These patterns are checked against
+    # *every* claim in the dossier, and they name the inferred resolution rather
+    # than the document's own wording, so a verbatim quote of another sentence
+    # stays legitimate. The claim's type travels with the finding, because an
+    # inference arriving as `fact` asserts what the document does not say and is
+    # a different error from one arriving as `inference`.
+    anywhere = case.get("forbidden_anywhere") or []
+    for claim in claims:
+        tripped = cases_module.violates(claim["canonical_content"], anywhere)
+        if tripped:
+            distortions.append(
+                {
+                    "claim": claim["canonical_content"][:90],
+                    "forbidden_anywhere": tripped,
+                    "claim_type": str(claim["claim_type"]),
+                    "on_span": claim in on_span,
+                }
+            )
+
     needed = case.get("min_claims_on_span", 1)
     languages = [language_of(text) for text in contents]
     translated = [
@@ -209,6 +230,12 @@ def score(case: dict, claims: list[dict]) -> dict:
         and len(on_span) >= needed
         and not distortions,
         "distortions": distortions,
+        # Separated so a report can say where the error was found. A distortion
+        # off the span is the one the first run's instrument could not see.
+        "distortions_off_span": [d for d in distortions if d.get("on_span") is False],
+        "inferences_typed_as_fact": [
+            d for d in distortions if d.get("claim_type") == "fact" and "forbidden_anywhere" in d
+        ],
         "translated": translated,
         "in_source_language": bool(contents) and not translated,
         "normalised_anchors": sum(1 for c in on_span if c.get("anchor_normalised")),

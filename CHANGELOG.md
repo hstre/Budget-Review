@@ -11,6 +11,12 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **What makes the set measure the identity function is the span being a complete
+  sentence, not the document being short.** The one case whose span is a clause
+  returned 0 of 14 claims verbatim, on a document exactly as short as the others;
+  the 14 whose span is a whole sentence returned 42 of 42. My own diagnosis the
+  day before named document length, which is **withdrawn**: acting on it would
+  have lengthened documents and changed nothing.
 - **The harder case set was run and passed 48 of 48, which refuted both of the
   predictions that mattered and exposed three defects in the instrument.** The
   run cost 48 calls and 100 seconds; the call budget added in this release held.
@@ -191,6 +197,20 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Changed
 
+- **The three defects the first run exposed are repaired.** Fourteen spans are
+  clauses inside longer sentences instead of whole sentences, and a validator rule
+  refuses a span that looks like a sentence — the heuristic classified all 16 cases
+  correctly, which is the whole of the evidence for it. A new `forbidden_anywhere`
+  field is checked against **every** claim in the dossier rather than only those on
+  the span, and it names the inferred resolution rather than the document's own
+  wording, so a verbatim quote of another sentence stays legitimate; a validator
+  rule refuses a pattern that matches the document itself. Each distortion now
+  carries the claim's type and whether it sat on the span, and two fields report
+  separately: what the old instrument could not see, and an inference asserted as a
+  fact. Verified against the paid run's real output, not invented examples: **10
+  claims caught that the old scorer could not see, 2 of them typed `fact`.** A test
+  holds that a case without the new field behaves exactly as before, so the first
+  meaning set's 69 of 72 cannot move.
 - `compare_runs.py` and `gold_ceiling.py` sweep the overlap threshold instead of
   fixing it at 0.8, and `compare_runs` now says whether its **verdict** survives
   the sweep. "Strict improvement" against "trade" is the claim the union argument
@@ -251,10 +271,10 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
-- Fixing the three defects the run exposed. Longer documents, a forbidden reading
-  checked against every claim rather than only those on the span, and the typing of
-  an inference entering the score. All three change the instrument, so they need a
-  new pre-registered run and not a re-score of the one just made.
+- Running the repaired set. The documents and spans have changed, so the first
+  run's dossiers are not re-scorable, and a new pre-registration has to come first
+  — carrying the half of the rule the first one lacked: a set that passes
+  completely on first contact is as suspect as a case that always fails.
 - Anything from the memory-formation paper: this project has no persistent memory,
   no reflection runs and no consolidation, so it is a boundary rather than a gap.
   Its transferable lesson — that formation needs provenance, not only the end state
