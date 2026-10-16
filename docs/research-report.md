@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3as, which is a log rather than a synthesis.
+§3a–§3at, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -117,8 +117,9 @@ compute its variants** — which costs nothing and had not been done.
 | 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
 | 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats — and §4.20 sharpens why: no case admits two semantically different readings, so on this set disagreement *is* error by construction and the separation cannot show that spread detects ambiguity |
 | 24 | Whether two runs mean the same by a claim type is not answerable from the stored data | the prompt effect (86–95 % agreement) lies inside the range sampling alone produces (81–94 %), and no comparison is a consistent renaming (§4.20). Controlled side finding: type stability falls with document length, 94 % on one sentence against 81 % on a long paper |
-| 25 | A reference set that could tell interpretive ambiguity from noise now exists, and has never been run | built (§4.21): 16 cases, 8 pairs, four reading statuses, with the quantifier controls that make the status measurable. 48 calls and a pre-registered criterion away from a figure. It annotates no edges |
+| 25 | A reference set that could tell interpretive ambiguity from noise now exists, and has never been run | built (§4.21): 16 cases, 8 pairs, four reading statuses, with the quantifier controls that make the status measurable. 48 calls and a pre-registered criterion away from a figure. It annotates no edges. Field-level interpretation provenance is recorded per case, and four of its eight pairs turn on something that field list does not reach (§4.22) |
 | 26 | Relations are now structurally checkable, and the check is nearly idle | the vocabulary's reversal table says two labels are symmetric, one pair inverse, ten with no inverse at all (§4.21). Across 1,041 stored relations both directions appear four times, all consistent — 0.4 per cent, so it cannot fail. Establishing anything needs the endpoints actively swapped, which is a paid run |
+| 27 | The gold-free agreement signal has no absolute component | open; it says the runs agree, not that what they agree on is right, and the two coincide on the meaning set only because that set has a gold (§4.22). 22 of 24 cases agree completely and none of them fails |
 
 ---
 
@@ -1271,6 +1272,70 @@ meaning-set run, and needs a pre-registered criterion first. And it still annota
 no edges, so the relation axis is structurally checkable without being checkable
 against gold.
 
+### 4.22 Field-level provenance adopted, and what it does not reach
+
+[arXiv 2610.20457](https://arxiv.org/abs/2610.20457) records nine interpretation
+fields per scientific claim before any evidence is sought, and marks each value
+`stated`, `inferred` or `default`. Over 60 claims and 900 runs, more than 40 per
+cent of the fields were not explicit in the claim.
+
+**Its most useful finding is the negative one:** adding the card improved neither
+agreement with experts nor stability measurably. That is §4.18's pattern exactly —
+recording a reviewer's prompt hash did not make the comparison *better*, it made
+it *checkable*. **Provenance is not improvement**, and that belongs on record
+before the new set's first run rather than after it. What did work was
+intervention: setting one field flipped about a third of the verdicts where chance
+would give a seventh. That is the method §4.20 lacks, where the prompt effect
+lies inside the sampling range and observation cannot separate the cause.
+
+Four of the nine fields are now recorded per case, and five are not, for two
+different reasons. `quantifier`, `conditions`, `polarity` and `modality` are kept.
+The support threshold and the comparison basis are **refused on principle**: they
+decide what evidence suffices, which is verification rather than sentence
+semantics, and the extraction contract forbids judging whether a claim is true — a
+test keeps them out of the schema. The entity, the observed measure and the unit
+are dropped because they do not vary: the entity is stated in all 16 cases and no
+case makes a quantitative claim, so recording them would be a column without
+variance. The paper's `inferred` against `default` is a property of a run and not
+of a span, so the values here are `stated`, `unstated` and `absent`.
+
+**One place the two axes meet, and can contradict.** A span that leaves a plural
+open is exactly a span that states no quantifier, and a control that says "all"
+states one. The validator checks both directions and the controls besides;
+everything else in the field record is description. Two annotations of one case
+with no point of contact would be two unverifiable opinions.
+
+**And a finding fell out of the adoption.** Of the eight pairs, four turn on
+something the published field list would not localise: attachment (`amb-01`) and
+quantifier scope (`amb-02`) are not among the nine fields, and evidential support
+(`evi-01`) is the field refused above. A field list is worth having and does not
+reach everything, and a test pins that count so its reach is not overstated later.
+The pre-registration survives the addition because the scorer does not read the
+field record, which is also asserted by a test: had scoring depended on it, adding
+it after the criterion was fixed would have changed what the run measures.
+
+**A second limit on the repeat-spread signal, independent of the first.**
+[arXiv 2610.19754](https://arxiv.org/abs/2610.19754) separates three things — a
+path exists, its endpoint is right, and the relation sequence actually supports the
+answer — and notes that a softmax always finds the relatively best path even when
+all of them are bad, with a single path scoring 1 by construction. Hence the need
+for an *absolute* support score. Checked against §4.19's signal: **22 of the 24
+cases produce an identical claim set across all three repeats, and none of those 22
+fails its gold.** That agreement coincides with correctness because the set has a
+gold, not because the signal knows anything. On a real document there is none, and
+the measure then says the runs agree, not that what they agree on is right. The
+signal has no absolute component at all — §4.21 named one limit on it, this is a
+second and unrelated one. In passing, *reachable but invalid* is what
+`relation_algebra.py` has checked since §4.21: a relation can exist and be
+structurally inadmissible.
+
+**A rejection confirmed with a figure.**
+[arXiv 2610.19118](https://arxiv.org/abs/2610.19118) finds attack success rates
+falling from 69.7 to 36.6 per cent once it is checked whether the perturbed input
+still *demands* the same reference decision. About half the measured effect was
+artefact. That is the quantification of why the 68-operation perturbation library
+is still not taken: it supplies inputs and no gold that their meaning survived.
+
 ---
 
 ## 5. What we do not know
@@ -1519,7 +1584,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 29 measurement scripts, each tested
-docs/architecture.md §3a–§3as            the chronological record, run by run
+docs/architecture.md §3a–§3at            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1528,7 +1593,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-599 tests and one skipped, `ruff check` clean.
+625 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1581,7 +1646,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3as und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3at und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1694,8 +1759,9 @@ und nicht getan war.
 | 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
 | 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen — und §4.20 verschärft, warum: kein Fall lässt zwei semantisch verschiedene Lesarten zu, Uneinigkeit *ist* auf diesem Bestand konstruktionsbedingt Fehler, und die Trennung kann nicht zeigen, dass Streuung Ambiguität erkennt |
 | 24 | Ob zwei Läufe dasselbe mit einem Claim-Typ meinen, ist aus den gespeicherten Daten nicht beantwortbar | der Prompt-Effekt (86–95 % Übereinstimmung) liegt innerhalb der Spanne, die Sampling allein erzeugt (81–94 %), und kein Vergleich ist eine konsistente Umbenennung (§4.20). Kontrollierter Nebenbefund: die Typstabilität fällt mit der Dokumentlänge, 94 % auf einem Satz gegen 81 % auf einem langen Paper |
-| 25 | Ein Referenzbestand, der Interpretationsmehrdeutigkeit von Rauschen trennen könnte, existiert jetzt und ist nie gelaufen | gebaut (§4.21): 16 Fälle, 8 Paare, vier Lesartstatus, mit den Quantorenkontrollen, die den Status messbar machen. 48 Aufrufe und ein vorregistriertes Kriterium von einer Zahl entfernt. Er annotiert keine Kanten |
+| 25 | Ein Referenzbestand, der Interpretationsmehrdeutigkeit von Rauschen trennen könnte, existiert jetzt und ist nie gelaufen | gebaut (§4.21): 16 Fälle, 8 Paare, vier Lesartstatus, mit den Quantorenkontrollen, die den Status messbar machen. 48 Aufrufe und ein vorregistriertes Kriterium von einer Zahl entfernt. Er annotiert keine Kanten. Feldweise Interpretationsprovenienz ist je Fall aufgezeichnet, und vier seiner acht Paare beruhen auf etwas, das dieser Feldkatalog nicht erreicht (§4.22) |
 | 26 | Relationen sind jetzt strukturell prüfbar, und die Prüfung ist beinahe untätig | die Umkehrtabelle des Vokabulars nennt zwei Labels symmetrisch, ein Paar invers, zehn ohne jedes Inverses (§4.21). Über 1041 gespeicherte Relationen treten beide Richtungen viermal auf, alle konsistent — 0,4 Prozent, sie kann also nicht scheitern. Etwas zu belegen verlangt aktives Vertauschen der Enden, und das ist ein bezahlter Lauf |
+| 27 | Dem gold-freien Übereinstimmungssignal fehlt jede absolute Komponente | offen; es sagt, dass die Läufe einig sind, nicht dass das Einige richtig ist, und beides fällt auf dem Bedeutungsbestand nur zusammen, weil er ein Gold hat (§4.22). 22 von 24 Fällen sind vollständig einig, und keiner von ihnen fällt durch |
 
 ## 2. Was das System ist
 
@@ -2871,6 +2937,76 @@ Drittel eines Bedeutungsbestand-Laufs, und braucht vorher ein vorregistriertes
 Kriterium. Und er annotiert weiterhin keine Kanten, die Relationsachse ist also
 strukturell prüfbar, ohne gegen Gold prüfbar zu sein.
 
+### 4.22 Feldprovenienz übernommen, und was sie nicht erreicht
+
+[arXiv 2610.20457](https://arxiv.org/abs/2610.20457) hält vor jeder Evidenzsuche
+neun Interpretationsfelder je wissenschaftlichem Claim fest und markiert jeden
+Wert als `stated`, `inferred` oder `default`. Über 60 Claims und 900 Läufe waren
+mehr als 40 Prozent der Felder nicht ausdrücklich im Claim.
+
+**Der nützlichste Befund ist der negative:** Die Karte hinzuzufügen verbesserte
+weder die Übereinstimmung mit Experten noch die Stabilität messbar. Das ist genau
+das Muster aus §4.18 — den Prompt-Hash eines Reviewers aufzuzeichnen hat den
+Vergleich nicht *besser* gemacht, sondern *prüfbar*. **Provenienz ist keine
+Verbesserung**, und das gehört vor den ersten Lauf des neuen Bestands und nicht
+danach. Gewirkt hat die Intervention: ein Feld gezielt zu setzen kippte etwa ein
+Drittel der Urteile, wo der Zufall ein Siebtel gäbe. Das ist die Methode, die
+§4.20 fehlt, wo der Prompt-Effekt innerhalb der Sampling-Spanne liegt und
+Beobachtung die Ursache nicht trennt.
+
+Vier der neun Felder sind jetzt je Fall aufgezeichnet, fünf nicht, aus zwei
+verschiedenen Gründen. `quantifier`, `conditions`, `polarity` und `modality`
+bleiben. Die Unterstützungsschwelle und die Vergleichsbasis sind **aus Prinzip
+abgelehnt**: sie entscheiden, welche Evidenz genügt, und das ist Verifikation und
+nicht Satzsemantik — der Extraktionsvertrag verbietet, über die Wahrheit eines
+Claims zu urteilen, und ein Test hält sie aus dem Schema. Entität, beobachtete
+Zielgröße und Einheit fallen weg, weil sie nicht variieren: die Entität ist in
+allen 16 Fällen genannt, und kein Fall macht eine quantitative Aussage, die Spalte
+hätte also keine Varianz. Das `inferred` gegen `default` des Papers ist eine
+Eigenschaft des Laufs und nicht der Spanne, die Werte hier sind daher `stated`,
+`unstated` und `absent`.
+
+**Eine Stelle, an der sich die zwei Achsen treffen und widersprechen können.**
+Eine Spanne, die einen Plural offen lässt, ist genau eine Spanne, die keinen
+Quantor nennt, und eine Kontrolle, die „alle" sagt, nennt einen. Der Validator
+prüft beide Richtungen und die Kontrollen dazu; alles andere am Feldeintrag ist
+Beschreibung. Zwei Annotationen eines Falls ohne Berührungspunkt wären zwei
+unprüfbare Meinungen.
+
+**Und beim Übernehmen fiel ein Befund heraus.** Von den acht Paaren beruhen vier
+auf etwas, das der veröffentlichte Feldkatalog nicht lokalisieren würde:
+Anbindung (`amb-01`) und Quantorenskopus (`amb-02`) stehen nicht unter den neun
+Feldern, und die evidenzielle Stütze (`evi-01`) ist das oben abgelehnte Feld. Ein
+Feldkatalog ist es wert und erreicht nicht alles; ein Test hält diese Zahl fest,
+damit seine Reichweite später nicht überzeichnet wird. Die Vorregistrierung
+übersteht die Ergänzung, weil der Scorer den Feldeintrag nicht liest, und auch das
+behauptet ein Test: hinge die Bewertung daran, hätte das Nachtragen nach dem
+Festlegen des Kriteriums geändert, was der Lauf messt.
+
+**Eine zweite Grenze des Wiederholungssignals, unabhängig von der ersten.**
+[arXiv 2610.19754](https://arxiv.org/abs/2610.19754) trennt drei Dinge — ein Pfad
+existiert, sein Endpunkt ist richtig, und die Relationsfolge stützt die Antwort
+tatsächlich — und hält fest, dass ein Softmax immer den relativ besten Pfad
+findet, auch wenn alle schlecht sind, und bei einem einzigen Pfad
+konstruktionsbedingt 1 ergibt. Daher der Bedarf an einem *absoluten*
+Unterstützungswert. Gegen das Signal aus §4.19 geprüft: **22 der 24 Fälle ergeben
+über alle drei Wiederholungen eine identische Claim-Menge, und keiner dieser 22
+verfehlt sein Gold.** Dass Einigkeit dort mit Richtigkeit zusammenfällt, liegt am
+Gold des Bestands und nicht daran, dass das Signal etwas wüsste. Auf einem echten
+Dokument gibt es keines, und dann sagt das Maß, dass die Läufe einig sind, nicht
+dass das, worin sie einig sind, richtig ist. Dem Signal fehlt jede absolute
+Komponente — §4.21 hat eine Grenze benannt, dies ist eine zweite und unabhängige.
+Nebenbei ist *reachable but invalid* genau, was `relation_algebra.py` seit §4.21
+prüft: eine Relation kann existieren und strukturell unzulässig sein.
+
+**Eine Ablehnung, mit einer Zahl bestätigt.**
+[arXiv 2610.19118](https://arxiv.org/abs/2610.19118) findet Angriffserfolge von
+69,7 auf 36,6 Prozent fallen, sobald geprüft wird, ob die veränderte Eingabe
+dieselbe Referenzentscheidung noch *verlangt*. Etwa die Hälfte des gemessenen
+Effekts war Artefakt. Das ist die Quantifizierung des Grundes, aus dem die
+Perturbationsbibliothek mit ihren 68 Operationen weiter nicht aufgenommen wird:
+sie liefert Eingaben und kein Gold dafür, dass deren Bedeutung erhalten blieb.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -3127,7 +3263,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 29 Messskripte, jedes getestet
-docs/architecture.md §3a–§3as            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3at            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -3137,7 +3273,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-599 Tests und einer übersprungen, `ruff check` sauber.
+625 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 

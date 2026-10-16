@@ -3706,3 +3706,117 @@ Messergebnisse. Ein Lauf kostet 16 Fälle × 3 Wiederholungen = 48 Aufrufe, zwei
 Drittel eines Bedeutungsbestand-Laufs, und braucht vorher ein vorregistriertes
 Kriterium. Und er annotiert weiterhin **keine Kanten** — die Relationsachse ist
 jetzt strukturell prüfbar, aber nicht gegen Gold.
+
+## 3at. Feldprovenienz übernommen — und dabei gemessen, was sie nicht erfasst
+
+Drei fremde Paper vom 14. Oktober. Eines liefert ein Instrument, das ich in den
+neuen Bestand übernommen habe, bevor er läuft; zwei liefern je eine Grenze für
+Befunde, die hier schon stehen.
+
+### Paper 1: die Karte, ihr negativer Befund und die vier Felder, die ich nehme
+
+[Same Claim, Different Interpretations](https://arxiv.org/abs/2610.20457) hält
+vor jeder Evidenzsuche neun Interpretationsfelder fest und markiert jeden Wert
+als `stated`, `inferred` oder `default`. Bei 60 Claims und 900 Läufen waren über
+40 Prozent der Felder nicht ausdrücklich im Claim.
+
+**Der wichtigste Befund ist der negative:** Die Karte hinzuzufügen verbesserte
+weder die Übereinstimmung mit Experten noch die Stabilität messbar. Das ist genau
+das Muster von 3ao — der Prompt-Hash hat den Reviewer-Vergleich nicht *besser*
+gemacht, sondern *prüfbar*. **Provenienz ist keine Verbesserung.** Das gehört vor
+den ersten Lauf des neuen Bestands, damit niemand von ihm erwartet, was die
+Karte ihren Autoren nicht gegeben hat.
+
+Wirksam war erst die *Intervention*: ein Feld gezielt gesetzt kippte etwa ein
+Drittel der Urteile, zufällig wäre ein Siebtel. Das ist die Methode, die 3ap
+fehlt — dort liegt der Prompt-Effekt innerhalb der Sampling-Spanne, beobachtend
+ist die Ursache also nicht trennbar. Eine Intervention wäre es.
+
+Von den neun Feldern sind vier in den Bestand eingetragen, fünf nicht, und die
+Gründe sind verschieden:
+
+| | |
+|---|---|
+| **übernommen** | `quantifier`, `conditions`, `polarity`, `modality` |
+| **aus Prinzip abgelehnt** | Unterstützungsschwelle und Vergleichsbasis. Sie entscheiden, welche Evidenz genügt — das ist Verifikation und nicht Satzsemantik, und der Vertrag verbietet ausdrücklich, über die Wahrheit eines Claims zu urteilen. Ein Test prüft, dass sie nicht durch die Hintertür hereinkommen |
+| **weil sie nichts messen** | Entität, beobachtete Zielgröße, Einheit. Die Entität ist in allen 16 Fällen genannt, und kein Fall macht eine quantitative Aussage — aufzuzeichnen wäre eine Spalte ohne Varianz |
+
+Auch die drei Werte werden zwei plus einer: `inferred` gegen `default` ist eine
+Eigenschaft des **Laufs**, nicht der Spanne. Ein Fall kann nur sagen, ob die
+Spanne ein Feld nennt. Also `stated`, `unstated` und `absent`.
+
+### Die eine Stelle, an der Status und Feld sich treffen
+
+Zwei Annotationen desselben Falls ohne Berührungspunkt wären zwei unprüfbare
+Meinungen. Der Quantor ist der Punkt: **eine Spanne, die einen Plural offen
+lässt, ist genau eine Spanne, die keinen Quantor nennt** — und eine Kontrolle,
+die „alle" sagt, nennt genau einen. Der Validator prüft beide Richtungen und die
+Kontrollen zusätzlich; alles andere am Feldeintrag ist Beschreibung.
+
+### Und der Befund, der beim Übernehmen herausfiel
+
+| Paar | worauf die Schwierigkeit beruht | im Feldkatalog? |
+|---|---|---|
+| `plu-01` … `plu-04` | Quantor | **ja** |
+| `par-01` | Modalität | **ja** |
+| `amb-01` | Anbindung | **nein** |
+| `amb-02` | Quantorenskopus | **nein** |
+| `evi-01` | evidenzielle Stütze | **nein** — das ist das Feld, das ich oben ablehne |
+
+**Vier der acht Paare beruhen auf etwas, das eine Claim Card wie veröffentlicht
+nicht lokalisieren würde.** Anbindung und Skopus stehen in den neun Feldern
+nicht, und die Stütze habe ich aus Prinzip draußen gelassen. Ein Feldkatalog ist
+es wert und erfasst nicht alles; ein Test hält diese Zahl fest, damit seine
+Reichweite später nicht überzeichnet wird.
+
+Dass die Vorregistrierung das überlebt, ist kein Zufall, sondern geprüft: **der
+Scorer liest den Feldeintrag nicht.** Ein Test verbietet ihm das. Hinge die
+Bewertung daran, hätte das Nachtragen nach dem Festlegen des Kriteriums geändert,
+was der Lauf messt.
+
+### Paper 2: meinem Übereinstimmungssignal fehlt die absolute Hälfte
+
+[Beyond Reachability](https://arxiv.org/abs/2610.19754) trennt drei Dinge: ein
+Pfad existiert, sein Endpunkt ist richtig, und die Relationsfolge **stützt** die
+Antwort. Das dritte kann falsch sein, während das zweite stimmt — *reachable but
+invalid*. Dazu der Punkt, der hier trifft: Softmax findet immer den relativ
+besten Pfad, auch wenn alle schlecht sind, und bei einem einzigen Pfad ist seine
+relative Aufmerksamkeit automatisch 1. Deshalb braucht es einen **absoluten**
+Unterstützungswert.
+
+Nachgerechnet auf dem Signal aus 3ap:
+
+| | |
+|---|---:|
+| Fälle, deren drei Wiederholungen eine identische Claim-Menge ergeben | **22 von 24** |
+| davon trotz voller Übereinstimmung durchgefallen | **keiner** |
+
+Die zweite Zeile ist die Falle. Dass Einigkeit hier mit Richtigkeit zusammenfällt,
+liegt **am Gold des Bestands und nicht am Signal.** Auf einem echten Dokument
+gibt es kein Gold, und dann sagt das Maß „die Läufe sind einig", nicht „das,
+worin sie einig sind, ist richtig". Dem Signal fehlt jede absolute Komponente —
+das ist die zweite Grenze nach der aus 3as, und sie ist unabhängig davon.
+
+Nebenbei: *reachable but invalid* ist genau, was `relation_algebra.py` seit 3as
+prüft. Eine Relation kann existieren und strukturell unzulässig sein.
+
+### Paper 3 bestätigt eine Ablehnung von vorgestern, mit einer Zahl
+
+[DecisionRobust](https://arxiv.org/abs/2610.19118): Angriffserfolge fallen von
+69,7 auf 36,6 Prozent, sobald geprüft wird, ob die veränderte Eingabe **dieselbe
+Referenzentscheidung verlangt**. Rund die Hälfte des gemessenen Effekts war
+Artefakt.
+
+Das ist die Quantifizierung meines Grundes, die Perturbationsbibliothek nicht
+aufzunehmen: sie liefert Eingaben, aber kein Gold dafür, dass die Bedeutung
+erhalten blieb. Die Ablehnung hat jetzt zwei Gründe statt einem.
+
+### Das dritte Mal dieselbe Testlücke
+
+Zwei Mutationen haben überlebt: `turns_on` darf fehlen, und die Feldsymmetrie
+eines Paares darf brechen. Beide hatten eine Zusicherung über den
+**ausgelieferten** Bestand und keine über den **Fehlerpfad** der Prüfung. Dieselbe
+Form wie die Hälftenauswahl in 3aq und der Statuswert in 3as — ein drittes Mal,
+und damit ein Muster und kein Ausrutscher: *eine Prüfung braucht einen Test, der
+sie scheitern lässt, nicht einen, der sie bestätigt.* Nachgezogen, danach acht von
+acht.

@@ -154,6 +154,8 @@ def validate(data: dict) -> list[str]:
         if status == "underdetermined_quantifier":
             problems.extend(_quantifier_problems(name, case))
 
+        problems.extend(_interpretation_problems(name, case, data))
+
         by_pair.setdefault(case["pair_id"], []).append(case)
 
     problems.extend(_pair_problems(by_pair))
@@ -184,6 +186,52 @@ def _quantifier_problems(name: str, case: dict) -> list[str]:
     ]
 
 
+def _interpretation_problems(name: str, case: dict, data: dict) -> list[str]:
+    """The field record, and the one place it has to agree with the status.
+
+    Two axes that never meet would be two annotations of the same case with no
+    way to catch a contradiction between them. The quantifier field is where
+    they meet: a span that leaves a plural open is exactly a span that does not
+    state a quantifier, and a control that states "all" is exactly one that
+    does. Everything else the field record says is description; this is the part
+    that can be wrong.
+    """
+    problems: list[str] = []
+    fields = case.get("interpretation") or {}
+    declared = set(data["interpretation_fields"])
+    values = set(data["interpretation_values"])
+
+    missing = declared - set(fields)
+    if missing:
+        problems.append(f"{name}: no interpretation recorded for {sorted(missing)}")
+    for field, value in sorted(fields.items()):
+        if field not in declared:
+            problems.append(f"{name}: undeclared interpretation field {field!r}")
+        if value not in values:
+            problems.append(f"{name}: undeclared interpretation value {value!r} for {field}")
+
+    quantifier = fields.get("quantifier")
+    status = case["reading_status"]
+    if status == "underdetermined_quantifier" and quantifier != "unstated":
+        problems.append(
+            f"{name}: the span leaves a plural open, so its quantifier cannot be "
+            f"{quantifier!r}"
+        )
+    if status != "underdetermined_quantifier" and quantifier == "unstated":
+        problems.append(
+            f"{name}: an unstated quantifier is what underdetermined_quantifier "
+            f"means, so the status cannot be {status!r}"
+        )
+    if case["phenomenon"] in ("explicit_universal", "explicit_non_universal"):
+        if quantifier != "stated":
+            problems.append(
+                f"{name}: a control that names its quantifier must record it as stated"
+            )
+    if not case.get("turns_on"):
+        problems.append(f"{name}: does not say what its difficulty turns on")
+    return problems
+
+
 def _pair_problems(by_pair: dict[str, list[dict]]) -> list[str]:
     problems: list[str] = []
     for pair, members in sorted(by_pair.items()):
@@ -192,6 +240,10 @@ def _pair_problems(by_pair: dict[str, list[dict]]) -> list[str]:
             problems.append(f"{pair}: languages {languages}, expected de and en")
             continue
         first, second = members
+        if first.get("interpretation") != second.get("interpretation"):
+            problems.append(f"{pair}: the interpretation record differs between the languages")
+        if first.get("turns_on") != second.get("turns_on"):
+            problems.append(f"{pair}: turns_on differs between the languages")
         for field in ("phenomenon", "reading_status", "min_claims_on_span"):
             if first.get(field) != second.get(field):
                 problems.append(f"{pair}: {field} differs between the languages")

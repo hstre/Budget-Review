@@ -257,3 +257,116 @@ def test_the_matching_convention_is_not_written_a_second_time() -> None:
     assert "semantic_cases.violates" in source
     assert "def satisfies" not in source
     assert "def violates" not in source
+
+
+def test_an_open_plural_must_record_its_quantifier_as_unstated(data: dict) -> None:
+    """Where the status axis and the field axis meet, and can contradict.
+
+    Two annotations of the same case with no point of contact would be two
+    unverifiable opinions. This is the one place a contradiction is catchable.
+    """
+    _case(data, "plu-01-de")["interpretation"]["quantifier"] = "stated"
+
+    problems = reading_identity.validate(data)
+
+    assert any("cannot be 'stated'" in problem for problem in problems), problems
+
+
+def test_a_case_with_an_unstated_quantifier_must_carry_that_status(data: dict) -> None:
+    _case(data, "par-01-de")["interpretation"]["quantifier"] = "unstated"
+
+    problems = reading_identity.validate(data)
+
+    assert any("the status cannot be" in problem for problem in problems), problems
+
+
+@pytest.mark.parametrize("case_id", ["plu-03-de", "plu-04-en"])
+def test_a_control_must_record_its_quantifier_as_stated(data: dict, case_id: str) -> None:
+    _case(data, case_id)["interpretation"]["quantifier"] = "absent"
+
+    problems = reading_identity.validate(data)
+
+    assert any("must record it as stated" in problem for problem in problems), problems
+
+
+def test_a_missing_interpretation_field_is_refused(data: dict) -> None:
+    del _case(data, "amb-01-de")["interpretation"]["modality"]
+
+    problems = reading_identity.validate(data)
+
+    assert any("no interpretation recorded" in problem for problem in problems), problems
+
+
+def test_an_undeclared_interpretation_value_is_refused(data: dict) -> None:
+    # The paper's third value, inferred against default, is a property of a run
+    # and not of a span, so it is not one of ours and must not creep in.
+    _case(data, "amb-01-de")["interpretation"]["modality"] = "inferred"
+
+    problems = reading_identity.validate(data)
+
+    assert any("undeclared interpretation value" in problem for problem in problems), problems
+
+
+def test_an_undeclared_interpretation_field_is_refused(data: dict) -> None:
+    # The two fields refused on principle — what evidence suffices, and against
+    # what it is compared — must not arrive by the back door.
+    _case(data, "amb-01-de")["interpretation"]["support_threshold"] = "stated"
+
+    problems = reading_identity.validate(data)
+
+    assert any("undeclared interpretation field" in problem for problem in problems), problems
+
+
+def test_the_refused_fields_are_not_in_the_schema(data: dict) -> None:
+    declared = set(data["interpretation_fields"])
+    assert "support_threshold" not in declared
+    assert "comparison_basis" not in declared
+
+
+def test_every_case_says_what_its_difficulty_turns_on(data: dict) -> None:
+    assert all(case.get("turns_on") for case in data["cases"])
+
+
+def test_a_case_without_turns_on_is_refused(data: dict) -> None:
+    # The assertion above holds on the shipped set and says nothing about the
+    # check: a mutation removing it survived, for the third time in this
+    # repository. A check needs a test of its failure path, not of the happy one.
+    del _case(data, "amb-01-de")["turns_on"]
+
+    problems = reading_identity.validate(data)
+
+    assert any("turns on" in problem for problem in problems), problems
+
+
+def test_a_pair_whose_languages_record_different_fields_is_refused(data: dict) -> None:
+    _case(data, "plu-01-en")["interpretation"]["conditions"] = "stated"
+
+    problems = reading_identity.validate(data)
+
+    assert any("interpretation record differs" in problem for problem in problems), problems
+
+
+def test_half_the_pairs_turn_on_something_the_field_list_does_not_cover(data: dict) -> None:
+    """The finding that came out of adopting the card, recorded as a test.
+
+    Attachment and quantifier scope are not among the nine fields, and
+    evidential support is the one refused above. A field list is worth having
+    and does not localise everything, and overstating its reach later would be
+    easy without this.
+    """
+    declared = set(data["interpretation_fields"])
+    uncovered = {
+        case["pair_id"] for case in data["cases"] if case["turns_on"] not in declared
+    }
+    assert uncovered == {"amb-01", "amb-02", "evi-01"}, uncovered
+
+
+def test_the_scorer_does_not_read_the_interpretation_record(data: dict) -> None:
+    """Why the pre-registration survives this addition.
+
+    The record is description. If scoring depended on it, adding it after the
+    criterion was fixed would have changed what the run measures.
+    """
+    source = (ROOT / "scripts" / "semantic_score.py").read_text(encoding="utf-8")
+    assert "interpretation" not in source
+    assert "turns_on" not in source

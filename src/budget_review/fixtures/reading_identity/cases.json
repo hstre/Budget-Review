@@ -38,12 +38,28 @@
           ]
         }
       ],
-      "requires_all_groups": [["Betreuung"], ["Stadtteil"]],
+      "requires_all_groups": [
+        [
+          "Betreuung"
+        ],
+        [
+          "Stadtteil"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Der Trägerverein beantragt Mittel für die Betreuung aller Kinder des Stadtteils."
       ],
-      "forbids": ["\\balle[rsnm]?\\b"]
+      "forbids": [
+        "\\balle[rsnm]?\\b"
+      ],
+      "interpretation": {
+        "quantifier": "absent",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "attachment"
     },
     {
       "case_id": "amb-01-en",
@@ -68,12 +84,28 @@
           ]
         }
       ],
-      "requires_all_groups": [["care"], ["district"]],
+      "requires_all_groups": [
+        [
+          "care"
+        ],
+        [
+          "district"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "The association requests funds for the care of all children in the district."
       ],
-      "forbids": ["\\ball\\b"]
+      "forbids": [
+        "\\ball\\b"
+      ],
+      "interpretation": {
+        "quantifier": "absent",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "attachment"
     },
     {
       "case_id": "amb-02-de",
@@ -98,13 +130,31 @@
           ]
         }
       ],
-      "requires_all_groups": [["Antrag", "Anträge"], ["Prüfer"]],
+      "requires_all_groups": [
+        [
+          "Antrag",
+          "Anträge"
+        ],
+        [
+          "Prüfer"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Jeder Antrag wird von mehreren Prüfern bewertet.",
         "Anträge werden bewertet."
       ],
-      "forbids": ["\\bmehrere[nr]?\\b", "\\bzwei\\b"]
+      "forbids": [
+        "\\bmehrere[nr]?\\b",
+        "\\bzwei\\b"
+      ],
+      "interpretation": {
+        "quantifier": "stated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier_scope"
     },
     {
       "case_id": "amb-02-en",
@@ -129,13 +179,31 @@
           ]
         }
       ],
-      "requires_all_groups": [["application", "applications"], ["reviewer"]],
+      "requires_all_groups": [
+        [
+          "application",
+          "applications"
+        ],
+        [
+          "reviewer"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Every application is assessed by several reviewers.",
         "Applications are assessed."
       ],
-      "forbids": ["\\bseveral\\b", "\\btwo\\b"]
+      "forbids": [
+        "\\bseveral\\b",
+        "\\btwo\\b"
+      ],
+      "interpretation": {
+        "quantifier": "stated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier_scope"
     },
     {
       "case_id": "plu-01-de",
@@ -154,14 +222,33 @@
           ]
         }
       ],
-      "requires_all_groups": [["Schulen"], ["Zuschlag"]],
+      "requires_all_groups": [
+        [
+          "Schulen"
+        ],
+        [
+          "Zuschlag"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Alle Schulen des Bezirks haben den Zuschlag erhalten.",
         "Nicht alle Schulen des Bezirks haben den Zuschlag erhalten.",
         "Einige Schulen des Bezirks haben den Zuschlag erhalten."
       ],
-      "forbids": ["\\balle\\b", "\\bnicht alle\\b", "\\beinige\\b", "\\bdrei\\b"]
+      "forbids": [
+        "\\balle\\b",
+        "\\bnicht alle\\b",
+        "\\beinige\\b",
+        "\\bdrei\\b"
+      ],
+      "interpretation": {
+        "quantifier": "unstated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-01-en",
@@ -180,14 +267,33 @@
           ]
         }
       ],
-      "requires_all_groups": [["schools"], ["supplement"]],
+      "requires_all_groups": [
+        [
+          "schools"
+        ],
+        [
+          "supplement"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "All schools in the district received the supplement.",
         "Not all schools in the district received the supplement.",
         "Some schools in the district received the supplement."
       ],
-      "forbids": ["\\ball\\b", "\\bnot all\\b", "\\bsome\\b", "\\bthree\\b"]
+      "forbids": [
+        "\\ball\\b",
+        "\\bnot all\\b",
+        "\\bsome\\b",
+        "\\bthree\\b"
+      ],
+      "interpretation": {
+        "quantifier": "unstated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-02-de",
@@ -206,14 +312,32 @@
           ]
         }
       ],
-      "requires_all_groups": [["Standorte"], ["nicht"]],
+      "requires_all_groups": [
+        [
+          "Standorte"
+        ],
+        [
+          "nicht"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Kein Standort hat den Mittelabruf gemeldet.",
         "Nicht alle Standorte haben den Mittelabruf gemeldet.",
         "Die Standorte haben den Mittelabruf gemeldet."
       ],
-      "forbids": ["\\bkein[esnmr]?\\b", "\\bnicht alle\\b", "\\bzwei\\b"]
+      "forbids": [
+        "\\bkein[esnmr]?\\b",
+        "\\bnicht alle\\b",
+        "\\bzwei\\b"
+      ],
+      "interpretation": {
+        "quantifier": "unstated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-02-en",
@@ -232,14 +356,33 @@
           ]
         }
       ],
-      "requires_all_groups": [["sites"], ["not", "no"]],
+      "requires_all_groups": [
+        [
+          "sites"
+        ],
+        [
+          "not",
+          "no"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "None of the sites reported the drawdown.",
         "Not all sites reported the drawdown.",
         "The sites reported the drawdown."
       ],
-      "forbids": ["\\bnone\\b", "\\bnot all\\b", "\\btwo\\b"]
+      "forbids": [
+        "\\bnone\\b",
+        "\\bnot all\\b",
+        "\\btwo\\b"
+      ],
+      "interpretation": {
+        "quantifier": "unstated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-03-de",
@@ -258,13 +401,30 @@
           ]
         }
       ],
-      "requires_all_groups": [["alle"], ["Zuschlag"]],
+      "requires_all_groups": [
+        [
+          "alle"
+        ],
+        [
+          "Zuschlag"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Die Schulen des Bezirks haben den Zuschlag erhalten.",
         "Einige Schulen des Bezirks haben den Zuschlag erhalten."
       ],
-      "forbids": ["\\beinige\\b", "\\bdrei\\b"]
+      "forbids": [
+        "\\beinige\\b",
+        "\\bdrei\\b"
+      ],
+      "interpretation": {
+        "quantifier": "stated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-03-en",
@@ -283,13 +443,30 @@
           ]
         }
       ],
-      "requires_all_groups": [["all"], ["supplement"]],
+      "requires_all_groups": [
+        [
+          "all"
+        ],
+        [
+          "supplement"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "The schools in the district received the supplement.",
         "Some schools in the district received the supplement."
       ],
-      "forbids": ["\\bsome\\b", "\\bthree\\b"]
+      "forbids": [
+        "\\bsome\\b",
+        "\\bthree\\b"
+      ],
+      "interpretation": {
+        "quantifier": "stated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-04-de",
@@ -308,13 +485,30 @@
           ]
         }
       ],
-      "requires_all_groups": [["nicht alle", "ein teil"], ["Mittelabruf"]],
+      "requires_all_groups": [
+        [
+          "nicht alle",
+          "ein teil"
+        ],
+        [
+          "Mittelabruf"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Kein Standort hat den Mittelabruf gemeldet.",
         "Die Standorte haben den Mittelabruf nicht gemeldet."
       ],
-      "forbids": ["\\bkein[esnmr]?\\b"]
+      "forbids": [
+        "\\bkein[esnmr]?\\b"
+      ],
+      "interpretation": {
+        "quantifier": "stated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "plu-04-en",
@@ -333,13 +527,30 @@
           ]
         }
       ],
-      "requires_all_groups": [["not all", "some of"], ["drawdown"]],
+      "requires_all_groups": [
+        [
+          "not all",
+          "some of"
+        ],
+        [
+          "drawdown"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "None of the sites reported the drawdown.",
         "The sites did not report the drawdown."
       ],
-      "forbids": ["\\bnone\\b"]
+      "forbids": [
+        "\\bnone\\b"
+      ],
+      "interpretation": {
+        "quantifier": "stated",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "quantifier"
     },
     {
       "case_id": "par-01-de",
@@ -359,13 +570,32 @@
           ]
         }
       ],
-      "requires_all_groups": [["Frühjahr"], ["Ausbau", "Abschluss"]],
+      "requires_all_groups": [
+        [
+          "Frühjahr"
+        ],
+        [
+          "Ausbau",
+          "Abschluss"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Der Ausbau soll im Frühjahr abgeschlossen werden.",
         "Der Ausbau könnte im Frühjahr abgeschlossen werden."
       ],
-      "forbids": ["\\bsoll\\b", "\\bkönnte\\b", "\\bgeplant\\b"]
+      "forbids": [
+        "\\bsoll\\b",
+        "\\bkönnte\\b",
+        "\\bgeplant\\b"
+      ],
+      "interpretation": {
+        "quantifier": "absent",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "modality"
     },
     {
       "case_id": "par-01-en",
@@ -385,13 +615,32 @@
           ]
         }
       ],
-      "requires_all_groups": [["spring"], ["construction", "completion"]],
+      "requires_all_groups": [
+        [
+          "spring"
+        ],
+        [
+          "construction",
+          "completion"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Construction is intended to be completed in spring.",
         "Construction could be completed in spring."
       ],
-      "forbids": ["\\bintended\\b", "\\bcould\\b", "\\bplanned\\b"]
+      "forbids": [
+        "\\bintended\\b",
+        "\\bcould\\b",
+        "\\bplanned\\b"
+      ],
+      "interpretation": {
+        "quantifier": "absent",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "modality"
     },
     {
       "case_id": "evi-01-de",
@@ -410,13 +659,32 @@
           ]
         }
       ],
-      "requires_all_groups": [["senkt", "Senkung"], ["Abbrecherquote"]],
+      "requires_all_groups": [
+        [
+          "senkt",
+          "Senkung"
+        ],
+        [
+          "Abbrecherquote"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "Das Programm könnte die Abbrecherquote senken.",
         "Studien zeigen, dass das Programm die Abbrecherquote senkt."
       ],
-      "forbids": ["\\bkönnte\\b", "\\bStudien\\b", "\\bmöglicherweise\\b"]
+      "forbids": [
+        "\\bkönnte\\b",
+        "\\bStudien\\b",
+        "\\bmöglicherweise\\b"
+      ],
+      "interpretation": {
+        "quantifier": "absent",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "evidential_support"
     },
     {
       "case_id": "evi-01-en",
@@ -435,13 +703,45 @@
           ]
         }
       ],
-      "requires_all_groups": [["lowers", "reduction"], ["dropout"]],
+      "requires_all_groups": [
+        [
+          "lowers",
+          "reduction"
+        ],
+        [
+          "dropout"
+        ]
+      ],
       "min_claims_on_span": 1,
       "forbidden_readings": [
         "The programme could lower the dropout rate.",
         "Studies show that the programme lowers the dropout rate."
       ],
-      "forbids": ["\\bcould\\b", "\\bstudies\\b", "\\bpossibly\\b"]
+      "forbids": [
+        "\\bcould\\b",
+        "\\bstudies\\b",
+        "\\bpossibly\\b"
+      ],
+      "interpretation": {
+        "quantifier": "absent",
+        "conditions": "absent",
+        "polarity": "stated",
+        "modality": "stated"
+      },
+      "turns_on": "evidential_support"
     }
-  ]
+  ],
+  "interpretation_fields": {
+    "quantifier": "how much of the entity set the claim commits to",
+    "conditions": "under what conditions the claim is asserted to hold",
+    "polarity": "whether the claim is asserted or negated",
+    "modality": "whether the claim is asserted or hedged"
+  },
+  "interpretation_values": {
+    "stated": "the span gives it",
+    "unstated": "the claim's content requires it and the span does not give it, so a projection must either supply it or leave it open",
+    "absent": "the claim makes no commitment of this kind at all"
+  },
+  "interpretation_note": "arXiv 2610.20457 records nine interpretation fields per claim and marks each stated, inferred or default. Four are kept here and five are not, for two different reasons. The support threshold and the comparison basis are refused on principle: they decide what evidence suffices, which belongs to verification rather than to sentence semantics, and the extraction contract already forbids judging whether a claim is true. The entity, the observed measure and the unit are dropped because they do not vary across these 16 cases — the entity is stated in all of them and no case makes a quantitative claim, so recording them would measure nothing. The paper's third value, `inferred` against `default`, is a property of a run and not of a span: a case can say only whether the span states a field, so there are two values here plus `absent`.",
+  "turns_on_note": "`turns_on` names what each pair's difficulty actually consists in, and it is recorded because the field list does not cover all of it. Attachment and quantifier scope are not among the paper's nine fields at all, and evidential support is the one field refused above — so four of the eight pairs turn on something a claim card as published would not localise."
 }
