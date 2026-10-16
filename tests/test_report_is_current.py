@@ -81,6 +81,50 @@ def test_the_report_carries_both_language_halves(heading: str) -> None:
     assert REPORT.count(heading) == 1, heading
 
 
+NUMBER_WORDS = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5,
+                "Ein": 1, "Zwei": 2, "Drei": 3, "Vier": 4, "Fünf": 5}
+
+
+def _external_input_count(half: str) -> tuple[str, int, int]:
+    """Which language §8 is in, what it claims about itself, and what it names.
+
+    The section opens by naming how many external inputs shaped the work and then
+    introduces each one in a paragraph that starts bold. The claim and the count
+    drifted apart when a third input was added: the English half kept saying two
+    while naming three, and nothing noticed, because the symmetry that had been
+    checked was section numbering rather than prose.
+
+    The language comes back with the figures because the two halves agree, and a
+    test that reads one of them twice therefore passes. A mutation proved that:
+    it collapsed the half selection and survived. Returning the language lets the
+    caller assert it read the half it meant to.
+    """
+    body = half.split("## 8.")[1].split("\n## 9.")[0]
+    claimed = re.search(
+        r"^(\w+) (external inputs shaped|externe Eingaben haben)", body, re.M
+    )
+    assert claimed, "§8 no longer opens by naming how many inputs shaped the work"
+    language = "EN" if claimed.group(2).startswith("external") else "DE"
+    # Paragraph start, not line start: the prose is hard-wrapped, so a bold span
+    # in mid-sentence can begin a line and would be counted as an input. That is
+    # the same class of mistake as the one this test exists for.
+    paragraphs = [block.strip() for block in body.split("\n\n")]
+    introduced = [block for block in paragraphs if block.startswith("**")]
+    return language, NUMBER_WORDS[claimed.group(1)], len(introduced)
+
+
+def test_each_half_names_as_many_external_inputs_as_it_claims() -> None:
+    halves = REPORT.split("# Forschungsbericht (Deutsch)")
+    assert len(halves) == 2, "the two halves are no longer separated as expected"
+    english = _external_input_count(halves[0])
+    german = _external_input_count(halves[1])
+    # Each half is read, and proved to be the half it was meant to be.
+    assert (english[0], german[0]) == ("EN", "DE"), (english[0], german[0])
+    for language, claimed, introduced in (english, german):
+        assert claimed == introduced, (language, claimed, introduced)
+    assert english[1] == german[1], (english[1], german[1])
+
+
 def test_every_section_of_four_exists_in_both_halves() -> None:
     # §4.16 was written in English only and nothing noticed.
     halves: dict[str, list[str]] = {"EN": [], "DE": []}

@@ -11,6 +11,66 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **What makes the set measure the identity function is the span being a complete
+  sentence, not the document being short.** The one case whose span is a clause
+  returned 0 of 14 claims verbatim, on a document exactly as short as the others;
+  the 14 whose span is a whole sentence returned 42 of 42. My own diagnosis the
+  day before named document length, which is **withdrawn**: acting on it would
+  have lengthened documents and changed nothing.
+- **The harder case set was run and passed 48 of 48, which refuted both of the
+  predictions that mattered and exposed three defects in the instrument.** The
+  run cost 48 calls and 100 seconds; the call budget added in this release held.
+  Against the seven predictions fixed in advance: open plurals were to pass at
+  most 8 of 12 and passed 12, and the negated plural was to do strictly worse
+  than the positive and did exactly as well. The other five held, including the
+  anchoring guard at 48 of 48 and no translated proposition in either direction.
+  Reading the produced propositions, as the pre-registration requires: **42 of
+  the 56 claims on the scored spans are the span verbatim**, so on one-sentence
+  documents the projection is largely the identity function and the question the
+  set asks cannot arise. The forbidden resolutions are produced — **23 of them
+  across 24 runs, attached to the document's second sentence**, where the scorer
+  judges only claims on the span — and of ten such inferences **three arrive
+  typed `fact`**, which asserts as fact what the document does not say.
+  A set that passes completely on first contact is as suspect as a case that
+  always fails; the pre-registration had written down only the second half of
+  that rule.
+- **The relation vocabulary can express only four of its fourteen labels in both
+  directions.** Writing down, for the first time, which labels are symmetric and
+  what any label's inverse is: two are symmetric (`CONTRADICTS`, `SCOPE_TENSION`),
+  one pair are each other's inverse (`DEPENDS_ON` / `ASSUMPTION_FOR`) and ten have
+  no inverse at all. For those ten the structural invariant keeps only its negative
+  half — the same label with the endpoints swapped is wrong, and omission is the
+  correct output the contract already asks for.
+  Across 90 stored dossiers and **1,041 relations**, both directions were emitted
+  **four times**: two correctly symmetric, two correctly inverse, zero violations.
+  **That is nearly vacuous** — the situation arises in 0.4 per cent of relations, so
+  a check that cannot fail establishes nothing. The inverse pair was found in those
+  four rather than invented.
+- **Whether two runs mean the same thing by a claim type is not answerable from the
+  stored data, because the baseline is as large as the effect.** Agreement on
+  byte-identical spans: 86 to 95 per cent across three prompt variants of one court
+  decision, against 81 to 94 per cent where nothing changes at all — three repeats
+  of 24 one-sentence cases and two repeats of one long paper. The prompt effect sits
+  inside the sampling range. Three of the four diagnostic cases the method offers
+  need a score per item, and a claim type is a bare category whose confidence float
+  cannot stand in for one.
+  **In none of the five comparisons is the disagreement a consistent renaming**: at
+  least one type always goes to several, and on one paper `fact` is an attractor
+  taking in `limitation`, `scope`, `recommendation`, `assumption` and `definition`.
+  That is the picture the method reads as differing constructs — produced here by
+  one model with one prompt.
+  One controlled side finding, both figures containing sampling only: **type
+  stability falls with document length**, 94 per cent on one sentence against 81 on
+  a long paper.
+- **A limit the report should have carried on the repeat-spread finding.** It
+  reported that every meaning case whose repeats disagree fails its gold and read
+  that as spread marking error. Checked against the set: 8 of 24 cases carry two
+  permitted readings, and all eight pairs are two wordings of **one** reading. No
+  case admits two semantically different readings, so on this set disagreement *is*
+  error by construction, and the separation shows that spread finds error where
+  ambiguity was excluded — not that it detects ambiguity. The schema allows several
+  entries per case but cannot say whether two are one reading reworded or two
+  admissible readings, which is the distinction a harder set needs.
 - **The matching rule decides 38 of 49 spans on one long court decision and 0 of
   993 on four argument-annotated papers.** A recall figure counts a gold span as
   reached when some admitted claim covers a share of its characters, and that
@@ -70,6 +130,31 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Added
 
+- **A second case set, `reading_identity`: 16 cases, 8 pairs, four reading
+  statuses.** It exists because the first set has exactly one right answer per case,
+  which is why its repeat-spread separation cannot show what it looked like showing.
+  Reading an outside paper on plural predication added a fourth status that would
+  otherwise have been folded into ambiguity: an open plural is **one** reading
+  without a quantifier, not a choice between two, so "all" and "not all" are both
+  additions to it. The set carries the controls that make this measurable — `plu-03`
+  and `plu-04` say "all" and "not all" explicitly, so an extractor that drops a
+  quantifier fails there while one that adds a quantifier fails the open cases, and
+  both documents state the mixed situation so that resolving the plural from context
+  is caught. Renderings are grouped under the reading they express, which the first
+  set cannot do: eight of its 24 cases declare two permitted readings and all eight
+  are two wordings of one. The matching convention is imported rather than written
+  again, and a test forbids a second copy. **The set has never been run**: a run is
+  48 calls and needs a pre-registered criterion, and it annotates no edges.
+- `src/budget_review/relation_algebra.py` and its tests: the reversal table above,
+  plus the consistency check it makes expressible. Fifteen mutations across both new
+  files, fifteen caught — after a test found a self-relation being reported as its
+  own violated swap, and a mutation found a validator check with no test for its
+  failure path, which is the second time that shape has appeared.
+- `scripts/type_construct.py` and its tests, with a second mode that supplies the
+  baseline the first one needs: it groups repeats of one prompt and **refuses any
+  case whose repeats do not share a prompt hash** rather than averaging them in.
+  Eight mutations, eight caught — after a test found the script reporting two runs
+  with no span in common as identical, since `agreed == len(shared)` holds at zero.
 - `scripts/alignment_space.py` and `scripts/candidate_agreement.py`, with tests.
   Thirteen mutations, thirteen caught — after two of my own errors that the tests
   found rather than guessed. The band's upper mark was a free constant (0.95)
@@ -112,6 +197,20 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Changed
 
+- **The three defects the first run exposed are repaired.** Fourteen spans are
+  clauses inside longer sentences instead of whole sentences, and a validator rule
+  refuses a span that looks like a sentence — the heuristic classified all 16 cases
+  correctly, which is the whole of the evidence for it. A new `forbidden_anywhere`
+  field is checked against **every** claim in the dossier rather than only those on
+  the span, and it names the inferred resolution rather than the document's own
+  wording, so a verbatim quote of another sentence stays legitimate; a validator
+  rule refuses a pattern that matches the document itself. Each distortion now
+  carries the claim's type and whether it sat on the span, and two fields report
+  separately: what the old instrument could not see, and an inference asserted as a
+  fact. Verified against the paid run's real output, not invented examples: **10
+  claims caught that the old scorer could not see, 2 of them typed `fact`.** A test
+  holds that a case without the new field behaves exactly as before, so the first
+  meaning set's 69 of 72 cannot move.
 - `compare_runs.py` and `gold_ceiling.py` sweep the overlap threshold instead of
   fixing it at 0.8, and `compare_runs` now says whether its **verdict** survives
   the sweep. "Strict improvement" against "trade" is the claim the union argument
@@ -121,6 +220,34 @@ says when it moves them. Their current values are `polished` 5 claims /
   pair. Their existing tests now run every case at every threshold.
 
 ### Fixed
+
+- **Four things an outside reading of the report found, all of them about what the
+  report says of itself rather than about a measurement.** Two were claims and are
+  withdrawn: that the typing `assumption` is "a defensible reading", which
+  attributes content to a label with no definition anywhere in the contract and is
+  not even the typing one of the six runs produced; and that a relative frequency
+  across repeats is "calibrated by construction because it is counted", which is
+  too strong and contradicted the paragraph after it. Counted beats asserted, but
+  the frequency mixes interpretive ambiguity with sampling instability, a provider
+  substituting the served model, fragmentation and typing differences, what the
+  gate refuses, and what the matching rule counts as the same answer — the last of
+  which this same release measured at 38 of 49 spans on one document while leaving
+  the calibration claim standing two sections away. The other two were stale: a
+  limit saying the two independent reviews had not happened, and an English count
+  of "two external inputs" where three are named. The remaining limit on the
+  meaning set is now stated as what it is — both reviews were model-based, and no
+  human subject-matter reviewer has seen it.
+- **A no-op replacement reported as a success, for the second time in this file's
+  history.** The patch that would have fixed the input count printed its label as
+  applied and then aborted on a later assertion, before writing; the follow-up
+  script dropped the line. The symmetry I then reported was checked over section
+  numbering and cross-references, not over that sentence. The currency test now
+  checks the number §8 claims about itself against the number of inputs it
+  introduces, in both halves, and proves which half it read — that last part
+  because a mutation collapsing the half selection survived, since two agreeing
+  halves make reading one of them twice pass. Five of seven mutations caught; the
+  two survivors delete an assertion from a test, which no assertion can catch, and
+  are exercised by the two that are caught.
 
 - The report's script count and test count, both stale again. **The currency test
   added yesterday caught the first one on the very next change** — 25 scripts on
@@ -144,6 +271,18 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
+- Running the repaired set. The documents and spans have changed, so the first
+  run's dossiers are not re-scorable, and a new pre-registration has to come first
+  — carrying the half of the rule the first one lacked: a set that passes
+  completely on first contact is as suspect as a case that always fails.
+- Anything from the memory-formation paper: this project has no persistent memory,
+  no reflection runs and no consolidation, so it is a boundary rather than a gap.
+  Its transferable lesson — that formation needs provenance, not only the end state
+  — is already applied in the reviewer prompt hash.
+- Taking the 68-operation perturbation library. The four operations needed are a
+  few dozen lines and one already sits in the gate; more to the point, its own
+  caveat is our bottleneck — it supplies test inputs but no gold that their meaning
+  survived — and the measurement would cost about six runs of the meaning set.
 - Adopting extraction repeats as policy at triple cost. The spread across repeats
   looks like exactly the signal for it, and the set that would prove it has three
   failures in 72 runs. Harder cases first.

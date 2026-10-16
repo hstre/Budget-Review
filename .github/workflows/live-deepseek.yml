@@ -106,10 +106,18 @@ on:
         default: "0"
         type: string
       semantic_repeats:
-        description: "Score the hand-annotated meaning set N times. 0 disables it."
+        description: "Score a hand-annotated case set N times. 0 disables it."
         required: false
         default: "0"
         type: string
+      semantic_set:
+        description: "Which case set semantic_repeats scores."
+        required: false
+        default: "meaning"
+        type: choice
+        options:
+          - meaning
+          - reading
 
 permissions:
   contents: read
@@ -281,7 +289,7 @@ jobs:
             --runs "${{ inputs.reviewer_repeats }}" \
             --profile "${{ inputs.profile }}" 2>&1 | tee gold-case/reviewer-variance.txt
 
-      - name: Score the hand-annotated meaning set
+      - name: Score a hand-annotated case set
         if: inputs.semantic_repeats != '0'
         env:
           DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
@@ -292,9 +300,11 @@ jobs:
           # refuses to score if any invariant is broken.
           mkdir -p gold-case
           mv gold-case-provenance.txt gold-case/ 2>/dev/null || true
-          python scripts/semantic_score.py gold-case/semantic \
+          python scripts/semantic_score.py "gold-case/${{ inputs.semantic_set }}" \
             --repeats "${{ inputs.semantic_repeats }}" \
-            --profile "${{ inputs.profile }}" 2>&1 | tee gold-case/semantic-score.txt
+            --set "${{ inputs.semantic_set }}" \
+            --profile "${{ inputs.profile }}" 2>&1 \
+            | tee "gold-case/${{ inputs.semantic_set }}-score.txt"
 
       - name: Live extraction
         id: extract

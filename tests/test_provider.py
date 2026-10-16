@@ -18,6 +18,7 @@ from budget_review.provider import (
 class _Response:
     def __init__(self, payload: dict) -> None:
         self.payload = payload
+        self.done = False
 
     def __enter__(self):
         return self
@@ -25,7 +26,14 @@ class _Response:
     def __exit__(self, *args):
         return None
 
-    def read(self) -> bytes:
+    def read(self, size: int = -1) -> bytes:
+        # A real HTTPResponse.read takes a size, and the body is now read in
+        # chunks so that a trickling peer cannot hold a call open past its
+        # budget. A stub without the argument was less faithful than the thing
+        # it stands for, and hid that the production read had changed shape.
+        if self.done:
+            return b""
+        self.done = True
         return json.dumps(self.payload).encode()
 
 
@@ -265,7 +273,7 @@ def _drops_connection(calls: list[int]):
     """A response whose body ends early — the real failure seen against DeepSeek."""
 
     class _Response:
-        def read(self):
+        def read(self, size: int = -1):
             raise http.client.IncompleteRead(b"partial")
 
         def __enter__(self):

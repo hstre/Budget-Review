@@ -45,6 +45,7 @@ import importlib.util
 import json
 import re
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 
@@ -60,6 +61,45 @@ def _load(name: str):
 
 
 cases_module = _load("semantic_cases")
+reading_identity = _load("reading_identity")
+
+# A run whose first calls all fail will fail the rest the same way, and the one
+# that prompted this ground on for 45 minutes to deliver a single line. Three in
+# a row is the signal that the next 45 are not worth paying for.
+CONSECUTIVE_FAILURE_LIMIT = 3
+
+
+class Breaker:
+    """Stops a run once calls fail in an unbroken row.
+
+    A class rather than two lines inside the loop, because the two lines had no
+    test: a mutation removing the reset and a mutation removing the check both
+    survived, since nothing could drive the loop without a provider. One
+    implementation, driven by the run and by the tests alike.
+    """
+
+    def __init__(self, limit: int = CONSECUTIVE_FAILURE_LIMIT) -> None:
+        self.limit = limit
+        self.consecutive = 0
+
+    def record(self, succeeded: bool) -> bool:
+        """Note one outcome. True means the run should stop paying for more."""
+        self.consecutive = 0 if succeeded else self.consecutive + 1
+        return self.consecutive >= self.limit
+
+# Two case sets, one scorer. The second set was built because the first has
+# exactly one right answer per case; scoring it through a second implementation
+# would make "69 of 72" and its figures incomparable for a reason that has
+# nothing to do with the sets.
+SETS = {
+    "meaning": (lambda: cases_module.load(), lambda cases: cases_module.validate(cases)),
+    "reading": (
+        lambda: reading_identity.load()["cases"],
+        lambda cases: reading_identity.validate(
+            {**reading_identity.load(), "cases": cases}
+        ),
+    ),
+}
 
 from budget_review.gate import govern_packet  # noqa: E402
 from budget_review.ingest import SourceBundle  # noqa: E402
@@ -145,6 +185,27 @@ def score(case: dict, claims: list[dict]) -> dict:
                 {"claim": claim["canonical_content"][:90], "forbidden_reading": True}
             )
 
+    # The repair the first run forced. A forbidden resolution was produced one
+    # sentence over, where a scorer judging only claims on the span cannot see
+    # it: 23 such claims across 24 runs. These patterns are checked against
+    # *every* claim in the dossier, and they name the inferred resolution rather
+    # than the document's own wording, so a verbatim quote of another sentence
+    # stays legitimate. The claim's type travels with the finding, because an
+    # inference arriving as `fact` asserts what the document does not say and is
+    # a different error from one arriving as `inference`.
+    anywhere = case.get("forbidden_anywhere") or []
+    for claim in claims:
+        tripped = cases_module.violates(claim["canonical_content"], anywhere)
+        if tripped:
+            distortions.append(
+                {
+                    "claim": claim["canonical_content"][:90],
+                    "forbidden_anywhere": tripped,
+                    "claim_type": str(claim["claim_type"]),
+                    "on_span": claim in on_span,
+                }
+            )
+
     needed = case.get("min_claims_on_span", 1)
     languages = [language_of(text) for text in contents]
     translated = [
@@ -169,6 +230,12 @@ def score(case: dict, claims: list[dict]) -> dict:
         and len(on_span) >= needed
         and not distortions,
         "distortions": distortions,
+        # Separated so a report can say where the error was found. A distortion
+        # off the span is the one the first run's instrument could not see.
+        "distortions_off_span": [d for d in distortions if d.get("on_span") is False],
+        "inferences_typed_as_fact": [
+            d for d in distortions if d.get("claim_type") == "fact" and "forbidden_anywhere" in d
+        ],
         "translated": translated,
         "in_source_language": bool(contents) and not translated,
         "normalised_anchors": sum(1 for c in on_span if c.get("anchor_normalised")),
@@ -216,14 +283,22 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--profile", default="general")
     parser.add_argument(
+        "--set",
+        dest="case_set",
+        choices=sorted(SETS),
+        default="meaning",
+        help="which case set to score; 'reading' is the harder set with reading statuses",
+    )
+    parser.add_argument(
         "--rescore",
         action="store_true",
         help="score the dossiers already in out_dir; calls no provider, costs nothing",
     )
     args = parser.parse_args()
 
-    cases = cases_module.load()
-    problems = cases_module.validate(cases)
+    load_cases, validate_cases = SETS[args.case_set]
+    cases = load_cases()
+    problems = validate_cases(cases)
     if problems:
         print(f"Der Prüfbestand verletzt {len(problems)} Invarianten; es wird nicht gemessen.")
         for problem in problems:
@@ -243,14 +318,30 @@ def main() -> int:
     provider = DeepSeekProvider()
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
+    breaker = Breaker()
     for index in range(1, args.repeats + 1):
         for case in cases:
+            started = time.monotonic()
             try:
                 dossier = extract(provider, case, args.profile)
             except (ProviderError, SystemExit, KeyError, ValueError) as exc:
                 failures[case["case_id"]] += 1
-                print(f"  {case['case_id']} Lauf {index}: fehlgeschlagen ({exc})", flush=True)
+                print(
+                    f"  {case['case_id']} Lauf {index}: fehlgeschlagen nach "
+                    f"{time.monotonic() - started:.0f}s ({exc})",
+                    flush=True,
+                )
+                if breaker.record(succeeded=False):
+                    print(
+                        f"\nAbgebrochen: {breaker.consecutive} Aufrufe hintereinander "
+                        f"fehlgeschlagen. Die übrigen würden dasselbe kosten und "
+                        f"dasselbe ergeben.",
+                        flush=True,
+                    )
+                    report(cases, rows, failures, args.out_dir)
+                    return 2
                 continue
+            breaker.record(succeeded=True)
             (args.out_dir / f"{case['case_id']}-{index}.json").write_text(
                 json.dumps(dossier, ensure_ascii=False, indent=1), encoding="utf-8"
             )
@@ -305,6 +396,28 @@ def report(
     print("\nBedeutung erhalten, nach Phänomen:")
     for phenomenon, results in sorted(by_phenomenon.items()):
         print(f"  {phenomenon:26} {sum(results)}/{len(results)}")
+
+    by_status: dict[str, list[bool]] = {}
+    for case in cases:
+        status = case.get("reading_status")
+        if status is None:
+            continue
+        by_status.setdefault(status, []).extend(
+            r["meaning_preserved"] for r in rows.get(case["case_id"], [])
+        )
+    if by_status:
+        print("\nBedeutung erhalten, nach Lesartstatus:")
+        for status, results in sorted(by_status.items()):
+            if results:
+                print(f"  {status:30} {sum(results)}/{len(results)}")
+        print(
+            "\n  Hinweis zur Reichweite: `determinate`, `underdetermined_quantifier` und\n"
+            "  `evidence_absent` sind von diesem Instrument vollständig prüfbar — ihre\n"
+            "  Verbote fangen das Hinzufügen und das Streichen eines Quantors sowie das\n"
+            "  Abschwächen. Bei `ambiguous` fängt es nur das *Hinzufügen* einer Zusage;\n"
+            "  welche der zwei Lesarten eine Projektion gewählt hat, ist mit Token-Gruppen\n"
+            "  nicht entscheidbar, wenn beide Lesarten die Wörter der Spanne benutzen."
+        )
 
     for source in ("de", "en"):
         subset = [

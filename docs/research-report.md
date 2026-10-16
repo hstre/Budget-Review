@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ap, which is a log rather than a synthesis.
+§3a–§3av, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -115,7 +115,11 @@ compute its variants** — which costs nothing and had not been done.
 | 20 | Six fields the dossier carries are written and never read, and `semantic_state` is a state machine with no transitions | open; audited rather than noticed (§4.17), and blocked on the schema decision from §4.5 |
 | 21 | Reviewer comparisons rest on an assumption the artefacts could not confirm: the arms recorded no prompt hash and no output budget | both are recorded now (§4.18), but only from here on — every stored reviewer run predates the guard |
 | 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
-| 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats |
+| 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats — and §4.20 sharpens why: no case admits two semantically different readings, so on this set disagreement *is* error by construction and the separation cannot show that spread detects ambiguity |
+| 24 | Whether two runs mean the same by a claim type is not answerable from the stored data | the prompt effect (86–95 % agreement) lies inside the range sampling alone produces (81–94 %), and no comparison is a consistent renaming (§4.20). Controlled side finding: type stability falls with document length, 94 % on one sentence against 81 % on a long paper |
+| 25 | The harder reference set has been run, and it is not yet a measurement | **48 of 48 passed**, which refuted both substantive predictions and exposed three defects in the instrument (§4.23): 75 % of scored claims are the span verbatim, the forbidden resolutions appear one sentence over where the scorer does not look, and 3 of 10 such inferences arrive typed `fact`. Field-level interpretation provenance is recorded, and four of the eight pairs turn on something that field list does not reach (§4.22) |
+| 26 | Relations are now structurally checkable, and the check is nearly idle | the vocabulary's reversal table says two labels are symmetric, one pair inverse, ten with no inverse at all (§4.21). Across 1,041 stored relations both directions appear four times, all consistent — 0.4 per cent, so it cannot fail. Establishing anything needs the endpoints actively swapped, which is a paid run |
+| 27 | The gold-free agreement signal has no absolute component | open; it says the runs agree, not that what they agree on is right, and the two coincide on the meaning set only because that set has a gold (§4.22). 22 of 24 cases agree completely and none of them fails |
 
 ---
 
@@ -591,8 +595,13 @@ is needed.
 **What the instruction did not touch: the conditional.** "If the funds are
 granted, construction begins in spring." In three of six runs the extractor
 **splits the sentence at the comma**: the antecedent becomes its own claim, typed
-`assumption`, which is a defensible reading, and the consequent becomes its own
-claim, typed `forecast`, asserted **unconditionally**. "Construction begins in
+`assumption`, and the consequent becomes its own claim, typed `forecast`,
+asserted **unconditionally**. An earlier version of this section called that
+typing "a defensible reading". That reading is withdrawn: §4.13 establishes that
+the 21 claim types have no definitions anywhere in the contract, so calling one
+of them apt attributes semantic content to a label that has none — and in one of
+these very runs the typing is not `assumption` at all. What is measured here is
+the unconditional emission of the consequent, and nothing about the types. "Construction begins in
 spring" with no condition attached is an invented commitment — for a proposal
 review, the error class the product exists to catch, produced by the product. In
 the other three runs one claim carries the whole conditional sentence. 2 of 6
@@ -606,10 +615,13 @@ project that worked — one more contract line, is the next pre-registered
 question.
 
 **Limits.** Relations remain unmeasurable: the set annotates no edges, found by
-trying to implement the axis. The set is a **draft** pending two independent
-reviews, which have not happened. Each case is one to three sentences, so a
-contract line that works on 24 short sentences says nothing about 26,000
-characters of court text.
+trying to implement the axis. The set was a draft pending two independent reviews
+when this was written; both have since been run, and they broke half of it before
+it was rewritten and re-scored (§4.16). What remains is a narrower limit and worth
+stating as such: **both reviews were model-based, and no human subject-matter
+reviewer has seen the set.** Each case is one to three sentences, so a contract
+line that works on 24 short sentences says nothing about 26,000 characters of
+court text.
 
 ---
 
@@ -1104,6 +1116,342 @@ not contain. No decoding constraint prevents that, and the deterministic check
 catches all of it. The paper addresses 7 per cent here, which is the reason to
 leave it — a figure rather than a judgement.
 
+### 4.20 The same type name, and a baseline larger than the effect
+
+[arXiv 2610.12841](https://arxiv.org/abs/2610.12841) asks the right question of a
+vocabulary with no definitions: when two builders use one label, is the
+disagreement a boundary drawn elsewhere or a different construct? It separates
+four cases — base rate, affine shift, monotone non-linear mapping, divergent
+ordering — and **three of the four are unavailable here.** All rest on a score per
+item; a claim type is a bare category, and §4.13 measured that the confidence
+float cannot stand in for one. What transfers is the structure of the
+disagreement: a *consistent renaming* (every type maps to exactly one, in both
+directions, so a merge survives applying the map) against *no consistent mapping*
+(one type goes to several, and no rename rescues a merge). Both directions
+matter: two types collapsing into one is a function forward and a lost
+distinction backward.
+
+Measured on stored artefacts, no paid call:
+
+| Comparison | Document | What varies | Shared spans | Same type |
+|---|---|---|---:|---:|
+| 24 meaning cases, three repeats | one sentence | **sampling only** | 229 | **94 %** |
+| A40, two repeats | long paper | **sampling only** | 74 | **81 %** |
+| 001-141170, `vocabulary` vs `decompose` | court decision | prompt + sampling | 43 | 95 % |
+| 001-141170, `vocabulary` vs a third variant | court decision | prompt + sampling | 29 | 86 % |
+| 001-141170, `decompose` vs a third variant | court decision | prompt + sampling | 33 | 94 % |
+
+**The prompt effect lies entirely inside the range sampling alone produces** — 86
+to 95 per cent against 81 to 94. The paper's question is therefore not answerable
+from these data: the baseline for changing nothing is as large as the change. That
+is §4.2 one layer down, on a different quantity.
+
+**In none of the five comparisons is the disagreement a consistent renaming.** At
+least one type always goes to several. On A40 `fact` is an attractor, taking in
+`limitation`, `scope`, `recommendation`, `assumption` and `definition`, and
+`fact ↔ method` runs both ways. That is exactly the picture the paper reads as
+different constructs — except here one model produces it with one prompt, so the
+inference to differing definitions is not warranted.
+
+One controlled side finding, because both figures contain sampling only: **94 per
+cent on one-sentence documents against 81 per cent on a long paper.** Type
+stability falls with document length, as finding stability does in §4.15.
+
+What is **not** controlled, stated as such: the prompt figures come from the court
+decision and the sampling figures from a paper and from the short cases. No
+same-prompt repeat on 001-141170 is stored — its artefacts carry three different
+prompt hashes.
+
+**A limit this report should have carried on §4.19.** That section reported that
+every meaning case whose repeats disagree fails its gold and every case that
+agrees passes, and read it as spread marking error.
+[arXiv 2610.12701](https://arxiv.org/abs/2610.12701) is the counter-case: context
+activation raises label entropy and lowers agreement, and the reading is not more
+uncertainty but valid perspectival difference becoming visible instead of being
+flattened to consensus. Checked against the set: 8 of the 24 cases do carry two
+`permitted_readings`, but all eight pairs are two wordings of **one** reading —
+"Die Studie belegt, dass …" against "Laut Studie …". No case admits two
+semantically different readings. On a set where every case has exactly one right
+answer, disagreement *is* error by construction, so §4.19's separation shows that
+spread finds error where ambiguity was excluded, not that it detects ambiguity.
+The schema allows several entries per case but cannot say whether two entries are
+one reading reworded or two admissible readings — which is the distinction the
+harder set needs, and it costs a field rather than a rebuild.
+
+**Why the perturbation library is not taken.**
+[arXiv 2610.12667](https://arxiv.org/abs/2610.12667) supplies 68 deterministic
+text perturbations, and its decomposition — typographic, lexical, true paraphrase,
+sampling — is apt here, since §4.3 measured the typographic axis taking recall
+from 194 to 124 on one paper. The four operations needed are a few dozen lines and
+one already sits in the gate, so a dependency for 68 of which we use four is not
+one. Its own caveat is the real obstacle and it is ours: the library supplies test
+inputs but no gold that their meaning survived. The measurement would also cost
+roughly 432 calls, about six runs of the meaning set.
+
+### 4.21 A harder set, built around a category the first one could not express
+
+The first meaning set measures whether a projection preserves *the* reading of a
+span, and on that set there always is one: every case has exactly one right
+answer, which is why §4.20 found that its repeat-spread separation cannot show
+what it looked like showing. A second set was built for that, and reading
+[arXiv 2610.14438](https://arxiv.org/abs/2610.14438) changed its design before it
+existed.
+
+That paper builds 1,000 minimal pairs where a plural statement is neither true nor
+false: with three of five children having run, "the children ran" and "the children
+did not run" are both gaps under a homogeneity semantics, while "all ran" is false
+and "not all ran" is true. Seven models resolve the underlying set relations almost
+perfectly and still force the plural into a binary verdict — negated plurals come
+back as false 84 per cent of the time. **Truth is not this product's business**:
+the extraction contract says never to judge whether a claim is true. What the paper
+changes is what a reference set has to keep apart, and the fourth of these would
+have been folded into the second:
+
+| Status | What the span does |
+|---|---|
+| `determinate` | settles one reading |
+| `ambiguous` | admits several and chooses none |
+| `underdetermined_quantifier` | leaves a plural open, so **both** resolutions add a commitment |
+| `evidence_absent` | asserts what the document does not support, and must not be softened |
+
+An open plural is not an ambiguity between two readings. It is one reading without
+a quantifier, and "all" and "not all" are both additions to it.
+
+The set is 16 cases, 8 pairs, German and English, in its own file so that neither
+set's figures can be reported as the other's: 4 ambiguous (attachment and
+quantifier-scope, each with two readings whose renderings are disjoint), 4 open
+plurals (bare and **negated** bare, which is the paper's polarity asymmetry), 6
+determinate (including the controls) and 2 evidence-absent.
+
+**The controls are what make the status measurable rather than asserted.**
+`plu-03` and `plu-04` say "all" and "not all" explicitly, so an extractor that
+*drops* a quantifier fails them; `plu-01` and `plu-02` leave it open, so one that
+*adds* a quantifier fails those. Both documents also state the mixed situation
+("three of the five sites"), so a projection that resolves the plural from context
+rather than from the span is caught. The validator refuses an open-plural case that
+forbids only one of the two resolutions — a set without that would pass exactly the
+error the paper measures.
+
+Renderings are grouped under the reading they express, which is the distinction the
+first set cannot make: eight of its 24 cases declare two permitted readings and all
+eight are two wordings of one. A test requires the ambiguous cases' renderings to be
+disjoint across readings. The matching convention is imported from the first set
+rather than written again, and a test forbids a second copy.
+
+**The relation axis is now structurally checkable, and that exposed the
+vocabulary.** [arXiv 2610.14442](https://arxiv.org/abs/2610.14442) determines a
+relation twice, for (A,B) and (B,A): symmetric must return itself, asymmetric its
+defined inverse, anything else is a structural failure rather than a confidence
+problem. That was not expressible here — fourteen labels, a direction gloss for
+seven, and nothing saying which are symmetric or what any inverse is. Writing the
+table shows why: **two labels are symmetric, one pair are each other's inverse, and
+ten have no inverse in the vocabulary at all.** For those ten the invariant keeps
+only its negative half — the same label with the endpoints swapped is wrong, and
+omission is the correct output, which the contract already asks for.
+
+The inverse pair was found in the data rather than invented: across 90 stored
+dossiers and **1,041 relations**, both directions were emitted **four times** — two
+`CONTRADICTS`/`CONTRADICTS`, correctly symmetric, and two
+`DEPENDS_ON`/`ASSUMPTION_FOR`, correctly inverse. Zero violations. **And that is
+nearly vacuous**: the situation arises in 0.4 per cent of relations, so a check
+that cannot fail proves nothing — the same distinction §4.14 drew about a
+precondition that flipped nothing. The paper's method needs the endpoints actively
+swapped, which is a paid run. The check exists now and costs nothing; what it
+establishes is still nothing.
+
+**Nothing from the memory paper.**
+[arXiv 2610.14431](https://arxiv.org/abs/2610.14431) decomposes persistent memory
+formation into five attackable interfaces. This project has no persistent memory,
+no reflection runs and no consolidation — every run starts at the document. Its
+transferable lesson, that formation needs provenance and not only the end state, is
+already applied: §4.18 records what a reviewer was asked, not just what came back.
+
+**The set has never been run.** Every figure above is a figure about the set, not a
+result. A run is 16 cases times three repeats, 48 calls, about two thirds of a
+meaning-set run, and needs a pre-registered criterion first. And it still annotates
+no edges, so the relation axis is structurally checkable without being checkable
+against gold.
+
+### 4.22 Field-level provenance adopted, and what it does not reach
+
+[arXiv 2610.20457](https://arxiv.org/abs/2610.20457) records nine interpretation
+fields per scientific claim before any evidence is sought, and marks each value
+`stated`, `inferred` or `default`. Over 60 claims and 900 runs, more than 40 per
+cent of the fields were not explicit in the claim.
+
+**Its most useful finding is the negative one:** adding the card improved neither
+agreement with experts nor stability measurably. That is §4.18's pattern exactly —
+recording a reviewer's prompt hash did not make the comparison *better*, it made
+it *checkable*. **Provenance is not improvement**, and that belongs on record
+before the new set's first run rather than after it. What did work was
+intervention: setting one field flipped about a third of the verdicts where chance
+would give a seventh. That is the method §4.20 lacks, where the prompt effect
+lies inside the sampling range and observation cannot separate the cause.
+
+Four of the nine fields are now recorded per case, and five are not, for two
+different reasons. `quantifier`, `conditions`, `polarity` and `modality` are kept.
+The support threshold and the comparison basis are **refused on principle**: they
+decide what evidence suffices, which is verification rather than sentence
+semantics, and the extraction contract forbids judging whether a claim is true — a
+test keeps them out of the schema. The entity, the observed measure and the unit
+are dropped because they do not vary: the entity is stated in all 16 cases and no
+case makes a quantitative claim, so recording them would be a column without
+variance. The paper's `inferred` against `default` is a property of a run and not
+of a span, so the values here are `stated`, `unstated` and `absent`.
+
+**One place the two axes meet, and can contradict.** A span that leaves a plural
+open is exactly a span that states no quantifier, and a control that says "all"
+states one. The validator checks both directions and the controls besides;
+everything else in the field record is description. Two annotations of one case
+with no point of contact would be two unverifiable opinions.
+
+**And a finding fell out of the adoption.** Of the eight pairs, four turn on
+something the published field list would not localise: attachment (`amb-01`) and
+quantifier scope (`amb-02`) are not among the nine fields, and evidential support
+(`evi-01`) is the field refused above. A field list is worth having and does not
+reach everything, and a test pins that count so its reach is not overstated later.
+The pre-registration survives the addition because the scorer does not read the
+field record, which is also asserted by a test: had scoring depended on it, adding
+it after the criterion was fixed would have changed what the run measures.
+
+**A second limit on the repeat-spread signal, independent of the first.**
+[arXiv 2610.19754](https://arxiv.org/abs/2610.19754) separates three things — a
+path exists, its endpoint is right, and the relation sequence actually supports the
+answer — and notes that a softmax always finds the relatively best path even when
+all of them are bad, with a single path scoring 1 by construction. Hence the need
+for an *absolute* support score. Checked against §4.19's signal: **22 of the 24
+cases produce an identical claim set across all three repeats, and none of those 22
+fails its gold.** That agreement coincides with correctness because the set has a
+gold, not because the signal knows anything. On a real document there is none, and
+the measure then says the runs agree, not that what they agree on is right. The
+signal has no absolute component at all — §4.21 named one limit on it, this is a
+second and unrelated one. In passing, *reachable but invalid* is what
+`relation_algebra.py` has checked since §4.21: a relation can exist and be
+structurally inadmissible.
+
+**A rejection confirmed with a figure.**
+[arXiv 2610.19118](https://arxiv.org/abs/2610.19118) finds attack success rates
+falling from 69.7 to 36.6 per cent once it is checked whether the perturbed input
+still *demands* the same reference decision. About half the measured effect was
+artefact. That is the quantification of why the 68-operation perturbation library
+is still not taken: it supplies inputs and no gold that their meaning survived.
+
+### 4.23 The set passed 48 of 48, which is how a set fails to be a measurement
+
+The run went through in 100 seconds, 48 calls, none failed — the call budget from
+§4.22 holds. Against the seven predictions fixed in advance
+(`docs/prereg-reading-identity-01.md`):
+
+| # | Predicted | Measured | |
+|---|---|---|---|
+| 1 | open plurals **at most 8 of 12** | **12/12** | **refuted** |
+| 2 | the negated plural strictly worse than the positive | 6/6 against 6/6 | **refuted** |
+| 3 | `determinate` at least 16 of 18 | 18/18 | held |
+| 4 | `evidence_absent` at least 5 of 6 | 6/6 | held |
+| 5 | `ambiguous` at least 10 of 12 | 12/12 | held, and named weak in advance |
+| 6 | guard: anchoring at least 90 % | **48/48** | held |
+| 7 | no translated propositions | 0, both directions | held |
+
+**Both substantive predictions are refuted** — the two derived from the outside
+paper. Five of seven held, and the two that fell are the two that mattered.
+
+**Why they fell is an indictment of the set, not a credit to the extractor.** The
+pre-registration obliges reading the produced propositions, and they say this:
+for the span "Die Schulen des Bezirks haben den Zuschlag erhalten." all three runs
+returned that sentence, unchanged. **42 of the 56 claims on the scored spans are
+the span verbatim** — 75 per cent. On one-sentence documents the projection is
+largely the identity function, so the question of whether it resolves a plural
+cannot arise: nothing is added where nothing is reworded. That is §4.1's lesson a
+third time, and here it is fatal to the set's purpose rather than a caveat on it.
+
+**The pressure does exist. It lands one sentence over, where the scorer does not
+look.** Across the 24 open-plural and control runs there are **23 resolved
+non-universals outside the scored span**: "Three of the five sites report the
+drawdown, *implying two sites do not report it*", "*Only* three of the five sites
+report the drawdown, *so two sites do not report it*", "Drei der fünf Meldungen
+liegen dem Amt *noch nicht* vor." Those are exactly the readings the cases forbid —
+attached to the document's second sentence, and the scorer judges `claims_on_span`
+alone. **The instrument is blind by construction to what the set was built to
+find.**
+
+The typing makes it worse. Of ten such inferences, 5 are typed `inference`, 2
+`limitation` and **3 `fact`**. "Three of the five reports have not reached the
+office" stands as a fact where the document says only that two *have* arrived.
+Asserted as fact, that is an invented commitment — the error class §4.12 describes
+for the conditional, the class the product exists to catch, produced by the
+product. **And the set passed all 48 runs.**
+
+**A gap in the pre-registration itself.** It says a case every run fails is a
+candidate for being wrong. It says nothing about the converse, and a set that
+passes completely on first contact is just as suspect: the first meaning set
+validated cleanly and two independent reviews found twelve of its 24 cases unfit.
+That half of the rule was missing, and this run exposed it.
+
+What does **not** follow is that the extractor handles plurals correctly. What was
+measured is that it returns the span verbatim where the span is one sentence.
+Three things follow, and all of them are work on the instrument: the documents
+have to be longer than the span, or the set measures the identity function
+(**withdrawn in §4.24**: the measurement says it is the span being a complete
+sentence, not the document's length); a
+forbidden reading has to be checked against every claim in the dossier rather than
+only those on the span, which is a change to the instrument and needs a new
+pre-registered run rather than a re-score of this one; and the typing of an
+inference belongs in the scoring, because an inference arriving as `fact` is a
+different error from one arriving as `inference`.
+
+The run did what a run should: it refuted two hypotheses and exposed three defects
+in the measuring device. That every figure looks perfect is the opposite of a
+success.
+
+### 4.24 The three defects repaired, and my own diagnosis was the wrong one of two
+
+§4.23 named three defects in the instrument. Measuring *where* the identity
+function bites showed that the first of them was wrongly diagnosed.
+
+| | Claims returned verbatim |
+|---|---|
+| `amb-01`, whose span is a **clause** | **0 of 14**; it produced 5 and 9 claims |
+| the 14 cases whose span is a **whole sentence** | **42 of 42** |
+
+§4.23 says the documents have to be longer than the span. **That was wrong.**
+`amb-01`'s document is exactly as short as the others and behaves completely
+differently; what differs is that its span is a fragment. A complete sentence
+already *is* an atomic proposition, so there is nothing to project, while a
+subordinate clause forces the extractor to supply a subject and a verb form —
+and only there can the question arise.
+
+Fourteen spans are now clauses inside longer sentences, and a validator rule
+makes it permanent: **a span that looks like a complete sentence is refused.**
+The heuristic is a capital first letter plus sentence-final punctuation; it
+classified all 16 cases correctly, and that is the whole of the evidence for it.
+A mutation found a weak test on the way — reducing the heuristic to the
+punctuation alone survived, because no case began lowercase and ended with a full
+stop, which is exactly the clause that swallows the sentence's end.
+
+**The forbidden reading is now checked against the whole dossier.** The old
+scorer judged claims on the span; the forbidden resolution appeared one sentence
+over. The new field checks every claim, and it names the *inferred* resolution
+rather than the document's own wording, because a verbatim quote of the second
+sentence is correct extraction and must not be punished — a validator rule
+refuses a pattern that matches the document itself. Checked against the paid
+run's real output rather than invented examples: **10 claims that the repaired
+scorer catches and the old one could not see, 2 of them typed `fact`**, and every
+verbatim quote correctly left alone.
+
+**The typing of an inference now enters the score.** Each distortion carries the
+claim's type and whether it sat on the span, and two fields report separately:
+what the old instrument could not see, and the sharper class of an inference the
+document does not make being asserted as a fact. A test holds that a case
+*without* the new field behaves exactly as before, because the first meaning set
+has none and its 69 of 72 must not move — an instrument change that shifted a
+published figure would be the worst of both.
+
+The documents and spans have changed, so the first run's stored dossiers are **not
+re-scorable**. That is the price of changing an instrument after a result, and it
+is why the next run needs a **new pre-registration** — carrying the half of the
+rule the first one lacked: a set that passes completely on first contact is as
+suspect as a case that always fails.
+
 ---
 
 ## 5. What we do not know
@@ -1257,11 +1605,39 @@ stored; all four are, with document, gold and proposal packet, so the re-run cos
 nothing and is now done (§4.19). The first claim blamed a test that had worked.
 The second deferred a measurement for a reason that did not exist.
 
+A third of the same kind, and this one cost a wrong repair before it was caught:
+**"the set measures the identity function because its documents are too short"**.
+Measured, the cause is that the span is a complete sentence — the one case whose
+span was a clause produced 0 of 14 verbatim claims on a document exactly as short
+as the rest. The repair that followed from the wrong diagnosis would have
+lengthened documents and changed nothing. **Withdrawn, and the right property is
+now a validator rule** (§4.24).
+
+An outside reading of this report found four more, none of them about a
+measurement and all about what the report says of itself. Two were claims and are
+withdrawn here. **"The typing `assumption` is a defensible reading"** attributed
+semantic content to a label §4.13 shows has no definition anywhere in the
+contract — and in one of the six runs the typing is not `assumption` at all; what
+is measured is the unconditional emission of the consequent, and nothing about the
+types. **"A relative frequency across repeats is calibrated by construction,
+because it is counted rather than asserted"** is too strong, and the paragraph
+after it contradicted it. Counted beats asserted, but a frequency across repeats
+mixes genuine interpretive ambiguity with sampling instability (§4.2), a provider
+substituting the served model (§4.8), differences in fragmentation and typing
+(§4.13), what the gate refuses (§4.3) and what the matching rule counts as the
+same answer (§4.19). That last one is the uncomfortable part: §4.19 measured the
+matching rule deciding 38 of 49 spans on one document, and this report then left
+the calibration claim standing two sections away. The other two were stale rather
+than wrong — a limit that said the two independent reviews had not happened when
+§4.16 records both, and a count that said two external inputs where three are
+named — and the second of those was a replacement my own tooling reported as
+applied and never wrote.
+
 ---
 
 ## 8. What the external work contributed
 
-Two external inputs shaped the work, and it is worth being precise about how.
+Three external inputs shaped the work, and it is worth being precise about how.
 
 **The annotated corpora did the real work.** Without expert annotation there is no
 recall figure, and without a recall figure the coverage measurement is a number
@@ -1288,10 +1664,18 @@ Its concrete prescriptions did not transfer:
   thresholds need empirical calibration that was never done.
 
 The one adaptation worth keeping: **the repeats we already pay for are an
-empirical distribution.** Five runs give, per claim, a relative frequency that is
-calibrated by construction because it is counted rather than asserted. That turns
-the spread from the thing that ruins every measurement into the thing the paper's
-emission rules wanted. **Half of it is built now** (§4.19): the spread across the
+empirical sampling distribution over outputs.** Five runs give, per claim, a
+relative frequency that is counted rather than asserted, which is strictly better
+than the confidence floats a model writes. It is **not** thereby calibrated, and
+it is not yet a distribution over readings — an earlier version of this paragraph
+said "calibrated by construction because it is counted", which is too strong and
+contradicted the paragraph after it. What a frequency across repeats actually
+mixes is measurable in this report's own terms: genuine interpretive ambiguity,
+sampling instability (§4.2), a provider substituting the served model (§4.8),
+differences in fragmentation and in typing (§4.13), what the gate refuses (§4.3)
+and what the matching rule counts as the same answer (§4.19). It is an observed
+stability signal, and separating it into those components is the open problem, not
+a detail of presentation. **Half of it is built now** (§4.19): the spread across the
 three stored repeats of each meaning case is computed and put beside the gold
 outcome, and it separates every failing case. What is not built is the part the
 paper actually wanted — a calibrated probability per reading — and the obstacle is
@@ -1323,8 +1707,8 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 27 measurement scripts, each tested
-docs/architecture.md §3a–§3ap            the chronological record, run by run
+scripts/                                 29 measurement scripts, each tested
+docs/architecture.md §3a–§3av            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1333,7 +1717,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-536 tests and one skipped, `ruff check` clean.
+645 tests and one skipped, `ruff check` clean.
 
 ---
 
@@ -1357,9 +1741,11 @@ reader knows what is waiting.
    of a proposition. The language problem turned out not to need them (§4.12);
    the conditional is the remaining candidate, and it is the only measured
    meaning failure left.
-6. **Who reviews the meaning set.** It is a draft by design: two independent
-   reviews were asked for and none has happened, and until then every figure in
-   §4.12 rests on cases written by the same party that built the system.
+6. **Who reviews the meaning set.** Two independent reviews have been run and
+   acted on (§4.16), so it is examined rather than a draft. What is still open is
+   narrower: both were model-based, and **no human subject-matter reviewer has
+   seen the set.** Until one has, every figure in §4.12 rests on cases written by
+   the party that built the system and checked by two systems of the same kind.
 7. **Whether extraction repeats become policy.** §4.14 showed that the marker from
    §4.13 names the kind of dependency and not the observed instability, because at
    emission there is only one run and whether *this* finding moves is not knowable.
@@ -1384,7 +1770,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ap und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3av und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1495,7 +1881,11 @@ und nicht getan war.
 | 20 | Sechs Felder des Dossiers werden geschrieben und nie gelesen, und `semantic_state` ist ein Zustandsautomat ohne Übergänge | offen; geprüft statt bemerkt (§4.17), und blockiert von der Schemaentscheidung aus §4.5 |
 | 21 | Reviewer-Vergleiche ruhen auf einer Annahme, die die Artefakte nicht belegen konnten: die Arme zeichneten weder Prompt-Hash noch Ausgabebudget auf | beides wird jetzt aufgezeichnet (§4.18), aber erst von hier an — jeder gespeicherte Reviewer-Lauf liegt vor dem Wächter |
 | 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
-| 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen |
+| 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen — und §4.20 verschärft, warum: kein Fall lässt zwei semantisch verschiedene Lesarten zu, Uneinigkeit *ist* auf diesem Bestand konstruktionsbedingt Fehler, und die Trennung kann nicht zeigen, dass Streuung Ambiguität erkennt |
+| 24 | Ob zwei Läufe dasselbe mit einem Claim-Typ meinen, ist aus den gespeicherten Daten nicht beantwortbar | der Prompt-Effekt (86–95 % Übereinstimmung) liegt innerhalb der Spanne, die Sampling allein erzeugt (81–94 %), und kein Vergleich ist eine konsistente Umbenennung (§4.20). Kontrollierter Nebenbefund: die Typstabilität fällt mit der Dokumentlänge, 94 % auf einem Satz gegen 81 % auf einem langen Paper |
+| 25 | Der härtere Referenzbestand ist gelaufen und ist noch keine Messung | **48 von 48 bestanden**, womit beide inhaltlichen Vorhersagen widerlegt und drei Mängel am Instrument freigelegt sind (§4.23): 75 % der bewerteten Claims sind wörtlich die Spanne, die verbotenen Auflösungen erscheinen einen Satz weiter, wo der Scorer nicht hinsieht, und 3 von 10 solchen Folgerungen treten als `fact` auf. Feldweise Interpretationsprovenienz ist aufgezeichnet, und vier der acht Paare beruhen auf etwas, das dieser Feldkatalog nicht erreicht (§4.22) |
+| 26 | Relationen sind jetzt strukturell prüfbar, und die Prüfung ist beinahe untätig | die Umkehrtabelle des Vokabulars nennt zwei Labels symmetrisch, ein Paar invers, zehn ohne jedes Inverses (§4.21). Über 1041 gespeicherte Relationen treten beide Richtungen viermal auf, alle konsistent — 0,4 Prozent, sie kann also nicht scheitern. Etwas zu belegen verlangt aktives Vertauschen der Enden, und das ist ein bezahlter Lauf |
+| 27 | Dem gold-freien Übereinstimmungssignal fehlt jede absolute Komponente | offen; es sagt, dass die Läufe einig sind, nicht dass das Einige richtig ist, und beides fällt auf dem Bedeutungsbestand nur zusammen, weil er ein Gold hat (§4.22). 22 von 24 Fällen sind vollständig einig, und keiner von ihnen fällt durch |
 
 ## 2. Was das System ist
 
@@ -1966,8 +2356,14 @@ anzufassen. Für das Sprachproblem braucht es keine explizite Projektionsschicht
 **Was die Anweisung nicht angefasst hat: die Bedingung.** „Wenn die Mittel
 bewilligt werden, beginnt der Ausbau im Frühjahr." In drei von sechs Läufen
 **zerlegt der Extraktor den Satz am Komma**: der Vordersatz wird ein eigener
-Claim, getypt als `assumption`, was eine zulässige Lesart ist, und der Nachsatz
-wird ein eigener Claim, getypt als `forecast`, **unbedingt behauptet.** „Der
+Claim, getypt als `assumption`, und der Nachsatz wird ein eigener Claim, getypt
+als `forecast`, **unbedingt behauptet.** Eine frühere Fassung dieses Abschnitts
+nannte diese Typisierung „eine zulässige Lesart". Diese Lesart ist
+zurückgezogen: §4.13 hält fest, dass die 21 Claim-Typen nirgends im Vertrag
+definiert sind — eine von ihnen treffend zu nennen schreibt also einem Label
+semantischen Gehalt zu, das keinen hat, und in einem dieser Läufe lautet die
+Typisierung gar nicht `assumption`. Gemessen ist hier die unbedingte Behauptung
+des Nachsatzes, und nichts über die Typen. „Der
 Ausbau beginnt im Frühjahr" ohne jede Bedingung ist eine erfundene Zusage — für
 eine Antragsprüfung genau die Fehlerklasse, für deren Entdeckung das Produkt
 existiert, erzeugt vom Produkt. In den anderen drei Läufen trägt ein Claim den
@@ -1982,10 +2378,14 @@ braucht oder — wie bei jeder kleinen Änderung dieses Projekts, die gewirkt ha
 eine weitere Vertragszeile, ist die nächste Vorab-Frage.
 
 **Grenzen.** Relationen bleiben nicht messbar: der Bestand annotiert keine Kanten,
-aufgefallen beim Implementieren der Achse. Der Bestand ist ein **Entwurf** und
-wartet auf zwei unabhängige Durchsichten, die nicht stattgefunden haben. Jeder
-Fall ist ein bis drei Sätze; dass eine Vertragszeile auf 24 kurzen Sätzen greift,
-sagt nichts über 26.000 Zeichen Gerichtstext.
+aufgefallen beim Implementieren der Achse. Der Bestand war beim Schreiben dieses
+Abschnitts ein Entwurf und wartete auf zwei unabhängige Durchsichten; beide sind
+inzwischen gelaufen und haben die Hälfte davon zerlegt, bevor er umgeschrieben und
+neu bewertet wurde (§4.16). Was bleibt, ist eine engere Grenze, und sie gehört so
+benannt: **beide Durchsichten waren modellbasiert, und kein menschliches
+Fachgutachten hat den Bestand gesehen.** Jeder Fall ist ein bis drei Sätze; dass
+eine Vertragszeile auf 24 kurzen Sätzen greift, sagt nichts über 26.000 Zeichen
+Gerichtstext.
 
 ### 4.13 Der Typ eines Claims ist die dritte erzeugte Komponente, und zwei Befunde stehen darauf
 
@@ -2498,6 +2898,361 @@ nicht steht. Kein Dekodierzwang verhindert das, und die deterministische
 Nachprüfung fängt es vollständig. Das Paper adressiert hier 7 %, und das ist der
 Grund, es zu lassen — eine Zahl statt einer Einschätzung.
 
+### 4.20 Derselbe Typname, und eine Grundlinie größer als der Effekt
+
+[arXiv 2610.12841](https://arxiv.org/abs/2610.12841) stellt einem Vokabular ohne
+Definitionen die richtige Frage: Wenn zwei Systeme dasselbe Label benutzen, ist
+die Abweichung eine anders gezogene Grenze oder ein anderes Konstrukt? Es trennt
+vier Fälle — Basisrate, affine Verschiebung, monotone nichtlineare Abbildung,
+abweichende Ordnung — und **drei der vier sind hier nicht verfügbar.** Alle ruhen
+auf einem Score je Element; ein `claim_type` ist eine nackte Kategorie, und §4.13
+hat gemessen, dass die Konfidenz nicht als Score einstehen kann. Übertragbar ist
+die Struktur der Abweichung: eine *konsistente Umbenennung* (jeder Typ geht auf
+genau einen, in beiden Richtungen, ein Merge übersteht die Abbildung) gegen *keine
+konsistente Abbildung* (ein Typ geht auf mehrere, kein Rename rettet den Merge).
+Beide Richtungen zählen: zwei Typen, die in einen fallen, sind vorwärts eine
+Funktion und rückwärts eine verlorene Unterscheidung.
+
+Gemessen an gespeicherten Artefakten, ohne bezahlten Aufruf:
+
+| Vergleich | Dokument | was variiert | gemeinsame Spannen | gleich getypt |
+|---|---|---|---:|---:|
+| 24 Bedeutungsfälle, drei Wiederholungen | ein Satz | **nur Sampling** | 229 | **94 %** |
+| A40, zwei Wiederholungen | langes Paper | **nur Sampling** | 74 | **81 %** |
+| 001-141170, `vocabulary` gegen `decompose` | Gerichtsentscheid | Prompt + Sampling | 43 | 95 % |
+| 001-141170, `vocabulary` gegen dritte Variante | Gerichtsentscheid | Prompt + Sampling | 29 | 86 % |
+| 001-141170, `decompose` gegen dritte Variante | Gerichtsentscheid | Prompt + Sampling | 33 | 94 % |
+
+**Der Prompt-Effekt liegt vollständig innerhalb der Spanne, die Sampling allein
+erzeugt** — 86 bis 95 Prozent gegen 81 bis 94. Die Frage des Papers ist aus diesen
+Daten also nicht beantwortbar: die Grundlinie für „nichts geändert" ist so groß
+wie die Änderung. Das ist §4.2 eine Ebene tiefer, an einer anderen Größe.
+
+**In keinem der fünf Vergleiche ist die Abweichung eine konsistente Umbenennung.**
+Immer geht mindestens ein Typ auf mehrere. Auf A40 ist `fact` ein Attraktor und
+nimmt `limitation`, `scope`, `recommendation`, `assumption` und `definition` auf,
+und `fact ↔ method` läuft in beide Richtungen. Das ist genau das Bild, das das
+Paper als verschiedene Konstrukte liest — nur erzeugt es hier ein Modell mit einem
+Prompt, der Schluss auf abweichende Definitionen ist also nicht gedeckt.
+
+Ein kontrollierter Nebenbefund, weil beide Zahlen nur Sampling enthalten: **94
+Prozent auf Ein-Satz-Dokumenten gegen 81 Prozent auf einem langen Paper.** Die
+Typstabilität fällt mit der Dokumentlänge, wie die Befundstabilität in §4.15.
+
+Was **nicht** kontrolliert ist und so dasteht: die Prompt-Zahlen stammen vom
+Gerichtsentscheid, die Sampling-Zahlen von einem Paper und von den kurzen Fällen.
+Eine gleich-Prompt-Wiederholung auf 001-141170 liegt nicht gespeichert — die
+dortigen Artefakte tragen drei verschiedene Prompt-Hashes.
+
+**Eine Grenze, die bei §4.19 hätte stehen müssen.** Dort stand, jeder
+Bedeutungsfall mit uneinheitlichen Wiederholungen verfehle sein Gold und jeder
+einheitliche bestehe, gelesen als: Streuung markiert Fehler.
+[arXiv 2610.12701](https://arxiv.org/abs/2610.12701) ist der Gegenfall: eine
+Kontextaktivierung erhöht die Labelentropie und senkt die Übereinstimmung, und die
+Lesart ist nicht mehr Unsicherheit, sondern gültige perspektivische Differenz, die
+sichtbar wird statt auf Konsens nivelliert zu sein. Gegen den Bestand geprüft: 8
+der 24 Fälle tragen zwei `permitted_readings`, aber alle acht Paare sind zwei
+Formulierungen **einer** Lesart — „Die Studie belegt, dass …" gegen „Laut Studie
+…". Kein Fall lässt zwei semantisch verschiedene Lesarten zu. Auf einem Bestand,
+in dem jeder Fall genau eine richtige Antwort hat, *ist* Uneinigkeit
+konstruktionsbedingt Fehler; §4.19s Trennung zeigt also, dass Streuung Fehler
+findet, wo Ambiguität ausgeschlossen wurde, und nicht, dass sie Ambiguität
+erkennt. Das Schema erlaubt mehrere Einträge je Fall, kann aber nicht sagen, ob
+zwei Einträge eine umformulierte Lesart oder zwei zulässige Lesarten sind — genau
+die Unterscheidung, die der härtere Bestand braucht, und sie kostet ein Feld und
+keinen Umbau.
+
+**Warum die Perturbationsbibliothek nicht aufgenommen wird.**
+[arXiv 2610.12667](https://arxiv.org/abs/2610.12667) liefert 68 deterministische
+Textperturbationen, und ihre Zerlegung — typografisch, lexikalisch, echte
+Paraphrase, Sampling — ist hier einschlägig, nachdem §4.3 die typografische Achse
+gemessen hat, die den Recall auf einem Paper von 194 auf 124 nahm. Die vier
+Operationen, die wir brauchen, sind einige Dutzend Zeilen, und eine steht schon im
+Gate; eine Abhängigkeit für 68, von denen wir vier nutzen, ist keine. Ihr eigener
+Vorbehalt ist das eigentliche Hindernis und unser eigenes: die Bibliothek liefert
+Testeingaben, aber kein Gold dafür, dass deren Bedeutung erhalten blieb. Die
+Messung kostet zudem rund 432 Aufrufe, etwa sechs Läufe des Bedeutungsbestands.
+
+### 4.21 Ein härterer Bestand, um eine Kategorie gebaut, die der erste nicht ausdrücken kann
+
+Der erste Bedeutungsbestand misst, ob eine Projektion *die* Lesart einer Spanne
+erhält, und dort gibt es immer eine: jeder Fall hat genau eine richtige Antwort,
+weshalb §4.20 festhält, dass seine Wiederholungs-Trennung nicht zeigen kann, wonach
+sie aussah. Für genau das wurde ein zweiter Bestand gebaut, und die Lektüre von
+[arXiv 2610.14438](https://arxiv.org/abs/2610.14438) hat seinen Entwurf geändert,
+bevor er existierte.
+
+Das Paper baut 1.000 Minimalpaare, in denen eine Pluralaussage weder wahr noch
+falsch ist: Sind drei von fünf Kindern gelaufen, sind „Die Kinder liefen" und „Die
+Kinder liefen nicht" unter Homogenitätssemantik beide Lücken, während „Alle liefen"
+falsch und „Nicht alle liefen" wahr ist. Sieben Modelle lösen die Mengenverhältnisse
+fast fehlerfrei und pressen den Plural trotzdem in ein binäres Urteil — negierte
+Plurale kommen zu 84 Prozent als falsch zurück. **Wahrheit ist nicht die Sache
+dieses Produkts**: der Extraktionsvertrag verbietet ausdrücklich, über die Wahrheit
+eines Claims zu urteilen. Was das Paper ändert, ist, was ein Referenzbestand
+trennen muss — und die vierte dieser Kategorien hätte ich in die zweite
+hineingezogen:
+
+| Status | was die Spanne tut |
+|---|---|
+| `determinate` | legt eine Lesart fest |
+| `ambiguous` | lässt mehrere zu und entscheidet keine |
+| `underdetermined_quantifier` | lässt einen Plural offen, also fügen **beide** Auflösungen eine Zusage hinzu |
+| `evidence_absent` | behauptet, was das Dokument nicht stützt, und darf nicht abgeschwächt werden |
+
+Ein offener Plural ist keine Ambiguität zwischen zwei Lesarten. Er ist *eine* Lesart
+ohne Quantor, und „alle" wie „nicht alle" sind Zusätze dazu.
+
+Der Bestand hat 16 Fälle, 8 Paare, deutsch und englisch, in eigener Datei, damit
+keine Zahl des einen als Zahl des anderen berichtet werden kann: 4 ambig
+(Anbindung und Quantorenskopus, je zwei Lesarten mit disjunkten Formulierungen), 4
+offene Plurale (bloß und **negiert** bloß, die Polaritätsasymmetrie des Papers), 6
+determinate samt den Kontrollen und 2 ohne Stütze.
+
+**Die Kontrollen machen den Status messbar statt behauptet.** `plu-03` und `plu-04`
+sagen ausdrücklich „alle" beziehungsweise „nicht alle", ein Extraktor, der einen
+Quantor *streicht*, fällt dort durch; `plu-01` und `plu-02` lassen ihn offen, einer
+der einen *hinzufügt*, fällt dort durch. Beide Dokumente nennen zudem die gemischte
+Lage („drei der fünf Standorte"), sodass eine Projektion auffällt, die den Plural aus
+dem Kontext statt aus der Spanne auflöst. Der Validator lehnt einen offenen Plural
+ab, der nur eine der beiden Auflösungen verbietet — ein Bestand ohne das würde genau
+den Fehler durchlassen, den das Paper messt.
+
+Formulierungen sind unter der Lesart gruppiert, die sie ausdrücken, und das ist die
+Unterscheidung, die der erste Bestand nicht treffen kann: acht seiner 24 Fälle
+erklären zwei zulässige Lesarten, und alle acht sind zwei Formulierungen einer. Ein
+Test verlangt, dass die Formulierungsmengen der ambigen Fälle über die Lesarten
+hinweg disjunkt sind. Die Trefferkonvention wird aus dem ersten Bestand importiert
+statt neu geschrieben, und ein Test verbietet eine zweite Fassung.
+
+**Die Relationsachse ist jetzt strukturell prüfbar, und das hat das Vokabular
+offengelegt.** [arXiv 2610.14442](https://arxiv.org/abs/2610.14442) bestimmt eine
+Relation zweimal, für (A,B) und (B,A): symmetrisch muss sie sich selbst ergeben,
+asymmetrisch ihr definiertes Inverses, alles andere ist ein struktureller Fehler und
+keine Konfidenzfrage. Hier war das nicht ausdrückbar — vierzehn Labels, eine
+Richtungsglosse für sieben, und nichts sagt, welche symmetrisch sind oder was ein
+Inverses wäre. Das Schreiben der Tabelle zeigt, warum: **zwei Labels sind
+symmetrisch, ein Paar ist sein eigenes Inverses, und zehn haben im Vokabular
+überhaupt kein Inverses.** Für diese zehn behält die Invariante nur ihre negative
+Hälfte — dasselbe Label mit vertauschten Enden ist falsch, und die richtige Ausgabe
+ist das Auslassen, das der Vertrag ohnehin verlangt.
+
+Das Inverspaar ist in den Daten gefunden und nicht ausgedacht: über 90 gespeicherte
+Dossiers und **1041 Relationen** wurden beide Richtungen **viermal** emittiert — zwei
+`CONTRADICTS`/`CONTRADICTS`, korrekt symmetrisch, und zwei
+`DEPENDS_ON`/`ASSUMPTION_FOR`, korrekt invers. Null Verstöße. **Und das ist beinahe
+vakuant**: die Lage tritt in 0,4 Prozent der Relationen auf, eine Prüfung, die nicht
+scheitern kann, belegt also nichts — dieselbe Unterscheidung, die §4.14 über eine
+Vorbedingung gezogen hat, die nichts kippte. Die Methode des Papers verlangt
+aktives Vertauschen der Enden, und das ist ein bezahlter Lauf. Die Prüfung ist jetzt
+da und kostet nichts; was sie belegt, ist noch nichts.
+
+**Nichts aus dem Gedächtnis-Paper.**
+[arXiv 2610.14431](https://arxiv.org/abs/2610.14431) zerlegt die Bildung
+persistenten Gedächtnisses in fünf angreifbare Schnittstellen. Dieses Projekt hat
+kein persistentes Gedächtnis, keine Reflexionsläufe und keine Konsolidierung — jeder
+Lauf beginnt beim Dokument. Seine übertragbare Lehre, dass die Bildung Provenienz
+braucht und nicht bloß der Endzustand, wird schon angewandt: §4.18 zeichnet auf,
+wonach ein Reviewer gefragt wurde, und nicht nur, was zurückkam.
+
+**Der Bestand ist nie gelaufen.** Jede Zahl oben ist eine Zahl über den Bestand und
+kein Ergebnis. Ein Lauf sind 16 Fälle mal drei Wiederholungen, 48 Aufrufe, etwa zwei
+Drittel eines Bedeutungsbestand-Laufs, und braucht vorher ein vorregistriertes
+Kriterium. Und er annotiert weiterhin keine Kanten, die Relationsachse ist also
+strukturell prüfbar, ohne gegen Gold prüfbar zu sein.
+
+### 4.22 Feldprovenienz übernommen, und was sie nicht erreicht
+
+[arXiv 2610.20457](https://arxiv.org/abs/2610.20457) hält vor jeder Evidenzsuche
+neun Interpretationsfelder je wissenschaftlichem Claim fest und markiert jeden
+Wert als `stated`, `inferred` oder `default`. Über 60 Claims und 900 Läufe waren
+mehr als 40 Prozent der Felder nicht ausdrücklich im Claim.
+
+**Der nützlichste Befund ist der negative:** Die Karte hinzuzufügen verbesserte
+weder die Übereinstimmung mit Experten noch die Stabilität messbar. Das ist genau
+das Muster aus §4.18 — den Prompt-Hash eines Reviewers aufzuzeichnen hat den
+Vergleich nicht *besser* gemacht, sondern *prüfbar*. **Provenienz ist keine
+Verbesserung**, und das gehört vor den ersten Lauf des neuen Bestands und nicht
+danach. Gewirkt hat die Intervention: ein Feld gezielt zu setzen kippte etwa ein
+Drittel der Urteile, wo der Zufall ein Siebtel gäbe. Das ist die Methode, die
+§4.20 fehlt, wo der Prompt-Effekt innerhalb der Sampling-Spanne liegt und
+Beobachtung die Ursache nicht trennt.
+
+Vier der neun Felder sind jetzt je Fall aufgezeichnet, fünf nicht, aus zwei
+verschiedenen Gründen. `quantifier`, `conditions`, `polarity` und `modality`
+bleiben. Die Unterstützungsschwelle und die Vergleichsbasis sind **aus Prinzip
+abgelehnt**: sie entscheiden, welche Evidenz genügt, und das ist Verifikation und
+nicht Satzsemantik — der Extraktionsvertrag verbietet, über die Wahrheit eines
+Claims zu urteilen, und ein Test hält sie aus dem Schema. Entität, beobachtete
+Zielgröße und Einheit fallen weg, weil sie nicht variieren: die Entität ist in
+allen 16 Fällen genannt, und kein Fall macht eine quantitative Aussage, die Spalte
+hätte also keine Varianz. Das `inferred` gegen `default` des Papers ist eine
+Eigenschaft des Laufs und nicht der Spanne, die Werte hier sind daher `stated`,
+`unstated` und `absent`.
+
+**Eine Stelle, an der sich die zwei Achsen treffen und widersprechen können.**
+Eine Spanne, die einen Plural offen lässt, ist genau eine Spanne, die keinen
+Quantor nennt, und eine Kontrolle, die „alle" sagt, nennt einen. Der Validator
+prüft beide Richtungen und die Kontrollen dazu; alles andere am Feldeintrag ist
+Beschreibung. Zwei Annotationen eines Falls ohne Berührungspunkt wären zwei
+unprüfbare Meinungen.
+
+**Und beim Übernehmen fiel ein Befund heraus.** Von den acht Paaren beruhen vier
+auf etwas, das der veröffentlichte Feldkatalog nicht lokalisieren würde:
+Anbindung (`amb-01`) und Quantorenskopus (`amb-02`) stehen nicht unter den neun
+Feldern, und die evidenzielle Stütze (`evi-01`) ist das oben abgelehnte Feld. Ein
+Feldkatalog ist es wert und erreicht nicht alles; ein Test hält diese Zahl fest,
+damit seine Reichweite später nicht überzeichnet wird. Die Vorregistrierung
+übersteht die Ergänzung, weil der Scorer den Feldeintrag nicht liest, und auch das
+behauptet ein Test: hinge die Bewertung daran, hätte das Nachtragen nach dem
+Festlegen des Kriteriums geändert, was der Lauf messt.
+
+**Eine zweite Grenze des Wiederholungssignals, unabhängig von der ersten.**
+[arXiv 2610.19754](https://arxiv.org/abs/2610.19754) trennt drei Dinge — ein Pfad
+existiert, sein Endpunkt ist richtig, und die Relationsfolge stützt die Antwort
+tatsächlich — und hält fest, dass ein Softmax immer den relativ besten Pfad
+findet, auch wenn alle schlecht sind, und bei einem einzigen Pfad
+konstruktionsbedingt 1 ergibt. Daher der Bedarf an einem *absoluten*
+Unterstützungswert. Gegen das Signal aus §4.19 geprüft: **22 der 24 Fälle ergeben
+über alle drei Wiederholungen eine identische Claim-Menge, und keiner dieser 22
+verfehlt sein Gold.** Dass Einigkeit dort mit Richtigkeit zusammenfällt, liegt am
+Gold des Bestands und nicht daran, dass das Signal etwas wüsste. Auf einem echten
+Dokument gibt es keines, und dann sagt das Maß, dass die Läufe einig sind, nicht
+dass das, worin sie einig sind, richtig ist. Dem Signal fehlt jede absolute
+Komponente — §4.21 hat eine Grenze benannt, dies ist eine zweite und unabhängige.
+Nebenbei ist *reachable but invalid* genau, was `relation_algebra.py` seit §4.21
+prüft: eine Relation kann existieren und strukturell unzulässig sein.
+
+**Eine Ablehnung, mit einer Zahl bestätigt.**
+[arXiv 2610.19118](https://arxiv.org/abs/2610.19118) findet Angriffserfolge von
+69,7 auf 36,6 Prozent fallen, sobald geprüft wird, ob die veränderte Eingabe
+dieselbe Referenzentscheidung noch *verlangt*. Etwa die Hälfte des gemessenen
+Effekts war Artefakt. Das ist die Quantifizierung des Grundes, aus dem die
+Perturbationsbibliothek mit ihren 68 Operationen weiter nicht aufgenommen wird:
+sie liefert Eingaben und kein Gold dafür, dass deren Bedeutung erhalten blieb.
+
+### 4.23 Der Bestand bestand 48 von 48, und so scheitert ein Bestand daran, eine Messung zu sein
+
+Der Lauf ging in 100 Sekunden durch, 48 Aufrufe, keiner fehlgeschlagen — die
+Budgetgrenze aus §4.22 hält. Gegen die sieben vorab festgelegten Vorhersagen
+(`docs/prereg-reading-identity-01.md`):
+
+| # | vorhergesagt | gemessen | |
+|---|---|---|---|
+| 1 | offene Plurale **höchstens 8 von 12** | **12/12** | **widerlegt** |
+| 2 | der negierte Plural strikt schlechter als der positive | 6/6 gegen 6/6 | **widerlegt** |
+| 3 | `determinate` mindestens 16 von 18 | 18/18 | gehalten |
+| 4 | `evidence_absent` mindestens 5 von 6 | 6/6 | gehalten |
+| 5 | `ambiguous` mindestens 10 von 12 | 12/12 | gehalten, vorab als schwach benannt |
+| 6 | Wächter: Verankerung mindestens 90 % | **48/48** | gehalten |
+| 7 | keine übersetzten Propositionen | 0, beide Richtungen | gehalten |
+
+**Beide inhaltlichen Vorhersagen sind widerlegt** — die zwei, die aus dem fremden
+Paper abgeleitet waren. Fünf von sieben gehalten, und die zwei gefallenen sind
+die, auf die es ankam.
+
+**Warum sie fielen, spricht gegen den Bestand und nicht für den Extraktor.** Die
+Vorregistrierung verpflichtet dazu, die erzeugten Propositionen zu lesen, und sie
+sagen: für die Spanne „Die Schulen des Bezirks haben den Zuschlag erhalten."
+gaben alle drei Läufe genau diesen Satz zurück, unverändert. **42 der 56 Claims
+auf den bewerteten Spannen sind wörtlich die Spanne** — 75 Prozent. Auf
+Ein-Satz-Dokumenten ist die Projektion weitgehend die Identitätsfunktion, die
+Frage, ob sie einen Plural auflöst, kann also nicht entstehen: wo nichts
+umformuliert wird, wird nichts hinzugefügt. Das ist die Lehre aus §4.1 zum dritten
+Mal, und hier ist sie tödlich für den Zweck des Bestands statt ein Vorbehalt dazu.
+
+**Der Druck existiert. Er landet einen Satz weiter, wo der Scorer nicht
+hinsieht.** Über die 24 Läufe der offenen Plurale und ihrer Kontrollen finden sich
+**23 aufgelöste Nicht-Universale ausserhalb der bewerteten Spanne**: „Three of the
+five sites report the drawdown, *implying two sites do not report it*", „*Only*
+three of the five sites report the drawdown, *so two sites do not report it*",
+„Drei der fünf Meldungen liegen dem Amt *noch nicht* vor." Genau die Lesarten, die
+die Fälle verbieten — angehängt an den zweiten Satz des Dokuments, und der Scorer
+bewertet allein `claims_on_span`. **Das Instrument ist konstruktionsbedingt blind
+für das, wofür der Bestand gebaut wurde.**
+
+Die Typisierung macht es schlimmer. Von zehn solchen Folgerungen sind 5 als
+`inference`, 2 als `limitation` und **3 als `fact`** getypt. „Three of the five
+reports have not reached the office" steht als Tatsache da, wo das Dokument nur
+sagt, dass zwei *eingegangen* sind. Als Tatsache behauptet ist das eine erfundene
+Zusage — die Fehlerklasse, die §4.12 für die Bedingung beschreibt, die Klasse, für
+deren Entdeckung das Produkt existiert, erzeugt vom Produkt. **Und der Bestand hat
+alle 48 Läufe bestehen lassen.**
+
+**Eine Lücke in der Vorregistrierung selbst.** Dort steht, ein Fall, den jeder
+Lauf verfehlt, sei ein Kandidat dafür, falsch zu sein. Über den umgekehrten Fall
+steht nichts, und ein Bestand, der beim ersten Kontakt vollständig besteht, ist
+genauso verdächtig: der erste Bedeutungsbestand validierte sauber, und zwei
+unabhängige Durchsichten fanden zwölf seiner 24 Fälle untauglich. Diese Hälfte der
+Regel fehlte, und dieser Lauf hat sie freigelegt.
+
+Was **nicht** folgt, ist, dass der Extraktor Plurale korrekt behandelt. Gemessen
+ist, dass er die Spanne wörtlich zurückgibt, wo sie ein Satz ist. Es folgt
+dreierlei, und alles davon ist Arbeit am Messgerät: die Dokumente müssen länger
+sein als die Spanne, sonst misst der Bestand die Identitätsfunktion
+(**in §4.24 zurückgezogen**: die Messung sagt, es liegt daran, dass die Spanne ein
+vollständiger Satz ist, und nicht an der Länge des Dokuments); eine
+verbotene Lesart muss gegen *jeden* Claim des Dossiers geprüft werden und nicht
+nur gegen die auf der Spanne, was eine Änderung am Instrument ist und einen neuen
+vorregistrierten Lauf verlangt statt einer Neubewertung dieses einen; und die
+Typisierung einer Folgerung gehört in die Bewertung, denn eine Folgerung, die als
+`fact` auftritt, ist ein anderer Fehler als eine, die `inference` heisst.
+
+Der Lauf hat getan, was ein Lauf tun soll: er hat zwei Hypothesen widerlegt und
+drei Mängel am Messgerät gezeigt. Dass jede Zahl perfekt aussieht, ist das
+Gegenteil eines Erfolgs.
+
+### 4.24 Die drei Mängel repariert, und meine eigene Diagnose war die falsche von zwei
+
+§4.23 nennt drei Mängel am Instrument. Beim Messen, *wo* die Identitätsfunktion
+zuschlägt, zeigte sich, dass der erste falsch diagnostiziert war.
+
+| | wörtlich zurückgegebene Claims |
+|---|---|
+| `amb-01`, dessen Spanne ein **Nebensatz** ist | **0 von 14**; 5 und 9 Claims erzeugt |
+| die 14 Fälle, deren Spanne ein **ganzer Satz** ist | **42 von 42** |
+
+In §4.23 steht, die Dokumente müssten länger sein als die Spanne. **Das war
+falsch.** `amb-01`s Dokument ist genauso kurz wie die anderen und verhält sich
+vollständig anders; der Unterschied ist, dass seine Spanne ein Fragment ist. Ein
+vollständiger Satz *ist* schon eine atomare Proposition, es gibt also nichts zu
+projizieren, während ein Nebensatz den Extraktor zwingt, Subjekt und Verbform zu
+ergänzen — und erst dort kann die Frage entstehen.
+
+Vierzehn Spannen sind jetzt Nebensätze in längeren Sätzen, und eine
+Validatorregel hält das fest: **eine Spanne, die wie ein vollständiger Satz
+aussieht, wird abgelehnt.** Die Heuristik ist Großbuchstabe am Anfang plus
+Satzzeichen am Ende; sie hat alle 16 Fälle richtig einsortiert, und das ist die
+ganze Evidenz für sie. Eine Mutation fand dabei einen schwachen Test: die
+Heuristik auf das Satzzeichen allein zu reduzieren überlebte, weil kein Fall klein
+begann und mit Punkt endete — genau der Nebensatz, der das Satzende mitnimmt.
+
+**Die verbotene Lesart wird jetzt gegen das ganze Dossier geprüft.** Der alte
+Scorer bewertete Claims auf der Spanne; die verbotene Auflösung erschien einen
+Satz weiter. Das neue Feld prüft jeden Claim und nennt die *gefolgerte* Auflösung
+statt des Wortlauts des Dokuments, denn ein wörtliches Zitat des zweiten Satzes
+ist korrekte Extraktion und darf nicht bestraft werden — eine Validatorregel
+lehnt ein Muster ab, das das Dokument selbst trifft. Gegen die echte Ausgabe des
+bezahlten Laufs geprüft und nicht an erfundenen Beispielen: **10 Claims, die der
+reparierte Scorer fängt und der alte nicht sehen konnte, 2 davon als `fact`
+getypt**, und jedes wörtliche Zitat zu Recht unangetastet.
+
+**Die Typisierung einer Folgerung geht in die Bewertung ein.** Jede Verzerrung
+trägt den Typ des Claims und die Angabe, ob sie auf der Spanne lag, und zwei
+Felder berichten getrennt: was das alte Instrument nicht sehen konnte, und die
+schärfere Klasse einer Folgerung, die das Dokument nicht macht und die als
+Tatsache behauptet wird. Ein Test hält fest, dass ein Fall *ohne* das neue Feld
+sich unverändert verhält, denn der erste Bedeutungsbestand hat keines und seine 69
+von 72 dürfen sich nicht bewegen — eine Instrumentenänderung, die eine
+veröffentlichte Zahl verschiebt, wäre das Schlechteste aus beidem.
+
+Dokumente und Spannen haben sich geändert, die gespeicherten Dossiers des ersten
+Laufs sind also **nicht neu bewertbar**. Das ist der Preis dafür, ein Instrument
+nach einem Ergebnis zu ändern, und deshalb braucht der nächste Lauf eine **neue
+Vorregistrierung** — mit der Hälfte der Regel, die der ersten fehlte: ein Bestand,
+der beim ersten Kontakt vollständig besteht, ist so verdächtig wie ein Fall, der
+immer durchfällt.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2652,6 +3407,36 @@ Dokument, Gold und Vorschlagspaket, der Nachlauf kostete also nichts und ist jet
 getan (§4.19). Die erste Aussage beschuldigte einen Test, der funktioniert hatte.
 Die zweite verschob eine Messung aus einem Grund, der nicht existierte.
 
+Eine dritte derselben Art, und diese hätte eine falsche Reparatur gekostet:
+**„der Bestand misst die Identitätsfunktion, weil seine Dokumente zu kurz sind"**.
+Gemessen liegt es daran, dass die Spanne ein vollständiger Satz ist — der eine
+Fall, dessen Spanne ein Nebensatz war, erzeugte 0 von 14 wörtlichen Claims, auf
+einem Dokument genau so kurz wie die übrigen. Die Reparatur aus der falschen
+Diagnose hätte Dokumente verlängert und nichts geändert. **Zurückgezogen, und die
+richtige Eigenschaft ist jetzt eine Validatorregel** (§4.24).
+
+Eine Durchsicht dieses Berichts von außen hat vier weitere gefunden, keine davon
+über eine Messung, alle darüber, was der Bericht über sich selbst sagt. Zwei waren
+Aussagen und werden hier zurückgezogen. **„Die Typisierung `assumption` ist eine
+zulässige Lesart"** schrieb einem Label semantischen Gehalt zu, das laut §4.13
+nirgends im Vertrag definiert ist — und in einem der sechs Läufe lautet die
+Typisierung gar nicht `assumption`; gemessen ist die unbedingte Behauptung des
+Nachsatzes, nichts über die Typen. **„Eine relative Häufigkeit über Wiederholungen
+ist per Konstruktion kalibriert, weil sie gezählt und nicht behauptet wird"** ist
+zu stark, und der Absatz danach widersprach ihr. Gezählt ist besser als behauptet,
+aber eine Häufigkeit über Wiederholungen vermischt echte
+Interpretationsmehrdeutigkeit mit Sampling-Instabilität (§4.2), einem Anbieter,
+der das bediente Modell austauscht (§4.8), Unterschieden in Fragmentierung und
+Typisierung (§4.13), dem, was das Gate ablehnt (§4.3), und dem, was die
+Zuordnungsregel als dieselbe Antwort zählt (§4.19). Das Letzte ist das
+Unangenehme: §4.19 hat gemessen, dass die Zuordnungsregel auf einem Dokument 38
+von 49 Spannen entscheidet, und dieser Bericht ließ die Kalibrierungsaussage zwei
+Abschnitte weiter stehen. Die anderen zwei waren veraltet statt falsch — eine
+Grenze, die behauptete, die zwei unabhängigen Durchsichten hätten nicht
+stattgefunden, wo §4.16 beide festhält, und eine Zahl, die zwei externe Eingaben
+nannte, wo drei stehen — und die zweite davon war eine Ersetzung, die mein eigenes
+Werkzeug als angewandt meldete und nie geschrieben hat.
+
 ## 8. Was die externe Arbeit beigetragen hat
 
 Drei externe Eingaben haben die Arbeit geformt, und es lohnt sich, genau zu sagen
@@ -2686,10 +3471,19 @@ Seine konkreten Vorschriften haben sich nicht übertragen:
   Kalibrierung brauchen, die nie gemacht wurde.
 
 Die eine Anpassung, die es wert ist: **Die Wiederholungen, die wir ohnehin
-bezahlen, sind eine empirische Verteilung.** Fünf Läufe geben pro Claim eine
-relative Häufigkeit, die per Konstruktion kalibriert ist, weil sie gezählt und
-nicht behauptet wird. Das verwandelt die Streuung von dem, was jede Messung
-ruiniert, in das, was die Emissionsregeln des Papers wollten. **Die Hälfte davon
+bezahlen, sind eine empirische Stichprobenverteilung über Ausgaben.** Fünf Läufe
+geben pro Claim eine relative Häufigkeit, die gezählt und nicht behauptet wird,
+und das ist den Konfidenzzahlen, die ein Modell schreibt, deutlich vorzuziehen.
+Kalibriert ist sie damit **nicht**, und eine Verteilung über Lesarten ist sie
+auch noch nicht — eine frühere Fassung dieses Absatzes schrieb „per Konstruktion
+kalibriert, weil sie gezählt wird", was zu stark ist und dem folgenden Absatz
+widersprach. Was eine Häufigkeit über Wiederholungen tatsächlich vermischt, ist
+in den Begriffen dieses Berichts benennbar: echte Interpretationsmehrdeutigkeit,
+Sampling-Instabilität (§4.2), einen Anbieter, der das bediente Modell austauscht
+(§4.8), Unterschiede in Fragmentierung und Typisierung (§4.13), was das Gate
+ablehnt (§4.3) und was die Zuordnungsregel als dieselbe Antwort zählt (§4.19).
+Sie ist ein beobachtetes Stabilitätssignal, und sie in diese Bestandteile zu
+trennen ist das offene Problem und keine Frage der Darstellung. **Die Hälfte davon
 ist jetzt gebaut** (§4.19): die Streuung über die drei gespeicherten
 Wiederholungen jedes Bedeutungsfalls wird berechnet und neben das Gold-Ergebnis
 gestellt, und sie trennt jeden durchgefallenen Fall. Ungebaut ist, was das Paper
@@ -2722,8 +3516,8 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 27 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ap            die chronologische Aufzeichnung
+scripts/                                 29 Messskripte, jedes getestet
+docs/architecture.md §3a–§3av            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -2733,7 +3527,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-536 Tests und einer übersprungen, `ruff check` sauber.
+645 Tests und einer übersprungen, `ruff check` sauber.
 
 ## 10. Offene Entscheidungen
 
@@ -2754,10 +3548,12 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    überlassen. Für das Sprachproblem waren sie nicht nötig (§4.12); die Bedingung
    ist der verbleibende Kandidat und der einzige noch gemessene
    Bedeutungsfehler.
-6. **Wer den Bedeutungsbestand durchsieht.** Er ist absichtlich ein Entwurf: zwei
-   unabhängige Durchsichten sind angefragt und keine hat stattgefunden, und
-   solange ruht jede Zahl in §4.12 auf Fällen, die dieselbe Partei geschrieben
-   hat, die das System gebaut hat.
+6. **Wer den Bedeutungsbestand durchsieht.** Zwei unabhängige Durchsichten sind
+   gelaufen und verarbeitet (§4.16), er ist also geprüft und kein Entwurf mehr.
+   Offen ist das Engere: beide waren modellbasiert, und **kein menschliches
+   Fachgutachten hat den Bestand gesehen.** Solange ruht jede Zahl in §4.12 auf
+   Fällen, die die Partei geschrieben hat, die das System gebaut hat, geprüft von
+   zwei Systemen derselben Art.
 7. **Ob Extraktionswiederholungen Politik werden.** §4.14 hat gezeigt, dass die
    Markierung aus §4.13 die Art der Abhängigkeit nennt und nicht die beobachtete
    Instabilität — am Emissionszeitpunkt gibt es einen Lauf, und ob *dieser* Befund
