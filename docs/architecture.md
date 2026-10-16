@@ -3820,3 +3820,106 @@ Form wie die Hälftenauswahl in 3aq und der Statuswert in 3as — ein drittes Ma
 und damit ein Muster und kein Ausrutscher: *eine Prüfung braucht einen Test, der
 sie scheitern lässt, nicht einen, der sie bestätigt.* Nachgezogen, danach acht von
 acht.
+
+## 3au. 48 von 48 bestanden — und das ist der Bestand, der keine Messung ist
+
+Der reparierte Lauf ging in **100 Sekunden** durch, 48 Aufrufe, keiner
+fehlgeschlagen. Die Budgetgrenze aus 3at wirkt. Und dann das Ergebnis gegen die
+sieben vorregistrierten Vorhersagen aus `docs/prereg-reading-identity-01.md`:
+
+| # | vorhergesagt | gemessen | |
+|---|---|---|---|
+| 1 | offene Plurale **≤ 8 von 12** | **12/12** | **widerlegt** |
+| 2 | `plu-02` strikt schlechter als `plu-01` | 6/6 gegen 6/6 | **widerlegt** |
+| 3 | `determinate` ≥ 16 von 18 | 18/18 | gehalten |
+| 4 | `evidence_absent` ≥ 5 von 6 | 6/6 | gehalten |
+| 5 | `ambiguous` ≥ 10 von 12 | 12/12 | gehalten, und vorab als schwach benannt |
+| 6 | Wächter: Verankerung ≥ 90 % | **48/48** | gehalten |
+| 7 | 0 Übersetzungen | 0, beide Richtungen | gehalten |
+
+**Beide inhaltlichen Vorhersagen widerlegt** — genau die zwei, die aus dem
+fremden Paper abgeleitet waren. Fünf von sieben gehalten, und die zwei
+gefallenen sind die, auf die es ankam.
+
+### Warum sie fielen, und es spricht gegen den Bestand und nicht für den Extraktor
+
+Die Vorregistrierung verpflichtet mich, bei jedem Ergebnis die erzeugten
+Propositionen zu **lesen**. Dort steht:
+
+> Spanne: `Die Schulen des Bezirks haben den Zuschlag erhalten.`
+> Lauf 1, 2 und 3: `Die Schulen des Bezirks haben den Zuschlag erhalten.`
+
+**42 der 56 Claims auf den bewerteten Spannen sind wörtlich die Spanne** — 75
+Prozent. Auf Ein-Satz-Dokumenten ist die Projektion weitgehend die
+Identitätsfunktion, und die Frage, ob sie einen Plural auflöst, kann dort
+überhaupt nicht entstehen. Es gibt nichts hinzuzufügen, wenn nichts umformuliert
+wird.
+
+Das ist die Lehre aus §4.1 zum dritten Mal — „die 25 von 25 waren eine
+Eigenschaft eines kurzen Dokuments" —, und diesmal ist sie nicht ein Vorbehalt
+zum Bestand, sondern **tödlich für seinen Zweck.**
+
+### Der Druck existiert. Er landet einen Satz weiter, und dort schaue ich nicht
+
+Gesucht und gefunden, ausserhalb der bewerteten Spanne:
+
+| | |
+|---|---:|
+| aufgelöste Nicht-Universale in den `plu`-Läufen | **23 Befunde über 24 Läufe** |
+
+> `plu-03-en`: „Three of the five sites report the drawdown, **implying two sites
+> do not report it.**"
+> `plu-01-en`: „**Only** three of the five sites report the drawdown, **so two
+> sites do not report it.**"
+> `plu-02-de`: „Drei der fünf Meldungen liegen dem Amt **noch nicht** vor."
+
+Genau die Lesarten, die meine `forbidden_readings` verbieten. Nur hängen sie am
+**zweiten Satz** des Dokuments und nicht an der Spanne — und mein Scorer bewertet
+ausschliesslich `claims_on_span`. **Das Instrument ist konstruktionsbedingt blind
+für das, wofür der Bestand gebaut wurde.**
+
+Und die Typisierung macht es schlimmer:
+
+| Typ der erzeugten Folgerung | Anzahl |
+|---|---:|
+| `inference` | 5 |
+| `limitation` | 2 |
+| **`fact`** | **3** |
+
+„Three of the five reports have not reached the office." steht als `fact` da. Das
+Dokument sagt, zwei von fünf *seien eingegangen*; dass drei fehlen, ist eine
+Folgerung. Als Tatsache behauptet ist das **eine erfundene Zusage** — dieselbe
+Fehlerklasse, die §4.12 bei der Bedingung beschreibt, die Fehlerklasse, für deren
+Entdeckung das Produkt existiert, erzeugt vom Produkt. **Und mein Bestand hat
+alle 48 Läufe bestehen lassen.**
+
+### Die Lücke in meiner eigenen Vorregistrierung
+
+Dort steht: „Ein Fall, den jeder Lauf verfehlt, ist ein Kandidat dafür, falsch zu
+sein." Über den umgekehrten Fall steht nichts. **Ein Bestand, der beim ersten
+Kontakt vollständig besteht, ist genauso verdächtig** — der erste
+Bedeutungsbestand validierte sauber, und zwei fremde Durchsichten fanden zwölf
+von 24 Fällen untauglich. Diese Hälfte der Regel fehlte, und dieser Lauf hat sie
+freigelegt.
+
+### Was daraus folgt, und was nicht
+
+**Nicht** folgt: „der Extraktor behandelt Plurale korrekt". Gemessen ist, dass er
+die Spanne wörtlich wiedergibt, wo sie ein Satz ist.
+
+Es folgt dreierlei, und alles davon ist Arbeit am Instrument:
+
+1. **Die Dokumente müssen länger werden als die Spanne.** Solange
+   `canonical_content` die Spanne wörtlich kopiert, misst der Bestand die
+   Identitätsfunktion.
+2. **Der Scorer darf nicht nur auf der Spanne schauen.** Ein Verbot muss gegen
+   *alle* Claims des Dossiers prüfen, sonst wandert der Fehler aus dem
+   Messbereich. Das ist eine Änderung am Instrument und verlangt einen neuen
+   vorregistrierten Lauf, nicht eine Neubewertung dieses einen.
+3. **Die Typisierung einer Folgerung gehört in die Bewertung.** Eine Folgerung,
+   die als `fact` auftritt, ist ein anderer Fehler als eine, die `inference`
+   heisst — und 3 von 10 traten so auf.
+
+Der Lauf hat also geliefert, was ein Lauf liefern soll: er hat meine zwei
+Hypothesen widerlegt und drei Mängel am Messgerät gezeigt. Dass alle Zahlen
+perfekt aussehen, ist das Gegenteil eines Erfolgs.

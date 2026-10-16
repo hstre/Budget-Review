@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3at, which is a log rather than a synthesis.
+§3a–§3au, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -117,7 +117,7 @@ compute its variants** — which costs nothing and had not been done.
 | 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
 | 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats — and §4.20 sharpens why: no case admits two semantically different readings, so on this set disagreement *is* error by construction and the separation cannot show that spread detects ambiguity |
 | 24 | Whether two runs mean the same by a claim type is not answerable from the stored data | the prompt effect (86–95 % agreement) lies inside the range sampling alone produces (81–94 %), and no comparison is a consistent renaming (§4.20). Controlled side finding: type stability falls with document length, 94 % on one sentence against 81 % on a long paper |
-| 25 | A reference set that could tell interpretive ambiguity from noise now exists, and has never been run | built (§4.21): 16 cases, 8 pairs, four reading statuses, with the quantifier controls that make the status measurable. 48 calls and a pre-registered criterion away from a figure. It annotates no edges. Field-level interpretation provenance is recorded per case, and four of its eight pairs turn on something that field list does not reach (§4.22) |
+| 25 | The harder reference set has been run, and it is not yet a measurement | **48 of 48 passed**, which refuted both substantive predictions and exposed three defects in the instrument (§4.23): 75 % of scored claims are the span verbatim, the forbidden resolutions appear one sentence over where the scorer does not look, and 3 of 10 such inferences arrive typed `fact`. Field-level interpretation provenance is recorded, and four of the eight pairs turn on something that field list does not reach (§4.22) |
 | 26 | Relations are now structurally checkable, and the check is nearly idle | the vocabulary's reversal table says two labels are symmetric, one pair inverse, ten with no inverse at all (§4.21). Across 1,041 stored relations both directions appear four times, all consistent — 0.4 per cent, so it cannot fail. Establishing anything needs the endpoints actively swapped, which is a paid run |
 | 27 | The gold-free agreement signal has no absolute component | open; it says the runs agree, not that what they agree on is right, and the two coincide on the meaning set only because that set has a gold (§4.22). 22 of 24 cases agree completely and none of them fails |
 
@@ -1336,6 +1336,71 @@ still *demands* the same reference decision. About half the measured effect was
 artefact. That is the quantification of why the 68-operation perturbation library
 is still not taken: it supplies inputs and no gold that their meaning survived.
 
+### 4.23 The set passed 48 of 48, which is how a set fails to be a measurement
+
+The run went through in 100 seconds, 48 calls, none failed — the call budget from
+§4.22 holds. Against the seven predictions fixed in advance
+(`docs/prereg-reading-identity-01.md`):
+
+| # | Predicted | Measured | |
+|---|---|---|---|
+| 1 | open plurals **at most 8 of 12** | **12/12** | **refuted** |
+| 2 | the negated plural strictly worse than the positive | 6/6 against 6/6 | **refuted** |
+| 3 | `determinate` at least 16 of 18 | 18/18 | held |
+| 4 | `evidence_absent` at least 5 of 6 | 6/6 | held |
+| 5 | `ambiguous` at least 10 of 12 | 12/12 | held, and named weak in advance |
+| 6 | guard: anchoring at least 90 % | **48/48** | held |
+| 7 | no translated propositions | 0, both directions | held |
+
+**Both substantive predictions are refuted** — the two derived from the outside
+paper. Five of seven held, and the two that fell are the two that mattered.
+
+**Why they fell is an indictment of the set, not a credit to the extractor.** The
+pre-registration obliges reading the produced propositions, and they say this:
+for the span "Die Schulen des Bezirks haben den Zuschlag erhalten." all three runs
+returned that sentence, unchanged. **42 of the 56 claims on the scored spans are
+the span verbatim** — 75 per cent. On one-sentence documents the projection is
+largely the identity function, so the question of whether it resolves a plural
+cannot arise: nothing is added where nothing is reworded. That is §4.1's lesson a
+third time, and here it is fatal to the set's purpose rather than a caveat on it.
+
+**The pressure does exist. It lands one sentence over, where the scorer does not
+look.** Across the 24 open-plural and control runs there are **23 resolved
+non-universals outside the scored span**: "Three of the five sites report the
+drawdown, *implying two sites do not report it*", "*Only* three of the five sites
+report the drawdown, *so two sites do not report it*", "Drei der fünf Meldungen
+liegen dem Amt *noch nicht* vor." Those are exactly the readings the cases forbid —
+attached to the document's second sentence, and the scorer judges `claims_on_span`
+alone. **The instrument is blind by construction to what the set was built to
+find.**
+
+The typing makes it worse. Of ten such inferences, 5 are typed `inference`, 2
+`limitation` and **3 `fact`**. "Three of the five reports have not reached the
+office" stands as a fact where the document says only that two *have* arrived.
+Asserted as fact, that is an invented commitment — the error class §4.12 describes
+for the conditional, the class the product exists to catch, produced by the
+product. **And the set passed all 48 runs.**
+
+**A gap in the pre-registration itself.** It says a case every run fails is a
+candidate for being wrong. It says nothing about the converse, and a set that
+passes completely on first contact is just as suspect: the first meaning set
+validated cleanly and two independent reviews found twelve of its 24 cases unfit.
+That half of the rule was missing, and this run exposed it.
+
+What does **not** follow is that the extractor handles plurals correctly. What was
+measured is that it returns the span verbatim where the span is one sentence.
+Three things follow, and all of them are work on the instrument: the documents
+have to be longer than the span, or the set measures the identity function; a
+forbidden reading has to be checked against every claim in the dossier rather than
+only those on the span, which is a change to the instrument and needs a new
+pre-registered run rather than a re-score of this one; and the typing of an
+inference belongs in the scoring, because an inference arriving as `fact` is a
+different error from one arriving as `inference`.
+
+The run did what a run should: it refuted two hypotheses and exposed three defects
+in the measuring device. That every figure looks perfect is the opposite of a
+success.
+
 ---
 
 ## 5. What we do not know
@@ -1584,7 +1649,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 29 measurement scripts, each tested
-docs/architecture.md §3a–§3at            the chronological record, run by run
+docs/architecture.md §3a–§3au            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1646,7 +1711,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3at und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3au und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1759,7 +1824,7 @@ und nicht getan war.
 | 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
 | 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen — und §4.20 verschärft, warum: kein Fall lässt zwei semantisch verschiedene Lesarten zu, Uneinigkeit *ist* auf diesem Bestand konstruktionsbedingt Fehler, und die Trennung kann nicht zeigen, dass Streuung Ambiguität erkennt |
 | 24 | Ob zwei Läufe dasselbe mit einem Claim-Typ meinen, ist aus den gespeicherten Daten nicht beantwortbar | der Prompt-Effekt (86–95 % Übereinstimmung) liegt innerhalb der Spanne, die Sampling allein erzeugt (81–94 %), und kein Vergleich ist eine konsistente Umbenennung (§4.20). Kontrollierter Nebenbefund: die Typstabilität fällt mit der Dokumentlänge, 94 % auf einem Satz gegen 81 % auf einem langen Paper |
-| 25 | Ein Referenzbestand, der Interpretationsmehrdeutigkeit von Rauschen trennen könnte, existiert jetzt und ist nie gelaufen | gebaut (§4.21): 16 Fälle, 8 Paare, vier Lesartstatus, mit den Quantorenkontrollen, die den Status messbar machen. 48 Aufrufe und ein vorregistriertes Kriterium von einer Zahl entfernt. Er annotiert keine Kanten. Feldweise Interpretationsprovenienz ist je Fall aufgezeichnet, und vier seiner acht Paare beruhen auf etwas, das dieser Feldkatalog nicht erreicht (§4.22) |
+| 25 | Der härtere Referenzbestand ist gelaufen und ist noch keine Messung | **48 von 48 bestanden**, womit beide inhaltlichen Vorhersagen widerlegt und drei Mängel am Instrument freigelegt sind (§4.23): 75 % der bewerteten Claims sind wörtlich die Spanne, die verbotenen Auflösungen erscheinen einen Satz weiter, wo der Scorer nicht hinsieht, und 3 von 10 solchen Folgerungen treten als `fact` auf. Feldweise Interpretationsprovenienz ist aufgezeichnet, und vier der acht Paare beruhen auf etwas, das dieser Feldkatalog nicht erreicht (§4.22) |
 | 26 | Relationen sind jetzt strukturell prüfbar, und die Prüfung ist beinahe untätig | die Umkehrtabelle des Vokabulars nennt zwei Labels symmetrisch, ein Paar invers, zehn ohne jedes Inverses (§4.21). Über 1041 gespeicherte Relationen treten beide Richtungen viermal auf, alle konsistent — 0,4 Prozent, sie kann also nicht scheitern. Etwas zu belegen verlangt aktives Vertauschen der Enden, und das ist ein bezahlter Lauf |
 | 27 | Dem gold-freien Übereinstimmungssignal fehlt jede absolute Komponente | offen; es sagt, dass die Läufe einig sind, nicht dass das Einige richtig ist, und beides fällt auf dem Bedeutungsbestand nur zusammen, weil er ein Gold hat (§4.22). 22 von 24 Fällen sind vollständig einig, und keiner von ihnen fällt durch |
 
@@ -3007,6 +3072,75 @@ Effekts war Artefakt. Das ist die Quantifizierung des Grundes, aus dem die
 Perturbationsbibliothek mit ihren 68 Operationen weiter nicht aufgenommen wird:
 sie liefert Eingaben und kein Gold dafür, dass deren Bedeutung erhalten blieb.
 
+### 4.23 Der Bestand bestand 48 von 48, und so scheitert ein Bestand daran, eine Messung zu sein
+
+Der Lauf ging in 100 Sekunden durch, 48 Aufrufe, keiner fehlgeschlagen — die
+Budgetgrenze aus §4.22 hält. Gegen die sieben vorab festgelegten Vorhersagen
+(`docs/prereg-reading-identity-01.md`):
+
+| # | vorhergesagt | gemessen | |
+|---|---|---|---|
+| 1 | offene Plurale **höchstens 8 von 12** | **12/12** | **widerlegt** |
+| 2 | der negierte Plural strikt schlechter als der positive | 6/6 gegen 6/6 | **widerlegt** |
+| 3 | `determinate` mindestens 16 von 18 | 18/18 | gehalten |
+| 4 | `evidence_absent` mindestens 5 von 6 | 6/6 | gehalten |
+| 5 | `ambiguous` mindestens 10 von 12 | 12/12 | gehalten, vorab als schwach benannt |
+| 6 | Wächter: Verankerung mindestens 90 % | **48/48** | gehalten |
+| 7 | keine übersetzten Propositionen | 0, beide Richtungen | gehalten |
+
+**Beide inhaltlichen Vorhersagen sind widerlegt** — die zwei, die aus dem fremden
+Paper abgeleitet waren. Fünf von sieben gehalten, und die zwei gefallenen sind
+die, auf die es ankam.
+
+**Warum sie fielen, spricht gegen den Bestand und nicht für den Extraktor.** Die
+Vorregistrierung verpflichtet dazu, die erzeugten Propositionen zu lesen, und sie
+sagen: für die Spanne „Die Schulen des Bezirks haben den Zuschlag erhalten."
+gaben alle drei Läufe genau diesen Satz zurück, unverändert. **42 der 56 Claims
+auf den bewerteten Spannen sind wörtlich die Spanne** — 75 Prozent. Auf
+Ein-Satz-Dokumenten ist die Projektion weitgehend die Identitätsfunktion, die
+Frage, ob sie einen Plural auflöst, kann also nicht entstehen: wo nichts
+umformuliert wird, wird nichts hinzugefügt. Das ist die Lehre aus §4.1 zum dritten
+Mal, und hier ist sie tödlich für den Zweck des Bestands statt ein Vorbehalt dazu.
+
+**Der Druck existiert. Er landet einen Satz weiter, wo der Scorer nicht
+hinsieht.** Über die 24 Läufe der offenen Plurale und ihrer Kontrollen finden sich
+**23 aufgelöste Nicht-Universale ausserhalb der bewerteten Spanne**: „Three of the
+five sites report the drawdown, *implying two sites do not report it*", „*Only*
+three of the five sites report the drawdown, *so two sites do not report it*",
+„Drei der fünf Meldungen liegen dem Amt *noch nicht* vor." Genau die Lesarten, die
+die Fälle verbieten — angehängt an den zweiten Satz des Dokuments, und der Scorer
+bewertet allein `claims_on_span`. **Das Instrument ist konstruktionsbedingt blind
+für das, wofür der Bestand gebaut wurde.**
+
+Die Typisierung macht es schlimmer. Von zehn solchen Folgerungen sind 5 als
+`inference`, 2 als `limitation` und **3 als `fact`** getypt. „Three of the five
+reports have not reached the office" steht als Tatsache da, wo das Dokument nur
+sagt, dass zwei *eingegangen* sind. Als Tatsache behauptet ist das eine erfundene
+Zusage — die Fehlerklasse, die §4.12 für die Bedingung beschreibt, die Klasse, für
+deren Entdeckung das Produkt existiert, erzeugt vom Produkt. **Und der Bestand hat
+alle 48 Läufe bestehen lassen.**
+
+**Eine Lücke in der Vorregistrierung selbst.** Dort steht, ein Fall, den jeder
+Lauf verfehlt, sei ein Kandidat dafür, falsch zu sein. Über den umgekehrten Fall
+steht nichts, und ein Bestand, der beim ersten Kontakt vollständig besteht, ist
+genauso verdächtig: der erste Bedeutungsbestand validierte sauber, und zwei
+unabhängige Durchsichten fanden zwölf seiner 24 Fälle untauglich. Diese Hälfte der
+Regel fehlte, und dieser Lauf hat sie freigelegt.
+
+Was **nicht** folgt, ist, dass der Extraktor Plurale korrekt behandelt. Gemessen
+ist, dass er die Spanne wörtlich zurückgibt, wo sie ein Satz ist. Es folgt
+dreierlei, und alles davon ist Arbeit am Messgerät: die Dokumente müssen länger
+sein als die Spanne, sonst misst der Bestand die Identitätsfunktion; eine
+verbotene Lesart muss gegen *jeden* Claim des Dossiers geprüft werden und nicht
+nur gegen die auf der Spanne, was eine Änderung am Instrument ist und einen neuen
+vorregistrierten Lauf verlangt statt einer Neubewertung dieses einen; und die
+Typisierung einer Folgerung gehört in die Bewertung, denn eine Folgerung, die als
+`fact` auftritt, ist ein anderer Fehler als eine, die `inference` heisst.
+
+Der Lauf hat getan, was ein Lauf tun soll: er hat zwei Hypothesen widerlegt und
+drei Mängel am Messgerät gezeigt. Dass jede Zahl perfekt aussieht, ist das
+Gegenteil eines Erfolgs.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -3263,7 +3397,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 29 Messskripte, jedes getestet
-docs/architecture.md §3a–§3at            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3au            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 

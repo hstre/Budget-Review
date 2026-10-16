@@ -11,6 +11,23 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **The harder case set was run and passed 48 of 48, which refuted both of the
+  predictions that mattered and exposed three defects in the instrument.** The
+  run cost 48 calls and 100 seconds; the call budget added in this release held.
+  Against the seven predictions fixed in advance: open plurals were to pass at
+  most 8 of 12 and passed 12, and the negated plural was to do strictly worse
+  than the positive and did exactly as well. The other five held, including the
+  anchoring guard at 48 of 48 and no translated proposition in either direction.
+  Reading the produced propositions, as the pre-registration requires: **42 of
+  the 56 claims on the scored spans are the span verbatim**, so on one-sentence
+  documents the projection is largely the identity function and the question the
+  set asks cannot arise. The forbidden resolutions are produced — **23 of them
+  across 24 runs, attached to the document's second sentence**, where the scorer
+  judges only claims on the span — and of ten such inferences **three arrive
+  typed `fact`**, which asserts as fact what the document does not say.
+  A set that passes completely on first contact is as suspect as a case that
+  always fails; the pre-registration had written down only the second half of
+  that rule.
 - **The relation vocabulary can express only four of its fourteen labels in both
   directions.** Writing down, for the first time, which labels are symmetric and
   what any label's inverse is: two are symmetric (`CONTRADICTS`, `SCOPE_TENSION`),
@@ -234,7 +251,10 @@ says when it moves them. Their current values are `polished` 5 claims /
   decoration that looks like a safeguard.
 - `anchor_ambiguous` stays unrendered, so §4.13's lesson about it remains
   unapplied.
-- Running the new set. 48 calls, and a pre-registered criterion has to come first.
+- Fixing the three defects the run exposed. Longer documents, a forbidden reading
+  checked against every claim rather than only those on the span, and the typing of
+  an inference entering the score. All three change the instrument, so they need a
+  new pre-registered run and not a re-score of the one just made.
 - Anything from the memory-formation paper: this project has no persistent memory,
   no reflection runs and no consolidation, so it is a boundary rather than a gap.
   Its transferable lesson — that formation needs provenance, not only the end state
