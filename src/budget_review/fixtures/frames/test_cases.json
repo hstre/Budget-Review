@@ -1,0 +1,3293 @@
+{
+  "set": "frames",
+  "variant": "test",
+  "language": "de",
+  "convention": "Jedes geschlossene Feld, das in einer Stufe weder unter must noch unter must_not noch unter tolerated steht, muss undecided sein. Gold ist damit vollständig und Offenlassen wird gezählt statt vorausgesetzt.",
+  "cases": [
+    {
+      "case_id": "A01",
+      "category": "A",
+      "pair": "A-1",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Dienst kann die Konfiguration überschreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Jede Änderung der Konfiguration setzt eine menschliche Freigabe voraus."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {},
+          "note": "kann ist zwischen Fähigkeit und Erlaubnis offen; keine der beiden ist belegt."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "obligation": "present",
+            "quantifier": "all",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Die Freigabepflicht begrenzt die Erlaubnis und sagt nichts über die technische Fähigkeit."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "A02",
+      "category": "A",
+      "pair": "A-1",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Dienst kann die Konfiguration überschreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Mit „kann“ ist an dieser Stelle ausschließlich die technische Fähigkeit gemeint."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {},
+          "note": "Gleiche Ausgangslage wie A01."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "capability",
+            "capability": "affirmed",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ]
+          },
+          "note": "Der Abschnitt entscheidet die Lesart als Fähigkeit und lässt die Berechtigung offen."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "A03",
+      "category": "A",
+      "pair": "A-2",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Dienst darf Protokolle löschen."
+        },
+        {
+          "frame": "F2",
+          "text": "Das Löschen von Protokollen ist nur mit einer Vier-Augen-Freigabe zulässig."
+        },
+        {
+          "frame": "F3",
+          "text": "Die technische Löschfunktion ist in dieser Version nicht implementiert."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "open"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed"
+            ],
+            "action_occurred": [
+              "yes"
+            ]
+          },
+          "note": "darf ist eindeutig Erlaubnis; über die Fähigkeit steht nichts."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Die Erlaubnis besteht nur unter einer Bedingung."
+        },
+        {
+          "after": "F3",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "capability": "denied",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "action_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Fehlende Fähigkeit hebt die erteilte, bedingte Erlaubnis nicht auf."
+        }
+      ],
+      "decisive_frame": "F3"
+    },
+    {
+      "case_id": "A04",
+      "category": "A",
+      "pair": "A-2",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Dienst darf Protokolle löschen."
+        },
+        {
+          "frame": "F2",
+          "text": "Das Löschen von Protokollen ist nur mit einer Vier-Augen-Freigabe zulässig."
+        },
+        {
+          "frame": "F3",
+          "text": "Die technische Löschfunktion ist in dieser Version implementiert."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "open"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed"
+            ],
+            "action_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie A03."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Wie A03."
+        },
+        {
+          "after": "F3",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "capability": "affirmed",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "action_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Vorhandene Fähigkeit macht die Bedingung nicht gegenstandslos und belegt keine Handlung."
+        }
+      ],
+      "decisive_frame": "F3"
+    },
+    {
+      "case_id": "A05",
+      "category": "A",
+      "pair": "A-3",
+      "role": "base",
+      "traits": [
+        "local_already_correct",
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Agent kann Tickets schließen."
+        },
+        {
+          "frame": "F2",
+          "text": "Der Agent ist seit 2019 im Einsatz."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {},
+          "note": "Zwischen Fähigkeit und Erlaubnis offen."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Die Einsatzdauer entscheidet keine der beiden Lesarten."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "A06",
+      "category": "A",
+      "pair": "A-3",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Agent kann Tickets schließen."
+        },
+        {
+          "frame": "F2",
+          "text": "Das Schließen von Tickets setzt eine Freigabe des Teamleiters voraus."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {},
+          "note": "Gleiche Ausgangslage wie A05."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "obligation": "present",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Nur die Erlaubnis wird begrenzt."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "A07",
+      "category": "A",
+      "pair": "A-4",
+      "role": "base",
+      "traits": [
+        "stays_ambiguous",
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Schnittstelle kann Daten überschreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Das Überschreiben von Daten ist in der Dokumentation beschrieben."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {},
+          "note": "Offen zwischen Fähigkeit und Erlaubnis."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Dass etwas dokumentiert ist, entscheidet weder Fähigkeit noch Erlaubnis."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "A08",
+      "category": "A",
+      "pair": "A-4",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Schnittstelle kann Daten überschreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Das Überschreiben von Daten ist der Schnittstelle untersagt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {},
+          "note": "Gleiche Ausgangslage wie A07."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "permission": "denied",
+            "status": "restricted"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "conditional"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Ein Verbot verneint die Erlaubnis und lässt die Fähigkeit offen."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B01",
+      "category": "B",
+      "pair": "B-1",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Jeder Schreibvorgang bedarf einer menschlichen Freigabe."
+        },
+        {
+          "frame": "F2",
+          "text": "Ausgenommen sind automatisch erzeugte Zeitstempel im Wartungsprotokoll."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Allgemeine Regel ohne Ausnahme, Erlaubnis nur mit Freigabe."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "exception_present": "yes",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "status": "restricted"
+          },
+          "must_not": {
+            "quantifier": [
+              "all"
+            ],
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "obligation": [
+              "absent"
+            ]
+          },
+          "note": "Die Ausnahme begrenzt die Regel, ohne eine allgemeine Schreibberechtigung zu erzeugen."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B02",
+      "category": "B",
+      "pair": "B-1",
+      "role": "variant",
+      "traits": [
+        "negative_control",
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Jeder Schreibvorgang bedarf einer menschlichen Freigabe."
+        },
+        {
+          "frame": "F2",
+          "text": "Automatisch erzeugte Zeitstempel im Wartungsprotokoll sind praktisch."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Gleiche Regel wie B01."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "exception_present": [
+              "yes"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Eine Nützlichkeitsaussage ist keine Ausnahme von der Freigabepflicht."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B03",
+      "category": "B",
+      "pair": "B-2",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Jeder Schreibvorgang bedarf einer menschlichen Freigabe."
+        },
+        {
+          "frame": "F2",
+          "text": "Ausgenommen sind Schreibvorgänge im Wartungsprotokoll."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Wie B01."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "exception_present": "yes",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "status": "restricted"
+          },
+          "must_not": {
+            "quantifier": [
+              "all"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Ausnahme ohne zusätzliche Bedingung, auf einen Ort begrenzt."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B04",
+      "category": "B",
+      "pair": "B-2",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Jeder Schreibvorgang bedarf einer menschlichen Freigabe."
+        },
+        {
+          "frame": "F2",
+          "text": "Ausgenommen sind Schreibvorgänge, soweit sie im Wartungsprotokoll vermerkt werden."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Wie B01."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "exception_present": "yes",
+            "condition_present": "yes",
+            "permission": "conditional",
+            "status": "restricted"
+          },
+          "must_not": {
+            "quantifier": [
+              "all"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Die Ausnahme gilt nur unter einer Bedingung; der Unterschied zu B03 ist soweit."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B05",
+      "category": "B",
+      "pair": "B-3",
+      "role": "base",
+      "traits": [
+        "salient_global_vs_local_exception",
+        "local_already_correct"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Im Wartungsprotokoll dürfen Zeitstempel ohne Freigabe geschrieben werden."
+        },
+        {
+          "frame": "F2",
+          "text": "Grundsätzlich gilt für alle Systeme des Hauses eine Freigabepflicht."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "obligation": [
+              "present"
+            ]
+          },
+          "note": "Eng umgrenzte Erlaubnis, ausdrücklich ohne Freigabe."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded"
+            ]
+          },
+          "note": "Grundsätzlich hebt eine präzise Ausnahme nicht auf; die lokale Erlaubnis bleibt."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B06",
+      "category": "B",
+      "pair": "B-3",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Im Wartungsprotokoll dürfen Zeitstempel ohne Freigabe geschrieben werden."
+        },
+        {
+          "frame": "F2",
+          "text": "Diese Ausnahme wird mit sofortiger Wirkung aufgehoben."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "obligation": [
+              "present"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie B05."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "superseded"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Die ausdrückliche Aufhebung ersetzt die Erlaubnis; die frühere Angabe bleibt in der Geschichte."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B07",
+      "category": "B",
+      "pair": "B-4",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Alle Exporte erfordern eine Freigabe."
+        },
+        {
+          "frame": "F2",
+          "text": "Ausgenommen sind Exporte in die Testumgebung, solange sie keine Personendaten enthalten."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Allgemeine Freigabepflicht für Exporte."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "exception_present": "yes",
+            "condition_present": "yes",
+            "permission": "conditional",
+            "status": "restricted"
+          },
+          "must_not": {
+            "quantifier": [
+              "all"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Ausnahme mit Bedingung; ohne die Bedingung gilt die Regel weiter."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "B08",
+      "category": "B",
+      "pair": "B-4",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Alle Exporte erfordern eine Freigabe."
+        },
+        {
+          "frame": "F2",
+          "text": "Ausgenommen sind Exporte in die Testumgebung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "quantifier": "all",
+            "permission": "conditional",
+            "condition_present": "yes",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Wie B07."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "exception_present": "yes",
+            "permission": "conditional",
+            "status": "restricted"
+          },
+          "must_not": {
+            "quantifier": [
+              "all"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Ausnahme ohne Bedingung; der Unterschied zu B07 ist der Nebensatz."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "C01",
+      "category": "C",
+      "pair": "C-1",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Für Anlage R ist am Mittwoch um 9 Uhr jeder Schreibzugriff ohne Freigabe verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Für Anlage R ist am Mittwoch um 9 Uhr jeder Schreibzugriff ohne Freigabe erlaubt."
+        },
+        {
+          "frame": "F3",
+          "text": "Beide Aussagen gelten zugleich; keine begrenzt die andere."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "quantifier": "all",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Verbot für einen genannten Zeitpunkt."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "status": "contradictory"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded",
+              "restricted",
+              "context_supported"
+            ],
+            "exception_present": [
+              "yes"
+            ]
+          },
+          "note": "Gleicher Zeitpunkt, gleiche Anlage, entgegengesetzte Aussage: Widerspruch markieren, keine Spezialregel erfinden."
+        },
+        {
+          "after": "F3",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "status": "contradictory"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded",
+              "restricted"
+            ],
+            "exception_present": [
+              "yes"
+            ]
+          },
+          "note": "Die ausdrückliche Gleichzeitigkeit nimmt die letzte Ausrede für eine Auflösung."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "C02",
+      "category": "C",
+      "pair": "C-1",
+      "role": "variant",
+      "traits": [
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Für Anlage R ist am Mittwoch um 9 Uhr jeder Schreibzugriff ohne Freigabe verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Für Anlage R ist am Donnerstag um 9 Uhr jeder Schreibzugriff ohne Freigabe erlaubt."
+        },
+        {
+          "frame": "F3",
+          "text": "Beide Angaben betreffen unterschiedliche Tage."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "quantifier": "all",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Wie C01."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "quantifier": "all",
+            "status": "open"
+          },
+          "must_not": {
+            "status": [
+              "contradictory",
+              "superseded"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Zwei Zeitpunkte, kein Widerspruch; die Montagsaussage bleibt unverändert."
+        },
+        {
+          "after": "F3",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "quantifier": "all"
+          },
+          "must_not": {
+            "status": [
+              "contradictory",
+              "superseded"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Der Hinweis bestätigt die Vereinbarkeit; der Mittwoch bleibt verboten, und ob das als gestützt oder weiter offen gilt, ist Buchführung.",
+          "tolerated": {
+            "status": [
+              "context_supported",
+              "open"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "C03",
+      "category": "C",
+      "pair": "C-2",
+      "role": "base",
+      "traits": [
+        "irrelevant_context",
+        "local_already_correct"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Für Anlage R ist der Schreibzugriff ohne Freigabe verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Für Anlage S ist der Schreibzugriff ohne Freigabe erlaubt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Verbot für System A."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "status": [
+              "contradictory",
+              "superseded"
+            ],
+            "permission": [
+              "granted",
+              "conditional"
+            ]
+          },
+          "note": "Zwei verschiedene Anlagen: keine der Aussagen berührt die andere."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "C04",
+      "category": "C",
+      "pair": "C-2",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Für Anlage R ist der Schreibzugriff ohne Freigabe verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Für Anlage R ist der Schreibzugriff ohne Freigabe erlaubt."
+        },
+        {
+          "frame": "F3",
+          "text": "Beide Sätze beschreiben denselben Zeitraum und dieselbe Anlage."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Wie C03, aber dieselbe Anlage."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded",
+              "restricted"
+            ]
+          },
+          "note": "Gleiche Anlage, entgegengesetzte Aussage, kein Zeitunterschied genannt. Anders als in C01 nennt keiner der Sätze einen Zeitpunkt, deshalb bleibt ein Ersetzen durch die spätere Angabe eine vertretbare Lesart: widersprüchlich oder offen, aber keine erfundene Ausnahme.",
+          "tolerated": {
+            "status": [
+              "contradictory",
+              "open"
+            ]
+          }
+        },
+        {
+          "after": "F3",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "status": "contradictory"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded",
+              "restricted",
+              "open"
+            ]
+          },
+          "note": "Der Zusatz schließt eine zeitliche Auflösung ausdrücklich aus."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "C05",
+      "category": "C",
+      "pair": "C-3",
+      "role": "base",
+      "traits": [
+        "negative_control"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Prüfstelle erklärt, der Schreibzugriff ohne Freigabe sei verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Der Betreiber erklärt, der Schreibzugriff ohne Freigabe sei erlaubt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "denied",
+              "granted",
+              "conditional"
+            ],
+            "attribution": [
+              "document"
+            ]
+          },
+          "note": "Zugeschriebene Behauptung: der Text legt sich nicht fest."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "status": "open"
+          },
+          "must_not": {
+            "status": [
+              "contradictory"
+            ],
+            "permission": [
+              "denied",
+              "granted",
+              "conditional"
+            ],
+            "attribution": [
+              "document"
+            ]
+          },
+          "note": "Zwei Stellen widersprechen sich, der Text selbst behauptet nichts: kein Widerspruch im Text."
+        }
+      ],
+      "decisive_frame": "F1"
+    },
+    {
+      "case_id": "C06",
+      "category": "C",
+      "pair": "C-3",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Schreibzugriff ohne Freigabe ist verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Der Schreibzugriff ohne Freigabe ist erlaubt."
+        },
+        {
+          "frame": "F3",
+          "text": "Beide Sätze sind Aussagen des Dokuments und gelten gleichzeitig."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "attribution": [
+              "third_party"
+            ]
+          },
+          "note": "Der Text spricht selbst, anders als in C05."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded",
+              "restricted"
+            ]
+          },
+          "note": "Dieselbe Stimme, entgegengesetzte Aussage, ohne Zeitangabe: widersprüchlich oder offen, nicht aufgelöst.",
+          "tolerated": {
+            "status": [
+              "contradictory",
+              "open"
+            ]
+          }
+        },
+        {
+          "after": "F3",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "status": "contradictory"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "superseded",
+              "open"
+            ]
+          },
+          "note": "Gleichzeitigkeit ausdrücklich erklärt."
+        }
+      ],
+      "decisive_frame": "F1"
+    },
+    {
+      "case_id": "C07",
+      "category": "C",
+      "pair": "C-4",
+      "role": "base",
+      "traits": [
+        "negative_control"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Jeder Schreibzugriff ohne Freigabe ist verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Während der Wartung ist der Schreibzugriff ohne Freigabe erlaubt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "quantifier": "all",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Allgemeines Verbot."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "exception_present": "yes",
+            "status": "restricted"
+          },
+          "must_not": {
+            "status": [
+              "contradictory"
+            ],
+            "quantifier": [
+              "all"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Ein benannter Geltungsbereich löst die Spannung auf: Ausnahme, kein Widerspruch."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "C08",
+      "category": "C",
+      "pair": "C-4",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Jeder Schreibzugriff ohne Freigabe ist verboten."
+        },
+        {
+          "frame": "F2",
+          "text": "Jeder Schreibzugriff ohne Freigabe ist erlaubt, auch außerhalb der Wartung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "quantifier": "all",
+            "exception_present": "no",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Wie C07."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "status": "contradictory"
+          },
+          "must_not": {
+            "status": [
+              "restricted",
+              "superseded"
+            ],
+            "exception_present": [
+              "yes"
+            ],
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ]
+          },
+          "note": "Der Zusatz nimmt den Geltungsbereich, der in C07 die Auflösung trug."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "D01",
+      "category": "D",
+      "pair": "D-1",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Schreibberechtigungsprüfung für den Zustandswechsel ist abgeschlossen."
+        },
+        {
+          "frame": "F2",
+          "text": "Sie prüft ausschließlich, ob ein Zustandswechsel zulässig ist."
+        },
+        {
+          "frame": "F3",
+          "text": "Das Ergebnis war negativ. Ein Zustandswechsel wurde nicht vorgenommen."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Abgeschlossene Prüfung belegt weder eine Berechtigung noch eine ausgeführte Änderung."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Der Prüfgegenstand ist die Berechtigung; keine geschlossene Angabe wird dadurch entschieden."
+        },
+        {
+          "after": "F3",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "permission": "denied",
+            "effect_occurred": "no",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed",
+              "denied"
+            ],
+            "action_occurred": [
+              "no"
+            ]
+          },
+          "note": "Drei Angaben getrennt: Prüfung erfolgt, Berechtigung verneint, Änderung nicht ausgeführt."
+        }
+      ],
+      "decisive_frame": "F3"
+    },
+    {
+      "case_id": "D02",
+      "category": "D",
+      "pair": "D-1",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Schreibberechtigungsprüfung für den Zustandswechsel ist abgeschlossen."
+        },
+        {
+          "frame": "F2",
+          "text": "Sie prüft ausschließlich, ob ein Zustandswechsel zulässig ist."
+        },
+        {
+          "frame": "F3",
+          "text": "Das Ergebnis war positiv. Ein Zustandswechsel wurde vorgenommen."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Wie D01."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Wie D01."
+        },
+        {
+          "after": "F3",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "permission": "granted",
+            "effect_occurred": "yes",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed",
+              "denied"
+            ],
+            "action_occurred": [
+              "no"
+            ]
+          },
+          "note": "Der Unterschied zu D01 ist ein Wort; auch hier bleibt die Fähigkeit offen."
+        }
+      ],
+      "decisive_frame": "F3"
+    },
+    {
+      "case_id": "D03",
+      "category": "D",
+      "pair": "D-2",
+      "role": "base",
+      "traits": [
+        "stays_ambiguous",
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Prüfung der Schreibberechtigung ist abgeschlossen."
+        },
+        {
+          "frame": "F2",
+          "text": "Die Prüfung wurde am Montag abgeschlossen."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Ergebnis unbekannt."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Ein Datum entscheidet das Ergebnis nicht; die offene Frage bleibt offen."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "D04",
+      "category": "D",
+      "pair": "D-2",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Prüfung der Schreibberechtigung ist abgeschlossen."
+        },
+        {
+          "frame": "F2",
+          "text": "Das Ergebnis war negativ."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Wie D03."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "permission": "denied",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "effect_occurred": [
+              "yes"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Die Berechtigung ist verneint; über eine ausgeführte Änderung steht weiter nichts."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "D05",
+      "category": "D",
+      "pair": "D-3",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Freigabe für den Zustandswechsel wurde erteilt."
+        },
+        {
+          "frame": "F2",
+          "text": "Der Zustandswechsel wurde nicht vorgenommen."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "effect_occurred": [
+              "yes"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Erteilte Freigabe belegt keine ausgeführte Änderung."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "action_occurred": "yes",
+            "effect_occurred": "no",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "capability": [
+              "affirmed",
+              "denied"
+            ]
+          },
+          "note": "Nicht ausgeführt heißt nicht unerlaubt: die Erlaubnis bleibt erteilt."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "D06",
+      "category": "D",
+      "pair": "D-3",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Freigabe für den Zustandswechsel wurde erteilt."
+        },
+        {
+          "frame": "F2",
+          "text": "Der Zustandswechsel wurde vorgenommen."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "effect_occurred": [
+              "yes"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Wie D05."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "action_occurred": "yes",
+            "effect_occurred": "yes",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ]
+          },
+          "note": "Ausgeführt: die Handlung tritt neben die Erlaubnis, sie ersetzt sie nicht.",
+          "tolerated": {
+            "capability": [
+              "affirmed"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "D07",
+      "category": "D",
+      "pair": "D-4",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Prüfung der Schreibfähigkeit ist abgeschlossen."
+        },
+        {
+          "frame": "F2",
+          "text": "Geprüft wurde ausschließlich, ob die Funktion technisch vorhanden ist."
+        },
+        {
+          "frame": "F3",
+          "text": "Das Ergebnis war positiv."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed",
+              "denied"
+            ],
+            "permission": [
+              "granted"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Gegenstand ist die Fähigkeit, Ergebnis unbekannt."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed",
+              "denied"
+            ],
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Die Präzisierung nennt den Gegenstand, nicht das Ergebnis."
+        },
+        {
+          "after": "F3",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "capability": "affirmed",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Fähigkeit belegt; die Berechtigung bleibt offen. Spiegelfall zu D08."
+        }
+      ],
+      "decisive_frame": "F1"
+    },
+    {
+      "case_id": "D08",
+      "category": "D",
+      "pair": "D-4",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Die Prüfung der Schreibberechtigung ist abgeschlossen."
+        },
+        {
+          "frame": "F2",
+          "text": "Geprüft wurde ausschließlich, ob der Zugriff erlaubt ist."
+        },
+        {
+          "frame": "F3",
+          "text": "Das Ergebnis war positiv."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed"
+            ],
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Gegenstand ist die Berechtigung, Ergebnis unbekannt."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "status": "open"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed",
+              "denied"
+            ],
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Wie D07, anderer Gegenstand."
+        },
+        {
+          "after": "F3",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "assertion",
+            "action_occurred": "yes",
+            "permission": "granted",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed",
+              "denied"
+            ],
+            "effect_occurred": [
+              "yes"
+            ]
+          },
+          "note": "Berechtigung belegt; die Fähigkeit bleibt offen. Spiegelfall zu D07."
+        }
+      ],
+      "decisive_frame": "F1"
+    },
+    {
+      "case_id": "E01",
+      "category": "E",
+      "pair": "E-1",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Hersteller behauptet, das System dürfe ohne Freigabe schreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Die Verfasserin widerspricht dieser Darstellung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ]
+          },
+          "note": "Wiedergegebene Behauptung: der Text legt sich auf die Erlaubnis nicht fest."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "permission": "denied"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Der Text widerspricht und legt sich damit selbst fest; die Zuschreibung der Ursprungsaussage bleibt.",
+          "tolerated": {
+            "status": [
+              "superseded",
+              "restricted"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "E02",
+      "category": "E",
+      "pair": "E-1",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Hersteller behauptet, das System dürfe ohne Freigabe schreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Die Verfasserin bestätigt diese Darstellung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie E01."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "permission": "granted"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "permission": [
+              "denied"
+            ],
+            "capability": [
+              "affirmed"
+            ]
+          },
+          "note": "Eine Bestätigung im Text ist eine Festlegung des Textes, kein unabhängiger Nachweis; der Unterschied zu E01 ist ein Wort.",
+          "tolerated": {
+            "status": [
+              "context_supported",
+              "restricted"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "E03",
+      "category": "E",
+      "pair": "E-2",
+      "role": "base",
+      "traits": [
+        "stays_ambiguous"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Nach Angaben des Betreibers ist der Zugriff erlaubt."
+        },
+        {
+          "frame": "F2",
+          "text": "Die Prüfstelle hat das nicht bestätigt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ]
+          },
+          "note": "Zuschreibung durch nach Angaben."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "permission",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "permission": [
+              "granted",
+              "denied",
+              "conditional"
+            ],
+            "status": [
+              "context_supported",
+              "superseded"
+            ]
+          },
+          "note": "Eine fehlende Bestätigung ist keine Verneinung: die Frage bleibt offen."
+        }
+      ],
+      "decisive_frame": "F1"
+    },
+    {
+      "case_id": "E04",
+      "category": "E",
+      "pair": "E-2",
+      "role": "variant",
+      "traits": [
+        "local_already_correct"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Zugriff ist erlaubt."
+        },
+        {
+          "frame": "F2",
+          "text": "Die Prüfstelle hat das nicht bestätigt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "third_party"
+            ],
+            "permission": [
+              "denied"
+            ]
+          },
+          "note": "Hier spricht der Text selbst; der Unterschied zu E03 ist die fehlende Zuschreibung."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted"
+          },
+          "must_not": {
+            "attribution": [
+              "third_party"
+            ],
+            "permission": [
+              "denied"
+            ],
+            "status": [
+              "superseded"
+            ]
+          },
+          "note": "Die eigene Festlegung des Textes wird durch eine fehlende Fremdbestätigung nicht zurückgenommen.",
+          "tolerated": {
+            "status": [
+              "open",
+              "restricted"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F1"
+    },
+    {
+      "case_id": "E05",
+      "category": "E",
+      "pair": "E-3",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Hersteller behauptet, die Freigabepflicht entfalle."
+        },
+        {
+          "frame": "F2",
+          "text": "Das ist unzutreffend: die Freigabepflicht gilt."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "obligation",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "obligation": [
+              "absent",
+              "present"
+            ]
+          },
+          "note": "Zugeschriebene Behauptung über eine Pflicht."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "obligation",
+            "obligation": "present",
+            "status": "superseded"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "obligation": [
+              "absent"
+            ],
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Der Text verwirft die Behauptung und stellt die Pflicht fest."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "E06",
+      "category": "E",
+      "pair": "E-3",
+      "role": "variant",
+      "traits": [
+        "negative_control",
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Hersteller behauptet, die Freigabepflicht entfalle."
+        },
+        {
+          "frame": "F2",
+          "text": "Diese Angabe findet sich auch im Handbuch des Herstellers."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "obligation",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "obligation": [
+              "absent",
+              "present"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie E05."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "obligation",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "obligation": [
+              "absent",
+              "present"
+            ],
+            "status": [
+              "context_supported",
+              "superseded"
+            ]
+          },
+          "note": "Eine zweite Stelle derselben Quelle stützt nichts; der Unterschied zu E05 ist, wer spricht."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "E07",
+      "category": "E",
+      "pair": "E-4",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Hersteller behauptet, die Fehlerquote liege bei null."
+        },
+        {
+          "frame": "F2",
+          "text": "Eine unabhängige Messung bestätigt diese Angabe."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "assertion",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ]
+          },
+          "note": "Zugeschriebene Tatsachenbehauptung."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "assertion"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "status": [
+              "superseded",
+              "contradictory"
+            ]
+          },
+          "note": "Eine zweite, unabhängige Quelle stützt die Behauptung; sie bleibt eine Zuschreibung, und die Bedeutung bewegt sich nicht.",
+          "tolerated": {
+            "status": [
+              "context_supported",
+              "open"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "E08",
+      "category": "E",
+      "pair": "E-4",
+      "role": "variant",
+      "traits": [
+        "negative_control"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Der Hersteller behauptet, die Fehlerquote liege bei null."
+        },
+        {
+          "frame": "F2",
+          "text": "Der Hersteller verweist zum Beleg auf seine eigene Messung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "assertion",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie E07."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "third_party",
+            "statement_type": "assertion",
+            "status": "open"
+          },
+          "must_not": {
+            "attribution": [
+              "document"
+            ],
+            "status": [
+              "context_supported",
+              "superseded"
+            ]
+          },
+          "note": "Ein Selbstbeleg stützt nicht; der Unterschied zu E07 ist unabhängig gegenüber eigene."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F01",
+      "category": "F",
+      "pair": "F-1",
+      "role": "base",
+      "traits": [
+        "local_already_correct"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Am Montag besaß der Dienst keine Schreibberechtigung."
+        },
+        {
+          "frame": "F2",
+          "text": "Am Dienstag erhielt er eine Schreibberechtigung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Verneinte Berechtigung für einen genannten Tag."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "status": [
+              "superseded",
+              "contradictory"
+            ]
+          },
+          "note": "Ein späteres Ereignis macht die Montagsaussage nicht rückwirkend falsch.",
+          "tolerated": {
+            "status": [
+              "open",
+              "context_supported"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F02",
+      "category": "F",
+      "pair": "F-1",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Am Montag besaß der Dienst keine Schreibberechtigung."
+        },
+        {
+          "frame": "F2",
+          "text": "Korrektur: Die Angabe für Montag war unzutreffend. Die Berechtigung bestand bereits seit Sonntag."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie F01."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "superseded"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "status": [
+              "contradictory"
+            ]
+          },
+          "note": "Ausdrückliche Korrektur derselben Zeitangabe: die frühere Aussage ist ersetzt, bleibt aber in der Geschichte."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F03",
+      "category": "F",
+      "pair": "F-2",
+      "role": "base",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Das System kann ohne Freigabe schreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Zur Klarstellung: Gemeint war die technische Fähigkeit, nicht die Berechtigung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "capability": [
+              "denied"
+            ]
+          },
+          "note": "kann ist offen zwischen Fähigkeit und Erlaubnis."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "capability",
+            "capability": "affirmed",
+            "status": "context_supported"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "status": [
+              "superseded",
+              "contradictory"
+            ]
+          },
+          "note": "Korrigiert wird die Lesart, nicht der Sachverhalt: kein Ersetzen, und die Berechtigung bleibt offen."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F04",
+      "category": "F",
+      "pair": "F-2",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Das System kann ohne Freigabe schreiben."
+        },
+        {
+          "frame": "F2",
+          "text": "Korrektur: Der Satz war falsch; das System kann ohne Freigabe nicht schreiben."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "capability": [
+              "denied"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie F03."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "attribution": "document",
+            "capability": "denied",
+            "status": "superseded"
+          },
+          "must_not": {
+            "capability": [
+              "affirmed"
+            ],
+            "status": [
+              "context_supported"
+            ]
+          },
+          "note": "Korrigiert wird der Sachverhalt: die Aussage ist ersetzt, nicht nur präzisiert.",
+          "tolerated": {
+            "negated": [
+              "no",
+              "yes"
+            ],
+            "statement_type": [
+              "capability",
+              "assertion"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F05",
+      "category": "F",
+      "pair": "F-3",
+      "role": "base",
+      "traits": [
+        "local_already_correct",
+        "irrelevant_context"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Bis zum 1. März bestand keine Schreibberechtigung."
+        },
+        {
+          "frame": "F2",
+          "text": "Seit dem 1. März besteht eine Schreibberechtigung."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Verneinte Berechtigung für einen abgeschlossenen Zeitraum."
+        },
+        {
+          "after": "F2",
+          "revision": "forbidden",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ],
+            "status": [
+              "superseded",
+              "contradictory"
+            ]
+          },
+          "note": "Zwei aneinander anschließende Zeiträume, kein Widerspruch und keine Korrektur.",
+          "tolerated": {
+            "status": [
+              "open",
+              "context_supported"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F06",
+      "category": "F",
+      "pair": "F-3",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Bis zum 1. März bestand keine Schreibberechtigung."
+        },
+        {
+          "frame": "F2",
+          "text": "Korrektur: Die Berechtigung bestand schon vor dem 1. März."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie F05."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "superseded"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "status": [
+              "contradictory"
+            ]
+          },
+          "note": "Dieselbe Zeitspanne, ausdrücklich berichtigt."
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F07",
+      "category": "F",
+      "pair": "F-4",
+      "role": "base",
+      "traits": [
+        "stays_ambiguous",
+        "contested"
+      ],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Am Montag besaß der Dienst keine Schreibberechtigung."
+        },
+        {
+          "frame": "F2",
+          "text": "Die Berechtigung besteht seit Sonntag."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie F02 und F08."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission"
+          },
+          "must_not": {
+            "permission": [
+              "granted",
+              "denied"
+            ],
+            "status": [
+              "superseded",
+              "context_supported"
+            ]
+          },
+          "note": "Sonntag schließt Montag ein, aber nichts erklärt die Angabe zur Korrektur: offen oder widersprüchlich, keine erfundene Berichtigung.",
+          "tolerated": {
+            "status": [
+              "contradictory",
+              "open"
+            ]
+          }
+        }
+      ],
+      "decisive_frame": "F2"
+    },
+    {
+      "case_id": "F08",
+      "category": "F",
+      "pair": "F-4",
+      "role": "variant",
+      "traits": [],
+      "frames": [
+        {
+          "frame": "F1",
+          "text": "Am Montag besaß der Dienst keine Schreibberechtigung."
+        },
+        {
+          "frame": "F2",
+          "text": "Korrektur: Die Berechtigung bestand seit Sonntag."
+        }
+      ],
+      "gold": [
+        {
+          "after": "F1",
+          "revision": "n/a",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "denied",
+            "status": "open"
+          },
+          "must_not": {
+            "permission": [
+              "granted"
+            ]
+          },
+          "note": "Gleiche Ausgangslage wie F07."
+        },
+        {
+          "after": "F2",
+          "revision": "required",
+          "must": {
+            "negated": "no",
+            "attribution": "document",
+            "statement_type": "permission",
+            "permission": "granted",
+            "status": "superseded"
+          },
+          "must_not": {
+            "permission": [
+              "denied"
+            ],
+            "status": [
+              "contradictory",
+              "open"
+            ]
+          },
+          "note": "Ein Wort trennt diesen Fall von F07: Korrektur macht die Berichtigung ausdrücklich."
+        }
+      ],
+      "decisive_frame": "F2"
+    }
+  ]
+}

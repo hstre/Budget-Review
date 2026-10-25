@@ -1,0 +1,148 @@
+{
+  "set": "frames",
+  "variant": "dev",
+  "language": "de",
+  "convention": "Die sechs Beispiele aus der Aufgabenstellung. Entwicklungsmaterial: sie dienen dazu, Schema, Prompts und Auswertung zu bauen, und gehen nicht in die Hauptauswertung ein. Der Testsatz ist davon getrennt und wurde nicht an ihnen abgestimmt.",
+  "cases": [
+    {
+      "case_id": "DEV-A", "category": "A", "pair": "DEV-A", "role": "base",
+      "decisive_frame": "F2", "traits": ["development"],
+      "frames": [
+        {"frame": "F1", "text": "Das System kann seinen Speicher verändern."},
+        {"frame": "F2", "text": "Jede Veränderung erfordert eine menschliche Freigabe."},
+        {"frame": "F3", "text": "Mit „kann“ ist hier ausschließlich die technische Fähigkeit gemeint. Eine Schreibberechtigung besteht zunächst nicht."}
+      ],
+      "gold": [
+        {"after": "F1", "revision": "n/a",
+         "must": {"negated": "no", "attribution": "document", "status": "open"},
+         "must_not": {}, "note": "Fähigkeit und Erlaubnis als Lesarten, keine Entscheidung."},
+        {"after": "F2", "revision": "required",
+         "must": {"negated": "no", "attribution": "document", "permission": "conditional",
+                  "condition_present": "yes", "obligation": "present", "status": "restricted"},
+         "must_not": {"permission": ["granted"], "capability": ["affirmed", "denied"]},
+         "note": "Keine unbeschränkte Erlaubnis; die Fähigkeit bleibt ungeklärt."},
+        {"after": "F3", "revision": "required",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "capability",
+                  "capability": "affirmed", "permission": "denied", "status": "restricted"},
+         "must_not": {"permission": ["granted", "conditional"]},
+         "note": "Fähigkeit und aktuelle Berechtigung getrennt gespeichert."}
+      ]
+    },
+    {
+      "case_id": "DEV-B", "category": "B", "pair": "DEV-B", "role": "base",
+      "decisive_frame": "F2", "traits": ["development"],
+      "frames": [
+        {"frame": "F1", "text": "Alle Schreibzugriffe benötigen eine menschliche Freigabe."},
+        {"frame": "F2", "text": "Ausgenommen sind automatische Zeitstempel im Diagnoseprotokoll."}
+      ],
+      "gold": [
+        {"after": "F1", "revision": "n/a",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "obligation",
+                  "obligation": "present", "quantifier": "all", "permission": "conditional",
+                  "condition_present": "yes", "exception_present": "no", "status": "open"},
+         "must_not": {"permission": ["granted"]}, "note": "Allgemeine Regel."},
+        {"after": "F2", "revision": "required",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "obligation",
+                  "obligation": "present", "exception_present": "yes", "permission": "conditional",
+                  "condition_present": "yes", "status": "restricted"},
+         "must_not": {"quantifier": ["all"], "permission": ["granted"]},
+         "note": "Regel mit ausdrücklicher Ausnahme, keine allgemeine Schreibberechtigung."}
+      ]
+    },
+    {
+      "case_id": "DEV-C", "category": "C", "pair": "DEV-C", "role": "base",
+      "decisive_frame": "F2", "traits": ["development"],
+      "frames": [
+        {"frame": "F1", "text": "Für System A ist am Montag um 12 Uhr jeder Schreibzugriff ohne Freigabe verboten."},
+        {"frame": "F2", "text": "Für System A ist am Montag um 12 Uhr jeder Schreibzugriff ohne Freigabe erlaubt."},
+        {"frame": "F3", "text": "Beide Aussagen gelten gleichzeitig; keine ersetzt oder begrenzt die andere."}
+      ],
+      "gold": [
+        {"after": "F1", "revision": "n/a",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "permission",
+                  "permission": "denied", "quantifier": "all", "status": "open"},
+         "must_not": {"permission": ["granted"]}, "note": "Verbot."},
+        {"after": "F2", "revision": "required",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "permission",
+                  "status": "contradictory"},
+         "must_not": {"permission": ["granted", "denied", "conditional"],
+                      "status": ["superseded", "restricted"], "exception_present": ["yes"]},
+         "note": "Widerspruch markieren, keine zeitliche Änderung erfinden."},
+        {"after": "F3", "revision": "forbidden",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "permission",
+                  "status": "contradictory"},
+         "must_not": {"permission": ["granted", "denied", "conditional"],
+                      "status": ["superseded", "restricted"], "exception_present": ["yes"]},
+         "note": "Gleichzeitigkeit ausdrücklich erklärt."}
+      ]
+    },
+    {
+      "case_id": "DEV-D", "category": "D", "pair": "DEV-D", "role": "base",
+      "decisive_frame": "F3", "traits": ["development"],
+      "frames": [
+        {"frame": "F1", "text": "Die Zustandsänderungsberechtigungsprüfung ist abgeschlossen."},
+        {"frame": "F2", "text": "Sie prüft ausschließlich, ob eine Zustandsänderung erlaubt ist."},
+        {"frame": "F3", "text": "Das Ergebnis war negativ. Eine Zustandsänderung wurde nicht ausgeführt."}
+      ],
+      "gold": [
+        {"after": "F1", "revision": "n/a",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "assertion",
+                  "action_occurred": "yes", "status": "open"},
+         "must_not": {"permission": ["granted", "denied"], "effect_occurred": ["yes"]},
+         "note": "Weder Berechtigung noch Änderung belegt."},
+        {"after": "F2", "revision": "forbidden",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "assertion",
+                  "action_occurred": "yes", "status": "open"},
+         "must_not": {"permission": ["granted", "denied"], "effect_occurred": ["yes"],
+                      "capability": ["affirmed", "denied"]},
+         "note": "Prüfgegenstand ist Berechtigung, nicht Fähigkeit."},
+        {"after": "F3", "revision": "required",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "assertion",
+                  "action_occurred": "yes", "permission": "denied", "effect_occurred": "no",
+                  "status": "context_supported"},
+         "must_not": {"capability": ["affirmed", "denied"], "action_occurred": ["no"]},
+         "note": "Drei Angaben getrennt erhalten."}
+      ]
+    },
+    {
+      "case_id": "DEV-E", "category": "E", "pair": "DEV-E", "role": "base",
+      "decisive_frame": "F2", "traits": ["development"],
+      "frames": [
+        {"frame": "F1", "text": "Der Hersteller behauptet, das System sei fehlerfrei."},
+        {"frame": "F2", "text": "Die Autorin widerspricht dieser Behauptung."}
+      ],
+      "gold": [
+        {"after": "F1", "revision": "n/a",
+         "must": {"negated": "no", "attribution": "third_party", "statement_type": "assertion",
+                  "status": "open"},
+         "must_not": {"attribution": ["document"]},
+         "note": "Fehlerfreiheit als Behauptung des Herstellers."},
+        {"after": "F2", "revision": "forbidden",
+         "must": {"negated": "no", "attribution": "third_party", "statement_type": "assertion"},
+         "must_not": {"attribution": ["document"], "status": ["context_supported"]},
+         "note": "Kein Zustimmen der Autorin und keine festgestellte Fehlerfreiheit.",
+         "tolerated": {"status": ["open", "restricted", "superseded"]}}
+      ]
+    },
+    {
+      "case_id": "DEV-F", "category": "F", "pair": "DEV-F", "role": "base",
+      "decisive_frame": "F2", "traits": ["development"],
+      "frames": [
+        {"frame": "F1", "text": "Am Montag hatte das System keine Schreibberechtigung."},
+        {"frame": "F2", "text": "Am Dienstag wurde ihm eine Schreibberechtigung erteilt."}
+      ],
+      "gold": [
+        {"after": "F1", "revision": "n/a",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "permission",
+                  "permission": "denied", "status": "open"},
+         "must_not": {"permission": ["granted"]}, "note": "Montag verneint."},
+        {"after": "F2", "revision": "forbidden",
+         "must": {"negated": "no", "attribution": "document", "statement_type": "permission",
+                  "permission": "denied"},
+         "must_not": {"permission": ["granted"], "status": ["superseded", "contradictory"]},
+         "note": "Unterschiedliche Zeitpunkte, Montag bleibt unverändert.",
+         "tolerated": {"status": ["open", "context_supported"]}}
+      ]
+    }
+  ]
+}

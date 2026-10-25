@@ -1323,7 +1323,7 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 27 measurement scripts, each tested
+scripts/                                 32 measurement scripts, each tested
 docs/architecture.md §3a–§3ap            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
@@ -1333,7 +1333,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-536 tests and one skipped, `ruff check` clean.
+581 tests and one skipped, `ruff check` clean. Two of them are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
 
 ---
 
@@ -2722,7 +2722,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 27 Messskripte, jedes getestet
+scripts/                                 32 Messskripte, jedes getestet
 docs/architecture.md §3a–§3ap            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
@@ -2733,7 +2733,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-536 Tests und einer übersprungen, `ruff check` sauber.
+581 Tests und einer übersprungen, `ruff check` sauber. Zwei davon werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
 
 ## 10. Offene Entscheidungen
 
