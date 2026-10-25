@@ -1323,7 +1323,7 @@ Actions secret — it is never available locally.
 
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
-scripts/                                 32 measurement scripts, each tested
+scripts/                                 33 measurement scripts, each tested
 docs/architecture.md §3a–§3ap            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
@@ -2722,7 +2722,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
-scripts/                                 32 Messskripte, jedes getestet
+scripts/                                 33 Messskripte, jedes getestet
 docs/architecture.md §3a–§3ap            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```

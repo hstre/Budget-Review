@@ -110,13 +110,43 @@ on:
         required: false
         default: "0"
         type: string
+      frames:
+        description: "Frame comparison: cases to run (0 disables it, 48 is the whole set)"
+        required: false
+        default: "0"
+        type: string
+      frame_conditions:
+        description: "Arms of the frame comparison"
+        required: false
+        default: "A,B,B_staged,C,D"
+        type: string
+      frame_repeats:
+        description: "Repeats of the frame comparison. Measurements of one model, not of several judges."
+        required: false
+        default: "1"
+        type: string
+      frame_max_tokens:
+        description: "Output budget per frame call"
+        required: false
+        default: "1200"
+        type: string
+      price_in:
+        description: "Price per million input tokens. Empty means no cost is claimed."
+        required: false
+        default: ""
+        type: string
+      price_out:
+        description: "Price per million output tokens. Empty means no cost is claimed."
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   live-smoke:
-    if: inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true && inputs.reviewer_repeats == '0' && inputs.semantic_repeats == '0'
+    if: inputs.frames == '0' && inputs.gold_decision == '' && inputs.prompt == 'production' && inputs.double_run != true && inputs.sweep_decisions == '' && inputs.repeat_runs == '0' && inputs.repair_rounds == '0' && inputs.two_stage != true && inputs.reviewer_repeats == '0' && inputs.semantic_repeats == '0'
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -152,7 +182,7 @@ jobs:
           if-no-files-found: warn
 
   gold-recall:
-    if: inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true || inputs.reviewer_repeats != '0' || inputs.semantic_repeats != '0'
+    if: inputs.frames == '0' && (inputs.gold_decision != '' || inputs.prompt != 'production' || inputs.double_run == true || inputs.sweep_decisions != '' || inputs.repeat_runs != '0' || inputs.repair_rounds != '0' || inputs.two_stage == true || inputs.reviewer_repeats != '0' || inputs.semantic_repeats != '0')
     runs-on: ubuntu-latest
     environment: alpha-live
     steps:
@@ -406,4 +436,78 @@ jobs:
           path: |
             gold-case/
             review-output/gold/
+          if-no-files-found: warn
+
+  frames:
+    # The staged context check against four controls. No corpus and no gold
+    # document: the cases are in the repository, each one two or three
+    # sentences. The set validates itself and the harness is exercised offline
+    # against the declared expectation before a single paid call, because a run
+    # that cannot reach its own ceiling would measure the harness.
+    if: inputs.frames != '0'
+    runs-on: ubuntu-latest
+    environment: alpha-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+
+      - name: Validate the case set
+        run: |
+          set -o pipefail
+          mkdir -p frame-out
+          python scripts/frame_cases.py | tee frame-out/validation.txt
+
+      - name: Reach the ceiling offline, for free
+        run: |
+          set -o pipefail
+          mkdir -p frame-out
+          python scripts/frame_cases.py --stats | tee frame-out/stats.txt
+          for strategy in gold undecided contrarian never_revise malformed; do
+            python scripts/frame_run.py --stub "$strategy" \
+              --out "frame-out/dry-$strategy" 2>&1 | tee -a frame-out/dry-run.txt
+          done
+
+      - name: The paid comparison
+        id: paid
+        continue-on-error: true
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.Deepseekapisecret }}
+        run: |
+          set -o pipefail
+          ARGS=()
+          if [ -n "${{ inputs.price_in }}" ] && [ -n "${{ inputs.price_out }}" ]; then
+            ARGS+=(--price-in "${{ inputs.price_in }}" --price-out "${{ inputs.price_out }}")
+          fi
+          CASES="${{ inputs.frames }}"
+          if [ "$CASES" = "48" ]; then CASES=0; fi
+          python scripts/frame_run.py --live \
+            --cases "$CASES" \
+            --conditions "${{ inputs.frame_conditions }}" \
+            --repeats "${{ inputs.frame_repeats }}" \
+            --max-tokens "${{ inputs.frame_max_tokens }}" \
+            "${ARGS[@]}" \
+            --out frame-out/live 2>&1 | tee frame-out/live-run.txt
+
+      - name: Compare the arms
+        if: steps.paid.outcome == 'success'
+        run: |
+          set -o pipefail
+          python scripts/frame_compare.py frame-out/live 2>&1 | tee frame-out/comparison.txt
+
+      - name: Report a run that did not complete
+        if: steps.paid.outcome != 'success'
+        run: |
+          echo "The paid comparison did not complete. That is a result, not an infrastructure fault."
+          tail -40 frame-out/live-run.txt || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frames-${{ github.run_id }}
+          path: frame-out/
           if-no-files-found: warn

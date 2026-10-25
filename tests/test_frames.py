@@ -432,3 +432,67 @@ def test_a_stage_that_tolerates_the_earlier_value_cannot_demand_a_revision():
     case = {"case_id": "X", "gold": [before, after]}
     problems = frame_cases._stage_problems(case, after, before)
     assert any("does not make" in problem for problem in problems)
+
+
+# ── the pre-registered criterion ─────────────────────────────────────────────
+
+frame_compare = _load("frame_compare")
+
+
+def _rows_with(left_hits: int, right_hits: int, measure: str = "correct") -> list[dict]:
+    """Twenty-four pairs, one opportunity each, with the hits spread evenly."""
+    rows = []
+    for index in range(24):
+        for condition, hits in (("C", left_hits), ("B_staged", right_hits)):
+            rows.append({
+                "condition": condition, "pair": f"p{index}", "case_id": f"c{index}",
+                "category": "A", "stage": "F1",
+                f"{measure}_hit": 1 if index < hits else 0,
+                f"{measure}_total": 1,
+            })
+    return rows
+
+
+def test_a_gain_whose_interval_crosses_zero_does_not_meet_the_criterion():
+    """A difference in the right direction is not enough, by design."""
+    verdict = frame_compare.criterion(_rows_with(13, 11))
+    primary = verdict["parts"][0]
+    assert primary["detail"]["difference"] > 0
+    assert primary["holds"] is False
+    assert verdict["met"] is False
+
+
+def test_a_clear_gain_meets_the_first_part():
+    verdict = frame_compare.criterion(_rows_with(24, 2))
+    assert verdict["parts"][0]["holds"] is True
+
+
+def test_a_measure_that_falls_clearly_fails_its_part():
+    rows = _rows_with(24, 2) + _rows_with(1, 23, "left_open")
+    verdict = frame_compare.criterion(rows)
+    openness = next(part for part in verdict["parts"] if "left_open" in part["claim"])
+    assert openness["holds"] is False
+    assert verdict["met"] is False
+
+
+def test_a_measure_that_merely_wobbles_does_not_fail_its_part():
+    rows = _rows_with(24, 2) + _rows_with(12, 13, "left_open")
+    openness = next(
+        part for part in frame_compare.criterion(rows)["parts"] if "left_open" in part["claim"]
+    )
+    assert openness["holds"] is True
+
+
+def test_every_part_of_the_declared_criterion_is_checked():
+    verdict = frame_compare.criterion(_rows_with(24, 2))
+    assert {part["part"] for part in verdict["parts"]} == {1, 2, 3, 4}
+
+
+def test_an_arm_that_cannot_return_the_object_is_withdrawn():
+    report = {"report": {"C": {"overall": {"usable": {"hit": 50, "total": 100}}}}}
+    assert frame_compare.withdrawn(report) == ["C: usable 0.50 below 0.90"]
+
+
+def test_an_arm_that_answers_is_not_withdrawn():
+    report = {"report": {"C": {"overall": {"usable": {"hit": 99, "total": 100}}}}}
+    assert frame_compare.withdrawn(report) == []
