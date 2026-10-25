@@ -11,6 +11,31 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **A staged context check over four context levels buys restraint, not
+  accuracy.** 48 held-out cases in 24 minimal pairs, five arms, 414 paid calls,
+  none failed. Against the arm that sees the same text at the same point,
+  correctness moves by +0.011 with an interval of [−0.030, +0.051] — no effect —
+  while leaving open what the text leaves open rises from 0.68 to 0.80
+  (+0.121, [0.074, 0.167]), and the same gain holds against reading the whole
+  text in one call and against revising it as often as the procedure has stages.
+  A sentence read alone is held open in 0.80 of the opportunities and the same
+  sentence read with its section drops to 0.70, so context costs commitment
+  rather than correctness. The procedure is also the only arm that got worse at
+  not inventing a contradiction, nine of twelve against eleven. The criterion
+  was fixed before the first call and is not met; `exception_kept` is withdrawn
+  because all five arms scored 0 of 6 against a gold convention that encoded one
+  fact twice. See `docs/prereg-frames-01.md`, `docs/findings-frames-01.md`,
+  `runs/frames-01/` and §4.20 of the research report.
+
+### Added
+
+- `scripts/frame_object.py`, `frame_cases.py`, `frame_conditions.py`,
+  `frame_score.py`, `frame_run.py` and `frame_compare.py`: the semantic object
+  with twelve closed fields, the 48-case set with its seven invariants, the five
+  arms, the thirteen measures, the runner with an offline mode that costs
+  nothing, and the pre-registered criterion applied in code. The frame
+  comparison is dispatched through the existing paid workflow.
+
 - **The matching rule decides 38 of 49 spans on one long court decision and 0 of
   993 on four argument-annotated papers.** A recall figure counts a gold span as
   reached when some admitted claim covers a share of its characters, and that

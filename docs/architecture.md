@@ -3371,3 +3371,79 @@ und nichts über die Zahlen. Die Reparatur war keine Testflickung, sondern
 zwei Skripte eine harte Schwelle behielten, während das dritte zwei berichtete.
 
 Dreizehn Mutationen, dreizehn gefangen.
+
+---
+
+## 3aq. Vier Kontextebenen, 414 bezahlte Aufrufe — und das Verfahren kauft Zurückhaltung, nicht Genauigkeit
+
+Der Auftrag war eine Hypothese, nicht eine Bestellung: eine Aussage auf vier
+Kontextebenen lesen, die Lesarten auf Vereinbarkeit verpflichten, ein
+strukturiertes Objekt mit Versionsgeschichte mitführen — und **insbesondere
+untersuchen, wann es versagt**. Also vier Arme plus zwei Kontrollen, ein
+Kriterium vor dem ersten bezahlten Aufruf, und eine Auswertung, die ein Modell
+nicht nach seiner eigenen Lesart fragt.
+
+**Die messbare Oberfläche musste zuerst her.** Zwölf geschlossene Felder mit
+erklärten Wertemengen, `undecided` in jeder davon, freie Felder im Protokoll und
+nie auf Gleichheit bewertet. Wer freien Text bewertet, braucht einen Richter für
+Paraphrase — und genau der ist der Prüfling. Drei Plätze statt zwei für
+Fähigkeit, Erlaubnis und Geschehen: eine abgeschlossene Prüfung, eine erteilte
+Berechtigung und eine ausgeführte Änderung sind drei Tatsachen, und über eine
+Tatsache, die das Schema nicht halten kann, kann kein Modell falsch liegen.
+
+**Die eine Konvention, die das Gold vollständig macht:** ein geschlossenes Feld,
+das eine Stufe nicht nennt, muss `undecided` sein. Damit gibt es keine
+unbewertete Ecke, in der eine erfundene Erlaubnis sitzen kann, und Offenlassen
+wird ein gezähltes Ereignis statt einer Annahme.
+
+**Der Validator fand zwei Mängel, bevor ein Aufruf lief.** Vier Stufen forderten
+und tolerierten dasselbe Feld gleichzeitig — mein eigener Widerspruch, der einen
+Fall als erkannten Widerspruch gezählt und gleichzeitig akzeptiert hätte, dass
+keiner gefunden wurde. Und der zurückgehaltene Satz benutzte 23 Sätze aus den
+Beispielen des Auftrags; die sind jetzt ein getrennter Entwicklungssatz, der
+keinen Satz mit dem Testsatz teilt.
+
+**Der Trockenlauf kostete nichts und war notwendig.** Gold erreicht 1,00 auf
+allen dreizehn Maßen in allen fünf Armen: die Latte ist erreichbar, das Gold
+widerspricht sich nicht. „Immer unklar" holt 1,00 beim Offenlassen und 0,00 bei
+Korrektheit, Widerspruch, Ausnahme und Revision. „Immer widersprüchlich" holt die
+Erkennung und verliert ihr Spiegelbild. Eine unlesbare Antwort bekommt nirgends
+einen Punkt — auch nicht für vermiedene Fehler, denn Schweigen ist keine
+sorgfältige Lesart.
+
+**Das Ergebnis:** Korrektheit +0,011, Intervall [−0,030, +0,051]. Kein Effekt.
+Offenheit +0,121, [0,074, 0,167], 16 Paare zu 2 — und derselbe Befund gegen den
+Ein-Aufruf-Arm (+0,118) und gegen den Mehr-Durchgang-Arm (+0,108). Das
+Verfahren liest nicht richtiger, es legt sich seltener fest.
+
+**Der Mechanismus steht in den Kontrollen.** Ein allein gelesener Satz bleibt in
+0,80 offen; derselbe Satz mit seinem Abschnitt, auf derselben Stufe, fällt auf
+0,70, während die Korrektheit stehen bleibt. Kontext macht die Lesart nicht
+falsch, er macht sie festgelegt.
+
+**Und es wird bezahlt.** Das Verfahren ist der einzige Arm, der beim
+Nicht-Erfinden von Widersprüchen schlechter wurde — neun von zwölf gegen elf von
+zwölf. Bei „Korrektur: Die Berechtigung bestand schon vor dem 1. März" nennt es
+die Berichtigung in der eigenen Begründung und legt das Objekt als
+widersprüchlich ab. Wer auf jeder Stufe fragt, ob der neue Abschnitt
+widerspricht, findet Widersprüche.
+
+**Zwei Lehren, beide alt in diesem Repository.**
+
+Erstens: *ein Maß, auf dem jeder Arm null erreicht, trennt nichts.*
+`exception_kept` stand bei 0 von 6 in allen fünf Armen, und die Ursache war mein
+Gold — die Antworten hielten die Ausnahme fest und behielten den Quantor `all`,
+und ich hatte zusätzlich verlangt, dass der Quantor aufhört `all` zu sein. Fünf
+Arme, die einstimmig gegen meine Konvention antworten, sind der Beleg, auf den es
+ankommt. Zurückgezogen, Gold unverändert gelassen, Alternativzahl als
+nachträglich gekennzeichnet.
+
+Zweitens: *ein Vergleich über verschiedene Fragen ist kein Vergleich.* Die erste
+Lesung zeigte Kontext, der die Korrektheit verschlechtert, frei von Null — und
+verglich die eine Stufe des lokalen Arms mit den zwei oder drei der Stufen-Arme.
+Auf die gemeinsame Stufe beschränkt ist der Effekt weg. Der Offenheitsbefund hat
+die Korrektur überlebt, und nur deshalb steht er im Bericht.
+
+Fünfzehn Mutationen des Instruments, fünfzehn gefangen. Eine überlebte den
+ersten Durchgang: eine tolerierte Wertemenge auf ihren ersten Wert zu verkürzen
+ließ eine Stufe eine Revision verlangen, die sie nicht verlangt.

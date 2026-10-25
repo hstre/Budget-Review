@@ -1,0 +1,1950 @@
+{
+  "arm": "deepseek-v4-flash",
+  "live": true,
+  "set": "test",
+  "cases": 48,
+  "conditions": [
+    "A",
+    "B",
+    "B_staged",
+    "C",
+    "D"
+  ],
+  "repeats": 1,
+  "settings": {
+    "temperature": 0.0,
+    "max_tokens": 1200,
+    "response_format": "json_object",
+    "thinking": false,
+    "fresh_context_per_call": true
+  },
+  "usage": {
+    "prompt_tokens": 356559,
+    "completion_tokens": 153732,
+    "calls": 414,
+    "failed_calls": 0,
+    "seconds": 945.6,
+    "models": [
+      "deepseek-flash"
+    ],
+    "cost": null,
+    "cost_note": "Tokens gezählt, kein Preis behauptet: --price-in und --price-out setzen, um die Kosten mit erklärten Preisen auszurechnen."
+  },
+  "report": {
+    "A": {
+      "stages": 48,
+      "overall": {
+        "correct": {
+          "hit": 189,
+          "total": 248
+        },
+        "unsupported": {
+          "hit": 261,
+          "total": 328
+        },
+        "excluded": {
+          "hit": 81,
+          "total": 84
+        },
+        "contradiction_found": {
+          "hit": 0,
+          "total": 0
+        },
+        "contradiction_invented": {
+          "hit": 0,
+          "total": 0
+        },
+        "exception_kept": {
+          "hit": 0,
+          "total": 0
+        },
+        "left_open": {
+          "hit": 261,
+          "total": 328
+        },
+        "revised_when_due": {
+          "hit": 0,
+          "total": 0
+        },
+        "held_when_not_due": {
+          "hit": 0,
+          "total": 0
+        },
+        "citations": {
+          "hit": 89,
+          "total": 89
+        },
+        "history": {
+          "hit": 0,
+          "total": 0
+        },
+        "tolerated": {
+          "hit": 0,
+          "total": 0
+        },
+        "usable": {
+          "hit": 48,
+          "total": 48
+        }
+      },
+      "by_category": {
+        "A": {
+          "correct": {
+            "hit": 28,
+            "total": 28
+          },
+          "unsupported": {
+            "hit": 49,
+            "total": 68
+          },
+          "excluded": {
+            "hit": 4,
+            "total": 4
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 49,
+            "total": 68
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 16,
+            "total": 16
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "B": {
+          "correct": {
+            "hit": 52,
+            "total": 64
+          },
+          "unsupported": {
+            "hit": 28,
+            "total": 32
+          },
+          "excluded": {
+            "hit": 10,
+            "total": 10
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 28,
+            "total": 32
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 16,
+            "total": 16
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "C": {
+          "correct": {
+            "hit": 29,
+            "total": 45
+          },
+          "unsupported": {
+            "hit": 31,
+            "total": 51
+          },
+          "excluded": {
+            "hit": 12,
+            "total": 12
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 31,
+            "total": 51
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 15,
+            "total": 15
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "D": {
+          "correct": {
+            "hit": 34,
+            "total": 42
+          },
+          "unsupported": {
+            "hit": 50,
+            "total": 54
+          },
+          "excluded": {
+            "hit": 23,
+            "total": 26
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 50,
+            "total": 54
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 16,
+            "total": 16
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "E": {
+          "correct": {
+            "hit": 22,
+            "total": 33
+          },
+          "unsupported": {
+            "hit": 61,
+            "total": 63
+          },
+          "excluded": {
+            "hit": 22,
+            "total": 22
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 61,
+            "total": 63
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 10,
+            "total": 10
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "F": {
+          "correct": {
+            "hit": 24,
+            "total": 36
+          },
+          "unsupported": {
+            "hit": 42,
+            "total": 60
+          },
+          "excluded": {
+            "hit": 10,
+            "total": 10
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 42,
+            "total": 60
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 16,
+            "total": 16
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        }
+      }
+    },
+    "B": {
+      "stages": 48,
+      "overall": {
+        "correct": {
+          "hit": 175,
+          "total": 252
+        },
+        "unsupported": {
+          "hit": 215,
+          "total": 313
+        },
+        "excluded": {
+          "hit": 130,
+          "total": 153
+        },
+        "contradiction_found": {
+          "hit": 4,
+          "total": 4
+        },
+        "contradiction_invented": {
+          "hit": 10,
+          "total": 11
+        },
+        "exception_kept": {
+          "hit": 0,
+          "total": 6
+        },
+        "left_open": {
+          "hit": 215,
+          "total": 313
+        },
+        "revised_when_due": {
+          "hit": 0,
+          "total": 0
+        },
+        "held_when_not_due": {
+          "hit": 0,
+          "total": 0
+        },
+        "citations": {
+          "hit": 137,
+          "total": 137
+        },
+        "history": {
+          "hit": 0,
+          "total": 0
+        },
+        "tolerated": {
+          "hit": 7,
+          "total": 11
+        },
+        "usable": {
+          "hit": 48,
+          "total": 48
+        }
+      },
+      "by_category": {
+        "A": {
+          "correct": {
+            "hit": 30,
+            "total": 42
+          },
+          "unsupported": {
+            "hit": 35,
+            "total": 54
+          },
+          "excluded": {
+            "hit": 20,
+            "total": 25
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 35,
+            "total": 54
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 19,
+            "total": 19
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "B": {
+          "correct": {
+            "hit": 45,
+            "total": 58
+          },
+          "unsupported": {
+            "hit": 28,
+            "total": 38
+          },
+          "excluded": {
+            "hit": 12,
+            "total": 18
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 5
+          },
+          "left_open": {
+            "hit": 28,
+            "total": 38
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 23,
+            "total": 23
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "C": {
+          "correct": {
+            "hit": 20,
+            "total": 35
+          },
+          "unsupported": {
+            "hit": 31,
+            "total": 60
+          },
+          "excluded": {
+            "hit": 32,
+            "total": 38
+          },
+          "contradiction_found": {
+            "hit": 4,
+            "total": 4
+          },
+          "contradiction_invented": {
+            "hit": 3,
+            "total": 4
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 1
+          },
+          "left_open": {
+            "hit": 31,
+            "total": 60
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 25,
+            "total": 25
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 1,
+            "total": 1
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "D": {
+          "correct": {
+            "hit": 37,
+            "total": 51
+          },
+          "unsupported": {
+            "hit": 27,
+            "total": 44
+          },
+          "excluded": {
+            "hit": 20,
+            "total": 21
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 27,
+            "total": 44
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 26,
+            "total": 26
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 1
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "E": {
+          "correct": {
+            "hit": 24,
+            "total": 32
+          },
+          "unsupported": {
+            "hit": 54,
+            "total": 60
+          },
+          "excluded": {
+            "hit": 28,
+            "total": 28
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 1,
+            "total": 1
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 54,
+            "total": 60
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 23,
+            "total": 23
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 2,
+            "total": 4
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "F": {
+          "correct": {
+            "hit": 19,
+            "total": 34
+          },
+          "unsupported": {
+            "hit": 40,
+            "total": 57
+          },
+          "excluded": {
+            "hit": 18,
+            "total": 23
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 6,
+            "total": 6
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 40,
+            "total": 57
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 21,
+            "total": 21
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 4,
+            "total": 5
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        }
+      }
+    },
+    "B_staged": {
+      "stages": 106,
+      "overall": {
+        "correct": {
+          "hit": 395,
+          "total": 548
+        },
+        "unsupported": {
+          "hit": 486,
+          "total": 711
+        },
+        "excluded": {
+          "hit": 252,
+          "total": 281
+        },
+        "contradiction_found": {
+          "hit": 5,
+          "total": 5
+        },
+        "contradiction_invented": {
+          "hit": 11,
+          "total": 12
+        },
+        "exception_kept": {
+          "hit": 0,
+          "total": 6
+        },
+        "left_open": {
+          "hit": 486,
+          "total": 711
+        },
+        "revised_when_due": {
+          "hit": 17,
+          "total": 35
+        },
+        "held_when_not_due": {
+          "hit": 17,
+          "total": 23
+        },
+        "citations": {
+          "hit": 258,
+          "total": 258
+        },
+        "history": {
+          "hit": 0,
+          "total": 0
+        },
+        "tolerated": {
+          "hit": 9,
+          "total": 13
+        },
+        "usable": {
+          "hit": 106,
+          "total": 106
+        }
+      },
+      "by_category": {
+        "A": {
+          "correct": {
+            "hit": 70,
+            "total": 82
+          },
+          "unsupported": {
+            "hit": 84,
+            "total": 134
+          },
+          "excluded": {
+            "hit": 28,
+            "total": 33
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 84,
+            "total": 134
+          },
+          "revised_when_due": {
+            "hit": 4,
+            "total": 8
+          },
+          "held_when_not_due": {
+            "hit": 1,
+            "total": 2
+          },
+          "citations": {
+            "hit": 42,
+            "total": 42
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 18,
+            "total": 18
+          }
+        },
+        "B": {
+          "correct": {
+            "hit": 98,
+            "total": 122
+          },
+          "unsupported": {
+            "hit": 55,
+            "total": 70
+          },
+          "excluded": {
+            "hit": 22,
+            "total": 28
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 5
+          },
+          "left_open": {
+            "hit": 55,
+            "total": 70
+          },
+          "revised_when_due": {
+            "hit": 6,
+            "total": 6
+          },
+          "held_when_not_due": {
+            "hit": 1,
+            "total": 2
+          },
+          "citations": {
+            "hit": 39,
+            "total": 39
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 16,
+            "total": 16
+          }
+        },
+        "C": {
+          "correct": {
+            "hit": 57,
+            "total": 96
+          },
+          "unsupported": {
+            "hit": 72,
+            "total": 141
+          },
+          "excluded": {
+            "hit": 61,
+            "total": 70
+          },
+          "contradiction_found": {
+            "hit": 5,
+            "total": 5
+          },
+          "contradiction_invented": {
+            "hit": 4,
+            "total": 5
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 1
+          },
+          "left_open": {
+            "hit": 72,
+            "total": 141
+          },
+          "revised_when_due": {
+            "hit": 2,
+            "total": 5
+          },
+          "held_when_not_due": {
+            "hit": 7,
+            "total": 7
+          },
+          "citations": {
+            "hit": 51,
+            "total": 51
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 3,
+            "total": 3
+          },
+          "usable": {
+            "hit": 20,
+            "total": 20
+          }
+        },
+        "D": {
+          "correct": {
+            "hit": 81,
+            "total": 113
+          },
+          "unsupported": {
+            "hit": 82,
+            "total": 126
+          },
+          "excluded": {
+            "hit": 63,
+            "total": 67
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 82,
+            "total": 126
+          },
+          "revised_when_due": {
+            "hit": 4,
+            "total": 7
+          },
+          "held_when_not_due": {
+            "hit": 3,
+            "total": 5
+          },
+          "citations": {
+            "hit": 52,
+            "total": 52
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 1
+          },
+          "usable": {
+            "hit": 20,
+            "total": 20
+          }
+        },
+        "E": {
+          "correct": {
+            "hit": 48,
+            "total": 65
+          },
+          "unsupported": {
+            "hit": 113,
+            "total": 123
+          },
+          "excluded": {
+            "hit": 50,
+            "total": 50
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 1,
+            "total": 1
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 113,
+            "total": 123
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 3
+          },
+          "held_when_not_due": {
+            "hit": 3,
+            "total": 5
+          },
+          "citations": {
+            "hit": 36,
+            "total": 36
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 2,
+            "total": 4
+          },
+          "usable": {
+            "hit": 16,
+            "total": 16
+          }
+        },
+        "F": {
+          "correct": {
+            "hit": 41,
+            "total": 70
+          },
+          "unsupported": {
+            "hit": 80,
+            "total": 117
+          },
+          "excluded": {
+            "hit": 28,
+            "total": 33
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 6,
+            "total": 6
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 80,
+            "total": 117
+          },
+          "revised_when_due": {
+            "hit": 1,
+            "total": 6
+          },
+          "held_when_not_due": {
+            "hit": 2,
+            "total": 2
+          },
+          "citations": {
+            "hit": 38,
+            "total": 38
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 4,
+            "total": 5
+          },
+          "usable": {
+            "hit": 16,
+            "total": 16
+          }
+        }
+      }
+    },
+    "C": {
+      "stages": 106,
+      "overall": {
+        "correct": {
+          "hit": 401,
+          "total": 548
+        },
+        "unsupported": {
+          "hit": 572,
+          "total": 711
+        },
+        "excluded": {
+          "hit": 246,
+          "total": 281
+        },
+        "contradiction_found": {
+          "hit": 5,
+          "total": 5
+        },
+        "contradiction_invented": {
+          "hit": 9,
+          "total": 12
+        },
+        "exception_kept": {
+          "hit": 0,
+          "total": 6
+        },
+        "left_open": {
+          "hit": 572,
+          "total": 711
+        },
+        "revised_when_due": {
+          "hit": 23,
+          "total": 35
+        },
+        "held_when_not_due": {
+          "hit": 18,
+          "total": 23
+        },
+        "citations": {
+          "hit": 273,
+          "total": 273
+        },
+        "history": {
+          "hit": 57,
+          "total": 58
+        },
+        "tolerated": {
+          "hit": 8,
+          "total": 13
+        },
+        "usable": {
+          "hit": 106,
+          "total": 106
+        }
+      },
+      "by_category": {
+        "A": {
+          "correct": {
+            "hit": 76,
+            "total": 82
+          },
+          "unsupported": {
+            "hit": 97,
+            "total": 134
+          },
+          "excluded": {
+            "hit": 28,
+            "total": 33
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 97,
+            "total": 134
+          },
+          "revised_when_due": {
+            "hit": 6,
+            "total": 8
+          },
+          "held_when_not_due": {
+            "hit": 2,
+            "total": 2
+          },
+          "citations": {
+            "hit": 46,
+            "total": 46
+          },
+          "history": {
+            "hit": 10,
+            "total": 10
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 18,
+            "total": 18
+          }
+        },
+        "B": {
+          "correct": {
+            "hit": 92,
+            "total": 122
+          },
+          "unsupported": {
+            "hit": 58,
+            "total": 70
+          },
+          "excluded": {
+            "hit": 22,
+            "total": 28
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 5
+          },
+          "left_open": {
+            "hit": 58,
+            "total": 70
+          },
+          "revised_when_due": {
+            "hit": 6,
+            "total": 6
+          },
+          "held_when_not_due": {
+            "hit": 1,
+            "total": 2
+          },
+          "citations": {
+            "hit": 37,
+            "total": 37
+          },
+          "history": {
+            "hit": 8,
+            "total": 8
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 16,
+            "total": 16
+          }
+        },
+        "C": {
+          "correct": {
+            "hit": 61,
+            "total": 96
+          },
+          "unsupported": {
+            "hit": 84,
+            "total": 141
+          },
+          "excluded": {
+            "hit": 60,
+            "total": 70
+          },
+          "contradiction_found": {
+            "hit": 5,
+            "total": 5
+          },
+          "contradiction_invented": {
+            "hit": 3,
+            "total": 5
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 1
+          },
+          "left_open": {
+            "hit": 84,
+            "total": 141
+          },
+          "revised_when_due": {
+            "hit": 3,
+            "total": 5
+          },
+          "held_when_not_due": {
+            "hit": 6,
+            "total": 7
+          },
+          "citations": {
+            "hit": 58,
+            "total": 58
+          },
+          "history": {
+            "hit": 11,
+            "total": 12
+          },
+          "tolerated": {
+            "hit": 3,
+            "total": 3
+          },
+          "usable": {
+            "hit": 20,
+            "total": 20
+          }
+        },
+        "D": {
+          "correct": {
+            "hit": 91,
+            "total": 113
+          },
+          "unsupported": {
+            "hit": 112,
+            "total": 126
+          },
+          "excluded": {
+            "hit": 60,
+            "total": 67
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 112,
+            "total": 126
+          },
+          "revised_when_due": {
+            "hit": 5,
+            "total": 7
+          },
+          "held_when_not_due": {
+            "hit": 3,
+            "total": 5
+          },
+          "citations": {
+            "hit": 57,
+            "total": 57
+          },
+          "history": {
+            "hit": 12,
+            "total": 12
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 1
+          },
+          "usable": {
+            "hit": 20,
+            "total": 20
+          }
+        },
+        "E": {
+          "correct": {
+            "hit": 41,
+            "total": 65
+          },
+          "unsupported": {
+            "hit": 123,
+            "total": 123
+          },
+          "excluded": {
+            "hit": 49,
+            "total": 50
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 1,
+            "total": 1
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 123,
+            "total": 123
+          },
+          "revised_when_due": {
+            "hit": 1,
+            "total": 3
+          },
+          "held_when_not_due": {
+            "hit": 4,
+            "total": 5
+          },
+          "citations": {
+            "hit": 37,
+            "total": 37
+          },
+          "history": {
+            "hit": 8,
+            "total": 8
+          },
+          "tolerated": {
+            "hit": 1,
+            "total": 4
+          },
+          "usable": {
+            "hit": 16,
+            "total": 16
+          }
+        },
+        "F": {
+          "correct": {
+            "hit": 40,
+            "total": 70
+          },
+          "unsupported": {
+            "hit": 98,
+            "total": 117
+          },
+          "excluded": {
+            "hit": 27,
+            "total": 33
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 5,
+            "total": 6
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 98,
+            "total": 117
+          },
+          "revised_when_due": {
+            "hit": 2,
+            "total": 6
+          },
+          "held_when_not_due": {
+            "hit": 2,
+            "total": 2
+          },
+          "citations": {
+            "hit": 38,
+            "total": 38
+          },
+          "history": {
+            "hit": 8,
+            "total": 8
+          },
+          "tolerated": {
+            "hit": 4,
+            "total": 5
+          },
+          "usable": {
+            "hit": 16,
+            "total": 16
+          }
+        }
+      }
+    },
+    "D": {
+      "stages": 48,
+      "overall": {
+        "correct": {
+          "hit": 179,
+          "total": 252
+        },
+        "unsupported": {
+          "hit": 218,
+          "total": 313
+        },
+        "excluded": {
+          "hit": 130,
+          "total": 153
+        },
+        "contradiction_found": {
+          "hit": 4,
+          "total": 4
+        },
+        "contradiction_invented": {
+          "hit": 10,
+          "total": 11
+        },
+        "exception_kept": {
+          "hit": 0,
+          "total": 6
+        },
+        "left_open": {
+          "hit": 218,
+          "total": 313
+        },
+        "revised_when_due": {
+          "hit": 0,
+          "total": 0
+        },
+        "held_when_not_due": {
+          "hit": 0,
+          "total": 0
+        },
+        "citations": {
+          "hit": 136,
+          "total": 136
+        },
+        "history": {
+          "hit": 0,
+          "total": 0
+        },
+        "tolerated": {
+          "hit": 8,
+          "total": 11
+        },
+        "usable": {
+          "hit": 48,
+          "total": 48
+        }
+      },
+      "by_category": {
+        "A": {
+          "correct": {
+            "hit": 31,
+            "total": 42
+          },
+          "unsupported": {
+            "hit": 35,
+            "total": 54
+          },
+          "excluded": {
+            "hit": 20,
+            "total": 25
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 35,
+            "total": 54
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 20,
+            "total": 20
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "B": {
+          "correct": {
+            "hit": 46,
+            "total": 58
+          },
+          "unsupported": {
+            "hit": 28,
+            "total": 38
+          },
+          "excluded": {
+            "hit": 12,
+            "total": 18
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 5
+          },
+          "left_open": {
+            "hit": 28,
+            "total": 38
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 23,
+            "total": 23
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 0
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "C": {
+          "correct": {
+            "hit": 21,
+            "total": 35
+          },
+          "unsupported": {
+            "hit": 32,
+            "total": 60
+          },
+          "excluded": {
+            "hit": 32,
+            "total": 38
+          },
+          "contradiction_found": {
+            "hit": 4,
+            "total": 4
+          },
+          "contradiction_invented": {
+            "hit": 3,
+            "total": 4
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 1
+          },
+          "left_open": {
+            "hit": 32,
+            "total": 60
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 23,
+            "total": 23
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 1,
+            "total": 1
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "D": {
+          "correct": {
+            "hit": 39,
+            "total": 51
+          },
+          "unsupported": {
+            "hit": 27,
+            "total": 44
+          },
+          "excluded": {
+            "hit": 20,
+            "total": 21
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 0,
+            "total": 0
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 27,
+            "total": 44
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 25,
+            "total": 25
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 0,
+            "total": 1
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "E": {
+          "correct": {
+            "hit": 24,
+            "total": 32
+          },
+          "unsupported": {
+            "hit": 56,
+            "total": 60
+          },
+          "excluded": {
+            "hit": 28,
+            "total": 28
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 1,
+            "total": 1
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 56,
+            "total": 60
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 23,
+            "total": 23
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 2,
+            "total": 4
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        },
+        "F": {
+          "correct": {
+            "hit": 18,
+            "total": 34
+          },
+          "unsupported": {
+            "hit": 40,
+            "total": 57
+          },
+          "excluded": {
+            "hit": 18,
+            "total": 23
+          },
+          "contradiction_found": {
+            "hit": 0,
+            "total": 0
+          },
+          "contradiction_invented": {
+            "hit": 6,
+            "total": 6
+          },
+          "exception_kept": {
+            "hit": 0,
+            "total": 0
+          },
+          "left_open": {
+            "hit": 40,
+            "total": 57
+          },
+          "revised_when_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "held_when_not_due": {
+            "hit": 0,
+            "total": 0
+          },
+          "citations": {
+            "hit": 22,
+            "total": 22
+          },
+          "history": {
+            "hit": 0,
+            "total": 0
+          },
+          "tolerated": {
+            "hit": 5,
+            "total": 5
+          },
+          "usable": {
+            "hit": 8,
+            "total": 8
+          }
+        }
+      }
+    }
+  }
+}

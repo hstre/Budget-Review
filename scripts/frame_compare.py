@@ -39,6 +39,14 @@ frame_score = _load("frame_score")
 
 PRIMARY = ("C", "B_staged")
 SECONDARY = (("C", "B"), ("C", "D"), ("B_staged", "A"), ("D", "B"))
+
+# The local arm is asked once, about the first frame; the staged arms are asked
+# at every frame. Summing each arm's own stages and dividing would compare two
+# different sets of questions, and the first reading of this run did exactly
+# that: it showed context making correctness worse, clear of zero, where the
+# stage-for-stage comparison shows no difference at all. Any comparison
+# involving A is restricted to the stage both arms answer.
+FIRST_STAGE_ONLY = ("A",)
 MUST_NOT_FALL = ("left_open", "exception_kept", "contradiction_found")
 MUST_NOT_RISE = ("contradiction_invented",)
 USABLE_FLOOR = 0.90
@@ -52,6 +60,13 @@ def read(directory: Path) -> tuple[list[dict], dict]:
     ]
     report = json.loads((directory / "report.json").read_text(encoding="utf-8"))
     return rows, report
+
+
+def comparable_rows(rows: list[dict], left: str, right: str) -> list[dict]:
+    """The rows two arms can be compared on without changing the question."""
+    if left in FIRST_STAGE_ONLY or right in FIRST_STAGE_ONLY:
+        return [row for row in rows if row["stage"] == "F1"]
+    return rows
 
 
 def _table(report: dict) -> str:
@@ -129,9 +144,18 @@ def main(argv: list[str] | None = None) -> int:
     rows, report = read(arguments.run)
     verdict = criterion(rows)
     secondary = [
-        frame_score.paired_difference(rows, left, right, measure)
+        frame_score.paired_difference(
+            comparable_rows(rows, left, right), left, right, measure
+        )
+        | {"stages": "F1 only" if left in FIRST_STAGE_ONLY or right in FIRST_STAGE_ONLY
+           else "all"}
         for left, right in SECONDARY
         for measure in ("correct", "left_open", "held_when_not_due", "revised_when_due")
+    ]
+    secondary += [
+        frame_score.paired_difference(rows, *PRIMARY, measure)
+        | {"stages": "all"}
+        for measure in ("revised_when_due", "held_when_not_due", "tolerated")
     ]
     voided = withdrawn(report)
 
@@ -173,7 +197,8 @@ def main(argv: list[str] | None = None) -> int:
             continue
         print(f"  {result['left']:>9} vs {result['right']:<9} {result['measure']:<18}"
               f" {result['left_share']:.2f} vs {result['right_share']:.2f}"
-              f"  diff {result['difference']:+.3f} interval {result['interval']}")
+              f"  diff {result['difference']:+.3f} interval {result['interval']}"
+              f"  [{result['stages']}]")
 
     print("\n=== By category ===")
     categories = sorted({row["category"] for row in rows})

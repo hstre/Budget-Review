@@ -496,3 +496,38 @@ def test_an_arm_that_cannot_return_the_object_is_withdrawn():
 def test_an_arm_that_answers_is_not_withdrawn():
     report = {"report": {"C": {"overall": {"usable": {"hit": 99, "total": 100}}}}}
     assert frame_compare.withdrawn(report) == []
+
+
+def test_a_comparison_with_the_local_arm_is_restricted_to_the_stage_both_answer():
+    """The defect the first reading of the live run carried.
+
+    A is asked once, about the first frame; the staged arms are asked at every
+    frame. Summing each arm's own stages made context look as though it cost
+    correctness, clear of zero, where the stage-for-stage comparison showed no
+    difference. Any comparison involving A has to ask the same question of both.
+    """
+    rows = [
+        {"condition": "A", "pair": "p1", "case_id": "c1", "category": "A", "stage": "F1",
+         "correct_hit": 1, "correct_total": 1},
+        {"condition": "B_staged", "pair": "p1", "case_id": "c1", "category": "A",
+         "stage": "F1", "correct_hit": 1, "correct_total": 1},
+        {"condition": "B_staged", "pair": "p1", "case_id": "c1", "category": "A",
+         "stage": "F2", "correct_hit": 0, "correct_total": 1},
+    ]
+    restricted = frame_compare.comparable_rows(rows, "B_staged", "A")
+    assert len(restricted) == 2
+    assert all(row["stage"] == "F1" for row in restricted)
+    fair = frame_score.paired_difference(restricted, "A", "B_staged", "correct", draws=50)
+    assert fair["difference"] == 0.0
+    unfair = frame_score.paired_difference(rows, "A", "B_staged", "correct", draws=50)
+    assert unfair["difference"] > 0
+
+
+def test_a_comparison_between_two_staged_arms_keeps_every_stage():
+    rows = [
+        {"condition": "C", "pair": "p1", "case_id": "c1", "category": "A", "stage": "F2",
+         "correct_hit": 1, "correct_total": 1},
+        {"condition": "B_staged", "pair": "p1", "case_id": "c1", "category": "A",
+         "stage": "F2", "correct_hit": 0, "correct_total": 1},
+    ]
+    assert frame_compare.comparable_rows(rows, "C", "B_staged") == rows

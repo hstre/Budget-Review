@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ap, which is a log rather than a synthesis.
+§3a–§3aq, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -1104,6 +1104,67 @@ not contain. No decoding constraint prevents that, and the deterministic check
 catches all of it. The paper addresses 7 per cent here, which is the reason to
 leave it — a figure rather than a judgement.
 
+### 4.20 A staged context check buys restraint, not accuracy
+
+A statement read at four context levels, with the readings required to be
+compatible and a structured object carried between them, is a plausible way to
+stop a reading from drifting. 48 held-out cases in 24 minimal pairs, five arms,
+414 paid calls, none failed, every arm returning the agreed object every time.
+The criterion was fixed before the first call
+(`docs/prereg-frames-01.md`), and it is not met.
+
+Correctness, against the arm that sees exactly as much text at exactly the same
+point: **+0.011, interval [−0.030, +0.051]**, nine of 24 pairs favouring the
+procedure and eight favouring the control. There is no accuracy effect here.
+
+What there is, three times over, is restraint. The procedure leaves open what
+the text leaves open in 0.80 of the opportunities, against 0.68 for the same
+information read one prefix at a time (**+0.121, [0.074, 0.167]**), 0.69 for the
+whole text in one call, and 0.70 for the same text revised as often as the
+procedure has stages. Three comparisons, three intervals clear of zero.
+
+The mechanism is visible in the control arms. A sentence read **alone** is held
+open in 0.80 of the opportunities; the same sentence read **with its section**,
+at the same stage, drops to 0.70 — while correctness does not move
+(+0.012, [−0.018, +0.042]). Context does not make these readings wrong. It makes
+them committed. The staged object returns them to the restraint of the sentence
+alone while reading three times as much text.
+
+And it is paid for. The procedure is the only arm that got worse at not
+inventing a contradiction: it avoided nine of twelve where the control avoided
+eleven. One case is worth naming, because the reason it gave was right and the
+field it set was wrong: given "Bis zum 1. März bestand keine Schreibberechtigung"
+and then "Korrektur: Die Berechtigung bestand schon vor dem 1. März", it names
+the correction in its own reason and files the object as contradictory. The
+control called it superseded, which is what an explicit correction is. A
+procedure asked at every stage whether the new section conflicts with the
+reading will find conflicts; that is the cost of asking.
+
+Two predictions were refuted, and the useful one is this: I expected these
+models to reconcile a contradiction away and for contradiction-finding to be the
+weakest measure in the run. It was the strongest — every arm marked every
+declared contradiction, 1.00 across the board. The failure is the mirror image
+of the one I predicted.
+
+One measure is withdrawn. `exception_kept` scored 0 of 6 in all five arms, and
+the cause is in the gold: every arm recorded the exception and kept the
+quantifier `all`, while the gold also required the quantifier to stop being
+`all`. The schema already holds the exception in a field of its own, so that was
+a second encoding of one fact and my convention rather than an evident reading.
+Under the alternative convention the procedure is the only arm at 6 of 6 — a
+number computed after seeing the answers, which is why it carries no weight.
+
+A defect in the instrument surfaced the same way. The first reading of this run
+had context making correctness *worse*, clear of zero; that compared the local
+arm's single stage against the staged arms' two or three. Restricted to the
+stage both answer, the effect is gone. The openness finding survived the
+correction, which is the only reason it is reported.
+
+What the design cannot separate: staging from bookkeeping. The procedure both
+proceeds in stages and keeps an object with a history, and the openness effect
+could belong to either. A sixth arm — the whole text in one call, asked for the
+same object — would split them, and is not run here.
+
 ---
 
 ## 5. What we do not know
@@ -1203,7 +1264,7 @@ Stated as questions, because each is a measurement nobody has made.
 ## 7. Withdrawn claims
 
 Each of these was reported, published in the repository, and later retracted. Six
-of the nine have the same cause: a comparison made with one run per arm, before
+of the ten have the same cause: a comparison made with one run per arm, before
 the spread of a single configuration was known.
 
 1. **"A per-domain prompt note raises recall from 16 to 20 of 24."** Swept across
@@ -1258,6 +1319,15 @@ nothing and is now done (§4.19). The first claim blamed a test that had worked.
 The second deferred a measurement for a reason that did not exist.
 
 ---
+
+10. **"A local exception is preserved by no arm at all — 0 of 6 everywhere."**
+    The answers recorded the exception every time and kept the quantifier `all`;
+    the declared gold additionally required the quantifier to stop being `all`,
+    which is a second encoding of one fact in a schema that already holds the
+    exception in a field of its own. **Withdrawn as a defect of the gold, not of
+    the answers.** Under the alternative convention the staged arm is the only
+    one at 6 of 6, and that figure is post hoc. The declared gold stays
+    unchanged, so the next run remains comparable with this one (§4.20).
 
 ## 8. What the external work contributed
 
@@ -1324,7 +1394,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 33 measurement scripts, each tested
-docs/architecture.md §3a–§3ap            the chronological record, run by run
+docs/architecture.md §3a–§3aq            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1384,7 +1454,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ap und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3aq und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -2498,6 +2568,70 @@ nicht steht. Kein Dekodierzwang verhindert das, und die deterministische
 Nachprüfung fängt es vollständig. Das Paper adressiert hier 7 %, und das ist der
 Grund, es zu lassen — eine Zahl statt einer Einschätzung.
 
+### 4.20 Die mehrstufige Kontextprüfung kauft Zurückhaltung, nicht Genauigkeit
+
+Eine Aussage auf vier Kontextebenen lesen, die Lesarten auf Vereinbarkeit
+verpflichten und ein strukturiertes Objekt zwischen den Stufen mitführen: ein
+plausibler Weg, eine Lesart am Abdriften zu hindern. 48 zurückgehaltene Fälle in
+24 Minimalpaaren, fünf Arme, 414 bezahlte Aufrufe, keiner gescheitert, jeder Arm
+liefert jedes Mal das vereinbarte Objekt. Das Kriterium stand vor dem ersten
+Aufruf fest (`docs/prereg-frames-01.md`) — und es ist nicht erfüllt.
+
+Korrektheit gegen den Arm, der genau so viel Text zum genau gleichen Zeitpunkt
+sieht: **+0,011, Intervall [−0,030, +0,051]**, neun von 24 Paaren für das
+Verfahren, acht für die Kontrolle. Hier ist kein Genauigkeitseffekt.
+
+Was es gibt, und zwar dreifach, ist Zurückhaltung. Das Verfahren lässt offen, was
+der Text offen lässt, in 0,80 der Gelegenheiten, gegen 0,68 bei derselben
+Information präfixweise gelesen (**+0,121, [0,074, 0,167]**), 0,69 beim ganzen
+Text in einem Aufruf und 0,70 bei demselben Text, so oft überarbeitet wie das
+Verfahren Stufen hat. Drei Vergleiche, drei Intervalle frei von Null.
+
+Der Mechanismus ist in den Kontrollarmen zu sehen. Ein **allein** gelesener Satz
+bleibt in 0,80 der Gelegenheiten offen; derselbe Satz **mit seinem Abschnitt**,
+auf derselben Stufe, fällt auf 0,70 — während die Korrektheit sich nicht bewegt
+(+0,012, [−0,018, +0,042]). Kontext macht diese Lesarten nicht falsch. Er macht
+sie festgelegt. Das mitgeführte Objekt holt sie auf die Zurückhaltung des
+Einzelsatzes zurück, bei dreifacher Textmenge.
+
+Und es wird bezahlt. Das Verfahren ist der einzige Arm, der beim Nicht-Erfinden
+von Widersprüchen schlechter wurde: neun von zwölf vermieden, die Kontrolle elf.
+Ein Fall lohnt die Nennung, weil die Begründung stimmte und das Feld nicht: bei
+„Bis zum 1. März bestand keine Schreibberechtigung" und dann „Korrektur: Die
+Berechtigung bestand schon vor dem 1. März" nennt es die Berichtigung in der
+eigenen Begründung und legt das Objekt als widersprüchlich ab. Die Kontrolle
+sagte ersetzt, und das ist, was eine ausdrückliche Berichtigung ist. Ein
+Verfahren, das auf jeder Stufe fragt, ob der neue Abschnitt der Lesart
+widerspricht, findet Widersprüche; das ist der Preis der Frage.
+
+Zwei Vorhersagen sind widerlegt, und die brauchbare ist diese: ich erwartete,
+dass diese Modelle einen Widerspruch wegerklären und dass die
+Widerspruchserkennung das schwächste Maß des Laufs wird. Sie war das stärkste —
+jeder Arm markierte jeden erklärten Widerspruch, 1,00 durchgehend. Der Fehler ist
+das Spiegelbild des vorhergesagten.
+
+Ein Maß ist zurückgezogen. `exception_kept` stand in allen fünf Armen bei 0 von
+6, und die Ursache liegt im Gold: jeder Arm hielt die Ausnahme fest und behielt
+den Quantor `all`, während das Gold zusätzlich verlangte, dass der Quantor
+aufhört, `all` zu sein. Das Schema führt die Ausnahme in einem eigenen Feld, also
+war das eine zweite Kodierung derselben Tatsache und meine Konvention, keine
+offensichtliche Lesart. Unter der anderen Konvention ist das Verfahren der
+einzige Arm bei 6 von 6 — eine Zahl, die nach Sicht der Antworten entstand und
+deshalb nichts trägt.
+
+Ein Mangel im Instrument kam auf demselben Weg heraus. Die erste Lesung dieses
+Laufs hatte Kontext, der die Korrektheit *verschlechtert*, frei von Null; das
+verglich die eine Stufe des lokalen Arms mit den zwei oder drei der
+Stufen-Arme. Auf die Stufe beschränkt, die beide beantworten, ist der Effekt
+weg. Der Offenheitsbefund hat die Korrektur überlebt, und nur deshalb steht er
+hier.
+
+Was das Design nicht trennen kann: Stufung von Buchführung. Das Verfahren geht
+in Stufen vor *und* führt ein Objekt mit Geschichte, und der Offenheitseffekt
+könnte zu jeder der beiden Hälften gehören. Ein sechster Arm — der ganze Text in
+einem Aufruf, nach demselben Objekt gefragt — würde sie trennen und ist hier
+nicht gelaufen.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2592,7 +2726,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 ## 7. Zurückgezogene Aussagen
 
 Jede davon wurde berichtet, im Repository veröffentlicht und später zurückgezogen.
-Sechs der neun haben dieselbe Ursache: ein Vergleich mit einem Lauf je Arm, bevor
+Sechs der zehn haben dieselbe Ursache: ein Vergleich mit einem Lauf je Arm, bevor
 die Streuung einer einzigen Konfiguration bekannt war.
 
 1. **„Eine domänenspezifische Prompt-Notiz hebt den Recall von 16 auf 20 von
@@ -2651,6 +2785,16 @@ weil nur eines der vier Paper noch gespeichert sei; alle vier sind es, mit
 Dokument, Gold und Vorschlagspaket, der Nachlauf kostete also nichts und ist jetzt
 getan (§4.19). Die erste Aussage beschuldigte einen Test, der funktioniert hatte.
 Die zweite verschob eine Messung aus einem Grund, der nicht existierte.
+
+10. **„Eine lokale Ausnahme hält kein Arm — 0 von 6 überall."** Die Antworten
+    hielten die Ausnahme jedes Mal fest und behielten den Quantor `all`; das
+    erklärte Gold verlangte zusätzlich, dass der Quantor aufhört `all` zu sein,
+    und das ist eine zweite Kodierung derselben Tatsache in einem Schema, das
+    die Ausnahme schon in einem eigenen Feld führt. **Als Mangel des Golds
+    zurückgezogen, nicht der Antworten.** Unter der anderen Konvention ist der
+    Stufen-Arm der einzige bei 6 von 6, und diese Zahl ist nachträglich. Das
+    erklärte Gold bleibt unverändert, damit der nächste Lauf mit diesem
+    vergleichbar bleibt (§4.20).
 
 ## 8. Was die externe Arbeit beigetragen hat
 
@@ -2723,7 +2867,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 33 Messskripte, jedes getestet
-docs/architecture.md §3a–§3ap            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3aq            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 

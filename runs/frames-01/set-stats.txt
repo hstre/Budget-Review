@@ -1,0 +1,22 @@
+cases: 48  pairs: 24
+stages: 106
+by category: {'A': 8, 'B': 8, 'C': 8, 'D': 8, 'E': 8, 'F': 8}
+traits: {'contested': 1, 'irrelevant_context': 8, 'local_already_correct': 6, 'negative_control': 5, 'salient_global_vs_local_exception': 1, 'stays_ambiguous': 4}
+revision expectations: {'forbidden': 23, 'n/a': 48, 'required': 35}
+fields required at least once: {'action_occurred': 20, 'attribution': 106, 'capability': 6, 'condition_present': 17, 'effect_occurred': 4, 'exception_present': 15, 'negated': 105, 'obligation': 15, 'permission': 58, 'quantifier': 14, 'statement_type': 92, 'status': 96}
+fields never required: none
+tolerated (contested) field decisions: 13
+  C02/F3:status
+  C04/F2:status
+  C06/F2:status
+  D06/F2:capability
+  E01/F2:status
+  E02/F2:status
+  E04/F2:status
+  E07/F2:status
+  F01/F2:status
+  F04/F2:negated
+  F04/F2:statement_type
+  F05/F2:status
+  F07/F2:status
+cases marked contested: ['F07']
