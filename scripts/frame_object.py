@@ -33,7 +33,9 @@ UNDECIDED = "undecided"
 # `undecided` available, so an honest refusal is always expressible.
 CLOSED_FIELDS: dict[str, tuple[str, ...]] = {
     # What kind of statement the source is making.
-    "statement_type": ("capability", "permission", "obligation", "assertion", "conjecture", UNDECIDED),
+    "statement_type": (
+        "capability", "permission", "obligation", "assertion", "conjecture", UNDECIDED,
+    ),
     # Whether the statement is negated as stated.
     "negated": ("yes", "no", UNDECIDED),
     # Whose claim it is: the document speaking, or the document reporting

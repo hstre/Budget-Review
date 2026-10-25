@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import os
 import queue
 import sys
 import threading
@@ -213,7 +212,8 @@ def run_case(case: dict, condition: str, caller, *, strategy: str | None,
         # an earlier information state and are not scored as such.
         scored_here = condition in ("A", "B_staged", "C") or index == len(stages) - 1
         if scored_here:
-            previous_parsed = parsed_history[-1] if condition in ("B_staged", "C") and parsed_history else None
+            staged = condition in ("B_staged", "C")
+            previous_parsed = parsed_history[-1] if staged and parsed_history else None
             rows.append(frame_score.score_stage(
                 case, gold_by_stage[after], parsed, previous_parsed,
                 condition=condition, stage_index=index,
@@ -334,7 +334,8 @@ def main(argv: list[str] | None = None) -> int:
         encoding="utf-8")
 
     print(f"{usage['calls']} calls, {usage['failed_calls']} failed, {usage['seconds']}s")
-    print(f"tokens in/out: {usage['prompt_tokens']}/{usage['completion_tokens']}  cost: {usage['cost']}")
+    print(f"tokens in/out: {usage['prompt_tokens']}/{usage['completion_tokens']}  "
+          f"cost: {usage['cost']}")
     header = f"{'condition':<10}" + "".join(f"{name[:11]:>13}" for name in frame_score.MEASURES[:9])
     print(header)
     for condition in conditions:

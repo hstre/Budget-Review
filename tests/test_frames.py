@@ -180,7 +180,7 @@ def test_no_prompt_shows_a_frame_later_than_its_stage():
     for case in TEST["cases"]:
         labels = [frame["frame"] for frame in case["frames"]]
         for condition in frame_conditions.CONDITIONS:
-            for index, after in enumerate(frame_conditions.plan(case, condition)):
+            for after in frame_conditions.plan(case, condition):
                 prompt = frame_conditions.render(case, after, condition)
                 for later in case["frames"][labels.index(after) + 1:]:
                     assert later["text"] not in prompt, (

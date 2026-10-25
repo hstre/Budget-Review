@@ -270,7 +270,8 @@ def leaks(payload: dict, render) -> list[str]:
                 for needle in forbidden:
                     if needle and needle in text:
                         found.append(
-                            f"{case['case_id']}/{stage['after']}/{condition}: prompt carries {needle!r}"
+                            f"{case['case_id']}/{stage['after']}/{condition}: "
+                            f"prompt carries {needle!r}"
                         )
     return found
 
@@ -348,7 +349,8 @@ def main(argv: list[str] | None = None) -> int:
         for problem in problems:
             print(f"  {problem}")
         return 1
-    print(f"{len(test['cases'])} test cases and {len(dev['cases'])} development cases are consistent")
+    print(f"{len(test['cases'])} test cases and {len(dev['cases'])} development cases "
+          "are consistent")
     return 0
 
 
