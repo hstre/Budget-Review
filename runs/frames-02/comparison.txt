@@ -1,0 +1,41 @@
+arm             correct  unsupported     excluded  contradicti  contradicti  exception_k    left_open  revised_whe  held_when_n    citations      history    tolerated       usable
+B_object       0.69/252     0.75/313     0.86/153       1.00/4      1.00/11       0.00/6     0.75/313            -            -     1.00/134      1.00/48      0.64/11      1.00/48
+C              0.72/548     0.78/711     0.88/281       1.00/5      0.83/12       0.00/6     0.78/711      0.57/35      0.70/23     1.00/271      0.98/58      0.62/13     1.00/106
+
+calls 154, failed 0, tokens 146896/69377, cost None
+
+=== The pre-registered criterion ===
+  FAILS    (1) C beats B_staged on correctness, interval clear of zero — not comparable
+  holds    (2) C does not lose left_open — not comparable
+  holds    (3) C does not lose exception_kept — not comparable
+  holds    (3) C does not lose contradiction_found — not comparable
+  holds    (4) C does not invent more contradictions than B_staged — not comparable
+
+  criterion met: False
+
+=== Secondary comparisons ===
+          C vs B_object  correct            0.71 vs 0.69  diff +0.024 interval [-0.0343, 0.0797]  [last stage only]
+          C vs B_object  left_open          0.76 vs 0.75  diff +0.006 interval [-0.0498, 0.0686]  [last stage only]
+
+=== By category ===
+  correct
+    B_object   A:0.71  B:0.76  C:0.63  D:0.67  E:0.75  F:0.56
+    C          A:0.93  B:0.75  C:0.59  D:0.81  E:0.55  F:0.59
+  left_open
+    B_object   A:0.80  B:0.74  C:0.50  D:0.75  E:0.98  F:0.74
+    C          A:0.75  B:0.83  C:0.57  D:0.81  E:0.97  F:0.84
+  contradiction_found
+    B_object   A:   -  B:   -  C:1.00  D:   -  E:   -  F:   -
+    C          A:   -  B:   -  C:1.00  D:   -  E:   -  F:   -
+  contradiction_invented
+    B_object   A:   -  B:   -  C:1.00  D:   -  E:1.00  F:1.00
+    C          A:   -  B:   -  C:0.60  D:   -  E:1.00  F:1.00
+  exception_kept
+    B_object   A:   -  B:0.00  C:0.00  D:   -  E:   -  F:   -
+    C          A:   -  B:0.00  C:0.00  D:   -  E:   -  F:   -
+  revised_when_due
+    B_object   A:   -  B:   -  C:   -  D:   -  E:   -  F:   -
+    C          A:0.62  B:1.00  C:0.40  D:0.71  E:0.33  F:0.17
+  held_when_not_due
+    B_object   A:   -  B:   -  C:   -  D:   -  E:   -  F:   -
+    C          A:1.00  B:0.50  C:1.00  D:0.20  E:0.80  F:0.50

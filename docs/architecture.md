@@ -3447,3 +3447,49 @@ die Korrektur überlebt, und nur deshalb steht er im Bericht.
 Fünfzehn Mutationen des Instruments, fünfzehn gefangen. Eine überlebte den
 ersten Durchgang: eine tolerierte Wertemenge auf ihren ersten Wert zu verkürzen
 ließ eine Stufe eine Revision verlangen, die sie nicht verlangt.
+
+---
+
+## 3ar. Der sechste Arm trennt die Hälften — und derselbe Arm zweimal kostet mehr, als er einbringt
+
+Der erste Lauf ließ eine Frage offen, und zwar absichtlich: das Verfahren geht
+in Stufen vor **und** führt ein Objekt mit Lesarten, `undecided`-Werten und
+Geschichte. Der eine klare Effekt — Zurückhaltung — konnte zu jeder Hälfte
+gehören. Also der Arm, der sie trennt: dasselbe Objekt, dieselben Forderungen,
+ganzer Text, **ein** Aufruf.
+
+**Die Vorhersage stand vor dem Lauf und sie hielt.** Offenheit: Stufen 0,757
+gegen Ein-Aufruf-mit-Objekt 0,751 — **+0,006, Intervall [−0,050, +0,069]**,
+Paare 9/8/7. Und Ein-Aufruf-mit-Objekt gegen Ein-Aufruf-ohne: **+0,064
+[0,030, 0,101]**, 10 Paare zu 1. Dazu die Zahl aus dem ersten Lauf, die den
+Arm überhaupt zur Frage machte: Stufen **ohne** Objekt gegen Ein-Aufruf ohne
+Objekt, −0,003. Drei Zahlen, eine Antwort: **die Buchführung trägt, die Stufung
+nicht.** 48 Aufrufe statt 106 für dasselbe Ergebnis.
+
+Und dann die Zahl, die mir den Abend verdorben hat. Ich hatte C mitlaufen
+lassen, damit beide Arme aus einem Zug kommen — und bei Temperatur 0, bei
+identischen Prompts, kamen **1 von 106 Antworten identisch zurück**. Die Maße
+bewegten sich mit: Korrektheit 0,015, Offenheit 0,020, Revision 0,086, Halten
+0,087, Widersprüche 0,083.
+
+Das ist kein Nebensatz. Sechs der zehn zurückgezogenen Aussagen dieses
+Repositorys haben genau diese Ursache — ein Lauf je Arm, bevor die Streuung
+einer Konfiguration bekannt war — und ich habe denselben Fehler beinahe
+wiederholt, nur mit meinen eigenen neuen Befunden. Also durchgerechnet:
+
+* Offenheit: 0,05 bis 0,10 gegen 0,020 Drift, in zwei unabhängigen Läufen
+  gleichgerichtet. **Hält.**
+* Korrektheit: größter Unterschied +0,028 gegen 0,015 Drift, jedes Intervall
+  über Null. **War nie ein Effekt**, und das Kriterium hatte das von Anfang an
+  so gesehen.
+* Revision bei Fälligkeit: +0,171 aus einem Lauf gegen 0,086 Drift auf demselben
+  Maß. **Herabgesetzt auf nicht geklärt** — mitsamt dem Argument über sechs
+  gleichgerichtete Kategorien, das ich einen Tag vorher noch für stärker hielt
+  als das Intervall.
+* Stufen-Arm erfindet mehr Widersprüche: in beiden Läufen der schlechteste Arm,
+  Betrag unbeständig. **Nur eine Richtung.**
+
+Die Lehre ist alt und ich habe sie trotzdem gebraucht: *eine Messung gegen einen
+Arm ist eine Messung gegen die Streuung dieses Arms, und die kennt man erst,
+wenn man ihn zweimal laufen lässt.* Das kostete hier 48 zusätzliche Aufrufe und
+hat zwei meiner vier Befunde kassiert.

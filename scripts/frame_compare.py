@@ -38,7 +38,10 @@ def _load(name: str):
 frame_score = _load("frame_score")
 
 PRIMARY = ("C", "B_staged")
-SECONDARY = (("C", "B"), ("C", "D"), ("B_staged", "A"), ("D", "B"))
+SECONDARY = (
+    ("C", "B"), ("C", "D"), ("B_staged", "A"), ("D", "B"),
+    ("C", "B_object"), ("B_object", "B"), ("B_staged", "B"),
+)
 
 # Arms are asked different numbers of questions. The local arm is asked once,
 # about the first frame; the one-shot arms are asked once, about everything; the

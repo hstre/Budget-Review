@@ -11,6 +11,21 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ### Measured
 
+- **The staged context check's one effect belongs to its cheap half, and the
+  same arm run twice cost two of four findings.** A sixth arm asks for the same
+  object — closed fields with `undecided` available, candidate readings, a
+  history — over the whole text in one call. Openness: staged 0.757 against
+  one-call-with-object 0.751, +0.006 [−0.050, +0.069]; one-call-with-object
+  against one-call-without, +0.064 [0.030, 0.101]; and staging without the
+  object had already measured −0.003. The bookkeeping carries the restraint, at
+  48 calls instead of 106. The staged arm also asserted excluded values more
+  often, −0.033 [−0.065, −0.007]. In the same job the staged arm was re-run: at
+  temperature 0 with identical prompts, 1 of 106 replies came back identical,
+  and the measures drifted by 0.015 to 0.087. Read against that, openness stands
+  and correctness never was an effect, while revising-when-due is downgraded to
+  not settled and the staged arm's extra invented contradictions are direction
+  only. See `docs/findings-frames-02.md`, `runs/frames-02/` and §4.21.
+
 - **A staged context check over four context levels buys restraint, not
   accuracy.** 48 held-out cases in 24 minimal pairs, five arms, 414 paid calls,
   none failed. Against the arm that sees the same text at the same point,

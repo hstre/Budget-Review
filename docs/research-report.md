@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3aq, which is a log rather than a synthesis.
+§3a–§3ar, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -1165,6 +1165,52 @@ proceeds in stages and keeps an object with a history, and the openness effect
 could belong to either. A sixth arm — the whole text in one call, asked for the
 same object — would split them, and is not run here.
 
+### 4.21 The effect belongs to the object, and the same arm twice is worth two arms once
+
+The first run left one question open: the staged procedure both proceeds in
+stages and keeps an object with candidate readings, explicit `undecided` values
+and a history, and its one clear effect could belong to either half. A sixth arm
+asks for that object over the whole text **in a single call** — 154 paid calls,
+none failed.
+
+| | correctness | openness |
+|---|---|---|
+| staged against one-call-with-object, same stage, same run | +0.024 [−0.034, +0.080] | **+0.006 [−0.050, +0.069]** |
+| one-call-with-object against one-call-without | −0.008 [−0.041, +0.030] | **+0.064 [0.030, 0.101]** |
+| staged-without-object against one-call-without, first run | −0.008 [−0.029, +0.015] | −0.003 [−0.017, +0.010] |
+
+The object in one call gets the restraint. The staging on top of it gets +0.006
+with an interval four times the effect, and the staging without the object got
+nothing. **The procedure's one real effect belongs to its cheap half**: 48 calls
+instead of 106, for the same thing. The staged half also asserted excluded values
+more often, 0.824 against 0.856, −0.033 [−0.065, −0.007].
+
+The second finding is about the measurement rather than the procedure, and it
+costs more than the first one gains. The staged arm was re-run in the same job
+so both arms would come from one draw. At temperature 0, with identical prompts,
+**1 of 106 replies came back identical**, and the measures moved with it:
+correctness by 0.015, openness by 0.020, revising-when-due by 0.086,
+holding-when-not-due by 0.087, inventing-contradictions by 0.083.
+
+That is the yardstick every number in both runs has to be read against. Six of
+this repository's ten withdrawn claims have the same cause — one run per arm,
+before the spread of one configuration was known — and the rule does not stop
+applying when the claims are the new ones:
+
+* **openness stands**: 0.05 to 0.10 between arms against 0.020 of drift, same
+  direction in two independent runs, mechanism now located;
+* **correctness never was an effect**: the largest difference was +0.028 against
+  0.015 of drift, every interval across zero;
+* **revising when due is downgraded to not settled**: +0.171 from one run,
+  against 0.086 of drift on the same measure;
+* **the staged arm inventing more contradictions is direction only**: worst arm
+  in both runs, magnitude moved by more than the gap.
+
+What neither run tests: staging on text long enough that reading all of it in
+one call is not an option. Every case here is two or three sentences, so the
+one-call arm always had the whole text. On a real document the staging may be
+exactly what matters, and nothing here speaks to that.
+
 ---
 
 ## 5. What we do not know
@@ -1394,7 +1440,7 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 33 measurement scripts, each tested
-docs/architecture.md §3a–§3aq            the chronological record, run by run
+docs/architecture.md §3a–§3ar            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1454,7 +1500,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3aq und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3ar und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -2632,6 +2678,54 @@ könnte zu jeder der beiden Hälften gehören. Ein sechster Arm — der ganze Te
 einem Aufruf, nach demselben Objekt gefragt — würde sie trennen und ist hier
 nicht gelaufen.
 
+### 4.21 Der Effekt gehört dem Objekt, und derselbe Arm zweimal ist zwei Arme einmal wert
+
+Der erste Lauf ließ eine Frage offen: das Stufenverfahren geht in Stufen vor
+*und* führt ein Objekt mit Lesarten, ausdrücklichen `undecided`-Werten und
+Geschichte, und sein einer klarer Effekt konnte zu jeder Hälfte gehören. Ein
+sechster Arm fragt dieses Objekt über den ganzen Text **in einem einzigen
+Aufruf** ab — 154 bezahlte Aufrufe, keiner gescheitert.
+
+| | Korrektheit | Offenheit |
+|---|---|---|
+| Stufen gegen Ein-Aufruf-mit-Objekt, gleiche Stufe, gleicher Lauf | +0,024 [−0,034, +0,080] | **+0,006 [−0,050, +0,069]** |
+| Ein-Aufruf-mit-Objekt gegen Ein-Aufruf-ohne | −0,008 [−0,041, +0,030] | **+0,064 [0,030, 0,101]** |
+| Stufen-ohne-Objekt gegen Ein-Aufruf-ohne, erster Lauf | −0,008 [−0,029, +0,015] | −0,003 [−0,017, +0,010] |
+
+Das Objekt in einem Aufruf holt die Zurückhaltung. Die Stufung darüber holt
++0,006 bei einem Intervall vom Vierfachen des Effekts, und die Stufung ohne das
+Objekt holte gar nichts. **Der eine echte Effekt des Verfahrens gehört seiner
+billigen Hälfte**: 48 Aufrufe statt 106, für dasselbe. Die Stufen-Hälfte
+behauptete außerdem häufiger ausgeschlossene Werte, 0,824 gegen 0,856,
+−0,033 [−0,065, −0,007].
+
+Der zweite Befund betrifft die Messung, nicht das Verfahren, und er kostet mehr,
+als der erste einbringt. Der Stufen-Arm lief im selben Job erneut, damit beide
+Arme aus einem Zug kommen. Bei Temperatur 0 und identischen Prompts kamen
+**1 von 106 Antworten identisch zurück**, und die Maße bewegten sich mit:
+Korrektheit um 0,015, Offenheit um 0,020, Revision-wenn-fällig um 0,086,
+Halten-wenn-nicht-fällig um 0,087, Widerspruch-nicht-erfinden um 0,083.
+
+Das ist der Maßstab, gegen den jede Zahl beider Läufe zu lesen ist. Sechs der
+zehn zurückgezogenen Aussagen dieses Repositorys haben dieselbe Ursache — ein
+Lauf je Arm, bevor die Streuung einer Konfiguration bekannt war — und die Regel
+hört nicht auf zu gelten, wenn die Aussagen die neuen sind:
+
+* **Offenheit hält**: 0,05 bis 0,10 zwischen den Armen gegen 0,020 Drift,
+  dieselbe Richtung in zwei unabhängigen Läufen, Mechanismus jetzt lokalisiert;
+* **Korrektheit war nie ein Effekt**: größter Unterschied +0,028 gegen 0,015
+  Drift, jedes Intervall über Null;
+* **Revision bei Fälligkeit ist auf „nicht geklärt" herabgesetzt**: +0,171 aus
+  einem Lauf, gegen 0,086 Drift auf demselben Maß;
+* **dass der Stufen-Arm mehr Widersprüche erfindet, ist nur eine Richtung**: in
+  beiden Läufen der schlechteste Arm, Betrag um mehr als den Abstand verschoben.
+
+Was keiner der beiden Läufe prüft: Stufung auf Text, der zu lang ist, um ihn in
+einem Aufruf sinnvoll ganz zu lesen. Jeder Fall hier besteht aus zwei oder drei
+Sätzen, der Ein-Aufruf-Arm hatte also immer den ganzen Text. Auf einem echten
+Dokument kann die Stufung genau das sein, worauf es ankommt, und dazu sagt hier
+nichts etwas.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2867,7 +2961,7 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 33 Messskripte, jedes getestet
-docs/architecture.md §3a–§3aq            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3ar            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
