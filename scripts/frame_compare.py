@@ -40,13 +40,15 @@ frame_score = _load("frame_score")
 PRIMARY = ("C", "B_staged")
 SECONDARY = (("C", "B"), ("C", "D"), ("B_staged", "A"), ("D", "B"))
 
-# The local arm is asked once, about the first frame; the staged arms are asked
-# at every frame. Summing each arm's own stages and dividing would compare two
-# different sets of questions, and the first reading of this run did exactly
-# that: it showed context making correctness worse, clear of zero, where the
-# stage-for-stage comparison shows no difference at all. Any comparison
-# involving A is restricted to the stage both arms answer.
+# Arms are asked different numbers of questions. The local arm is asked once,
+# about the first frame; the one-shot arms are asked once, about everything; the
+# staged arms are asked at every frame. Summing each arm's own stages and
+# dividing compares two different sets of questions — which is how the first
+# reading of this run produced an effect that vanished stage for stage. Any
+# comparison between arms with different stage sets is restricted to the stages
+# both of them answer.
 FIRST_STAGE_ONLY = ("A",)
+LAST_STAGE_ONLY = ("B", "D", "B_object")
 MUST_NOT_FALL = ("left_open", "exception_kept", "contradiction_found")
 MUST_NOT_RISE = ("contradiction_invented",)
 USABLE_FLOOR = 0.90
@@ -62,11 +64,44 @@ def read(directory: Path) -> tuple[list[dict], dict]:
     return rows, report
 
 
+def last_stage_of(rows: list[dict]) -> dict[str, str]:
+    """The final stage each case reaches, read off the rows themselves."""
+    final: dict[str, str] = {}
+    for row in rows:
+        current = final.get(row["case_id"])
+        if current is None or row["stage"] > current:
+            final[row["case_id"]] = row["stage"]
+    return final
+
+
 def comparable_rows(rows: list[dict], left: str, right: str) -> list[dict]:
-    """The rows two arms can be compared on without changing the question."""
-    if left in FIRST_STAGE_ONLY or right in FIRST_STAGE_ONLY:
+    """The rows two arms can be compared on without changing the question.
+
+    Restricting to one stage is not a narrowing of the comparison; it is what
+    makes it one. An arm asked only about the whole text has no answer about an
+    earlier information state, so its single answer must be set against the
+    staged arm's answer at that same point and nowhere else.
+    """
+    first = left in FIRST_STAGE_ONLY or right in FIRST_STAGE_ONLY
+    last = left in LAST_STAGE_ONLY or right in LAST_STAGE_ONLY
+    if first and last:
+        # Two arms that answer at opposite ends share a stage only where a case
+        # has a single frame, and this set has none.
+        return []
+    if first:
         return [row for row in rows if row["stage"] == "F1"]
+    if last:
+        final = last_stage_of([row for row in rows if row["condition"] in LAST_STAGE_ONLY])
+        return [row for row in rows if final.get(row["case_id"]) == row["stage"]]
     return rows
+
+
+def _stage_label(left: str, right: str) -> str:
+    if left in FIRST_STAGE_ONLY or right in FIRST_STAGE_ONLY:
+        return "F1 only"
+    if left in LAST_STAGE_ONLY or right in LAST_STAGE_ONLY:
+        return "last stage only"
+    return "all"
 
 
 def _table(report: dict) -> str:
@@ -147,8 +182,7 @@ def main(argv: list[str] | None = None) -> int:
         frame_score.paired_difference(
             comparable_rows(rows, left, right), left, right, measure
         )
-        | {"stages": "F1 only" if left in FIRST_STAGE_ONLY or right in FIRST_STAGE_ONLY
-           else "all"}
+        | {"stages": _stage_label(left, right)}
         for left, right in SECONDARY
         for measure in ("correct", "left_open", "held_when_not_due", "revised_when_due")
     ]

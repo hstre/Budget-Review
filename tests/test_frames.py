@@ -531,3 +531,88 @@ def test_a_comparison_between_two_staged_arms_keeps_every_stage():
          "stage": "F2", "correct_hit": 0, "correct_total": 1},
     ]
     assert frame_compare.comparable_rows(rows, "C", "B_staged") == rows
+
+
+# ── the sixth arm: bookkeeping without staging ───────────────────────────────
+
+
+def test_the_object_arm_sees_the_whole_text_in_one_call():
+    case = next(c for c in TEST["cases"] if len(c["frames"]) == 3)
+    assert frame_conditions.plan(case, "B_object") == [case["frames"][-1]["frame"]]
+    prompt = frame_conditions.render(case, case["frames"][-1]["frame"], "B_object")
+    for frame in case["frames"]:
+        assert frame["text"] in prompt
+
+
+def test_the_object_arm_asks_for_what_the_staged_arm_asks_for():
+    """It is C's bookkeeping minus C's staging — that is the whole point of it."""
+    case = TEST["cases"][0]
+    _, first = frame_conditions.build(case, "F1", "C")
+    _, later = frame_conditions.build(
+        case, case["frames"][-1]["frame"], "C", previous="{}")
+    _, once = frame_conditions.build(case, case["frames"][-1]["frame"], "B_object")
+    for demand in ("mehrere Lesarten", "undecided", "history", "Präzisierung"):
+        assert demand in first + later, demand
+        assert demand in once, demand
+
+
+def test_the_object_arm_is_not_given_a_previous_object():
+    case = TEST["cases"][0]
+    _, once = frame_conditions.build(case, case["frames"][-1]["frame"], "B_object")
+    assert "Bisheriges Objekt" not in once
+    assert "Neu hinzugekommener Abschnitt" not in once
+
+
+def test_the_one_shot_arms_are_compared_on_the_stage_they_answer():
+    rows = [
+        {"condition": "C", "pair": "p1", "case_id": "c1", "category": "A", "stage": "F1",
+         "correct_hit": 0, "correct_total": 1},
+        {"condition": "C", "pair": "p1", "case_id": "c1", "category": "A", "stage": "F2",
+         "correct_hit": 1, "correct_total": 1},
+        {"condition": "B", "pair": "p1", "case_id": "c1", "category": "A", "stage": "F2",
+         "correct_hit": 1, "correct_total": 1},
+    ]
+    restricted = frame_compare.comparable_rows(rows, "C", "B")
+    assert [row["stage"] for row in restricted] == ["F2", "F2"]
+    fair = frame_score.paired_difference(restricted, "C", "B", "correct", draws=50)
+    assert fair["difference"] == 0.0
+
+
+def test_the_last_stage_is_read_off_the_rows_and_not_assumed():
+    rows = [
+        {"condition": "B", "case_id": "two", "stage": "F2"},
+        {"condition": "B", "case_id": "three", "stage": "F3"},
+    ]
+    assert frame_compare.last_stage_of(rows) == {"two": "F2", "three": "F3"}
+
+
+def test_two_arms_that_answer_at_opposite_ends_are_not_compared_at_all():
+    rows = [
+        {"condition": "A", "pair": "p", "case_id": "c", "category": "A", "stage": "F1"},
+        {"condition": "B", "pair": "p", "case_id": "c", "category": "A", "stage": "F2"},
+    ]
+    assert frame_compare.comparable_rows(rows, "A", "B") == []
+
+
+def test_an_arm_asked_for_a_history_is_scored_on_it():
+    case = next(c for c in TEST["cases"] if len(c["frames"]) > 1)
+    payload = {name: "undecided" for name in frame_object.CLOSED_FIELDS}
+    without = frame_score.score_stage(
+        case, case["gold"][-1], frame_object.parse(json.dumps(payload)), None,
+        condition="B_object", stage_index=0)
+    assert without["history_total"] == 1
+    assert without["history_hit"] == 0
+    payload["history"] = [{"frame": "F2", "change": "x", "reason": "y"}]
+    with_one = frame_score.score_stage(
+        case, case["gold"][-1], frame_object.parse(json.dumps(payload)), None,
+        condition="B_object", stage_index=0)
+    assert with_one["history_hit"] == 1
+
+
+def test_the_one_shot_arms_without_a_history_demand_are_not_scored_on_one():
+    case = next(c for c in TEST["cases"] if len(c["frames"]) > 1)
+    payload = {name: "undecided" for name in frame_object.CLOSED_FIELDS}
+    row = frame_score.score_stage(
+        case, case["gold"][-1], frame_object.parse(json.dumps(payload)), None,
+        condition="B", stage_index=0)
+    assert row["history_total"] == 0

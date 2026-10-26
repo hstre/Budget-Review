@@ -87,9 +87,14 @@ def stub_reply(strategy: str, case: dict, stage: dict, stage_index: int) -> str:
         closed = dict(stage.get("must", {}))
         for name, values in stage.get("tolerated", {}).items():
             closed[name] = values[0]
-        history = [{"frame": stage["after"], "change": "stub", "reason": "stub"}] * max(
-            stage_index, 0
-        )
+        # One entry per frame already shown, which is what an answer asked for a
+        # history can show. The staged arm is asked from its second stage on;
+        # the one-call arm is asked once about a text that contains them all, so
+        # keying this to the stage index alone left its ceiling unreachable.
+        shown = len(frame_cases.frames_up_to(case, stage["after"]))
+        history = [
+            {"frame": stage["after"], "change": "stub", "reason": "stub"}
+        ] * max(stage_index, shown - 1)
         payload = json.loads(_answer_from(closed, "gold stub"))
         payload["history"] = history
         payload["supporting_quotes"] = [

@@ -11,6 +11,15 @@ advantage without the procedure being worth anything:
   as many times as C has stages on that case. If D matches C, the advantage was
   the extra passes and not the frames.
 
+One arm exists to split what the first run could not: C both proceeds in
+stages and keeps an object with candidate readings and a history, and the
+restraint it showed could belong to either half. **B_object** asks for that same
+object, with the same bookkeeping, over the whole text in a single call. If it
+shows C's restraint, the bookkeeping is what does the work and the staging is
+decoration; if it does not, the staging is load-bearing. The first run already
+narrows the question: the staged arm without the object behaves like the
+one-shot arm with it, to within a hundredth on both measures.
+
 And one thing could produce an apparent advantage *for* B that is not fair:
 B sees later text while C is still deciding on earlier text. A per-stage
 comparison of B against C would then compare different information. So B is
@@ -35,7 +44,7 @@ frame_object = importlib.util.module_from_spec(_spec)
 sys.modules["frame_object"] = frame_object
 _spec.loader.exec_module(frame_object)
 
-CONDITIONS = ("A", "B", "B_staged", "C", "D")
+CONDITIONS = ("A", "B", "B_staged", "C", "D", "B_object")
 
 ROLE = (
     "Du liest einen Text und hältst fest, worauf er sich festlegt. Du erfindest "
@@ -93,6 +102,24 @@ def build(case: dict, after: str, condition: str, previous: str | None = None,
         body = (
             f"{TASK}\n\nAussage:\n{_statement(case)}\n\n"
             "Dir liegt nur dieser Satz vor."
+        )
+        return system, body
+
+    if condition == "B_object":
+        # C's bookkeeping without C's staging: the whole text at once, and the
+        # same demands — several readings where the text allows several,
+        # `undecided` where it decides nothing, each later passage placed, and
+        # the development of the reading kept with the original.
+        body = (
+            f"{TASK}\n\nText:\n{_running_text(frames)}\n\n"
+            f"Die Aussage, um die es geht, ist: {_statement(case)}\n\n"
+            "Halte mehrere Lesarten fest, wenn die Aussage mehrere zulässt, und "
+            "setze die geschlossenen Felder auf undecided, solange der Text sie "
+            "nicht entscheidet. Ordne jede weitere Textstelle ein: Präzisierung, "
+            "Einschränkung, Ausnahme, Gegenbehauptung, Berichtigung oder ohne "
+            "Belang. Lege dich nur mit Begründung und Quellenverweis fest. Trage "
+            "in history ein, wie sich die Lesart durch den Text entwickelt, und "
+            f"erhalte die ursprüngliche Angabe und ihre Quelle.\n\n{_STAGE_RULES}"
         )
         return system, body
 
@@ -158,7 +185,7 @@ def plan(case: dict, condition: str) -> list[str]:
     labels = [frame["frame"] for frame in case["frames"]]
     if condition == "A":
         return [labels[0]]
-    if condition == "B":
+    if condition in ("B", "B_object"):
         return [labels[-1]]
     if condition in ("B_staged", "C"):
         return labels

@@ -206,11 +206,17 @@ def score_stage(
         if _normalise(quote) and _normalise(quote) in shown:
             row["citations_hit"] += 1
 
-    # 9b — the staged procedure has to keep its own history
+    # 9b — an arm asked to keep a history has to keep one. C is asked at every
+    # stage after the first; B_object is asked once, over a text that already
+    # contains every stage, so one entry is the whole of what it can show.
     if condition == "C" and stage_index > 0:
         row["history_total"] = 1
         history = parsed.open.get("history")
         row["history_hit"] = 1 if isinstance(history, list) and len(history) >= stage_index else 0
+    elif condition == "B_object" and len(case["frames"]) > 1:
+        row["history_total"] = 1
+        history = parsed.open.get("history")
+        row["history_hit"] = 1 if isinstance(history, list) and history else 0
     return row
 
 

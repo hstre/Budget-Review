@@ -43,10 +43,17 @@ invents.**
 **Carrying a structured object with explicit `undecided` values preserves
 openness, against every alternative.** C leaves open what the text leaves open
 in 0.80 of the opportunities, against 0.68 for the same information read in one
-call per prefix (+0.121, [0.074, 0.167]), 0.69 for the whole text in one call
-(+0.118, [0.072, 0.164]) and 0.70 for the same text revised as often as C has
-stages (+0.108, [0.058, 0.157]). Three comparisons, three intervals clear of
-zero, same direction.
+call per prefix (+0.121, [0.074, 0.167]). Against the two arms that answer once,
+compared on the stage all three answer: 0.786 against 0.687 for the whole text
+in one call (+0.099, [0.053, 0.146], 15 pairs to 2) and against 0.697 for the
+same text revised as often as C has stages (+0.089, [0.043, 0.137], 14 to 2).
+Three comparisons, three intervals clear of zero, same direction.
+
+A fourth figure places the effect further. **Staging alone, without the object,
+moves nothing:** the prefix arm against the one-shot arm is −0.008 on
+correctness and −0.003 on openness, both intervals across zero and both arms
+level on 16 of 24 pairs. Whatever C does, it is not the staging by itself. Which
+half of C carries it is what the second run asks.
 
 **Context costs restraint, and the staged object gives it back.** Comparing the
 local arm against the one-shot arm *at the stage both answer*, correctness is
@@ -167,10 +174,10 @@ makes it scorable and also what makes it unlike a real document.
 
 Two limits of the design, both declared before the run:
 
-* **Staging and bookkeeping are not separated.** C both proceeds in stages and
-  keeps an object with a history. A sixth arm — the whole text in one call, asked
-  for the same object with the same history — would split them. The openness
-  effect could belong to either half.
+* **Staging and bookkeeping are not separated by this run.** C both proceeds in
+  stages and keeps an object with a history. The sixth arm that splits them —
+  the whole text in one call, asked for the same object — is declared in the
+  addendum to the pre-registration and run separately.
 * **The fourth context level is not tested as itself.** Later text arrives in
   this set as just another frame; nothing distinguishes "a section further down"
   from "a passage added after the reading was complete".

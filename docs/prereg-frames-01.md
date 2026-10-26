@@ -124,3 +124,63 @@ human reviewer would apply.
 Tokens are recorded for every call. A price is reported only when one is passed
 in explicitly; this file asserts no price, because a figure invented here would
 be worse than none.
+
+---
+
+## Addendum — the sixth arm, declared before its own run
+
+Committed before any call of the second run. The first run left one question
+open by design, and this is the arm that answers it.
+
+### What it tests
+
+C both proceeds in stages and keeps an object with candidate readings, explicit
+`undecided` values and a history. Its one clear effect — restraint — could
+belong to either half. **B_object** asks for that same object, with the same
+bookkeeping, over the whole text in a single call: C's bookkeeping without C's
+staging.
+
+The first run already narrows the question. Compared on the stage both answer,
+the staged arm *without* the object behaves like the one-shot arm: −0.008 on
+correctness and −0.003 on openness. Staging alone moved nothing.
+
+### Prediction
+
+**B_object shows most of C's restraint.** I expect its openness within 0.03 of
+C's 0.786 and clear of B's 0.687 — that is, the bookkeeping carries the effect
+and the staging is close to decoration on cases this short.
+
+What would refute it: B_object at B's level, with C still above both. That
+would mean the incremental reading is load-bearing after all, and the first
+run's finding would have to be read as being about staging rather than about
+the object.
+
+### How it is read
+
+* Openness for B_object within 0.03 of C and with its interval against B clear
+  of zero → the effect is the bookkeeping.
+* B_object within 0.03 of B and C's interval against B_object clear of zero →
+  the effect needs the staging.
+* Anything else → not separated by this run, and reported as not separated.
+
+### What else this run buys
+
+C is run again in the same job, so both arms come from one draw rather than
+being compared across runs. That re-run is also a determinism check: the first
+run was at temperature 0, and the share of C's answers that come back identical
+is reported as a fact about the provider, not as evidence about the procedure.
+
+### Cost
+
+154 calls against the first run's 414. Tokens recorded; no price asserted.
+
+### A correction carried into this addendum
+
+The first run's secondary comparisons summed each arm's own stages, so a staged
+arm answering two or three times was set against a one-shot arm answering once.
+Restricted to the stage both arms answer, C against B on openness is +0.099
+[0.053, 0.146] rather than +0.118, and C against D is +0.089 [0.043, 0.137]
+rather than +0.108. Both still clear of zero; the primary comparison was always
+staged against staged and is unaffected. The restriction now applies to every
+comparison between arms with different stage sets, and `docs/findings-frames-01.md`
+carries the corrected figures.
