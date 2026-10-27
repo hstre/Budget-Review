@@ -11,7 +11,7 @@ the work: the chronological record is in [`architecture.md`](architecture.md)
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
 withdrawn, it is listed as withdrawn rather than quietly dropped — there are
-nine of those, and they are the most useful part of the document.
+ten of those, and they are the most useful part of the document.
 
 *(English first; dieselbe Fassung auf Deutsch weiter unten.)*
 
@@ -116,6 +116,8 @@ compute its variants** — which costs nothing and had not been done.
 | 21 | Reviewer comparisons rest on an assumption the artefacts could not confirm: the arms recorded no prompt hash and no output budget | both are recorded now (§4.18), but only from here on — every stored reviewer run predates the guard |
 | 22 | A recall figure on the long court decisions is a joint property of the extraction and of an undeclared matching threshold | declared and swept (§4.19); the threshold decides 38 of 49 spans there and 0 of 993 on the papers, so published figures on that document need the condition stated with them |
 | 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats |
+| 24 | A staged check over four context levels buys restraint, not accuracy — and the restraint belongs to the structured object, not to the staging | measured twice (§4.20, §4.21); one call with the object matches four staged calls, 48 against 106 |
+| 25 | **Temperature 0 is not determinism: 1 of 106 identical replies across two runs of one arm**, with measures drifting 0.015 to 0.087 | established (§4.21); it is finding 5 again, sharper, and it cost two of the four findings in §4.20 |
 
 ---
 
@@ -1261,6 +1263,24 @@ Stated as questions, because each is a measurement nobody has made.
     resolving it against a revised version of the same document exists on paper
     and is unbuilt.
 
+11. **Does the restraint hold on text too long to read in one call?** The
+    structured object matched the staged loop on cases of two or three sentences,
+    where reading everything at once is always available (§4.21). At document
+    length it is not, and the staged loop is the only one of the two that can
+    work there. Nothing in either run speaks to it, and the measurement would
+    need statement-level gold on a real document — which no corpus this project
+    has touched provides.
+12. **Is "a field the text does not mention must be `undecided`" the convention a
+    human reviewer would apply?** It is what makes the frame gold complete and
+    what makes openness countable, and five arms agreed against one half of it
+    (§7.10). The convention has never been put to a reader who did not write it.
+13. **How far does the temperature-0 drift reach?** It was measured on one arm
+    and one prompt family: 1 of 106 replies identical, measures moving by 0.015
+    to 0.087 (§4.21). Whether the same holds for the extraction prompts, where
+    this report's older single-run comparisons live, is not measured — and until
+    it is, every one of those comparisons has an unmeasured noise floor rather
+    than a known one.
+
 ---
 
 ## 6. Problems: solved and unsolved
@@ -1283,6 +1303,7 @@ Stated as questions, because each is a measurement nobody has made.
 | A finding's trigger could be an undefined label and nothing said so | Every deterministic rule declares what its trigger rests on; it travels into the JSON and onto the page | in review (§4.13) |
 | A reviewer comparison could not be guarded the way an extraction comparison is | The prompt hash and the output budget are recorded on every reviewer run, the failed ones included | in review (§4.18); forward only — every stored reviewer run predates it |
 | The rule deciding when a live span reaches a gold span was undeclared and fixed at one value | Every script that uses it sweeps it, `compare_runs` says whether its verdict survives the sweep, and the share of the reference the rule governs is reported | in review (§4.19) |
+| A comparison between two arms asked different numbers of questions | Any comparison between arms with different stage sets is restricted to the stages both of them answer. It produced one effect that vanished on correction, and a test holds the distinction | in review (§4.20, §4.21) |
 
 ### Unsolved
 
@@ -1299,6 +1320,8 @@ Stated as questions, because each is a measurement nobody has made.
 | The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
 | A finding can appear and vanish under identical input | On 24 short cases 4 of 24 documents emit a different finding set. On two long documents **no category holds still**: contradictions at severity high run 2, 7, 5 and logical gaps 16, 19, 13 across identical runs. Three rules fire on an *absence*, and extraction is known to lose argument structure, so the absence may be the run's (§4.14, §4.15) |
 | A single run is a draw, not a sample | Production extracts once per document, so a dossier reporting 16 logical gaps where a second run would report 13 looks exactly as final. Repeats would fix it at three times the extraction cost (§4.15, decision 7). §4.19 is the first evidence that they would pay — at three repeats the spread flags exactly the cases that fail — and also the reason not to decide on it yet, since that evidence rests on one phenomenon |
+| Temperature 0 is not determinism | 1 of 106 replies identical across two runs of one arm, with measures drifting 0.015 to 0.087 (§4.21). Every single-run comparison in this report has an unmeasured noise floor rather than a known one, and the only remedy measured so far is running the same arm twice |
+| What an exception does to a quantifier | Five arms recorded an exception and kept the quantifier `all`; the frame gold required both, which encoded one fact twice (§7.10). Which convention a reader would apply is undecided, and the gold stays as declared so the runs stay comparable |
 | Whether a finding was *warranted*, as opposed to reproducible | Not computable here: nothing in this project is a gold answer about whether a deterministic finding is right. Reproducibility is a lower bound only (§4.14) |
 | Meaning of a claim, beyond 24 short sentences | The only meaning set that exists is 24 one-to-three-sentence cases. Two independent reviews are now recorded, checked and acted on (§4.16), so it is examined rather than a draft — but it is still 24 short passages written by the party that built the system |
 | Relations between claims | The third outcome of §4.12 is still unmeasurable: the meaning set annotates no edges |
@@ -1440,6 +1463,9 @@ Actions secret — it is never available locally.
 ```
 .github/workflows/live-deepseek.yml      every paid run, by dispatch input
 scripts/                                 33 measurement scripts, each tested
+runs/frames-01, runs/frames-02           every prompt and reply of the two paid
+                                         frame runs, 568 calls, the system
+                                         prompt stored once by hash
 docs/architecture.md §3a–§3ar            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
@@ -1449,7 +1475,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-581 tests and one skipped, `ruff check` clean. Two of them are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
+598 tests and one skipped, `ruff check` clean. Two of them are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
 
 ---
 
@@ -1489,6 +1515,17 @@ reader knows what is waiting.
    and the measured-least-effective one; opaque identifiers are what worked in
    the paper, and they would cost the vocabulary's readability.
 
+9. **Whether the semantic object goes into the extraction contract.** It is the
+   one thing these two runs measured a gain from: closed fields with `undecided`
+   as a real answer, candidate readings kept, each passage placed. It costs
+   nothing extra in calls — one call with the object matched four staged ones —
+   but it changes the extraction contract and with it every stored dossier's
+   comparability (§4.21).
+10. **Whether every paid comparison from here needs its arm run twice.** The
+    drift at temperature 0 cost two of the four findings in §4.20, and a second
+    run of the same arm is the only remedy measured so far. It doubles the price
+    of every comparison.
+
 ---
 ---
 
@@ -1505,7 +1542,7 @@ Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
 wurde. Wo eine Aussage später zurückgezogen wurde, steht sie als zurückgezogen da
-und wurde nicht still entfernt — es sind neun, und sie sind der nützlichste Teil
+und wurde nicht still entfernt — es sind zehn, und sie sind der nützlichste Teil
 des Dokuments.
 
 ## 1. Zusammenfassung
@@ -1612,6 +1649,8 @@ und nicht getan war.
 | 21 | Reviewer-Vergleiche ruhen auf einer Annahme, die die Artefakte nicht belegen konnten: die Arme zeichneten weder Prompt-Hash noch Ausgabebudget auf | beides wird jetzt aufgezeichnet (§4.18), aber erst von hier an — jeder gespeicherte Reviewer-Lauf liegt vor dem Wächter |
 | 22 | Ein Recall-Wert auf den langen Gerichtsentscheiden ist eine gemeinsame Eigenschaft von Extraktion und einer nicht ausgewiesenen Zuordnungsschwelle | ausgewiesen und durchgerechnet (§4.19); dort entscheidet die Schwelle 38 von 49 Spannen, auf den Papern 0 von 993 — veröffentlichte Zahlen zu diesem Dokument brauchen die Bedingung dazu |
 | 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen |
+| 24 | Eine Stufenprüfung über vier Kontextebenen kauft Zurückhaltung, nicht Genauigkeit — und die Zurückhaltung gehört dem strukturierten Objekt, nicht der Stufung | zweimal gemessen (§4.20, §4.21); ein Aufruf mit dem Objekt erreicht vier Stufenaufrufe, 48 gegen 106 |
+| 25 | **Temperatur 0 ist keine Determiniertheit: 1 von 106 identischen Antworten über zwei Läufe eines Arms**, Maße driften um 0,015 bis 0,087 | belegt (§4.21); es ist Befund 5 noch einmal, schärfer, und er hat zwei der vier Befunde aus §4.20 gekostet |
 
 ## 2. Was das System ist
 
@@ -2775,6 +2814,26 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
     gegen eine revidierte Fassung desselben Dokuments aufzulösen, existiert auf
     dem Papier und ist ungebaut.
 
+11. **Hält die Zurückhaltung auf Text, der für einen Aufruf zu lang ist?** Das
+    strukturierte Objekt erreichte die Stufenschleife auf Fällen von zwei oder
+    drei Sätzen, wo alles auf einmal zu lesen immer möglich ist (§4.21). Auf
+    Dokumentlänge ist es das nicht, und die Stufenschleife ist die einzige der
+    beiden, die dort arbeiten kann. Keiner der beiden Läufe sagt dazu etwas, und
+    die Messung bräuchte Gold auf Aussageebene an einem echten Dokument — das
+    kein Korpus liefert, das dieses Projekt angefasst hat.
+12. **Ist „ein Feld, das der Text nicht nennt, muss `undecided` sein" die
+    Konvention, die ein menschlicher Prüfer anlegen würde?** Sie macht das
+    Frame-Gold vollständig und das Offenlassen zählbar, und fünf Arme waren sich
+    gegen eine Hälfte davon einig (§7.10). Die Konvention war noch keinem Leser
+    vorgelegt, der sie nicht selbst geschrieben hat.
+13. **Wie weit reicht die Drift bei Temperatur 0?** Gemessen an einem Arm und
+    einer Prompt-Familie: 1 von 106 Antworten identisch, Maße um 0,015 bis 0,087
+    verschoben (§4.21). Ob dasselbe für die Extraktions-Prompts gilt, wo die
+    älteren Einzellauf-Vergleiche dieses Berichts stehen, ist nicht gemessen —
+    und bis dahin haben all diese Vergleiche einen ungemessenen statt eines
+    bekannten Rauschbodens.
+
+
 ## 6. Probleme: gelöst und ungelöst
 
 ### Gelöst
@@ -2795,6 +2854,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Der Auslöser eines Befunds konnte ein undefinierter Label sein, ohne dass es dastand | Jede deterministische Regel deklariert, worauf ihr Auslöser steht; es reist ins JSON und auf die Seite | im Review (§4.13) |
 | Ein Reviewer-Vergleich war nicht so zu sichern wie ein Extraktionsvergleich | Prompt-Hash und Ausgabebudget werden auf jedem Reviewer-Lauf aufgezeichnet, auch auf den fehlgeschlagenen | im Review (§4.18); erst von hier an — jeder gespeicherte Reviewer-Lauf liegt davor |
 | Die Regel, die entscheidet wann eine Live-Spanne eine Gold-Spanne erreicht, war nicht ausgewiesen und auf einen Wert fixiert | Jedes Skript, das sie benutzt, rechnet sie durch, `compare_runs` sagt ob sein Urteil den Sweep übersteht, und der Anteil der Referenz, über den die Regel befindet, wird berichtet | im Review (§4.19) |
+| Ein Vergleich zwischen zwei Armen, die unterschiedlich viele Fragen beantworten | Jeder Vergleich zwischen Armen mit verschiedenen Stufenmengen wird auf die Stufen beschränkt, die beide beantworten. Er hat einen Effekt erzeugt, der bei der Korrektur verschwand, und ein Test hält die Unterscheidung | im Review (§4.20, §4.21) |
 
 ### Ungelöst
 
@@ -2811,6 +2871,8 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
 | Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | Auf 24 kurzen Fällen liefern 4 von 24 Dokumenten eine andere Befundmenge. Auf zwei langen Dokumenten bleibt **keine Befundart stehen**: Widersprüche mit Schweregrad high laufen 2, 7, 5 und logische Lücken 16, 19, 13 über identische Läufe. Drei Regeln feuern auf eine *Abwesenheit*, und die Extraktion verliert bekanntlich Argumentstruktur — die Abwesenheit kann die des Laufs sein (§4.14, §4.15) |
 | Ein einzelner Lauf ist eine Ziehung, keine Stichprobe | Im Produktionslauf wird einmal je Dokument extrahiert, ein Dossier mit 16 logischen Lücken sieht also genauso endgültig aus wie eines mit 13. Wiederholungen behöben das zum dreifachen Extraktionspreis (§4.15, Entscheidung 7). §4.19 ist der erste Hinweis, dass sie sich lohnen — bei drei Wiederholungen markiert die Streuung genau die Fälle, die durchfallen — und gleichzeitig der Grund, noch nicht zu entscheiden, denn dieser Hinweis ruht auf einem Phänomen |
+| Temperatur 0 ist keine Determiniertheit | 1 von 106 Antworten identisch über zwei Läufe eines Arms, Maße um 0,015 bis 0,087 verschoben (§4.21). Jeder Einzellauf-Vergleich in diesem Bericht hat einen ungemessenen statt eines bekannten Rauschbodens, und das einzige bisher gemessene Mittel ist, denselben Arm zweimal laufen zu lassen |
+| Was eine Ausnahme mit einem Quantor macht | Fünf Arme hielten eine Ausnahme fest und behielten den Quantor `all`; das Frame-Gold verlangte beides und kodierte damit eine Tatsache zweimal (§7.10). Welche Konvention ein Leser anlegen würde, ist offen, und das Gold bleibt wie erklärt, damit die Läufe vergleichbar bleiben |
 | Ob ein Befund *gedeckt* war, im Unterschied zu reproduzierbar | Hier nicht rechenbar: nichts in diesem Projekt ist eine Gold-Antwort darauf, ob ein deterministischer Befund richtig ist. Reproduzierbarkeit ist nur eine untere Schranke (§4.14) |
 | Bedeutung eines Claims, jenseits von 24 kurzen Sätzen | Der einzige Bedeutungsbestand sind 24 Fälle von einem bis drei Sätzen. Zwei unabhängige Durchsichten sind jetzt vermerkt, nachgerechnet und umgesetzt (§4.16), er ist also geprüft statt Entwurf — aber es sind weiter 24 kurze Stellen, geschrieben von der Partei, die das System gebaut hat |
 | Beziehungen zwischen Claims | Das dritte Ergebnis aus §4.12 ist weiter nicht messbar: der Bedeutungsbestand annotiert keine Kanten |
@@ -2961,6 +3023,9 @@ GitHub-Actions-Secret — lokal ist er nie verfügbar.
 ```
 .github/workflows/live-deepseek.yml      jeder bezahlte Lauf, über Dispatch-Eingaben
 scripts/                                 33 Messskripte, jedes getestet
+runs/frames-01, runs/frames-02           jeder Prompt und jede Antwort der zwei
+                                         bezahlten Frame-Läufe, 568 Aufrufe, der
+                                         Systemprompt einmal per Hash
 docs/architecture.md §3a–§3ar            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
@@ -2971,7 +3036,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-581 Tests und einer übersprungen, `ruff check` sauber. Zwei davon werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
+598 Tests und einer übersprungen, `ruff check` sauber. Zwei davon werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
 
 ## 10. Offene Entscheidungen
 
@@ -3009,3 +3074,14 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    entfernen, also bleibt das offen. Definitionen für die 21 Typen nachzutragen
    ist die naheliegende Reparatur und die gemessen wirkungsloseste; gewirkt haben
    opake Kennungen, und die kosten die Lesbarkeit des Vokabulars.
+
+9. **Ob das semantische Objekt in den Extraktionsvertrag kommt.** Es ist das
+   eine, bei dem diese zwei Läufe einen Gewinn gemessen haben: geschlossene
+   Felder mit `undecided` als echter Antwort, erhaltene Lesarten, jede Textstelle
+   eingeordnet. Es kostet keine zusätzlichen Aufrufe — ein Aufruf mit dem Objekt
+   erreichte vier gestufte — ändert aber den Extraktionsvertrag und damit die
+   Vergleichbarkeit jedes gespeicherten Dossiers (§4.21).
+10. **Ob jeder bezahlte Vergleich von hier an seinen Arm zweimal braucht.** Die
+    Drift bei Temperatur 0 hat zwei der vier Befunde in §4.20 gekostet, und ein
+    zweiter Lauf desselben Arms ist das einzige bisher gemessene Mittel. Er
+    verdoppelt den Preis jedes Vergleichs.
