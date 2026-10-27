@@ -9,6 +9,26 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Changed
+
+- **The extraction contract may now decline to type a claim.** `claim_type`
+  accepts `undecided`, which requires at least two named `candidate_types`; a
+  committed label may not carry candidates, and `undecided` without them is a
+  schema error rather than a repair. The two deterministic rules that key on the
+  label cannot fire on an undecided claim, and the page says in both languages
+  which types were left open. This is the one part of the frame object §4.21
+  measured a gain from — a closed field with a way to decline — applied to the
+  one field in the product that had that shape. The twenty-one labels remain
+  undefined, so it narrows what the rules rest on rather than fixing it, and the
+  frozen offline controls do not move because they replay stored packets and
+  cannot see a prompt change. Whether real extraction uses the value is
+  unmeasured (§3as, decision 9).
+- **A paid comparison asks for two draws per arm.** The workflow's repeat input
+  defaults to 2 and `frame_compare.py` reports each arm's own spread beside
+  every between-arm difference, saying plainly when a run has no repeat so a
+  single draw cannot read as settled. Provisional: three cheaper schemes are
+  named in decision 10 and none is measured (§3as).
+
 ### Measured
 
 - **The staged context check's one effect belongs to its cheap half, and the

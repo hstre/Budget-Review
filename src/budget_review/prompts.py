@@ -10,7 +10,7 @@ from .profiles import ReviewProfile, get_profile
 CLAIM_TYPES = (
     "thesis, fact, inference, value_judgment, recommendation, example, scope, target, "
     "capacity, resource, baseline, forecast, delivery, assumption, budget, method, "
-    "causal, evidence, limitation, definition, other"
+    "causal, evidence, limitation, definition, other, undecided"
 )
 RELATION_TYPES = (
     "SUPPORTS, CONTRADICTS, DEPENDS_ON, ASSUMPTION_FOR, CONSTRAINS, QUANTIFIES, "
@@ -35,6 +35,12 @@ Write canonical_content in the same language as the document. Do not translate i
 has to be checkable against the span it quotes, and a reader holding the two side by side
 must not have to translate one of them first.
 Allowed claim_type values: {CLAIM_TYPES}.
+If two of those labels fit the same claim equally well, or none of them does, set
+claim_type to "undecided" and list the labels that fit in candidate_types. Prefer that
+over choosing between two defensible labels: a label picked to fill the field records a
+decision the document never made, and two deterministic findings key on this field.
+candidate_types belongs only with "undecided", needs at least two entries, and must be
+omitted otherwise.
 Allowed relation_type values: {RELATION_TYPES}.
 The relation_type field must contain one of those UPPERCASE relation values only. Never put
 a claim_type such as method, evidence or assumption into relation_type. If no allowed relation

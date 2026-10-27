@@ -616,3 +616,42 @@ def test_the_one_shot_arms_without_a_history_demand_are_not_scored_on_one():
         case, case["gold"][-1], frame_object.parse(json.dumps(payload)), None,
         condition="B", stage_index=0)
     assert row["history_total"] == 0
+
+
+# ── the standing policy: a difference is read against one arm's own spread ───
+
+
+def test_a_run_without_a_repeat_has_no_noise_floor():
+    """And the report has to say so rather than let a single draw read as settled."""
+    rows = [{"condition": "C", "repeat": 0, "correct_hit": 1, "correct_total": 1}]
+    assert frame_compare.drift(rows) == {}
+
+
+def test_a_repeated_arm_reports_its_own_spread():
+    rows = [
+        {"condition": "C", "repeat": 0, "correct_hit": 10, "correct_total": 10},
+        {"condition": "C", "repeat": 1, "correct_hit": 8, "correct_total": 10},
+    ]
+    measured = frame_compare.drift(rows)
+    assert measured["correct"]["shares"] == [1.0, 0.8]
+    assert measured["correct"]["spread"] == 0.2
+
+
+def test_a_measure_only_one_repeat_offers_is_left_out():
+    rows = [
+        {"condition": "C", "repeat": 0, "history_hit": 1, "history_total": 1,
+         "correct_hit": 1, "correct_total": 1},
+        {"condition": "C", "repeat": 1, "correct_hit": 1, "correct_total": 1},
+    ]
+    measured = frame_compare.drift(rows)
+    assert "correct" in measured
+    assert "history" not in measured
+
+
+def test_the_paid_workflow_asks_for_two_repeats_by_default():
+    workflow = (ROOT / ".github" / "workflows" / "live-deepseek.yml").read_text(
+        encoding="utf-8"
+    )
+    block = workflow[workflow.index("frame_repeats:"):]
+    block = block[: block.index("frame_max_tokens:")]
+    assert 'default: "2"' in block

@@ -33,6 +33,12 @@ class ClaimType(StrEnum):
     LIMITATION = "limitation"
     DEFINITION = "definition"
     OTHER = "other"
+    # Not a twenty-second kind of claim: the absence of a decision. §4.13
+    # measured two defensible labels for one sentence, which means there is no
+    # fact of the matter, and §4.20 measured what a closed vocabulary without
+    # this value does — the model picks one and the dossier records a decision
+    # the document never made. A claim carrying it names its candidates.
+    UNDECIDED = "undecided"
 
 
 class RelationType(StrEnum):
@@ -125,6 +131,50 @@ class Provenance:
         )
 
 
+def _candidate_types(
+    value: Any, claim_type: ClaimType, proposal_id: str
+) -> tuple[ClaimType, ...]:
+    """The alternatives an undecided type is undecided between.
+
+    Two invariants, both refusals rather than repairs: a committed label may not
+    carry alternatives, and an undecided one may not come without at least two.
+    The second is the one that matters — `undecided` on its own would let an
+    extractor decline everything and say nothing, which scores as restraint and
+    reads as silence.
+    """
+    if value is not None and not isinstance(value, list):
+        raise SchemaError(f"{proposal_id}: candidate_types must be a list")
+    # An empty list and an absent key say the same nothing, and a committed
+    # claim round-trips through to_dict carrying the empty one.
+    if not value:
+        if claim_type is ClaimType.UNDECIDED:
+            raise SchemaError(
+                f"{proposal_id}: claim_type undecided needs candidate_types"
+            )
+        return ()
+    if claim_type is not ClaimType.UNDECIDED:
+        raise SchemaError(
+            f"{proposal_id}: candidate_types is only for claim_type undecided"
+        )
+    parsed: list[ClaimType] = []
+    for item in value:
+        if not isinstance(item, str):
+            raise SchemaError(f"{proposal_id}: candidate_types must be strings")
+        try:
+            kind = ClaimType(item)
+        except ValueError as exc:
+            raise SchemaError(f"{proposal_id}: unknown candidate type {item!r}") from exc
+        if kind is ClaimType.UNDECIDED:
+            raise SchemaError(f"{proposal_id}: undecided cannot be its own candidate")
+        if kind not in parsed:
+            parsed.append(kind)
+    if len(parsed) < 2:
+        raise SchemaError(
+            f"{proposal_id}: claim_type undecided needs at least two candidate_types"
+        )
+    return tuple(parsed)
+
+
 @dataclass(frozen=True)
 class ClaimProposal:
     proposal_id: str
@@ -133,6 +183,10 @@ class ClaimProposal:
     raw_span: str
     confidence: float
     source_ref: str
+    # The types that fit, when claim_type is `undecided`. Required there and
+    # forbidden otherwise: declining without saying between what is a shrug, and
+    # a committed label with alternatives beside it is two answers at once.
+    candidate_types: tuple[ClaimType, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ClaimProposal:
@@ -145,6 +199,7 @@ class ClaimProposal:
                 "raw_span",
                 "confidence",
                 "source_ref",
+                "candidate_types",
             },
             "claim",
         )
@@ -160,6 +215,7 @@ class ClaimProposal:
         source_ref = _required(data, "source_ref", str).strip()
         if not canonical or not raw_span or not source_ref:
             raise SchemaError("claim strings must not be empty")
+        candidates = _candidate_types(data.get("candidate_types"), claim_type, proposal_id)
         return cls(
             proposal_id=proposal_id,
             claim_type=claim_type,
@@ -167,6 +223,7 @@ class ClaimProposal:
             raw_span=raw_span,
             confidence=_confidence(data.get("confidence"), proposal_id),
             source_ref=source_ref,
+            candidate_types=candidates,
         )
 
 
@@ -283,6 +340,7 @@ class GovernedClaim:
     confidence: float
     source_ref: str
     semantic_state: str
+    candidate_types: tuple[ClaimType, ...] = ()
     # True when the passage was located only after whitespace was ignored, in
     # which case raw_span carries the document's characters and proposed_span
     # the wording the model sent. Recorded rather than escalated: a line break

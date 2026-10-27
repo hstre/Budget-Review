@@ -122,6 +122,35 @@ def _table(report: dict) -> str:
     return "\n".join(lines)
 
 
+def drift(rows: list[dict]) -> dict:
+    """What one arm's own repeats say about the noise floor.
+
+    Standing policy since the second frame run: a difference between two arms is
+    only readable against the spread of one arm against itself. Where a run has
+    no repeat, this returns nothing and the report says so, rather than letting
+    a single draw be read as a settled figure.
+    """
+    repeats = sorted({row.get("repeat", 0) for row in rows})
+    if len(repeats) < 2:
+        return {}
+    measured: dict[str, dict] = {}
+    for measure in frame_score.MEASURES:
+        shares = []
+        for repeat in repeats:
+            subset = [row for row in rows if row.get("repeat", 0) == repeat]
+            hit = sum(row.get(f"{measure}_hit", 0) for row in subset)
+            total = sum(row.get(f"{measure}_total", 0) for row in subset)
+            shares.append(None if not total else hit / total)
+        known = [share for share in shares if share is not None]
+        if len(known) < 2:
+            continue
+        measured[measure] = {
+            "shares": [None if s is None else round(s, 4) for s in shares],
+            "spread": round(max(known) - min(known), 4),
+        }
+    return measured
+
+
 def withdrawn(report: dict) -> list[str]:
     """The withdrawal rule: an arm that cannot return the object is not measured."""
     out = []
@@ -212,6 +241,23 @@ def main(argv: list[str] | None = None) -> int:
         print("\nWITHDRAWN under the pre-registered rule:")
         for item in voided:
             print(f"  {item}")
+
+    noise = {
+        arm: drift([row for row in rows if row["condition"] == arm])
+        for arm in sorted({row["condition"] for row in rows})
+    }
+    print("\n=== The noise floor: one arm against its own repeat ===")
+    if not any(noise.values()):
+        print("  no repeat in this run, so no noise floor was measured.")
+        print("  Standing policy: a difference is read against one arm's own spread,")
+        print("  and without it every figure below is a single draw.")
+    else:
+        for arm, measured in noise.items():
+            if not measured:
+                continue
+            worst = sorted(measured.items(), key=lambda item: -item[1]["spread"])[:5]
+            for measure, cell in worst:
+                print(f"  {arm:<10} {measure:<24} {cell['shares']}  spread {cell['spread']}")
 
     print("\n=== The pre-registered criterion ===")
     for part in verdict["parts"]:

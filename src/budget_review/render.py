@@ -246,10 +246,25 @@ def _markdown_argument_map(dossier: ReviewDossier, language: str = "de") -> list
     for label, claims in _argument_groups(dossier):
         lines.extend((f"**{_argument_group_label(label, language)}**", ""))
         lines.extend(
-            f"- `{claim.proposal_id}` {_cell(claim.canonical_content)}" for claim in claims
+            f"- `{claim.proposal_id}` {_cell(claim.canonical_content)}"
+            f"{_undecided_note(claim, language)}"
+            for claim in claims
         )
         lines.append("")
     return lines
+
+
+def _undecided_note(claim, language: str) -> str:
+    """What an untyped claim adds to its line.
+
+    A claim the extractor declined to type is not the same as one it typed, and
+    a reader has to be able to see which. The note names the candidates, because
+    `undecided` alone would tell a reader nothing about what was open.
+    """
+    if claim.claim_type is not ClaimType.UNDECIDED or not claim.candidate_types:
+        return ""
+    names = ", ".join(kind.value for kind in claim.candidate_types)
+    return f" — {_TEXT[language]['undecided_type']}: {names}"
 
 
 def _argument_map_html(dossier: ReviewDossier, language: str) -> str:
@@ -260,7 +275,8 @@ def _argument_map_html(dossier: ReviewDossier, language: str) -> str:
             f"<h3>{escape(_argument_group_label(label, language))}</h3><ul>"
             + "".join(
                 f"<li><code>{escape(claim.proposal_id)}</code> "
-                f"{escape(claim.canonical_content)}</li>"
+                f"{escape(claim.canonical_content)}"
+                f"{escape(_undecided_note(claim, language))}</li>"
                 for claim in claims
             )
             + "</ul></div>"
@@ -401,6 +417,7 @@ _TEXT = {
         "original_claims": "Originalaussagen",
         "rejected": "nicht zugelassen",
         "no_findings": "Keine maschinellen Prüfhinweise",
+        "undecided_type": "Typ nicht entschieden zwischen",
         "trigger_claim_type": (
             "Auslöser: ein vom Modell vergebener Claim-Typ, den der "
             "Extraktionsvertrag nicht definiert — auf kurzen Belegen nicht "
@@ -466,6 +483,7 @@ _TEXT = {
         "original_claims": "original claims",
         "rejected": "not admitted",
         "no_findings": "No machine-generated review findings",
+        "undecided_type": "type left undecided between",
         "trigger_claim_type": (
             "Trigger: a model-assigned claim type the extraction contract does "
             "not define — not repeat-stable on short fixtures."

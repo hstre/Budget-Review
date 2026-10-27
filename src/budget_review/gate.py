@@ -108,6 +108,7 @@ def govern_packet(document: str, packet: SemanticPacket) -> SemanticDossier:
             claim_node_id=node_id,
             proposal_id=proposal.proposal_id,
             claim_type=proposal.claim_type,
+            candidate_types=proposal.candidate_types,
             canonical_content=proposal.canonical_content,
             raw_span=quoted,
             anchor_start=start,

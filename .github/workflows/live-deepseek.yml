@@ -121,9 +121,9 @@ on:
         default: "A,B,B_staged,C,D"
         type: string
       frame_repeats:
-        description: "Repeats of the frame comparison. Measurements of one model, not of several judges."
+        description: "Repeats per arm. 2 is the standing policy: a difference is only readable against one arm's own spread."
         required: false
-        default: "1"
+        default: "2"
         type: string
       frame_max_tokens:
         description: "Output budget per frame call"

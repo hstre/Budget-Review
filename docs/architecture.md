@@ -3493,3 +3493,51 @@ Die Lehre ist alt und ich habe sie trotzdem gebraucht: *eine Messung gegen einen
 Arm ist eine Messung gegen die Streuung dieses Arms, und die kennt man erst,
 wenn man ihn zweimal laufen lässt.* Das kostete hier 48 zusätzliche Aufrufe und
 hat zwei meiner vier Befunde kassiert.
+
+---
+
+## 3as. Der Vertrag darf sich jetzt nicht festlegen — und jeder Vergleich braucht zwei Ziehungen
+
+Zwei Entscheidungen aus §10, beide getroffen, eine davon unter Vorbehalt.
+
+**Neun: das semantische Objekt kommt in den Extraktionsvertrag.** Eng gebaut,
+und der Grund für die Enge ist §4.17: ein Feld, das niemand liest, ist genau der
+Mangel, den dieses Repository schon auditiert hat. Übertragen wurde deshalb nur
+der Teil, für den §4.21 einen Gewinn gemessen hat — ein geschlossenes Feld mit
+Ausweichmöglichkeit — und zwar an der Stelle, die diese Form im Produkt hatte:
+`claim_type`, 21 Werte, keine Definition, keine Möglichkeit sich nicht
+festzulegen, und zwei ausgelieferte Befunde stehen darauf.
+
+Jetzt: `claim_type` darf `undecided` sein, braucht dann **mindestens zwei
+benannte Kandidaten**, und beide Richtungen sind Zurückweisungen statt
+Reparaturen. `undecided` ohne Kandidaten wäre ein Schulterzucken, das als
+Zurückhaltung zählt und wie Schweigen liest; ein festgelegtes Label mit
+Alternativen daneben sind zwei Antworten gleichzeitig. Die leere Liste gilt als
+nicht gesetzt, weil `to_dict` sie so ausgibt und ein festgelegter Claim
+round-trippen muss — das hat der erste Testlauf gefunden.
+
+**Was darauf liest**, denn genau das war die Bedingung: die zwei
+label-gebundenen Regeln können auf einem nicht entschiedenen Typ nicht feuern,
+und der Renderer sagt in beiden Sprachen, zwischen welchen Typen offen blieb.
+`unread_fields.py` zählt das Feld als einmal geschrieben und dreimal gelesen.
+Was *nicht* gelöst ist: die 21 Labels bleiben undefiniert. Das verengt, worauf
+die Regeln ruhen, es behebt es nicht.
+
+Und was fehlt, ist die Live-Messung. Die Offline-Kontrollen spielen gespeicherte
+Pakete nach und können eine Prompt-Änderung nicht sehen; ob eine echte
+Extraktion den Wert überhaupt benutzt — oder ihn benutzt, wo sie sich hätte
+festlegen sollen — ist ungemessen.
+
+**Zehn: jeder bezahlte Vergleich braucht zwei Ziehungen je Arm.** Nach 1 von 106
+identischen Antworten bei Temperatur 0 ist das die einzige gemessene Antwort.
+Der Workflow fragt jetzt standardmäßig zwei Wiederholungen, und das
+Vergleichsskript berichtet die Streuung jedes Arms gegen sich selbst neben jedem
+Unterschied zwischen Armen — **und sagt ausdrücklich, wenn ein Lauf keine
+Wiederholung hat.** Das ist der wichtigere Teil: ein fehlender Rauschboden darf
+nicht aussehen wie ein kleiner.
+
+Unter Vorbehalt, weil der doppelte Preis vermutlich zu hoch ist und drei
+günstigere Verfahren naheliegen: nur die Arme des Primärvergleichs wiederholen,
+nur die Fälle wiederholen, in denen die ersten zwei Ziehungen auseinandergehen,
+oder den Rauschboden einmal je Prompt-Familie statt einmal je Lauf schätzen.
+Keines davon ist gemessen. Bis eines es ist, gilt das Doppelte.

@@ -127,7 +127,11 @@ def _texts(dossier: SemanticDossier) -> dict[str, str]:
 #   claim_type     a model-assigned label with **no definition anywhere in the
 #                  contract** — the prompt names twenty-one and defines none.
 #                  §3ai measured the multiset changing in 8 of 24 cases across
-#                  byte-identical repeats.
+#                  byte-identical repeats. Since §3as the contract also offers
+#                  `undecided` with named candidates, so a rule keyed on this
+#                  field fires only where the extractor committed to a label.
+#                  That narrows what the rules rest on; it does not define the
+#                  twenty-one, and the undefined-label problem stays open.
 #   absence        the rule fires because something is **not** there: no claim
 #                  anchored over a stretch, no supporting edge, no evidencing
 #                  edge. Silence is the weakest input of all, because extraction

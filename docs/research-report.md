@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3ar, which is a log rather than a synthesis.
+§3a–§3as, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -1303,6 +1303,7 @@ Stated as questions, because each is a measurement nobody has made.
 | A finding's trigger could be an undefined label and nothing said so | Every deterministic rule declares what its trigger rests on; it travels into the JSON and onto the page | in review (§4.13) |
 | A reviewer comparison could not be guarded the way an extraction comparison is | The prompt hash and the output budget are recorded on every reviewer run, the failed ones included | in review (§4.18); forward only — every stored reviewer run predates it |
 | The rule deciding when a live span reaches a gold span was undeclared and fixed at one value | Every script that uses it sweeps it, `compare_runs` says whether its verdict survives the sweep, and the share of the reference the rule governs is reported | in review (§4.19) |
+| A deterministic finding could fire on a label the extractor was forced to invent | The claim vocabulary offers `undecided` with at least two named candidates, the two label-keyed rules cannot fire on it, and a reader is told which types were open. The twenty-one labels are still undefined, so this narrows what the rules rest on rather than fixing it | in review (§3as, decision 9) |
 | A comparison between two arms asked different numbers of questions | Any comparison between arms with different stage sets is restricted to the stages both of them answer. It produced one effect that vanished on correction, and a test holds the distinction | in review (§4.20, §4.21) |
 
 ### Unsolved
@@ -1466,7 +1467,7 @@ scripts/                                 33 measurement scripts, each tested
 runs/frames-01, runs/frames-02           every prompt and reply of the two paid
                                          frame runs, 568 calls, the system
                                          prompt stored once by hash
-docs/architecture.md §3a–§3ar            the chronological record, run by run
+docs/architecture.md §3a–§3as            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1475,7 +1476,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-598 tests and one skipped, `ruff check` clean. Two of them are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
+619 tests and one skipped, `ruff check` clean. Two of them are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
 
 ---
 
@@ -1515,16 +1516,26 @@ reader knows what is waiting.
    and the measured-least-effective one; opaque identifiers are what worked in
    the paper, and they would cost the vocabulary's readability.
 
-9. **Whether the semantic object goes into the extraction contract.** It is the
-   one thing these two runs measured a gain from: closed fields with `undecided`
-   as a real answer, candidate readings kept, each passage placed. It costs
-   nothing extra in calls — one call with the object matched four staged ones —
-   but it changes the extraction contract and with it every stored dossier's
-   comparability (§4.21).
-10. **Whether every paid comparison from here needs its arm run twice.** The
-    drift at temperature 0 cost two of the four findings in §4.20, and a second
-    run of the same arm is the only remedy measured so far. It doubles the price
-    of every comparison.
+9. **Whether the semantic object goes into the extraction contract. ✔ decided:
+   yes.** Built in §3as, narrowly: `claim_type` may be `undecided` with at least
+   two named candidates, the two label-keyed rules cannot fire on it, and the
+   page says which types were left open. The gain measured in §4.21 was
+   restraint from a closed field with a way to decline, and that is the part
+   that transferred; nothing else from the frame object was added, because a
+   field nothing reads is what §4.17 is about. **What this does not have is a
+   live measurement.** The offline controls replay stored packets and cannot see
+   a prompt change, so whether real extraction uses the value — and at what cost
+   in labels it should have committed to — is unmeasured, and the run that would
+   tell us now costs double by decision 10.
+10. **Whether every paid comparison from here needs its arm run twice.
+    ✔ decided: yes, provisionally.** The paid workflow asks for two repeats per
+    arm by default, and the comparison script reports each arm's own spread
+    beside every between-arm difference — and says plainly when a run has no
+    repeat, so a single draw cannot be read as settled. Held open against a
+    cheaper scheme: the obvious candidates are repeating only the arms in the
+    primary comparison, repeating only the cases where the first two draws
+    disagree, or estimating the floor once per prompt family instead of once per
+    run. None is measured, and until one is, the price is double.
 
 ---
 ---
@@ -1537,7 +1548,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3ar und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3as und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -2854,6 +2865,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Der Auslöser eines Befunds konnte ein undefinierter Label sein, ohne dass es dastand | Jede deterministische Regel deklariert, worauf ihr Auslöser steht; es reist ins JSON und auf die Seite | im Review (§4.13) |
 | Ein Reviewer-Vergleich war nicht so zu sichern wie ein Extraktionsvergleich | Prompt-Hash und Ausgabebudget werden auf jedem Reviewer-Lauf aufgezeichnet, auch auf den fehlgeschlagenen | im Review (§4.18); erst von hier an — jeder gespeicherte Reviewer-Lauf liegt davor |
 | Die Regel, die entscheidet wann eine Live-Spanne eine Gold-Spanne erreicht, war nicht ausgewiesen und auf einen Wert fixiert | Jedes Skript, das sie benutzt, rechnet sie durch, `compare_runs` sagt ob sein Urteil den Sweep übersteht, und der Anteil der Referenz, über den die Regel befindet, wird berichtet | im Review (§4.19) |
+| Ein deterministischer Befund konnte auf einem Label stehen, das der Extraktor erfinden musste | Das Claim-Vokabular bietet `undecided` mit mindestens zwei benannten Kandidaten, die zwei label-gebundenen Regeln können darauf nicht feuern, und ein Leser erfährt, welche Typen offen blieben. Die 21 Labels sind weiter undefiniert, das verengt also, worauf die Regeln ruhen, statt es zu beheben | im Review (§3as, Entscheidung 9) |
 | Ein Vergleich zwischen zwei Armen, die unterschiedlich viele Fragen beantworten | Jeder Vergleich zwischen Armen mit verschiedenen Stufenmengen wird auf die Stufen beschränkt, die beide beantworten. Er hat einen Effekt erzeugt, der bei der Korrektur verschwand, und ein Test hält die Unterscheidung | im Review (§4.20, §4.21) |
 
 ### Ungelöst
@@ -3026,7 +3038,7 @@ scripts/                                 33 Messskripte, jedes getestet
 runs/frames-01, runs/frames-02           jeder Prompt und jede Antwort der zwei
                                          bezahlten Frame-Läufe, 568 Aufrufe, der
                                          Systemprompt einmal per Hash
-docs/architecture.md §3a–§3ar            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3as            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -3036,7 +3048,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-598 Tests und einer übersprungen, `ruff check` sauber. Zwei davon werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
+619 Tests und einer übersprungen, `ruff check` sauber. Zwei davon werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
 
 ## 10. Offene Entscheidungen
 
@@ -3075,13 +3087,26 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
    ist die naheliegende Reparatur und die gemessen wirkungsloseste; gewirkt haben
    opake Kennungen, und die kosten die Lesbarkeit des Vokabulars.
 
-9. **Ob das semantische Objekt in den Extraktionsvertrag kommt.** Es ist das
-   eine, bei dem diese zwei Läufe einen Gewinn gemessen haben: geschlossene
-   Felder mit `undecided` als echter Antwort, erhaltene Lesarten, jede Textstelle
-   eingeordnet. Es kostet keine zusätzlichen Aufrufe — ein Aufruf mit dem Objekt
-   erreichte vier gestufte — ändert aber den Extraktionsvertrag und damit die
-   Vergleichbarkeit jedes gespeicherten Dossiers (§4.21).
-10. **Ob jeder bezahlte Vergleich von hier an seinen Arm zweimal braucht.** Die
-    Drift bei Temperatur 0 hat zwei der vier Befunde in §4.20 gekostet, und ein
-    zweiter Lauf desselben Arms ist das einzige bisher gemessene Mittel. Er
-    verdoppelt den Preis jedes Vergleichs.
+9. **Ob das semantische Objekt in den Extraktionsvertrag kommt. ✔ entschieden:
+   ja.** In §3as gebaut, und zwar eng: `claim_type` darf `undecided` sein, mit
+   mindestens zwei benannten Kandidaten, die zwei label-gebundenen Regeln können
+   darauf nicht feuern, und die Seite sagt, welche Typen offen blieben. Der in
+   §4.21 gemessene Gewinn war Zurückhaltung durch ein geschlossenes Feld mit
+   Ausweichmöglichkeit, und genau dieser Teil ist übertragen; nichts weiter aus
+   dem Frame-Objekt, denn ein Feld, das niemand liest, ist der Gegenstand von
+   §4.17. **Was fehlt, ist eine Live-Messung.** Die Offline-Kontrollen spielen
+   gespeicherte Pakete nach und können eine Prompt-Änderung nicht sehen; ob eine
+   echte Extraktion den Wert benutzt — und zu welchem Preis an Labels, auf die
+   sie sich hätte festlegen sollen — ist ungemessen, und der Lauf, der es sagen
+   würde, kostet durch Entscheidung 10 jetzt das Doppelte.
+10. **Ob jeder bezahlte Vergleich von hier an seinen Arm zweimal braucht.
+    ✔ entschieden: ja, unter Vorbehalt.** Der bezahlte Workflow fragt
+    standardmäßig zwei Wiederholungen je Arm, und das Vergleichsskript berichtet
+    die Streuung jedes Arms gegen sich selbst neben jedem Unterschied zwischen
+    Armen — und sagt ausdrücklich, wenn ein Lauf keine Wiederholung hat, damit
+    eine einzelne Ziehung nicht als geklärt gelesen wird. Offen gehalten gegen
+    ein günstigeres Verfahren: naheliegend sind nur die Arme des Primärvergleichs
+    zu wiederholen, nur die Fälle zu wiederholen, in denen die ersten zwei
+    Ziehungen auseinandergehen, oder den Rauschboden einmal je Prompt-Familie
+    statt einmal je Lauf zu schätzen. Keines ist gemessen, und bis dahin gilt der
+    doppelte Preis.
