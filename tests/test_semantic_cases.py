@@ -62,8 +62,12 @@ def test_the_shipped_set_holds_every_invariant() -> None:
     cases = cases_module.load()
 
     assert cases_module.validate(cases) == []
-    assert len(cases) == 24
-    assert len({case["pair_id"] for case in cases}) == 12
+    assert len(cases) == 32
+    assert len({case["pair_id"] for case in cases}) == 16
+    # Nine phenomena since the set gained temporal scope and concession. The
+    # published 69 of 72 was measured on the first twenty-four and stays
+    # attached to them: a figure over a larger set is a different figure.
+    assert len({case["phenomenon"] for case in cases}) == 9
 
 
 def test_a_requirement_the_span_does_not_contain_is_refused() -> None:
@@ -149,3 +153,44 @@ def test_every_group_has_to_contribute() -> None:
 
     assert cases_module.satisfies("Die Regierung trug vor.", groups) is False
     assert cases_module.satisfies("Regierung und Gerichtshof.", groups) is True
+
+
+def test_the_temporal_cases_catch_both_ways_of_losing_a_bound() -> None:
+    """Dropping the bound and reversing it are different errors, both caught.
+
+    The requirement group catches the drop; the forbidden pattern catches the
+    reversal, which carries the date and would otherwise satisfy every group.
+    """
+    cases = [case for case in cases_module.load() if case["phenomenon"] == "temporal_scope"]
+    assert len(cases) == 4
+    for case in cases:
+        dropped, reversed_ = case["forbidden_readings"]
+        assert not cases_module.satisfies(dropped, case["requires_all_groups"]), case["case_id"]
+        assert cases_module.satisfies(reversed_, case["requires_all_groups"]), case["case_id"]
+        assert cases_module.violates(reversed_, case["forbids"]), case["case_id"]
+
+
+def test_the_concession_cases_catch_the_conceded_clause_standing_in_for_the_asserted_one() -> None:
+    cases = [case for case in cases_module.load() if case["phenomenon"] == "concession"]
+    assert len(cases) == 4
+    for case in cases:
+        conceded = case["forbidden_readings"][0]
+        assert not cases_module.satisfies(conceded, case["requires_all_groups"]), case["case_id"]
+
+
+def test_the_concession_blind_spot_is_recorded_rather_than_hidden() -> None:
+    """A reading that flattens the concession into a conjunction is not caught.
+
+    It carries the asserted clause's token, so every group passes and no
+    pattern fires. The set says so in `must_preserve` instead of pretending the
+    check is finer than it is — which is why this phenomenon is called
+    concession and not salience: the general notion needs a judge of paraphrase.
+    """
+    case = next(
+        case for case in cases_module.load()
+        if case["case_id"] == "conc-01-de"
+    )
+    flattened = "Die Mittel sind knapp, und das Projekt wird fortgesetzt."
+    assert cases_module.satisfies(flattened, case["requires_all_groups"])
+    assert not cases_module.violates(flattened, case["forbids"])
+    assert "gleichrangig" in case["must_preserve"]
