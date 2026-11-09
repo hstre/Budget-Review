@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3as, which is a log rather than a synthesis.
+§3a–§3at, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -1213,6 +1213,42 @@ one call is not an option. Every case here is two or three sentences, so the
 one-call arm always had the whole text. On a real document the staging may be
 exactly what matters, and nothing here speaks to that.
 
+### 4.22 A way to decline, offered to the extractor and never taken
+
+Decision 9 put the one thing §4.21 measured a gain from into the extraction
+contract: a closed field with a way to decline. `claim_type` accepts
+`undecided` with at least two named candidates. Two draws on the frozen
+fixture, extraction only, criterion fixed beforehand: **0 of 32 and 0 of 31.**
+
+The contract works — both draws parsed, no rejection, the schema holds both
+ways. It is simply never used. Under the pre-registered rule that is recorded
+as offered and never taken, and no claim is made that the change improved
+anything.
+
+The reason it matters is what the same two draws say about the document. Thirty
+spans appear in both, and two are **typed differently between them**: *The
+programme will purchase 25 laptops* is budget in one draw and resource in the
+other; *Monthly in-person workshops will be delivered at all twelve rural
+sites* is delivery in one and method in the other. Those are precisely the
+cases the new value exists for. The ambiguity is real, and it surfaced as
+instability across draws rather than as a declared uncertainty — the shape
+§4.13 measured, with a way to decline now available and unused.
+
+So the restraint of §4.21 did not transfer. The two settings differ in a way
+that is not subtle: there, `undecided` was a value in each field's own
+enumerated list, with its own instruction, for one statement; here it is the
+twenty-second entry in a comma-separated list, one sentence of instruction,
+thirty claims at once. Whether that is the cause is untested.
+
+And a flaw in the run, which is mine: neither draw produced a `logical_gap` or
+an `unsupported_assumption`, the two rules that key on the label. On this
+document the mechanism the change is about could not have been observed even
+had the value been used. The fixture was chosen for being reached in full; it
+should also have been chosen for firing the rules in question.
+
+The change stays in — nothing broke and it is a precondition for any later
+attempt — with no claim attached to it.
+
 ---
 
 ## 5. What we do not know
@@ -1321,6 +1357,7 @@ Stated as questions, because each is a measurement nobody has made.
 | The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
 | A finding can appear and vanish under identical input | On 24 short cases 4 of 24 documents emit a different finding set. On two long documents **no category holds still**: contradictions at severity high run 2, 7, 5 and logical gaps 16, 19, 13 across identical runs. Three rules fire on an *absence*, and extraction is known to lose argument structure, so the absence may be the run's (§4.14, §4.15) |
 | A single run is a draw, not a sample | Production extracts once per document, so a dossier reporting 16 logical gaps where a second run would report 13 looks exactly as final. Repeats would fix it at three times the extraction cost (§4.15, decision 7). §4.19 is the first evidence that they would pay — at three repeats the spread flags exactly the cases that fail — and also the reason not to decide on it yet, since that evidence rests on one phenomenon |
+| An extractor that is undecided does not say so | Two draws on the fixture used `undecided` zero times while typing two shared spans differently between them. The ambiguity shows up as instability across draws, not as a declared uncertainty, and the contract change that offered the value did not change that (§4.22) |
 | Temperature 0 is not determinism | 1 of 106 replies identical across two runs of one arm, with measures drifting 0.015 to 0.087 (§4.21). Every single-run comparison in this report has an unmeasured noise floor rather than a known one, and the only remedy measured so far is running the same arm twice |
 | What an exception does to a quantifier | Five arms recorded an exception and kept the quantifier `all`; the frame gold required both, which encoded one fact twice (§7.10). Which convention a reader would apply is undecided, and the gold stays as declared so the runs stay comparable |
 | Whether a finding was *warranted*, as opposed to reproducible | Not computable here: nothing in this project is a gold answer about whether a deterministic finding is right. Reproducibility is a lower bound only (§4.14) |
@@ -1467,7 +1504,7 @@ scripts/                                 33 measurement scripts, each tested
 runs/frames-01, runs/frames-02           every prompt and reply of the two paid
                                          frame runs, 568 calls, the system
                                          prompt stored once by hash
-docs/architecture.md §3a–§3as            the chronological record, run by run
+docs/architecture.md §3a–§3at            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1548,7 +1585,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3as und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3at und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -2776,6 +2813,44 @@ Sätzen, der Ein-Aufruf-Arm hatte also immer den ganzen Text. Auf einem echten
 Dokument kann die Stufung genau das sein, worauf es ankommt, und dazu sagt hier
 nichts etwas.
 
+### 4.22 Eine Möglichkeit sich nicht festzulegen, dem Extraktor angeboten und nie genommen
+
+Entscheidung 9 hat das eine, bei dem §4.21 einen Gewinn gemessen hat, in den
+Extraktionsvertrag gebracht: ein geschlossenes Feld mit Ausweichmöglichkeit.
+`claim_type` nimmt `undecided` mit mindestens zwei benannten Kandidaten. Zwei
+Züge auf der eingefrorenen Fixture, nur Extraktion, Kriterium vorher
+festgelegt: **0 von 32 und 0 von 31.**
+
+Der Vertrag funktioniert — beide Züge geparst, keine Zurückweisung, das Schema
+hält in beide Richtungen. Er wird nur nie benutzt. Nach der vorregistrierten
+Regel heißt das: angeboten und nie genommen, und es wird kein Anspruch erhoben,
+dass die Änderung etwas verbessert hätte.
+
+Interessant ist, was dieselben zwei Züge über das Dokument sagen. Dreißig
+Spannen kommen in beiden vor, und zwei davon sind **unterschiedlich getypt**:
+*The programme will purchase 25 laptops* ist im einen Zug budget, im anderen
+resource; *Monthly in-person workshops will be delivered at all twelve rural
+sites* einmal delivery, einmal method. Genau dafür gibt es den neuen Wert. Die
+Mehrdeutigkeit ist echt, und sie zeigt sich als Instabilität zwischen Zügen
+statt als erklärte Unentschiedenheit — die Form, die §4.13 gemessen hat, jetzt
+mit verfügbarer und ungenutzter Ausweichmöglichkeit.
+
+Die Zurückhaltung aus §4.21 ist also nicht übertragen. Die beiden Lagen
+unterscheiden sich nicht subtil: dort war `undecided` ein Wert in der eigenen
+Werteliste jedes Feldes, mit eigener Anweisung, für eine Aussage; hier ist es
+der zweiundzwanzigste Eintrag einer Komma-Liste, ein Satz Anweisung, dreißig
+Claims auf einmal. Ob das die Ursache ist, ist ungeprüft.
+
+Und ein Mangel am Lauf, und zwar meiner: keiner der Züge erzeugte einen
+`logical_gap` oder eine `unsupported_assumption`, also die zwei Regeln, die auf
+dem Label stehen. Auf diesem Dokument hätte der Mechanismus, um den es geht,
+gar nicht beobachtet werden können, selbst wenn der Wert benutzt worden wäre.
+Die Fixture wurde gewählt, weil der Prompt sie ganz erreicht; sie hätte auch
+danach gewählt werden müssen, ob sie die fraglichen Regeln auslöst.
+
+Die Änderung bleibt drin — nichts ist kaputt, und sie ist Voraussetzung für
+jeden späteren Versuch — ohne Anspruch daran.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2883,6 +2958,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
 | Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | Auf 24 kurzen Fällen liefern 4 von 24 Dokumenten eine andere Befundmenge. Auf zwei langen Dokumenten bleibt **keine Befundart stehen**: Widersprüche mit Schweregrad high laufen 2, 7, 5 und logische Lücken 16, 19, 13 über identische Läufe. Drei Regeln feuern auf eine *Abwesenheit*, und die Extraktion verliert bekanntlich Argumentstruktur — die Abwesenheit kann die des Laufs sein (§4.14, §4.15) |
 | Ein einzelner Lauf ist eine Ziehung, keine Stichprobe | Im Produktionslauf wird einmal je Dokument extrahiert, ein Dossier mit 16 logischen Lücken sieht also genauso endgültig aus wie eines mit 13. Wiederholungen behöben das zum dreifachen Extraktionspreis (§4.15, Entscheidung 7). §4.19 ist der erste Hinweis, dass sie sich lohnen — bei drei Wiederholungen markiert die Streuung genau die Fälle, die durchfallen — und gleichzeitig der Grund, noch nicht zu entscheiden, denn dieser Hinweis ruht auf einem Phänomen |
+| Ein unentschiedener Extraktor sagt es nicht | Zwei Züge auf der Fixture benutzten `undecided` null Mal und typten dabei zwei gemeinsame Spannen unterschiedlich. Die Mehrdeutigkeit zeigt sich als Instabilität zwischen Zügen, nicht als erklärte Unentschiedenheit, und die Vertragsänderung hat daran nichts geändert (§4.22) |
 | Temperatur 0 ist keine Determiniertheit | 1 von 106 Antworten identisch über zwei Läufe eines Arms, Maße um 0,015 bis 0,087 verschoben (§4.21). Jeder Einzellauf-Vergleich in diesem Bericht hat einen ungemessenen statt eines bekannten Rauschbodens, und das einzige bisher gemessene Mittel ist, denselben Arm zweimal laufen zu lassen |
 | Was eine Ausnahme mit einem Quantor macht | Fünf Arme hielten eine Ausnahme fest und behielten den Quantor `all`; das Frame-Gold verlangte beides und kodierte damit eine Tatsache zweimal (§7.10). Welche Konvention ein Leser anlegen würde, ist offen, und das Gold bleibt wie erklärt, damit die Läufe vergleichbar bleiben |
 | Ob ein Befund *gedeckt* war, im Unterschied zu reproduzierbar | Hier nicht rechenbar: nichts in diesem Projekt ist eine Gold-Antwort darauf, ob ein deterministischer Befund richtig ist. Reproduzierbarkeit ist nur eine untere Schranke (§4.14) |
@@ -3038,7 +3114,7 @@ scripts/                                 33 Messskripte, jedes getestet
 runs/frames-01, runs/frames-02           jeder Prompt und jede Antwort der zwei
                                          bezahlten Frame-Läufe, 568 Aufrufe, der
                                          Systemprompt einmal per Hash
-docs/architecture.md §3a–§3as            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3at            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 

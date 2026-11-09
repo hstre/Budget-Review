@@ -3541,3 +3541,40 @@ günstigere Verfahren naheliegen: nur die Arme des Primärvergleichs wiederholen
 nur die Fälle wiederholen, in denen die ersten zwei Ziehungen auseinandergehen,
 oder den Rauschboden einmal je Prompt-Familie statt einmal je Lauf schätzen.
 Keines davon ist gemessen. Bis eines es ist, gilt das Doppelte.
+
+---
+
+## 3at. Null von 32 — und der Extraktor typt dieselbe Spanne zweimal verschieden
+
+Der Vertrag bietet seit §3as `undecided` mit benannten Kandidaten an. Zwei Züge
+auf der eingefrorenen Fixture, Kriterium vorher committet: **0 von 32 und 0 von
+31.** Das Schema hält, nichts wird zurückgewiesen, der Wert wird nie benutzt.
+Nach der vorregistrierten Regel: angeboten und nie genommen, kein
+Verbesserungsanspruch.
+
+Die naheliegende Erklärung wäre, dass die Fixture keine mehrdeutigen Claims
+hat. Der Extraktor widerlegt sie selbst. Dreißig Spannen kommen in beiden Zügen
+vor, **zwei sind unterschiedlich getypt** — budget gegen resource, delivery
+gegen method. Genau die Fälle, für die der Wert da ist. Die Mehrdeutigkeit ist
+da und kommt als Instabilität zwischen Zügen heraus, nicht als erklärte
+Unentschiedenheit.
+
+Damit ist die Zurückhaltung aus §4.21 nicht übertragen, und der Unterschied
+zwischen beiden Lagen ist grob: dort ein Wert in der eigenen Werteliste jedes
+Feldes, mit eigener Anweisung, für eine Aussage — hier der zweiundzwanzigste
+Eintrag einer Komma-Liste, ein Satz Anweisung, dreißig Claims auf einmal. Ob
+das die Ursache ist, weiß ich nicht; es ist das Naheliegendste zu prüfen, nicht
+die Schlussfolgerung.
+
+**Und ein Mangel am Lauf, meiner.** Kein Zug erzeugte einen `logical_gap` oder
+eine `unsupported_assumption` — also keine der beiden Regeln, die auf dem Label
+stehen. Auf diesem Dokument war der Mechanismus, um den es geht, gar nicht
+beobachtbar, auch bei benutztem Wert nicht. Ich hatte die Fixture danach
+ausgewählt, dass der Prompt sie ganz erreicht, und nicht danach, ob sie die
+fraglichen Regeln auslöst. Das ist dieselbe Art Fehler wie der Stufenvergleich
+in §4.20: ein Lauf, der die Frage nicht stellen kann, auf die er antworten
+sollte.
+
+Nebenbei gemessen: der Rauschboden dieses Dokuments bei diesem Profil ist 1
+Claim, 2 Relationen, 0 Befunde zwischen zwei Zügen — deutlich enger als die
+Drift der Frame-Läufe, also familienabhängig, wie Entscheidung 10 vermutet hat.

@@ -9,6 +9,31 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Measured
+
+- **The extractor never used the option to decline a label: 0 of 32 and 0 of
+  31 across two draws**, while typing two shared spans differently between
+  those same draws (budget against resource, delivery against method). The
+  ambiguity the value exists for is real and surfaces as instability across
+  draws rather than as a declared uncertainty, so the restraint measured in
+  §4.21 did not transfer to the extraction contract. Criterion was fixed before
+  the run; under it, the change is recorded as offered and never taken and no
+  claim is attached to it. The run also could not have observed the mechanism:
+  neither draw fired either of the two rules that key on the label, which is a
+  flaw in how the document was chosen. See `docs/prereg-undecided-01.md`,
+  `docs/findings-undecided-01.md`, `runs/undecided-01/` and §4.22.
+
+### Added
+
+- **The meaning set gains temporal scope and concession**, 24 cases to 32 in 16
+  pairs across nine phenomena. Temporal scope separates two failures that a
+  single check would have conflated: a bound dropped and a bound reversed.
+  Concession measures only the coarse failure — the conceded clause standing in
+  for the asserted one — and says so: a reading that flattens "although A, B"
+  into "A and B" satisfies every group and trips no pattern, which is why the
+  phenomenon is not called salience. The published 69 of 72 stays attached to
+  the first twenty-four cases.
+
 ### Changed
 
 - **The extraction contract may now decline to type a claim.** `claim_type`
