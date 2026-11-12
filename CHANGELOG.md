@@ -9,6 +9,31 @@ says when it moves them. Their current values are `polished` 5 claims /
 
 ## [Unreleased]
 
+### Added
+
+- **The meaning set gains implicative verbs**, 32 cases to 38 in 19 pairs across
+  ten phenomena: a positive implicative where the main verb settles that the
+  embedded event happened, a negative one where it settles that it did not, and
+  a non-implicative where it settles nothing. No case in the set carried such a
+  verb before — `speaker` covers who asserts an embedded claim, not whether the
+  main verb decides it. The class comes from the GKR parser's lexicon
+  (Kalouli and Crouch, 2018); its reported 85 per cent does not transfer, since
+  it excludes the 23.6 per cent of sentences a syntactic parser failed on and
+  rests on two annotators judging the system's own output, with no gold file
+  released.
+
+### Changed
+
+- **A sixth invariant on the meaning set: a forbidden pattern needs a worked
+  failure only it catches.** Twelve of the twenty-four cases carrying patterns
+  had none — every forbidden reading already failed a requirement group, so a
+  pattern could have been misspelled, too narrow or redundant and nothing would
+  have said so. Eight cases gained the missing worked failure, a co-occurrence
+  error the groups cannot see: a hedge beside the fact, a cause beside the
+  correlation. Four concession cases lost their patterns instead, because there
+  the group already does the work and a check kept for appearance is
+  decoration.
+
 ### Measured
 
 - **The extractor never used the option to decline a label: 0 of 32 and 0 of

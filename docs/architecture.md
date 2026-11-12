@@ -3578,3 +3578,46 @@ sollte.
 Nebenbei gemessen: der Rauschboden dieses Dokuments bei diesem Profil ist 1
 Claim, 2 Relationen, 0 Befunde zwischen zwei Zügen — deutlich enger als die
 Drift der Frame-Läufe, also familienabhängig, wie Entscheidung 10 vermutet hat.
+
+---
+
+## 3au. Implikative Verben, und ein Muster, das nie etwas fangen musste
+
+Aus einem Artikel über „Transportive AI" (Funktor, Profunktor, Transportgesetze,
+keine Messung) führte eine Spur zu GKR, einem Parser von Kalouli und Crouch aus
+2018, der Konzept- und **Kontextgraph** trennt und Kontexte als veridisch,
+antiveridisch oder averidisch verbindet.
+
+**Was davon trägt.** Nicht die Architektur: flach nach verschachtelt ist eine
+große Änderung, und §4.22 hat gerade gemessen, dass ein reicheres Schema im
+Extraktionsvertrag *nie benutzt* wurde. Nicht die 85 Prozent: die Zahl schließt
+die 23,6 Prozent Sätze aus, an denen der Syntaxparser scheiterte, die Precision
+ist auf dem geparsten Rest gerechnet, zwei Annotatoren beurteilten die eigene
+Ausgabe des Systems, und ein Gold-Datensatz ist nicht veröffentlicht. 591 von
+781 sind 75,6 Prozent. Wie die Zahl reist, ist unser §4.19 von außen.
+
+Was trägt, ist die **endliche Verbklasse**: bei einem implikativen Verb
+entscheidet das Hauptverb über das eingebettete Ereignis. Ich habe geprüft
+statt behauptet — **kein einziger der 32 Fälle trug ein solches Verb.**
+`speaker` deckt ab, wer eine eingebettete Aussage behauptet, nicht ob das
+Hauptverb sie entscheidet. Drei Paare, drei Polaritäten, 38 Fälle.
+
+**Und dabei fiel ein älterer Mangel auf.** Der Test, den ich für die neuen Fälle
+schrieb — jede der beiden Prüfungen muss in jedem Fall arbeiten — gilt
+natürlich auch für die alten. Ergebnis: **12 von 24 Fällen mit verbotenen
+Mustern hatten kein durchgerechnetes Beispiel, das nur das Muster fängt.** Jede
+verbotene Lesart fiel schon an der Anforderungsgruppe. Ein Muster hätte
+falsch geschrieben, zu eng oder schlicht überflüssig sein können, und die
+fünf Invarianten hätten es nicht gesagt.
+
+Acht Fälle haben das fehlende Beispiel bekommen — ein Fehler, den die Gruppe
+nicht sehen kann: die Abschwächung neben der Tatsache, die Ursache neben der
+Korrelation. Vier Konzessionsfälle haben ihre Muster **verloren** statt ein
+Beispiel dazuerfunden zu bekommen: dort tut die Gruppe die Arbeit schon, und
+eine Prüfung, die nur des Anscheins wegen dasteht, ist Dekoration. Invariante 6
+hält das jetzt fest, mit einem Test ihres eigenen Fehlerpfads.
+
+Nebenbei: der Lauf hat mir eine kaputte Umgebung eingebracht, weil ich `pypdf`
+installiert hatte, um das Paper zu lesen — dessen Krypto-Backend lässt einen
+bis dahin übersprungenen Test abstürzen. Zurückgenommen statt im Repo
+„behoben": der Fehler lag an mir, nicht am Code.

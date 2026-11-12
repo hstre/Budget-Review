@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3at, which is a log rather than a synthesis.
+§3a–§3au, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -1504,7 +1504,7 @@ scripts/                                 33 measurement scripts, each tested
 runs/frames-01, runs/frames-02           every prompt and reply of the two paid
                                          frame runs, 568 calls, the system
                                          prompt stored once by hash
-docs/architecture.md §3a–§3at            the chronological record, run by run
+docs/architecture.md §3a–§3au            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1585,7 +1585,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3at und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3au und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -3114,7 +3114,7 @@ scripts/                                 33 Messskripte, jedes getestet
 runs/frames-01, runs/frames-02           jeder Prompt und jede Antwort der zwei
                                          bezahlten Frame-Läufe, 568 Aufrufe, der
                                          Systemprompt einmal per Hash
-docs/architecture.md §3a–§3at            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3au            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 

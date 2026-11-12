@@ -32,6 +32,13 @@ catch me writing a check that proves nothing:
 5. Every declared `permitted_readings` entry satisfies the requirements, and
    every `forbidden_readings` entry violates at least one. A case whose own
    worked failure passes its own checks is a case that measures nothing.
+6. Every case that declares forbidden patterns carries a worked failure that
+   **only** a pattern catches — one that satisfies every requirement group and
+   trips a pattern anyway. Without it a pattern could be misspelled, too narrow
+   or redundant with the group and nothing here would say so; twelve of the
+   twenty-four cases with patterns were in that state when this was added.
+   Where no such failure is natural, the patterns were removed rather than
+   invented around: a check kept for appearance is decoration.
 
 Usage:
     semantic_cases.py                 # validate the set against all five
@@ -140,6 +147,21 @@ def validate(cases: list[dict]) -> list[str]:
                     f"prove nothing here: {reading!r}"
                 )
 
+        patterns = case.get("forbids") or []
+        if patterns:
+            pattern_only = [
+                reading
+                for reading in case.get("forbidden_readings") or []
+                if satisfies(reading, case.get("requires_all_groups") or [])
+                and violates(reading, patterns)
+            ]
+            if not pattern_only:
+                problems.append(
+                    f"{name}: declares forbidden patterns that no worked failure "
+                    f"needs — every forbidden reading already fails a requirement "
+                    f"group, so the patterns are never shown to catch anything"
+                )
+
         by_pair.setdefault(case["pair_id"], []).append(case)
 
     for pair, members in sorted(by_pair.items()):
@@ -175,7 +197,7 @@ def main() -> int:
     problems = validate(cases)
     print(f"{len(cases)} Fälle, {len({c['pair_id'] for c in cases})} Paare, zwei Sprachen")
     if not problems:
-        print("Alle fünf Invarianten erfüllt.")
+        print("Alle sechs Invarianten erfüllt.")
         return 0
     print(f"\n{len(problems)} Verletzungen:")
     for problem in problems:

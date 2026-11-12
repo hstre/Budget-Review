@@ -44,7 +44,7 @@ def _case(**overrides) -> dict:
     return {**base, **overrides}
 
 
-def _pair(german: dict) -> list[dict]:
+def _pair(german: dict, english_forbidden: list[str] | None = None) -> list[dict]:
     english = {
         **german,
         "case_id": "probe-en",
@@ -53,7 +53,7 @@ def _pair(german: dict) -> list[dict]:
         "span": "The measure does not work.",
         "requires_all_groups": [["not", "no "]],
         "permitted_readings": ["The measure does not affect the rate."],
-        "forbidden_readings": ["The measure affects the rate."],
+        "forbidden_readings": english_forbidden or ["The measure affects the rate."],
     }
     return [german, english]
 
@@ -62,12 +62,13 @@ def test_the_shipped_set_holds_every_invariant() -> None:
     cases = cases_module.load()
 
     assert cases_module.validate(cases) == []
-    assert len(cases) == 32
-    assert len({case["pair_id"] for case in cases}) == 16
-    # Nine phenomena since the set gained temporal scope and concession. The
-    # published 69 of 72 was measured on the first twenty-four and stays
-    # attached to them: a figure over a larger set is a different figure.
-    assert len({case["phenomenon"] for case in cases}) == 9
+    assert len(cases) == 38
+    assert len({case["pair_id"] for case in cases}) == 19
+    # Ten phenomena since the set gained temporal scope, concession and
+    # implicatives. The published 69 of 72 was measured on the first
+    # twenty-four and stays attached to them: a figure over a larger set is a
+    # different figure.
+    assert len({case["phenomenon"] for case in cases}) == 10
 
 
 def test_a_requirement_the_span_does_not_contain_is_refused() -> None:
@@ -194,3 +195,96 @@ def test_the_concession_blind_spot_is_recorded_rather_than_hidden() -> None:
     assert cases_module.satisfies(flattened, case["requires_all_groups"])
     assert not cases_module.violates(flattened, case["forbids"])
     assert "gleichrangig" in case["must_preserve"]
+
+
+def test_the_implicative_cases_cover_all_three_polarities() -> None:
+    """A positive, a negative and a non-implicative verb.
+
+    Without all three the set would test whether a main verb is read at all,
+    not whether its polarity is read: the interesting failure is treating
+    "failed to X" as "tried to X", and that needs both to be present.
+    """
+    cases = [case for case in cases_module.load() if case["phenomenon"] == "implicative"]
+    assert len(cases) == 6
+    spans = " ".join(case["span"] for case in cases)
+    for marker in ("geschafft", "versäumt", "versucht", "managed", "failed", "tried"):
+        assert marker in spans, marker
+
+
+def test_both_checks_do_work_in_every_implicative_case() -> None:
+    """The weakness the temporal cases had on their first draft.
+
+    If every forbidden reading already fails a requirement group, the forbidden
+    patterns are decoration and the case rests on one check while appearing to
+    rest on two. Each implicative case has to have at least one forbidden
+    reading caught by each of them.
+    """
+    for case in cases_module.load():
+        if case["phenomenon"] != "implicative":
+            continue
+        groups = case["requires_all_groups"]
+        readings = case["forbidden_readings"]
+        caught_by_group = [r for r in readings if not cases_module.satisfies(r, groups)]
+        caught_by_pattern = [
+            r for r in readings
+            if cases_module.satisfies(r, groups) and cases_module.violates(r, case["forbids"])
+        ]
+        assert caught_by_group, case["case_id"]
+        assert caught_by_pattern, case["case_id"]
+
+
+def test_an_implicative_is_not_the_same_test_as_a_speaker_attribution() -> None:
+    # Attribution is about who asserts the embedded claim; an implicative is
+    # about whether the main verb itself settles the embedded event. No case
+    # carried an implicative verb before these were written.
+    cases = cases_module.load()
+    speaker = {case["span"] for case in cases if case["phenomenon"] == "speaker"}
+    implicative = {case["span"] for case in cases if case["phenomenon"] == "implicative"}
+    assert speaker and implicative
+    assert not (speaker & implicative)
+
+
+def test_a_pattern_no_worked_failure_needs_is_refused() -> None:
+    """Invariant 6, on its failure path.
+
+    Twelve of the twenty-four cases carrying patterns were in this state when
+    the check was written: every forbidden reading already failed a requirement
+    group, so a pattern could have been misspelled or redundant and the set
+    would have looked healthy.
+    """
+    broken = _case(
+        forbids=[r"\b42\b"],
+        forbidden_readings=["Die Maßnahme wirkt auf die Abbrecherquote."],
+    )
+
+    problems = cases_module.validate(_pair(broken))
+
+    assert any("no worked failure needs" in problem for problem in problems)
+
+
+def test_a_pattern_a_worked_failure_exercises_is_accepted() -> None:
+    kept = _case(
+        forbids=[r"\b42\b"],
+        forbidden_readings=[
+            "Die Maßnahme wirkt auf die Abbrecherquote.",
+            "Die Maßnahme wirkt nicht auf 42 Prozent der Quote.",
+        ],
+    )
+
+    pair = _pair(
+        kept,
+        english_forbidden=[
+            "The measure affects the rate.",
+            "The measure does not affect 42 per cent of the rate.",
+        ],
+    )
+
+    assert cases_module.validate(pair) == []
+
+
+def test_a_case_without_patterns_is_not_asked_for_one() -> None:
+    # Eighteen cases rest on their requirement groups alone, concession among
+    # them. The invariant is about patterns that exist, not about requiring any.
+    without = _case(forbids=[], forbidden_readings=["Die Maßnahme wirkt auf die Abbrecherquote."])
+
+    assert cases_module.validate(_pair(without)) == []

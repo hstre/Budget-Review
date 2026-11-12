@@ -160,7 +160,8 @@
         "Das Programm senkt die Abbrecherquote.",
         "Das Programm senkte die Abbrecherquote.",
         "Die Senkung der Quote durch das Programm.",
-        "Das Programm wird die Abbrecherquote senken."
+        "Das Programm wird die Abbrecherquote senken.",
+        "Das Programm könnte die Abbrecherquote senken und senkt sie bereits."
       ]
     },
     {
@@ -198,7 +199,8 @@
         "The programme lowers the dropout rate.",
         "The programme lowered the dropout rate.",
         "The reduction of the rate by the programme.",
-        "The programme will lower the dropout rate."
+        "The programme will lower the dropout rate.",
+        "The programme could lower the dropout rate and already lowers it."
       ]
     },
     {
@@ -236,7 +238,8 @@
         "Laut Studie senkt das Programm die Quote."
       ],
       "forbidden_readings": [
-        "Das Programm könnte die Quote senken."
+        "Das Programm könnte die Quote senken.",
+        "Die Studie zeigt, dass das Programm die Quote möglicherweise senkt."
       ]
     },
     {
@@ -273,7 +276,8 @@
         "According to the study, the programme lowers the rate."
       ],
       "forbidden_readings": [
-        "The programme might lower the rate."
+        "The programme might lower the rate.",
+        "The study shows that the programme possibly lowers the rate."
       ]
     },
     {
@@ -312,7 +316,8 @@
       ],
       "forbidden_readings": [
         "Die Teilnahme erhöht die Abschlussquote.",
-        "Die Teilnahme trägt dazu bei, die Abschlussquote zu verbessern."
+        "Die Teilnahme trägt dazu bei, die Abschlussquote zu verbessern.",
+        "Die Teilnahme korreliert mit höheren Abschlussquoten und erhöht sie."
       ]
     },
     {
@@ -351,7 +356,8 @@
       ],
       "forbidden_readings": [
         "Participation increases the completion rate.",
-        "Participation contributes to higher completion rates."
+        "Participation contributes to higher completion rates.",
+        "Participation correlates with higher completion rates and increases them."
       ]
     },
     {
@@ -385,7 +391,8 @@
         "Wegen der Kürzung fielen zwei Kurse weg."
       ],
       "forbidden_readings": [
-        "Kürzung und Wegfall zweier Kurse korrelieren."
+        "Kürzung und Wegfall zweier Kurse korrelieren.",
+        "Die Kürzung ist mit dem Wegfall zweier Kurse assoziiert und verursachte ihn."
       ]
     },
     {
@@ -419,7 +426,8 @@
         "Because of the cut, two courses were dropped."
       ],
       "forbidden_readings": [
-        "The cut and the dropped courses are correlated."
+        "The cut and the dropped courses are correlated.",
+        "The cut is associated with two courses being dropped and caused it."
       ]
     },
     {
@@ -1036,13 +1044,10 @@
           "wird fortgesetzt"
         ]
       ],
-      "forbids": [
-        "\\beingestellt\\b",
-        "\\bbeendet\\b"
-      ],
+      "forbids": [],
       "forbidden_claim_types": [],
       "min_claims_on_span": 1,
-      "must_preserve": "Dass der Text die Fortsetzung behauptet und die knappen Mittel einraeumt, nicht umgekehrt. Dieser Test faengt nur den groben Fehler: eine Lesart, die beides gleichrangig nebeneinanderstellt, traegt das Token und bleibt unentdeckt.",
+      "must_preserve": "Dass der Text die Fortsetzung behauptet und die knappen Mittel einraeumt, nicht umgekehrt. Dieser Test faengt nur den groben Fehler: eine Lesart, die beides gleichrangig nebeneinanderstellt, traegt das Token und bleibt unentdeckt. Dieser Fall ruht allein auf der Anforderungsgruppe: ein verbotenes Muster faenge hier nur, was die Gruppe schon faengt, und der Fehler, um den es geht, ist als Muster nicht ausdrueckbar.",
       "permitted_readings": [
         "Das Projekt wird trotz knapper Mittel fortgesetzt."
       ],
@@ -1066,13 +1071,10 @@
           "carried on"
         ]
       ],
-      "forbids": [
-        "\\bdiscontinued\\b",
-        "\\bhalted\\b"
-      ],
+      "forbids": [],
       "forbidden_claim_types": [],
       "min_claims_on_span": 1,
-      "must_preserve": "That the text asserts the continuation and concedes the tight funds, not the reverse. This check catches only the gross error: a reading that puts both side by side as equals carries the token and goes undetected.",
+      "must_preserve": "That the text asserts the continuation and concedes the tight funds, not the reverse. This check catches only the gross error: a reading that puts both side by side as equals carries the token and goes undetected. This case rests on the requirement group alone: a forbidden pattern would only catch what the group already catches, and the error this phenomenon is about cannot be expressed as one.",
       "permitted_readings": [
         "The project will continue despite tight funds."
       ],
@@ -1096,13 +1098,10 @@
           "wird ausgeweitet"
         ]
       ],
-      "forbids": [
-        "\\bgekürzt\\b",
-        "\\breduziert\\b"
-      ],
+      "forbids": [],
       "forbidden_claim_types": [],
       "min_claims_on_span": 1,
-      "must_preserve": "Dass die Ausweitung behauptet und die Personaldecke eingeraeumt wird. Die Praeposition traegt dieselbe Rangfolge wie der Nebensatz in conc-01.",
+      "must_preserve": "Dass die Ausweitung behauptet und die Personaldecke eingeraeumt wird. Die Praeposition traegt dieselbe Rangfolge wie der Nebensatz in conc-01. Dieser Fall ruht allein auf der Anforderungsgruppe: ein verbotenes Muster faenge hier nur, was die Gruppe schon faengt, und der Fehler, um den es geht, ist als Muster nicht ausdrueckbar.",
       "permitted_readings": [
         "Der Dienst wird trotz knapper Personaldecke ausgeweitet."
       ],
@@ -1126,19 +1125,196 @@
           "extended"
         ]
       ],
-      "forbids": [
-        "\\bcut\\b",
-        "\\breduced\\b"
-      ],
+      "forbids": [],
       "forbidden_claim_types": [],
       "min_claims_on_span": 1,
-      "must_preserve": "That the expansion is asserted and the thin staffing conceded. The preposition carries the same ranking as the subordinate clause in conc-01.",
+      "must_preserve": "That the expansion is asserted and the thin staffing conceded. The preposition carries the same ranking as the subordinate clause in conc-01. This case rests on the requirement group alone: a forbidden pattern would only catch what the group already catches, and the error this phenomenon is about cannot be expressed as one.",
       "permitted_readings": [
         "The service will be expanded despite thin staffing."
       ],
       "forbidden_readings": [
         "The staffing is thin.",
         "The service will be cut."
+      ]
+    },
+    {
+      "case_id": "impl-01-de",
+      "pair_id": "impl-01",
+      "language": "de",
+      "phenomenon": "implicative",
+      "document": "Der Vorgang lag seit Januar vor. Das Amt hat es geschafft, die Freigabe rechtzeitig zu erteilen. Die Akte ist geschlossen.",
+      "span": "Das Amt hat es geschafft, die Freigabe rechtzeitig zu erteilen.",
+      "requires_all_groups": [
+        [
+          "erteilt",
+          "erteilen",
+          "Erteilung"
+        ]
+      ],
+      "forbids": [
+        "\\bnicht erteilt\\b",
+        "\\bversucht\\b"
+      ],
+      "forbidden_claim_types": [],
+      "min_claims_on_span": 1,
+      "must_preserve": "Dass die Freigabe erteilt wurde. Bei einem positiv implikativen Verb traegt das Hauptverb die Tatsache: wer daraus einen Versuch macht oder sie verneint, dreht den Sinn, und wer das Ereignis ganz weglaesst, berichtet es nicht.",
+      "permitted_readings": [
+        "Das Amt hat die Freigabe rechtzeitig erteilt."
+      ],
+      "forbidden_readings": [
+        "Die Freigabe wurde nicht erteilt.",
+        "Das Amt hat versucht, die Freigabe zu erteilen.",
+        "Das Amt handelte rechtzeitig."
+      ]
+    },
+    {
+      "case_id": "impl-01-en",
+      "pair_id": "impl-01",
+      "language": "en",
+      "phenomenon": "implicative",
+      "document": "The matter had been pending since January. The office managed to issue the approval on time. The file is closed.",
+      "span": "The office managed to issue the approval on time.",
+      "requires_all_groups": [
+        [
+          "issued",
+          "issue",
+          "issuing"
+        ]
+      ],
+      "forbids": [
+        "\\bnot issued\\b",
+        "\\btried\\b"
+      ],
+      "forbidden_claim_types": [],
+      "min_claims_on_span": 1,
+      "must_preserve": "That the approval was issued. With a positive implicative the main verb carries the fact: turning it into an attempt or negating it reverses the sense, and dropping the event reports nothing.",
+      "permitted_readings": [
+        "The office issued the approval on time."
+      ],
+      "forbidden_readings": [
+        "The approval was not issued.",
+        "The office tried to issue the approval.",
+        "The office acted on time."
+      ]
+    },
+    {
+      "case_id": "impl-02-de",
+      "pair_id": "impl-02",
+      "language": "de",
+      "phenomenon": "implicative",
+      "document": "Die Frist lief im Mai ab. Das Amt hat es versäumt, die Unterlagen zu prüfen. Eine Nachfrist wurde nicht gesetzt.",
+      "span": "Das Amt hat es versäumt, die Unterlagen zu prüfen.",
+      "requires_all_groups": [
+        [
+          "versäumt",
+          "nicht geprüft",
+          "nicht",
+          "unterblieb"
+        ]
+      ],
+      "forbids": [
+        "\\bweil\\b",
+        "\\bverzögert\\b"
+      ],
+      "forbidden_claim_types": [],
+      "min_claims_on_span": 1,
+      "must_preserve": "Dass die Pruefung unterblieben ist. Ein negativ implikatives Verb behauptet das Ausbleiben: wer daraus eine erfolgte Pruefung oder einen Versuch macht, dreht den Sinn, und wer einen Grund ergaenzt, erfindet eine Festlegung, die der Satz nicht traegt.",
+      "permitted_readings": [
+        "Das Amt hat die Unterlagen nicht geprüft."
+      ],
+      "forbidden_readings": [
+        "Das Amt hat die Unterlagen geprüft.",
+        "Die Unterlagen wurden nicht geprüft, weil sie fehlten.",
+        "Das Amt hat versucht, die Unterlagen zu prüfen."
+      ]
+    },
+    {
+      "case_id": "impl-02-en",
+      "pair_id": "impl-02",
+      "language": "en",
+      "phenomenon": "implicative",
+      "document": "The deadline expired in May. The office failed to review the documents. No extension was granted.",
+      "span": "The office failed to review the documents.",
+      "requires_all_groups": [
+        [
+          "failed",
+          "not reviewed",
+          "not",
+          "did not"
+        ]
+      ],
+      "forbids": [
+        "\\bbecause\\b",
+        "\\bdelayed\\b"
+      ],
+      "forbidden_claim_types": [],
+      "min_claims_on_span": 1,
+      "must_preserve": "That the review did not happen. A negative implicative asserts the non-occurrence: turning it into a completed review or an attempt reverses the sense, and adding a reason invents a commitment the sentence does not carry.",
+      "permitted_readings": [
+        "The office did not review the documents."
+      ],
+      "forbidden_readings": [
+        "The office reviewed the documents.",
+        "The documents were not reviewed because they were missing.",
+        "The office tried to review the documents."
+      ]
+    },
+    {
+      "case_id": "impl-03-de",
+      "pair_id": "impl-03",
+      "language": "de",
+      "phenomenon": "implicative",
+      "document": "Der Haushalt war angespannt. Das Amt hat versucht, die Mittel umzuschichten. Der Bericht erscheint im Herbst.",
+      "span": "Das Amt hat versucht, die Mittel umzuschichten.",
+      "requires_all_groups": [
+        [
+          "versucht",
+          "Versuch"
+        ]
+      ],
+      "forbids": [
+        "\\bumgeschichtet\\b",
+        "\\bgescheitert\\b"
+      ],
+      "forbidden_claim_types": [],
+      "min_claims_on_span": 1,
+      "must_preserve": "Dass es beim Versuch bleibt. Ein nicht implikatives Verb laesst den Ausgang offen: weder das Gelingen noch das Scheitern darf ergaenzt werden.",
+      "permitted_readings": [
+        "Das Amt hat versucht, die Mittel umzuschichten."
+      ],
+      "forbidden_readings": [
+        "Das Amt hat die Mittel umgeschichtet.",
+        "Das Amt hat versucht, die Mittel umzuschichten, und hat sie umgeschichtet.",
+        "Der Versuch ist gescheitert."
+      ]
+    },
+    {
+      "case_id": "impl-03-en",
+      "pair_id": "impl-03",
+      "language": "en",
+      "phenomenon": "implicative",
+      "document": "The budget was tight. The office tried to reallocate the funds. The report appears in autumn.",
+      "span": "The office tried to reallocate the funds.",
+      "requires_all_groups": [
+        [
+          "tried",
+          "attempt"
+        ]
+      ],
+      "forbids": [
+        "\\breallocated\\b",
+        "\\bfailed\\b"
+      ],
+      "forbidden_claim_types": [],
+      "min_claims_on_span": 1,
+      "must_preserve": "That it stays an attempt. A non-implicative leaves the outcome open: neither success nor failure may be added.",
+      "permitted_readings": [
+        "The office tried to reallocate the funds."
+      ],
+      "forbidden_readings": [
+        "The office reallocated the funds.",
+        "The office tried to reallocate the funds and reallocated them.",
+        "The attempt failed."
       ]
     }
   ]
