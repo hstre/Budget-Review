@@ -1,0 +1,96 @@
+
+======================================================================
+weights solar_system: 106 triples in 53 translation pairs
+
+  accuracy, resampling translation pairs (53 units):
+    full       0.698  pairs [0.604, 0.792]   triples [0.613, 0.783]
+    length     0.764  pairs [0.679, 0.849]   triples [0.679, 0.840]
+    jaccard    0.660  pairs [0.557, 0.764]   triples [0.575, 0.755]
+    untrained  0.764  pairs [0.660, 0.858]   triples [0.679, 0.840]
+
+  stratified by what sentence length alone would say
+  (margin = |n(o)-n(f)| - |n(o)-n(d)|; negative means the faithful
+   reading is the nearer one in token count)
+    length points wrong  n=9   full=0.111  length=0.000  jaccard=0.222  untrained=0.000
+    length is a tie      n=16  full=0.500  length=0.000  jaccard=0.562  untrained=0.438
+    length points right  n=81  full=0.802  length=1.000  jaccard=0.728  untrained=0.914
+
+  full x length
+    both right        65
+    only full          9
+    only length       16
+    both wrong        16
+    agree on 81/106 triples (76 %); the accuracy difference rests on 9 against 16
+    full - length: -0.066  pairs [-0.160, +0.028]  clear of zero: False   triples [-0.160, +0.028] clear: False
+
+  full x jaccard
+    both right        56
+    only full         18
+    only jaccard      14
+    both wrong        18
+    agree on 74/106 triples (70 %); the accuracy difference rests on 18 against 14
+    full - jaccard: +0.038  pairs [-0.057, +0.142]  clear of zero: False   triples [-0.066, +0.142] clear: False
+
+  full x untrained
+    both right        72
+    only full          2
+    only untrained     9
+    both wrong        23
+    agree on 95/106 triples (90 %); the accuracy difference rests on 2 against 9
+    full - untrained: -0.066  pairs [-0.132, +0.000]  clear of zero: False   triples [-0.132, -0.009] clear: False
+
+  length x jaccard
+    both right        59
+    only length       22
+    only jaccard      11
+    both wrong        14
+    agree on 73/106 triples (69 %); the accuracy difference rests on 22 against 11
+    length - jaccard: +0.104  pairs [-0.009, +0.217]  clear of zero: False   triples [+0.000, +0.208] clear: False
+
+======================================================================
+weights qba: 106 triples in 53 translation pairs
+
+  accuracy, resampling translation pairs (53 units):
+    full       0.774  pairs [0.679, 0.858]   triples [0.698, 0.849]
+    length     0.764  pairs [0.679, 0.849]   triples [0.679, 0.840]
+    jaccard    0.660  pairs [0.557, 0.764]   triples [0.575, 0.755]
+    untrained  0.783  pairs [0.689, 0.877]   triples [0.708, 0.858]
+
+  stratified by what sentence length alone would say
+  (margin = |n(o)-n(f)| - |n(o)-n(d)|; negative means the faithful
+   reading is the nearer one in token count)
+    length points wrong  n=9   full=0.000  length=0.000  jaccard=0.222  untrained=0.111
+    length is a tie      n=16  full=0.312  length=0.000  jaccard=0.562  untrained=0.250
+    length points right  n=81  full=0.951  length=1.000  jaccard=0.728  untrained=0.963
+
+  full x length
+    both right        77
+    only full          5
+    only length        4
+    both wrong        20
+    agree on 97/106 triples (92 %); the accuracy difference rests on 5 against 4
+    full - length: +0.009  pairs [-0.047, +0.066]  clear of zero: False   triples [-0.047, +0.066] clear: False
+
+  full x jaccard
+    both right        61
+    only full         21
+    only jaccard       9
+    both wrong        15
+    agree on 76/106 triples (72 %); the accuracy difference rests on 21 against 9
+    full - jaccard: +0.113  pairs [+0.019, +0.217]  clear of zero: True   triples [+0.009, +0.208] clear: True
+
+  full x untrained
+    both right        81
+    only full          1
+    only untrained     2
+    both wrong        22
+    agree on 103/106 triples (97 %); the accuracy difference rests on 1 against 2
+    full - untrained: -0.009  pairs [-0.047, +0.019]  clear of zero: False   triples [-0.047, +0.019] clear: False
+
+  length x jaccard
+    both right        59
+    only length       22
+    only jaccard      11
+    both wrong        14
+    agree on 73/106 triples (69 %); the accuracy difference rests on 22 against 11
+    length - jaccard: +0.104  pairs [-0.009, +0.217]  clear of zero: False   triples [+0.000, +0.208] clear: False

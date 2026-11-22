@@ -3670,3 +3670,58 @@ Wert einer echten Repräsentation und sagt für diese nichts.
 Torch landete unter Python 3.13, der Testlauf des Repositorys läuft unter
 3.11. Diesmal keine kaputte Umgebung: 626 Tests grün, zwei übersprungen wie
 zuvor.
+
+## 3aw. Dieselben Tripel, gekreuzt — und die Stichprobeneinheit war falsch
+
+Zwei Nachforderungen zu §4.23, beide berechtigt, beide am gespeicherten
+Dossier nachgerechnet statt neu gemessen (`runs/takens-01/paired.py`).
+
+**Die Einheit.** Die 53 deutschen und 53 englischen Tripel sind dieselben 19
+Fallpaare in zwei Sprachen — geprüft, nicht angenommen: je ein deutscher und
+ein englischer Fall pro `pair_id`, gleiche `(permitted, forbidden)`-Gestalt,
+Lesart für Lesart aligniert. Ein Tripel und seine Übersetzung sind also keine
+zwei unabhängigen Beobachtungen, und mein erster Bootstrap über 106 Tripel hat
+die Intervalle zu schmal gemacht. Jetzt über 53 Paare. Das kostet eine
+Aussage, und zwar eine **gegen** den Gegenstand: pro Tripel war das trainierte
+`solar_system`-Modell schlechter als Zufallsgewichte und klar von Null
+(−0,066 [−0,132, −0,009]), pro Paar [−0,132, +0,000] und nicht mehr klar. Die
+eine Kriteriumskomponente, die hält, ist der Vorsprung gegen die
+Wortüberlappung bei `qba` (+0,113 [+0,019, +0,217]).
+
+**Die Kreuzung.** Aggregierte Genauigkeiten sagen nicht, ob zwei Maße
+dieselben Fälle treffen. Bei `qba`, Vollmodell gegen Längen-Baseline: beide
+richtig 77, beide falsch 20, nur das Modell 5, nur die Länge 4. Der ganze
+Unterschied sind 5 Tripel gegen 4. Gegen untrainierte Gewichte: 1 gegen 2,
+Übereinstimmung in 103 von 106.
+
+**Und das Stratum, das es entscheidet.** Nach dem aufgeteilt, was allein die
+Länge sagen würde: wo die Länge falsch zeigt (n=9) erreicht das Vollmodell
+**0,000**, wo sie unentschieden ist (n=16) 0,312, wo sie richtig zeigt (n=81)
+0,951. Das Modell folgt der Länge.
+
+**Eine Korrektur an mir.** Ich hatte geschrieben, unsere verzerrten Lesarten
+seien Verkürzungen und die treuen Umformulierungen. Nachgezählt: 68 von 106
+verzerrten Lesarten sind kürzer, 27 länger, 11 gleich lang. Die Abkürzung
+besteht nicht darin, dass alles Verkürzungen sind, sondern darin, dass der
+Bestand Länge und Bedeutung fast nie in Widerspruch setzt — 9 von 106.
+
+**Entschieden.** §10.11: die veröffentlichten Checkpoints und das geprüfte
+Maß werden nicht als Validator für Bedeutungstreue verwendet; ein Vorteil der
+trainierten Repräsentation gegenüber Zufallsgewichten ist auf unseren Fällen
+nicht belegt; die Architekturfrage bleibt offen. §10.12: künftige Prüfungen
+semantischer Repräsentationen tragen längenkontrollierte Gegenbeispiele — ein
+einziges ausgetauschtes Wort, das Zuschreibung oder Verbindlichkeit ändert,
+und die sinnverändernde Fassung länger als die treue. Die Anforderung ist
+entschieden, die Fälle sind noch nicht geschrieben.
+
+Die Vorregistrierung bleibt, wie sie in `613efb1` steht. Sie war in dem
+falsch, was sie wegließ, und sie nachträglich zu ändern würde genau das
+verdecken.
+
+Und die Reichweite, eng gehalten, weil die drei Befunde leicht zusammenlaufen:
+die unbekannten deutschen Wörter belegen die unzureichende Abdeckung der
+gelieferten Gewichte und sonst nichts — welcher Trainingsaufwand nötig wäre,
+haben wir nicht gemessen; das Förderbeispiel dokumentiert einen konkreten
+Fehler von Jaccard an einem Tripel, kein Urteil über die Überlappung als
+Baseline; und Mean-Pooling plus Cosinus war unser Versuch, Hayletts
+Architektur für unsere Frage zu nutzen, kein Maß, das er vorgelegt hat.

@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3av, which is a log rather than a synthesis.
+§3a–§3aw, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -89,6 +89,26 @@ pipeline said so. **The condition that fixes what counts as a match belongs with
 every number it produces, and the only way to know whether it matters is to
 compute its variants** — which costs nothing and had not been done.
 
+It has a second sibling, found in the attempt to borrow an outside
+representation, and this one met its criterion before it failed. A measure was
+built to ask whether such a representation could tell a faithful reading of a
+sentence from one that drops its condition; the criterion was pre-registered;
+one arm met it. **On the same 106 triples, a baseline that knows nothing but
+the number of tokens in a sentence reaches 76.4 % [67.9, 84.9].** The arm that
+met the criterion agrees with that baseline on 97 of 106 triples, is right on
+**none of the 9 triples where length points the wrong way**, and is matched by
+the same architecture with untrained random weights. What the measure
+separated was length. **A baseline nobody thought to include can reach the
+headline number, and a pre-registered criterion will not notice unless the
+untrained floor is part of it** (§4.23). Three things in that section are
+worth keeping apart for anyone reading only this far: the unknown German words
+establish that the shipped weights do not cover our text, and nothing there
+measures what training would be needed to change it; the funding example
+documents one concrete failure of word overlap, not a verdict on overlap as
+such; and the comparison by mean-pooling and cosine was our own construction
+for our own question, not something the architecture's author proposed or
+tested.
+
 ### Status at a glance
 
 | | Finding | Status |
@@ -118,7 +138,8 @@ compute its variants** — which costs nothing and had not been done.
 | 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats |
 | 24 | A staged check over four context levels buys restraint, not accuracy — and the restraint belongs to the structured object, not to the staging | measured twice (§4.20, §4.21); one call with the object matches four staged calls, 48 against 106 |
 | 25 | **Temperature 0 is not determinism: 1 of 106 identical replies across two runs of one arm**, with measures drifting 0.015 to 0.087 | established (§4.21); it is finding 5 again, sharper, and it cost two of the four findings in §4.20 |
-| 26 | An outside delay-coordinate architecture, checked against the conditional failure, could not be run on it at all: English weights of 1651 and 111 words, and **2 of 12 tokens of the German test sentence in vocabulary, both punctuation** | closed, negative (§4.23). The one arm that met the pre-registered criterion is void — untrained weights and a length-only baseline score as well — and the criterion's omission of the untrained floor is recorded as our own error |
+| 26 | An outside delay-coordinate architecture, checked against the conditional failure, could not be run on it at all: English weights of 1651 and 111 words, and **2 of 12 tokens of the German test sentence in vocabulary, both punctuation** | closed, negative (§4.23, decision 11). The published checkpoints and the measure we built for them are not used as a validator of meaning fidelity; no advantage of the trained representation over random weights is established on our cases |
+| 27 | **Sentence length alone reaches 76.4 % [67.9, 84.9] on the 106 triples**, agrees with the arm that met our criterion on 97 of 106, and beats it outright on the 9 triples where length and meaning disagree — where that arm scores 0 | method, acted on (§4.23). Two rules follow: a measure must beat random weights of the same architecture first, and a case set must carry length-controlled counterexamples (decision 12). The 53 German and 53 English triples are translation pairs, so intervals resample 53 pairs rather than 106 triples |
 
 ---
 
@@ -1292,7 +1313,7 @@ and no similarity measure, so the measure is ours: mean-pool the stack output
 over positions, compare by cosine, 106 triples from the meaning set, correct
 iff the faithful reading is nearer the original than the distorted one. One of
 the two weight sets **met the pre-registered criterion** — above word overlap
-clear of zero (+0.113 [+0.009, +0.208]), above chance in its own right, above
+clear of zero (+0.113 [+0.019, +0.217]), above chance in its own right, above
 a zeroed-delay control — and that result is void:
 
 - **untrained, random weights score 0.783** against the trained 0.774, and
@@ -1304,17 +1325,65 @@ a zeroed-delay control — and that result is void:
   0.966, and 56 of 106 triples are 100 % out of vocabulary — the model scores
   0.750 on exactly the triples where it can read nothing.
 
-Our distorted readings are shortenings and our faithful readings are
-rewordings, so **length alone separates them, and length is all the measure
-found.**
+**The sampling unit is the translation pair, not the triple.** The 53 German
+and 53 English triples are the same 19 case pairs in two languages, one German
+and one English case per pair with identical shape, aligned reading by reading
+— so a triple and its translation are not two independent observations. Every
+interval in this section resamples the **53 pairs**, each contributing both of
+its triples. The correction widens the intervals and costs one claim in the
+other direction: per triple, the trained `solar_system` model scored *worse*
+than random weights clear of zero (−0.066 [−0.132, −0.009]); per pair that is
+[−0.132, +0.000] and no longer clear. The one criterion component that
+survives the correction is the win over word overlap on `qba`
+(+0.113 [+0.019, +0.217]).
+
+**Where the model and the length baseline actually differ.** The aggregate
+accuracies hide how little separates them, so the per-triple verdicts were
+crossed (`runs/takens-01/paired.txt`, post hoc). Under `qba`: both right 77,
+both wrong 20, **only the model right 5, only length right 4** — agreement on
+97 of 106 triples, and the whole accuracy difference rests on 5 triples
+against 4. Against untrained weights the same crossing gives 1 against 2,
+agreement on 103 of 106.
+
+**And the stratum that decides it.** Splitting the triples by what length alone
+would say:
+
+| | n | full | length | overlap | untrained |
+|---|---|---|---|---|---|
+| length points the wrong way | 9 | **0.000** | 0.000 | 0.222 | 0.111 |
+| length is a tie | 16 | 0.312 | 0.000 | 0.562 | 0.250 |
+| length points the right way | 81 | 0.951 | 1.000 | 0.728 | 0.963 |
+
+The model is right where length is right and **wrong on all 9 triples where
+length points the wrong way** (1 of 9 for `solar_system`). Nine triples is a
+small stratum and the figure is not a confidence interval worth quoting, but
+the direction is not in doubt, and it is the stratum the set barely has: in
+only 9 of 106 triples does token count favour the distorted reading, in 16 it
+ties, and in 81 it favours the faithful one. My earlier phrasing — that the
+distorted readings are shortenings and the faithful ones rewordings — was
+too strong: 68 of 106 distorted readings are shorter than the faithful one, 27
+are longer, 11 are equal. The shortcut is not that the set is all shortenings;
+it is that **the set offers almost no case where length and meaning
+disagree.**
 
 The pre-registration was under-specified, and that is this section's finding
 about our own method rather than about the subject: the untrained floor was
 listed as a control and left out of the criterion, so a measure driven by
-sentence length could pass it. The rule from here: **a comparison measure must
-beat random weights of the same architecture before any other comparison
-counts.** It is finding 5 in a new costume — a difference that survives a
-bootstrap can still be a property of the instrument.
+sentence length could pass it. Two rules follow, and they hold for every
+future comparison, not only this one:
+
+1. **A comparison measure must beat random weights of the same architecture
+   before any other comparison counts.**
+2. **A case set used to test a semantic representation must carry
+   length-controlled counterexamples** — cases where a single swapped word
+   changes who is committed or how strongly, and cases where the
+   meaning-changing version is *longer* than the faithful one. Today the set
+   has 9 such triples of 106, which is why the shortcut went unseen until it
+   was looked for. Decided in §10.12.
+
+It is finding 5 in a new costume — a difference that survives a bootstrap can
+still be a property of the instrument, and a bootstrap over the wrong unit
+makes it look sharper than it is.
 
 One number is worth keeping for its own sake. **Word overlap ranks our own
 example triple the wrong way round** (Jaccard 0.09 for the faithful reading,
@@ -1323,11 +1392,26 @@ distorted one copies. The baseline one reaches for first is unfit for exactly
 this failure. That raises the value of finding a real representation; it says
 nothing in this one's favour.
 
-What this does not settle is whether the architecture, trained on German
+**What each finding here does and does not cover**, since the three are easy
+to run together:
+
+- The unknown German words establish one thing only: **the shipped weights do
+  not cover our text.** Nothing here measures what training would be needed to
+  change that. The scale named below is an order-of-magnitude observation about
+  the shipped models, not a measured requirement.
+- The funding example documents **one concrete failure of word overlap** on one
+  triple. It is not a general verdict on overlap as a baseline, which scores
+  0.660 [0.557, 0.764] across the set.
+- The comparison by mean-pooling and cosine was **our own attempt** to put this
+  architecture to our question. The repository proposes no sentence
+  representation and no similarity measure, so a negative result is about our
+  construction on its weights — not about a measure its author put forward.
+
+What none of it settles is whether the architecture, trained on German
 governance prose, would hold a condition better than attention. The missing
-precondition is named and large: a corpus this project does not have, at a
-vocabulary and parameter scale two to three orders of magnitude above the
-shipped models.
+precondition is a corpus this project does not have, at a vocabulary and
+parameter scale far above the shipped models — how far, we have not
+measured.
 
 ---
 
@@ -1607,7 +1691,7 @@ runs/frames-01, runs/frames-02           every prompt and reply of the two paid
 runs/takens-01                           the delay-coordinate probe: criterion,
                                          every per-triple record, and the post
                                          hoc diagnosis that voids it (§4.23)
-docs/architecture.md §3a–§3av            the chronological record, run by run
+docs/architecture.md §3a–§3aw            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1676,16 +1760,26 @@ reader knows what is waiting.
     primary comparison, repeating only the cases where the first two draws
     disagree, or estimating the floor once per prompt family instead of once per
     run. None is measured, and until one is, the price is double.
-11. **Whether to spend development time on a delay-coordinate semantic
-    representation. ✔ decided: no, for the shipped prototype.** §4.23 checked
-    it against the code rather than the paper: the weights cannot read our
-    documents, nothing in them computes an attractor or a basin, and the one
-    measurement that passed our criterion is an artefact of sentence length.
-    What stays open is the architecture itself, and it is recorded as question
-    14 in §5 rather than as work waiting — it would need a German corpus and a
-    training run this project cannot fund. The rule the attempt produced stays
-    in force for every future comparison: a measure must beat random weights of
-    the same architecture first.
+11. **Whether the published checkpoints and the comparison measure we tested
+    become a validator of meaning fidelity. ✔ decided: no.** We do not use
+    them for that. **No advantage of the trained representation over random
+    weights is established on our cases** — the two agree on 103 of 106
+    triples and their accuracies differ by 1 triple against 2 (§4.23). The
+    more general architecture question stays open, and it is recorded as
+    question 14 in §5 rather than as work waiting: answering it would need a
+    German corpus and a training run this project does not have, and how large
+    a run is not something we measured.
+12. **Whether future tests of a semantic representation must carry
+    length-controlled counterexamples. ✔ decided: yes.** Two kinds, both named
+    because they are the ones the current set lacks: a case where **a single
+    swapped word** changes who is committed or how strongly, and a case where
+    **the meaning-changing version is longer than the faithful one**. The point
+    is to let the familiar shortcut tell against the method under test instead
+    of carrying it — today only 9 of 106 triples put length and meaning in
+    conflict, and on exactly those the arm that met our criterion scored 0. The
+    rule from §4.23 travels with it: a measure must beat random weights of the
+    same architecture before any other comparison counts. What is decided is
+    the requirement; the cases are not written yet.
 
 ---
 ---
@@ -1698,7 +1792,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3av und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3aw und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1783,6 +1877,28 @@ als Treffer zählt, gehört zu jeder Zahl, die sie erzeugt, und ob sie etwas
 ausmacht weiß man nur, wenn man ihre Varianten durchrechnet** — was nichts kostet
 und nicht getan war.
 
+Es hat ein zweites Geschwister, gefunden beim Versuch, eine fremde
+Repräsentation zu borgen, und dieses hat sein Kriterium erfüllt, bevor es
+gescheitert ist. Ein Maß sollte prüfen, ob eine solche Repräsentation eine
+treue Lesart eines Satzes von einer unterscheidet, die dessen Bedingung fallen
+lässt; das Kriterium war vorregistriert; ein Arm hat es erfüllt. **Auf
+denselben 106 Tripeln erreicht eine Baseline, die nichts als die Tokenzahl
+eines Satzes kennt, 76,4 % [67,9, 84,9].** Der Arm, der das Kriterium erfüllt
+hat, stimmt mit dieser Baseline in 97 von 106 Tripeln überein, liegt in
+**keinem der 9 Tripel richtig, in denen die Länge falsch zeigt**, und wird von
+derselben Architektur mit untrainierten Zufallsgewichten erreicht. Getrennt
+hat das Maß die Länge. **Eine Baseline, an die niemand gedacht hat, kann die
+Schlagzeilenzahl erreichen, und ein vorregistriertes Kriterium merkt es nicht,
+solange der untrainierte Boden nicht darin steht** (§4.23). Drei Dinge aus
+diesem Abschnitt sind auseinanderzuhalten, auch für jemanden, der nur bis
+hierher liest: die unbekannten deutschen Wörter belegen, dass die gelieferten
+Gewichte unseren Text nicht abdecken, und nichts dort misst, welcher
+Trainingsaufwand das ändern würde; das Förderbeispiel dokumentiert einen
+konkreten Fehler der Wortüberlappung, kein Urteil über die Überlappung als
+solche; und der Vergleich über Mean-Pooling und Cosinus war unsere eigene
+Konstruktion für unsere eigene Frage, nichts, was der Autor der Architektur
+vorgelegt oder geprüft hätte.
+
 ### Stand im Überblick
 
 | | Befund | Stand |
@@ -1812,7 +1928,8 @@ und nicht getan war.
 | 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen |
 | 24 | Eine Stufenprüfung über vier Kontextebenen kauft Zurückhaltung, nicht Genauigkeit — und die Zurückhaltung gehört dem strukturierten Objekt, nicht der Stufung | zweimal gemessen (§4.20, §4.21); ein Aufruf mit dem Objekt erreicht vier Stufenaufrufe, 48 gegen 106 |
 | 25 | **Temperatur 0 ist keine Determiniertheit: 1 von 106 identischen Antworten über zwei Läufe eines Arms**, Maße driften um 0,015 bis 0,087 | belegt (§4.21); es ist Befund 5 noch einmal, schärfer, und er hat zwei der vier Befunde aus §4.20 gekostet |
-| 26 | Eine fremde Delay-Koordinaten-Architektur, gegen den Bedingungsfehler geprüft, war darauf gar nicht lauffähig: englische Gewichte mit 1651 und 111 Wörtern, und **2 von 12 Tokens des deutschen Testsatzes im Vokabular, beide Satzzeichen** | abgeschlossen, negativ (§4.23). Der eine Arm, der das vorregistrierte Kriterium erfüllt hat, ist nichtig — untrainierte Gewichte und eine reine Längen-Baseline erreichen dasselbe — und dass der untrainierte Boden nicht im Kriterium stand, ist als eigener Fehler verzeichnet |
+| 26 | Eine fremde Delay-Koordinaten-Architektur, gegen den Bedingungsfehler geprüft, war darauf gar nicht lauffähig: englische Gewichte mit 1651 und 111 Wörtern, und **2 von 12 Tokens des deutschen Testsatzes im Vokabular, beide Satzzeichen** | abgeschlossen, negativ (§4.23, Entscheidung 11). Die veröffentlichten Checkpoints und das von uns gebaute Maß werden nicht als Validator für Bedeutungstreue verwendet; ein Vorteil der trainierten Repräsentation gegenüber Zufallsgewichten ist auf unseren Fällen nicht belegt |
+| 27 | **Allein die Satzlänge erreicht auf den 106 Tripeln 76,4 % [67,9, 84,9]**, stimmt mit dem Arm, der unser Kriterium erfüllt hat, in 97 von 106 überein und schlägt ihn auf den 9 Tripeln, in denen Länge und Bedeutung auseinandergehen — dort erreicht dieser Arm 0 | Methode, umgesetzt (§4.23). Zwei Regeln folgen: ein Maß muss zuerst Zufallsgewichte derselben Architektur schlagen, und ein Fallbestand muss längenkontrollierte Gegenbeispiele enthalten (Entscheidung 12). Die 53 deutschen und 53 englischen Tripel sind Übersetzungspaare, also ziehen die Intervalle 53 Paare statt 106 Tripel |
 
 ## 2. Was das System ist
 
@@ -3011,7 +3128,7 @@ Stack-Ausgabe über die Positionen mitteln, per Cosinus vergleichen, 106 Tripel
 aus dem Bedeutungsbestand, richtig genau dann, wenn die treue Lesart dem
 Original näher liegt als die verzerrte. Einer der zwei Gewichtssätze hat
 **das vorregistrierte Kriterium erfüllt** — über der Wortüberlappung und klar
-von Null (+0,113 [+0,009, +0,208]), über dem Zufall, über der Kontrolle mit
+von Null (+0,113 [+0,019, +0,217]), über dem Zufall, über der Kontrolle mit
 genullten Delays — und dieses Ergebnis ist nichtig:
 
 - **untrainierte Zufallsgewichte erreichen 0,783** gegen 0,774 des trainierten
@@ -3023,18 +3140,67 @@ genullten Delays — und dieses Ergebnis ist nichtig:
   Sätze mindestens 0,966, und 56 von 106 Tripeln sind zu 100 % außerhalb des
   Vokabulars — genau auf diesen erreicht das Modell 0,750.
 
-Unsere verzerrten Lesarten sind Verkürzungen, unsere treuen sind
-Umformulierungen. **Also trennt allein die Länge sie, und die Länge ist alles,
-was das Maß gefunden hat.**
+**Die Stichprobeneinheit ist das Übersetzungspaar, nicht das Tripel.** Die 53
+deutschen und 53 englischen Tripel sind dieselben 19 Fallpaare in zwei
+Sprachen, je ein deutscher und ein englischer Fall gleicher Gestalt, Lesart
+für Lesart aligniert — ein Tripel und seine Übersetzung sind also keine zwei
+unabhängigen Beobachtungen. Jedes Intervall in diesem Abschnitt zieht die
+**53 Paare** neu, jedes mit beiden Tripeln. Die Korrektur verbreitert die
+Intervalle und kostet eine Aussage in der anderen Richtung: pro Tripel war das
+trainierte `solar_system`-Modell *schlechter* als Zufallsgewichte und klar von
+Null (−0,066 [−0,132, −0,009]); pro Paar ist das [−0,132, +0,000] und nicht
+mehr klar. Die eine Komponente des Kriteriums, die die Korrektur übersteht,
+ist der Vorsprung gegenüber der Wortüberlappung bei `qba`
+(+0,113 [+0,019, +0,217]).
+
+**Wo Modell und Längen-Baseline sich tatsächlich unterscheiden.** Die
+aggregierten Genauigkeiten verdecken, wie wenig sie trennt, also wurden die
+Einzelurteile gekreuzt (`runs/takens-01/paired.txt`, post hoc). Bei `qba`:
+beide richtig 77, beide falsch 20, **nur das Modell richtig 5, nur die Länge
+richtig 4** — Übereinstimmung in 97 von 106 Tripeln, und der ganze
+Genauigkeitsunterschied ruht auf 5 Tripeln gegen 4. Gegen untrainierte
+Gewichte ergibt dieselbe Kreuzung 1 gegen 2, Übereinstimmung in 103 von 106.
+
+**Und das Stratum, das es entscheidet.** Die Tripel danach aufgeteilt, was
+allein die Länge sagen würde:
+
+| | n | Vollmodell | Länge | Überlappung | untrainiert |
+|---|---|---|---|---|---|
+| Länge zeigt falsch | 9 | **0,000** | 0,000 | 0,222 | 0,111 |
+| Länge unentschieden | 16 | 0,312 | 0,000 | 0,562 | 0,250 |
+| Länge zeigt richtig | 81 | 0,951 | 1,000 | 0,728 | 0,963 |
+
+Das Modell liegt richtig, wo die Länge richtig liegt, und **falsch in allen 9
+Tripeln, in denen die Länge falsch zeigt** (1 von 9 bei `solar_system`). Neun
+Tripel sind ein kleines Stratum, und die Zahl ist kein zitierfähiges
+Konfidenzintervall, aber die Richtung ist nicht zweifelhaft — und es ist genau
+das Stratum, das der Bestand kaum hat: nur in 9 von 106 Tripeln begünstigt die
+Tokenzahl die verzerrte Lesart, in 16 ist sie unentschieden, in 81 begünstigt
+sie die treue. Meine frühere Formulierung — die verzerrten Lesarten seien
+Verkürzungen, die treuen Umformulierungen — war zu stark: 68 von 106
+verzerrten Lesarten sind kürzer als die treue, 27 sind länger, 11 gleich lang.
+Die Abkürzung besteht nicht darin, dass der Bestand aus Verkürzungen besteht,
+sondern darin, dass er **fast keinen Fall anbietet, in dem Länge und Bedeutung
+auseinandergehen.**
 
 Die Vorregistrierung war unterbestimmt, und das ist der Befund dieses
 Abschnitts über unsere eigene Methode, nicht über den Gegenstand: der
 untrainierte Boden stand als Kontrolle da und nicht im Kriterium, also konnte
-ein längengetriebenes Maß es erfüllen. Die Regel von hier an: **ein
-Vergleichsmaß muss Zufallsgewichte derselben Architektur schlagen, bevor
-irgendein anderer Vergleich zählt.** Es ist Befund 5 im neuen Kostüm — ein
-Unterschied, der einen Bootstrap übersteht, kann trotzdem eine Eigenschaft des
-Messgeräts sein.
+ein längengetriebenes Maß es erfüllen. Daraus folgen zwei Regeln, und sie
+gelten für jeden künftigen Vergleich, nicht nur für diesen:
+
+1. **Ein Vergleichsmaß muss Zufallsgewichte derselben Architektur schlagen,
+   bevor irgendein anderer Vergleich zählt.**
+2. **Ein Fallbestand, mit dem eine semantische Repräsentation geprüft wird,
+   muss längenkontrollierte Gegenbeispiele enthalten** — Fälle, in denen ein
+   einziges ausgetauschtes Wort ändert, wer sich wie stark bindet, und Fälle,
+   in denen die sinnverändernde Fassung *länger* ist als die treue. Heute hat
+   der Bestand 9 solche Tripel von 106, und deshalb blieb die Abkürzung
+   unsichtbar, bis jemand nach ihr gesucht hat. Entschieden in §10.12.
+
+Es ist Befund 5 im neuen Kostüm — ein Unterschied, der einen Bootstrap
+übersteht, kann eine Eigenschaft des Messgeräts sein, und ein Bootstrap über
+die falsche Einheit lässt ihn schärfer aussehen, als er ist.
 
 Eine Zahl ist für sich behaltenswert. **Die Wortüberlappung ordnet unser
 eigenes Beispieltripel falsch** (Jaccard 0,09 für die treue, 0,38 für die
@@ -3043,11 +3209,28 @@ kopiert. Die Baseline, nach der man zuerst greift, ist für genau diesen Fehler
 untauglich. Das erhöht den Wert einer echten Repräsentation; für diese sagt es
 nichts.
 
-Nicht entschieden ist, ob die Architektur, auf deutscher Verwaltungsprosa
-trainiert, eine Bedingung besser hielte als Attention. Die fehlende
-Voraussetzung ist benannt und groß: ein Korpus, das dieses Projekt nicht hat,
-auf einer Vokabular- und Parameterskala zwei bis drei Größenordnungen über den
-gelieferten Modellen.
+**Was jeder Befund hier abdeckt und was nicht**, weil die drei leicht
+zusammenlaufen:
+
+- Die unbekannten deutschen Wörter belegen genau eines: **die gelieferten
+  Gewichte decken unseren Text nicht ab.** Nichts hier misst, welcher
+  Trainingsaufwand das ändern würde. Die unten genannte Skala ist eine
+  Größenordnungs-Beobachtung über die gelieferten Modelle, keine gemessene
+  Anforderung.
+- Das Förderbeispiel dokumentiert **einen konkreten Fehler der
+  Wortüberlappung** an einem Tripel. Es ist kein allgemeines Urteil über die
+  Überlappung als Baseline, die über den Bestand 0,660 [0,557, 0,764] erreicht.
+- Der Vergleich über Mean-Pooling und Cosinus war **unser eigener Versuch**,
+  diese Architektur für unsere Frage zu nutzen. Das Repository schlägt keine
+  Satzrepräsentation und kein Ähnlichkeitsmaß vor, also ist ein negatives
+  Ergebnis eine Aussage über unsere Konstruktion auf seinen Gewichten — nicht
+  über ein Maß, das sein Autor vorgelegt hätte.
+
+Was nichts davon entscheidet, ist, ob die Architektur, auf deutscher
+Verwaltungsprosa trainiert, eine Bedingung besser hielte als Attention. Die
+fehlende Voraussetzung ist ein Korpus, das dieses Projekt nicht hat, auf einer
+Vokabular- und Parameterskala weit über den gelieferten Modellen — wie weit,
+haben wir nicht gemessen.
 
 ## 5. Was wir nicht wissen
 
@@ -3337,7 +3520,7 @@ runs/frames-01, runs/frames-02           jeder Prompt und jede Antwort der zwei
 runs/takens-01                           die Delay-Koordinaten-Sonde: Kriterium,
                                          jeder Einzelfall und die Post-hoc-
                                          Diagnose, die sie entwertet (§4.23)
-docs/architecture.md §3a–§3av            die chronologische Aufzeichnung
+docs/architecture.md §3a–§3aw            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -3409,13 +3592,24 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
     Ziehungen auseinandergehen, oder den Rauschboden einmal je Prompt-Familie
     statt einmal je Lauf zu schätzen. Keines ist gemessen, und bis dahin gilt der
     doppelte Preis.
-11. **Ob Entwicklungszeit in eine Delay-Koordinaten-Repräsentation geht.
-    ✔ entschieden: nein, für den gelieferten Prototyp.** §4.23 hat ihn am Code
-    geprüft, nicht am Paper: die Gewichte können unsere Dokumente nicht lesen,
-    nichts darin bestimmt einen Attraktor oder ein Einzugsgebiet, und die eine
-    Messung, die unser Kriterium erfüllt hat, ist ein Artefakt der Satzlänge.
-    Offen bleibt die Architektur selbst, und sie steht als Frage 14 in §5, nicht
-    als wartende Arbeit — sie bräuchte ein deutsches Korpus und einen
-    Trainingslauf, den dieses Projekt nicht bezahlen kann. Die Regel, die der
-    Versuch hervorgebracht hat, gilt für jeden künftigen Vergleich weiter: ein
-    Maß muss zuerst Zufallsgewichte derselben Architektur schlagen.
+11. **Ob die veröffentlichten Checkpoints und das geprüfte Vergleichsmaß zum
+    Validator für Bedeutungstreue werden. ✔ entschieden: nein.** Wir verwenden
+    sie dafür nicht. **Ein Vorteil der trainierten Repräsentation gegenüber
+    Zufallsgewichten ist auf unseren Fällen nicht belegt** — beide stimmen in
+    103 von 106 Tripeln überein, und ihre Genauigkeiten unterscheiden sich um
+    1 Tripel gegen 2 (§4.23). Die allgemeinere Architekturfrage bleibt offen
+    und steht als Frage 14 in §5, nicht als wartende Arbeit: sie zu beantworten
+    bräuchte ein deutsches Korpus und einen Trainingslauf, den dieses Projekt
+    nicht hat — wie groß, haben wir nicht gemessen.
+12. **Ob künftige Prüfungen einer semantischen Repräsentation
+    längenkontrollierte Gegenbeispiele enthalten müssen. ✔ entschieden: ja.**
+    Zwei Arten, beide genannt, weil der heutige Bestand genau sie vermisst: ein
+    Fall, in dem **ein einziges ausgetauschtes Wort** ändert, wer sich wie
+    stark bindet, und ein Fall, in dem **die sinnverändernde Fassung länger ist
+    als die treue**. Der Zweck ist, die gewohnte Abkürzung gegen das geprüfte
+    Verfahren wirken zu lassen statt für es — heute setzen nur 9 von 106
+    Tripeln Länge und Bedeutung in Widerspruch, und genau dort erreichte der
+    Arm, der unser Kriterium erfüllt hat, 0. Die Regel aus §4.23 reist mit: ein
+    Maß muss Zufallsgewichte derselben Architektur schlagen, bevor irgendein
+    anderer Vergleich zählt. Entschieden ist die Anforderung; die Fälle sind
+    noch nicht geschrieben.

@@ -17,6 +17,7 @@ read there. Its two shipped checkpoints were loaded with
 | `run_probe.py`, `raw.json` | the pre-registered run: 106 triples × 4 arms × 2 weight sets, every per-triple record |
 | `summarise.py`, `summary.txt` | the run against the pre-registered criterion |
 | `diagnose.py`, `diagnose.txt` | **post hoc**, after the criterion was evaluated: the length baseline and the agreement with untrained weights that void the one arm that passed |
+| `paired.py`, `paired.txt` | **post hoc**: the per-triple verdicts crossed (2x2, with the discordant counts the accuracy difference rests on), the same figures stratified by what sentence length alone would say, and every interval recomputed over the 53 translation pairs instead of the 106 triples |
 | `triples.json` | the texts used by `oov.py` |
 
 Reproduce (needs `torch`; nothing here imports from `src/`):

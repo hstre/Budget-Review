@@ -75,6 +75,35 @@ says when it moves them. Their current values are `polished` 5 claims /
   touched. See `docs/prereg-takens-01.md`, `docs/findings-takens-01.md`,
   `runs/takens-01/` and §4.23.
 
+- **The same probe, re-analysed on the stored verdicts: the sampling unit was
+  wrong and the measure follows sentence length.** The 53 German and 53
+  English triples are the same 19 case pairs in two languages, aligned reading
+  by reading, so a triple and its translation are not independent. Every
+  interval now resamples the 53 pairs; the correction widens them and removes
+  one claim against the subject (per triple, the trained `solar_system` model
+  was worse than random weights clear of zero; per pair it is not). Crossing
+  the per-triple verdicts shows the full model's whole margin over the length
+  baseline is 5 triples against 4, and over untrained weights 1 against 2.
+  Stratified by what length alone would say, the full model scores 0.000 on
+  the 9 triples where length points the wrong way, 0.312 where it ties and
+  0.951 where it points the right way. A correction to an earlier claim of
+  ours: the distorted readings are not simply shortenings — 68 of 106 are
+  shorter, 27 longer, 11 equal — the set just almost never puts length and
+  meaning in conflict. See `runs/takens-01/paired.py`, `paired.txt`, §4.23 and
+  the summary.
+
+### Decided
+
+- **The published checkpoints and the comparison measure we tested are not
+  used as a validator of meaning fidelity** (§10.11). No advantage of the
+  trained representation over random weights is established on our cases. The
+  more general architecture question stays open (§5.14).
+- **Future tests of a semantic representation must carry length-controlled
+  counterexamples** (§10.12): a case where one swapped word changes who is
+  committed or how strongly, and a case where the meaning-changing version is
+  longer than the faithful one. Today 9 of 106 triples put length and meaning
+  in conflict. The requirement is decided; the cases are not written yet.
+
 ### Added
 
 - **The meaning set gains temporal scope and concession**, 24 cases to 32 in 16
