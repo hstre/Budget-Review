@@ -3621,3 +3621,52 @@ Nebenbei: der Lauf hat mir eine kaputte Umgebung eingebracht, weil ich `pypdf`
 installiert hatte, um das Paper zu lesen — dessen Krypto-Backend lässt einen
 bis dahin übersprungenen Test abstürzen. Zurückgenommen statt im Repo
 „behoben": der Fehler lag an mir, nicht am Code.
+
+## 3av. Takens-Based Transformer: Kriterium erfüllt, Ergebnis nichtig
+
+Geprüft werden sollte, ob Kevin Hayletts Takens-Based Transformer
+(`KevinHaylett/takens-embedding-transformer`, Commit `42beb88`) an unseren
+bekannten Fehlerfällen einen Versuch wert ist — insbesondere am
+Bedingungssatz aus §4.12, dem letzten gemessenen Bedeutungsfehler. Kriterium
+vorher in `docs/prereg-takens-01.md` festgelegt, Dossier `runs/takens-01/`,
+Produktionscode nicht angefasst, die gelieferten `.pt`-Dateien nur mit
+`weights_only=True` geladen statt mit dem `torch.load` des Repositorys, das
+entpickelt.
+
+**Attraktoren: keine.** In allen Python-Quellen kommt „attractor" einmal vor,
+als synthetischer Lorenz-Generator für Testdaten; „basin" gar nicht. Das
+Delay-Gitter habe ich am Satz nachgerechnet — `grid[0,11,j] ==
+x[0,11-delay]` ist True für jedes Delay in Reichweite. Es sind verschobene
+Kopien, und es ist die einzige Stelle, an der Information über Tokengrenzen
+fließt; jede Schicht ist `x + ff(norm(x))`. Der Autor sagt das selbst
+(„Attention-free sequence model"), und `SCOPE_AND_LIMITATIONS.md` nennt die
+Grenzen, inklusive „Minimal vocabulary handling". Nichts davon ist ihm
+vorzuwerfen.
+
+**Die Wand ist das Vokabular.** Beide Gewichtssätze englisch, 1651 und 111
+Wörter. Der deutsche Satz des Auftrags: 2 von 12 Tokens bekannt, Komma und
+Punkt. Top-Vorhersage `<unk>`.
+
+**Und dann der eigentliche Vorfall.** Ein Gewichtssatz hat mein
+vorregistriertes Kriterium **erfüllt** — über Wortüberlappung, klar von Null,
+über Zufall, über der Delay-Kontrolle. Untrainierte Zufallsgewichte erreichen
+dasselbe (0,783 gegen 0,774, gleiches Urteil in 103 von 106 Tripeln), eine
+Baseline, die nur die Satzlänge kennt, auch (0,764, Übereinstimmung 97 von
+106), und Wortfolge mischen ändert 2 von 106. Gemessen wurde Länge: unsere
+verzerrten Lesarten sind Verkürzungen, die treuen Umformulierungen.
+
+Der Fehler ist meiner. Den untrainierten Boden hatte ich als Kontrolle
+geführt und nicht ins Kriterium geschrieben, also konnte ein längengetriebenes
+Maß es erfüllen. Neue Regel, ab sofort für jeden Vergleich: **ein Maß muss
+Zufallsgewichte derselben Architektur schlagen, bevor irgendein anderer
+Vergleich zählt.** Das ist Befund 5 im neuen Kostüm — ein Unterschied, der
+einen Bootstrap übersteht, kann eine Eigenschaft des Messgeräts sein.
+
+Ein Nebenergebnis bleibt: die Wortüberlappung ordnet unser eigenes
+Beispieltripel falsch (Jaccard 0,09 treu gegen 0,38 verzerrt). Die Baseline,
+nach der man zuerst greift, ist für diesen Fehler untauglich — das erhöht den
+Wert einer echten Repräsentation und sagt für diese nichts.
+
+Torch landete unter Python 3.13, der Testlauf des Repositorys läuft unter
+3.11. Diesmal keine kaputte Umgebung: 626 Tests grün, zwei übersprungen wie
+zuvor.

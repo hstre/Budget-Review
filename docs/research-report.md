@@ -6,7 +6,7 @@ standards.**
 This report collects what forty-odd paid measurement runs established, what they
 refuted, and what is still open. It is written for someone who has not followed
 the work: the chronological record is in [`architecture.md`](architecture.md)
-§3a–§3au, which is a log rather than a synthesis.
+§3a–§3av, which is a log rather than a synthesis.
 
 Every figure here comes from a committed script run against a real API on real
 documents, with a success mark fixed *before* the run. Where a claim was later
@@ -118,6 +118,7 @@ compute its variants** — which costs nothing and had not been done.
 | 23 | No case set exists that could tell a gold-free uncertainty signal from chance | open; the spread across repeats separates the failures perfectly on the meaning set, and rests on one phenomenon in two languages (§4.19). Harder cases, not more repeats |
 | 24 | A staged check over four context levels buys restraint, not accuracy — and the restraint belongs to the structured object, not to the staging | measured twice (§4.20, §4.21); one call with the object matches four staged calls, 48 against 106 |
 | 25 | **Temperature 0 is not determinism: 1 of 106 identical replies across two runs of one arm**, with measures drifting 0.015 to 0.087 | established (§4.21); it is finding 5 again, sharper, and it cost two of the four findings in §4.20 |
+| 26 | An outside delay-coordinate architecture, checked against the conditional failure, could not be run on it at all: English weights of 1651 and 111 words, and **2 of 12 tokens of the German test sentence in vocabulary, both punctuation** | closed, negative (§4.23). The one arm that met the pre-registered criterion is void — untrained weights and a length-only baseline score as well — and the criterion's omission of the untrained floor is recorded as our own error |
 
 ---
 
@@ -1249,6 +1250,85 @@ should also have been chosen for firing the rules in question.
 The change stays in — nothing broke and it is a precondition for any later
 attempt — with no claim attached to it.
 
+### 4.23 An outside architecture, checked against the conditional failure: nothing runnable
+
+§4.12's conditional is the only measured meaning failure left, and it is a
+representation problem — the extractor drops the condition and asserts the
+consequent on its own. An outside candidate was put to it: the Takens-Based
+Transformer, `KevinHaylett/takens-embedding-transformer` at commit `42beb88`,
+which replaces attention with a delay-coordinate embedding. Criterion fixed
+first in `docs/prereg-takens-01.md`, dossier `runs/takens-01/`, no production
+code touched.
+
+**What the code computes.** The delay embedding builds a grid whose channel 0
+is the token embedding and whose channel *j* is the same tensor shifted by
+`delays[j]`, by default `[1,2,4,8,16,32,64,128]`. Verified at one position of
+a real input: `grid[0,11,j] == x[0,11-delay]` holds for every delay in range,
+pad before the start. Each layer is `x + ff(norm(x))`, position-wise, so **the
+delay grid is the only place in the whole model where information crosses
+token positions.** No attractor and no basin is computed anywhere: in the
+Python sources "attractor" occurs once, as a synthetic Lorenz generator for
+test data, and "basin" not at all. Nothing estimates a delay, an embedding
+dimension or a Lyapunov exponent. The *form* of a delay-coordinate embedding
+is used and Takens' theorem is cited as the reason that form is appropriate;
+no attractor is reconstructed, tested or used. The repository states this
+itself — "Attention-free sequence model using delay-coordinate embeddings" —
+and its `SCOPE_AND_LIMITATIONS.md` calls the code "purely as a proof of
+principle", with "Minimal vocabulary handling" among its listed limits.
+Nothing here contradicts the author's own description of his work.
+
+**Why it cannot be tried on our cases.** Both shipped checkpoints are
+English, closed-vocabulary and small: 1651 words at 1,137,493 parameters, and
+111 words at 741,713. Measured with the repository's own tokenizer and vocabu-
+lary, the texts of our condition triples are 26.6 % and 8.3 % in vocabulary.
+The German sentence of the brief has **2 of 12 tokens in vocabulary, and both
+are punctuation** — the comma and the full stop. Everything else becomes
+`<unk>`, and the model's own top prediction for that input is `<unk>` at logit
+20.6. On an English control from its own domain it answers sensibly, so the
+pipeline works; the vocabulary is the wall.
+
+**The run, and the lesson in it.** The code offers no sentence representation
+and no similarity measure, so the measure is ours: mean-pool the stack output
+over positions, compare by cosine, 106 triples from the meaning set, correct
+iff the faithful reading is nearer the original than the distorted one. One of
+the two weight sets **met the pre-registered criterion** — above word overlap
+clear of zero (+0.113 [+0.009, +0.208]), above chance in its own right, above
+a zeroed-delay control — and that result is void:
+
+- **untrained, random weights score 0.783** against the trained 0.774, and
+  give the same verdict in 103 of 106 triples;
+- a baseline that knows only **sentence length** scores 0.764 and agrees with
+  the model in 97 of 106;
+- **shuffling word order changes 2 verdicts in 106**;
+- under those weights the cosine between any two of our sentences is at least
+  0.966, and 56 of 106 triples are 100 % out of vocabulary — the model scores
+  0.750 on exactly the triples where it can read nothing.
+
+Our distorted readings are shortenings and our faithful readings are
+rewordings, so **length alone separates them, and length is all the measure
+found.**
+
+The pre-registration was under-specified, and that is this section's finding
+about our own method rather than about the subject: the untrained floor was
+listed as a control and left out of the criterion, so a measure driven by
+sentence length could pass it. The rule from here: **a comparison measure must
+beat random weights of the same architecture before any other comparison
+counts.** It is finding 5 in a new costume — a difference that survives a
+bootstrap can still be a property of the instrument.
+
+One number is worth keeping for its own sake. **Word overlap ranks our own
+example triple the wrong way round** (Jaccard 0.09 for the faithful reading,
+0.38 for the distorted one), because the faithful reading rewords what the
+distorted one copies. The baseline one reaches for first is unfit for exactly
+this failure. That raises the value of finding a real representation; it says
+nothing in this one's favour.
+
+What this does not settle is whether the architecture, trained on German
+governance prose, would hold a condition better than attention. The missing
+precondition is named and large: a corpus this project does not have, at a
+vocabulary and parameter scale two to three orders of magnitude above the
+shipped models.
+
 ---
 
 ## 5. What we do not know
@@ -1316,6 +1396,12 @@ Stated as questions, because each is a measurement nobody has made.
     this report's older single-run comparisons live, is not measured — and until
     it is, every one of those comparisons has an unmeasured noise floor rather
     than a known one.
+14. **Whether a delay-coordinate representation, properly trained, would hold a
+    condition better than attention.** §4.23 could only test the weights that
+    exist, and they cannot read our documents at all — so the architecture
+    question is untouched rather than answered. Settling it needs a German
+    corpus and a training run two to three orders of magnitude above the
+    shipped prototype, neither of which this project has.
 
 ---
 
@@ -1353,7 +1439,7 @@ Stated as questions, because each is a measurement nobody has made.
 | Genuine paraphrase in quotations | 11 of 465 proposals, correctly refused, permanently lost |
 | Relation expressivity | Four of six families covered; the gap is untested |
 | A finding's state is never resolved | Needs a versioned overlay and a schema decision. §4.17 names what it costs: `semantic_state` exists, takes one observed value across 242 claims, and nothing reads it — so a claim withdrawn by a human after admission leaves no trace that it was |
-| Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12) |
+| Conditionals | Split at the comma in half the runs; the consequent is then asserted unconditionally. A language instruction did not touch it (§4.12). One outside candidate was checked against its actual code and rejected: its weights know 2 of 12 tokens of a German test sentence, both punctuation (§4.23) |
 | The claim-type vocabulary has no truth conditions | Twenty-one types, no definitions anywhere in the contract. Two defensible labels for one sentence is not a model error — it means there is no fact of the matter, and a 0.95-confidence finding stands on it (§4.13) |
 | A finding can appear and vanish under identical input | On 24 short cases 4 of 24 documents emit a different finding set. On two long documents **no category holds still**: contradictions at severity high run 2, 7, 5 and logical gaps 16, 19, 13 across identical runs. Three rules fire on an *absence*, and extraction is known to lose argument structure, so the absence may be the run's (§4.14, §4.15) |
 | A single run is a draw, not a sample | Production extracts once per document, so a dossier reporting 16 logical gaps where a second run would report 13 looks exactly as final. Repeats would fix it at three times the extraction cost (§4.15, decision 7). §4.19 is the first evidence that they would pay — at three repeats the spread flags exactly the cases that fail — and also the reason not to decide on it yet, since that evidence rests on one phenomenon |
@@ -1491,6 +1577,20 @@ deterministic here. **The value was in the methods and in the vocabulary, not in
 the defects** — and the honest summary is that reading outside the project
 changed how things were measured more often than it changed what was found.
 
+**An outside prototype, checked against its code rather than its claim.** The
+first external artefact this project tried to *run* rather than read gave
+nothing to adopt and one method lesson worth the day (§4.23). Nothing to
+adopt: its shipped weights know 2 of 12 tokens of a German test sentence,
+both punctuation, and no attractor or basin is computed anywhere in it, so the
+dynamical-systems framing is a reason for the architecture's shape rather than
+a capability on offer. The lesson: our own pre-registered criterion was met by
+an instrument artefact, because it named the untrained floor as a control and
+not as part of the criterion. The failure was in our measure, not in the
+subject's description of itself, which is accurate and modest. It also put a
+number on the baseline we would be replacing — word overlap ranks our own
+example triple the wrong way round — so the incumbent is weaker than it looks
+and the replacement is not available.
+
 ---
 
 ## 9. Reproducing any of it
@@ -1504,7 +1604,10 @@ scripts/                                 33 measurement scripts, each tested
 runs/frames-01, runs/frames-02           every prompt and reply of the two paid
                                          frame runs, 568 calls, the system
                                          prompt stored once by hash
-docs/architecture.md §3a–§3au            the chronological record, run by run
+runs/takens-01                           the delay-coordinate probe: criterion,
+                                         every per-triple record, and the post
+                                         hoc diagnosis that voids it (§4.23)
+docs/architecture.md §3a–§3av            the chronological record, run by run
 CHANGELOG.md                             what moved, including the retractions
 ```
 
@@ -1513,7 +1616,7 @@ The offline controls replay stored packets and never call a provider: `polished`
 They are the reference for behaviour changes, and they cannot see a prompt
 regression — only a live run against the frozen packet can.
 
-619 tests and one skipped, `ruff check` clean. Two of them are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
+626 tests pass and 2 are skipped, `ruff check` clean. The two are skipped where an optional reader (openpyxl, pypdf) is absent, as it is outside CI.
 
 ---
 
@@ -1573,6 +1676,16 @@ reader knows what is waiting.
     primary comparison, repeating only the cases where the first two draws
     disagree, or estimating the floor once per prompt family instead of once per
     run. None is measured, and until one is, the price is double.
+11. **Whether to spend development time on a delay-coordinate semantic
+    representation. ✔ decided: no, for the shipped prototype.** §4.23 checked
+    it against the code rather than the paper: the weights cannot read our
+    documents, nothing in them computes an attractor or a basin, and the one
+    measurement that passed our criterion is an artefact of sentence length.
+    What stays open is the architecture itself, and it is recorded as question
+    14 in §5 rather than as work waiting — it would need a German corpus and a
+    training run this project cannot fund. The rule the attempt produced stays
+    in force for every future comparison: a measure must beat random weights of
+    the same architecture first.
 
 ---
 ---
@@ -1585,7 +1698,7 @@ Goldstandards.**
 Dieser Bericht sammelt, was rund vierzig bezahlte Messläufe belegt haben, was sie
 widerlegt haben und was offen ist. Er ist für jemanden geschrieben, der die
 Arbeit nicht verfolgt hat; die chronologische Aufzeichnung steht in
-[`architecture.md`](architecture.md) §3a–§3au und ist ein Log, keine Synthese.
+[`architecture.md`](architecture.md) §3a–§3av und ist ein Log, keine Synthese.
 
 Jede Zahl hier kommt aus einem committeten Skript, gelaufen gegen eine echte API
 auf echten Dokumenten, mit einer Erfolgsmarke, die **vor** dem Lauf festgelegt
@@ -1699,6 +1812,7 @@ und nicht getan war.
 | 23 | Es gibt keinen Fallbestand, der ein gold-freies Unsicherheitssignal von Zufall trennen könnte | offen; die Streuung über Wiederholungen trennt die Fehlschläge auf dem Bedeutungsbestand perfekt und ruht auf einem Phänomen in zwei Sprachen (§4.19). Es fehlen härtere Fälle, nicht mehr Wiederholungen |
 | 24 | Eine Stufenprüfung über vier Kontextebenen kauft Zurückhaltung, nicht Genauigkeit — und die Zurückhaltung gehört dem strukturierten Objekt, nicht der Stufung | zweimal gemessen (§4.20, §4.21); ein Aufruf mit dem Objekt erreicht vier Stufenaufrufe, 48 gegen 106 |
 | 25 | **Temperatur 0 ist keine Determiniertheit: 1 von 106 identischen Antworten über zwei Läufe eines Arms**, Maße driften um 0,015 bis 0,087 | belegt (§4.21); es ist Befund 5 noch einmal, schärfer, und er hat zwei der vier Befunde aus §4.20 gekostet |
+| 26 | Eine fremde Delay-Koordinaten-Architektur, gegen den Bedingungsfehler geprüft, war darauf gar nicht lauffähig: englische Gewichte mit 1651 und 111 Wörtern, und **2 von 12 Tokens des deutschen Testsatzes im Vokabular, beide Satzzeichen** | abgeschlossen, negativ (§4.23). Der eine Arm, der das vorregistrierte Kriterium erfüllt hat, ist nichtig — untrainierte Gewichte und eine reine Längen-Baseline erreichen dasselbe — und dass der untrainierte Boden nicht im Kriterium stand, ist als eigener Fehler verzeichnet |
 
 ## 2. Was das System ist
 
@@ -2851,6 +2965,90 @@ danach gewählt werden müssen, ob sie die fraglichen Regeln auslöst.
 Die Änderung bleibt drin — nichts ist kaputt, und sie ist Voraussetzung für
 jeden späteren Versuch — ohne Anspruch daran.
 
+### 4.23 Eine fremde Architektur, gegen den Bedingungsfehler geprüft: nichts lauffähig
+
+Der Bedingungssatz aus §4.12 ist der einzige gemessene Bedeutungsfehler, der
+übrig ist, und er ist ein Repräsentationsproblem — der Extraktor verliert die
+Bedingung und behauptet den Nachsatz für sich. Ein fremder Kandidat wurde ihm
+vorgehalten: der Takens-Based Transformer,
+`KevinHaylett/takens-embedding-transformer` auf Commit `42beb88`, der Attention
+durch eine Delay-Koordinaten-Einbettung ersetzt. Kriterium vorher in
+`docs/prereg-takens-01.md` festgelegt, Dossier `runs/takens-01/`, kein
+Produktionscode angefasst.
+
+**Was der Code rechnet.** Die Delay-Einbettung baut ein Gitter, dessen Kanal 0
+das Token-Embedding ist und dessen Kanal *j* derselbe Tensor, um `delays[j]`
+verschoben, standardmäßig `[1,2,4,8,16,32,64,128]`. An einer Position eines
+echten Eingabesatzes nachgeprüft: `grid[0,11,j] == x[0,11-delay]` gilt für
+jedes Delay in Reichweite, davor Padding. Jede Schicht ist `x + ff(norm(x))`,
+positionsweise — **das Delay-Gitter ist die einzige Stelle im ganzen Modell,
+an der Information über Tokengrenzen fließt.** Nirgends wird ein Attraktor
+oder ein Einzugsgebiet bestimmt: in den Python-Quellen kommt „attractor"
+**einmal** vor, als synthetischer Lorenz-Generator für Testdaten, „basin" gar
+nicht. Nichts schätzt eine Verzögerung, eine Einbettungsdimension oder einen
+Lyapunov-Exponenten. Benutzt wird die *Form* einer Delay-Koordinaten-
+Einbettung, und der Satz von Takens wird als Begründung dieser Form
+angeführt; rekonstruiert, geprüft oder verwendet wird kein Attraktor. Das
+Repository sagt es selbst — „Attention-free sequence model using
+delay-coordinate embeddings" — und seine `SCOPE_AND_LIMITATIONS.md` nennt den
+Code „purely as a proof of principle", mit „Minimal vocabulary handling" unter
+den eigenen Grenzen. Nichts hiervon widerspricht der Beschreibung des Autors.
+
+**Warum er an unseren Fällen nicht versucht werden kann.** Beide gelieferten
+Gewichtssätze sind englisch, geschlossen-vokabulär und klein: 1651 Wörter bei
+1.137.493 Parametern und 111 Wörter bei 741.713. Mit dem Tokenizer und dem
+Vokabular des Repositorys gemessen, liegen die Texte unserer
+Bedingungs-Tripel zu 26,6 % bzw. 8,3 % im Vokabular. Der deutsche Satz des
+Auftrags hat **2 von 12 Tokens im Vokabular, und beide sind Satzzeichen** —
+Komma und Punkt. Alles andere wird `<unk>`, und die eigene Top-Vorhersage des
+Modells für diese Eingabe ist `<unk>` bei Logit 20,6. Auf einer englischen
+Kontrolle aus seiner eigenen Domäne antwortet es sinnvoll; der Aufbau
+funktioniert also, das Vokabular ist die Wand.
+
+**Der Lauf, und was daran zu lernen war.** Der Code bietet keine
+Satzrepräsentation und kein Ähnlichkeitsmaß, also ist das Maß unseres: die
+Stack-Ausgabe über die Positionen mitteln, per Cosinus vergleichen, 106 Tripel
+aus dem Bedeutungsbestand, richtig genau dann, wenn die treue Lesart dem
+Original näher liegt als die verzerrte. Einer der zwei Gewichtssätze hat
+**das vorregistrierte Kriterium erfüllt** — über der Wortüberlappung und klar
+von Null (+0,113 [+0,009, +0,208]), über dem Zufall, über der Kontrolle mit
+genullten Delays — und dieses Ergebnis ist nichtig:
+
+- **untrainierte Zufallsgewichte erreichen 0,783** gegen 0,774 des trainierten
+  Modells und geben in 103 von 106 Tripeln dasselbe Urteil;
+- eine Baseline, die nur die **Satzlänge** kennt, erreicht 0,764 und stimmt in
+  97 von 106 mit dem Modell überein;
+- **Mischen der Wortfolge ändert 2 Urteile von 106**;
+- unter diesen Gewichten ist der Cosinus zwischen zwei beliebigen unserer
+  Sätze mindestens 0,966, und 56 von 106 Tripeln sind zu 100 % außerhalb des
+  Vokabulars — genau auf diesen erreicht das Modell 0,750.
+
+Unsere verzerrten Lesarten sind Verkürzungen, unsere treuen sind
+Umformulierungen. **Also trennt allein die Länge sie, und die Länge ist alles,
+was das Maß gefunden hat.**
+
+Die Vorregistrierung war unterbestimmt, und das ist der Befund dieses
+Abschnitts über unsere eigene Methode, nicht über den Gegenstand: der
+untrainierte Boden stand als Kontrolle da und nicht im Kriterium, also konnte
+ein längengetriebenes Maß es erfüllen. Die Regel von hier an: **ein
+Vergleichsmaß muss Zufallsgewichte derselben Architektur schlagen, bevor
+irgendein anderer Vergleich zählt.** Es ist Befund 5 im neuen Kostüm — ein
+Unterschied, der einen Bootstrap übersteht, kann trotzdem eine Eigenschaft des
+Messgeräts sein.
+
+Eine Zahl ist für sich behaltenswert. **Die Wortüberlappung ordnet unser
+eigenes Beispieltripel falsch** (Jaccard 0,09 für die treue, 0,38 für die
+verzerrte Lesart), weil die treue Lesart umformuliert, was die verzerrte
+kopiert. Die Baseline, nach der man zuerst greift, ist für genau diesen Fehler
+untauglich. Das erhöht den Wert einer echten Repräsentation; für diese sagt es
+nichts.
+
+Nicht entschieden ist, ob die Architektur, auf deutscher Verwaltungsprosa
+trainiert, eine Bedingung besser hielte als Attention. Die fehlende
+Voraussetzung ist benannt und groß: ein Korpus, das dieses Projekt nicht hat,
+auf einer Vokabular- und Parameterskala zwei bis drei Größenordnungen über den
+gelieferten Modellen.
+
 ## 5. Was wir nicht wissen
 
 Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
@@ -2918,6 +3116,13 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
     älteren Einzellauf-Vergleiche dieses Berichts stehen, ist nicht gemessen —
     und bis dahin haben all diese Vergleiche einen ungemessenen statt eines
     bekannten Rauschbodens.
+14. **Ob eine Delay-Koordinaten-Repräsentation, richtig trainiert, eine
+    Bedingung besser hielte als Attention.** §4.23 konnte nur die Gewichte
+    prüfen, die es gibt, und die können unsere Dokumente gar nicht lesen —
+    die Architekturfrage ist also unberührt, nicht beantwortet. Sie zu
+    klären braucht ein deutsches Korpus und einen Trainingslauf zwei bis drei
+    Größenordnungen über dem gelieferten Prototyp; beides hat dieses Projekt
+    nicht.
 
 
 ## 6. Probleme: gelöst und ungelöst
@@ -2954,7 +3159,7 @@ Als Fragen formuliert, weil jede eine Messung ist, die niemand gemacht hat.
 | Echte Umformulierung im Zitat | 11 von 465 Vorschlägen, zu Recht abgelehnt, dauerhaft verloren |
 | Relations-Ausdruckskraft | Vier von sechs Familien gedeckt; die Lücke ist ungeprüft |
 | Der Zustand eines Befunds wird nie aufgelöst | Braucht ein versioniertes Overlay und eine Schemaentscheidung. §4.17 benennt, was es kostet: `semantic_state` existiert, nimmt über 242 Claims einen Wert an, und nichts liest es — ein nach der Zulassung von einem Menschen verworfener Claim hinterlässt also keine Spur davon |
-| Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12) |
+| Bedingungssätze | In der Hälfte der Läufe am Komma zerlegt; der Nachsatz steht dann unbedingt da. Eine Sprachanweisung hat es nicht berührt (§4.12). Ein fremder Kandidat wurde am tatsächlichen Code geprüft und verworfen: seine Gewichte kennen 2 von 12 Tokens eines deutschen Testsatzes, beide Satzzeichen (§4.23) |
 | Das Claim-Typ-Vokabular hat keine Wahrheitsbedingungen | 21 Typen, nirgends im Vertrag definiert. Zwei vertretbare Labels für einen Satz sind kein Modellfehler — es heißt, dass es keine Tatsache darüber gibt, und darauf steht ein Befund mit 0,95 (§4.13) |
 | Ein Befund kann unter identischer Eingabe erscheinen und verschwinden | Auf 24 kurzen Fällen liefern 4 von 24 Dokumenten eine andere Befundmenge. Auf zwei langen Dokumenten bleibt **keine Befundart stehen**: Widersprüche mit Schweregrad high laufen 2, 7, 5 und logische Lücken 16, 19, 13 über identische Läufe. Drei Regeln feuern auf eine *Abwesenheit*, und die Extraktion verliert bekanntlich Argumentstruktur — die Abwesenheit kann die des Laufs sein (§4.14, §4.15) |
 | Ein einzelner Lauf ist eine Ziehung, keine Stichprobe | Im Produktionslauf wird einmal je Dokument extrahiert, ein Dossier mit 16 logischen Lücken sieht also genauso endgültig aus wie eines mit 13. Wiederholungen behöben das zum dreifachen Extraktionspreis (§4.15, Entscheidung 7). §4.19 ist der erste Hinweis, dass sie sich lohnen — bei drei Wiederholungen markiert die Streuung genau die Fälle, die durchfallen — und gleichzeitig der Grund, noch nicht zu entscheiden, denn dieser Hinweis ruht auf einem Phänomen |
@@ -3103,6 +3308,21 @@ deterministisch ist. **Der Wert lag in den Methoden und im Vokabular, nicht in
 den Mängeln** — und die ehrliche Zusammenfassung ist, dass Lesen außerhalb des
 Projekts häufiger geändert hat, *wie* gemessen wurde, als *was* gefunden wurde.
 
+**Ein fremder Prototyp, am Code geprüft statt am Anspruch.** Das erste
+externe Artefakt, das dieses Projekt *laufen lassen* statt nur lesen wollte,
+hat nichts zum Übernehmen geliefert und eine Methodenlehre, die den Tag wert
+war (§4.23). Nichts zum Übernehmen: seine gelieferten Gewichte kennen 2 von 12
+Tokens eines deutschen Testsatzes, beide Satzzeichen, und nirgends wird ein
+Attraktor oder Einzugsgebiet bestimmt — die dynamische Rahmung ist eine
+Begründung der Architekturform, kein angebotenes Können. Die Lehre: unser
+eigenes vorregistriertes Kriterium wurde von einem Messartefakt erfüllt, weil
+es den untrainierten Boden als Kontrolle führte und nicht als Teil des
+Kriteriums. Der Fehler lag in unserem Maß, nicht in der Selbstbeschreibung des
+Gegenstands, die zutreffend und zurückhaltend ist. Und es hat der Baseline,
+die wir ersetzen würden, eine Zahl gegeben — die Wortüberlappung ordnet unser
+eigenes Beispieltripel falsch —, also ist der Amtsinhaber schwächer als er
+aussieht und der Nachfolger nicht verfügbar.
+
 ## 9. Nachvollziehen
 
 Der bezahlte Pfad läuft nur auf manuellen Anstoß, und der Key existiert nur als
@@ -3114,7 +3334,10 @@ scripts/                                 33 Messskripte, jedes getestet
 runs/frames-01, runs/frames-02           jeder Prompt und jede Antwort der zwei
                                          bezahlten Frame-Läufe, 568 Aufrufe, der
                                          Systemprompt einmal per Hash
-docs/architecture.md §3a–§3au            die chronologische Aufzeichnung
+runs/takens-01                           die Delay-Koordinaten-Sonde: Kriterium,
+                                         jeder Einzelfall und die Post-hoc-
+                                         Diagnose, die sie entwertet (§4.23)
+docs/architecture.md §3a–§3av            die chronologische Aufzeichnung
 CHANGELOG.md                             was sich bewegt hat, samt Rücknahmen
 ```
 
@@ -3124,7 +3347,7 @@ Die Offline-Kontrollen spielen gespeicherte Pakete ab und rufen keinen Provider:
 Prompt-Regression nicht sehen; das kann nur ein Live-Lauf gegen das eingefrorene
 Paket.
 
-619 Tests und einer übersprungen, `ruff check` sauber. Zwei davon werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
+626 Tests laufen durch, 2 werden übersprungen, `ruff check` sauber. Die zwei werden übersprungen, wenn ein optionaler Leser (openpyxl, pypdf) fehlt, wie außerhalb der CI.
 
 ## 10. Offene Entscheidungen
 
@@ -3186,3 +3409,13 @@ Keine Messungen — Urteile, die Geld kosten oder gespeicherte Daten verändern.
     Ziehungen auseinandergehen, oder den Rauschboden einmal je Prompt-Familie
     statt einmal je Lauf zu schätzen. Keines ist gemessen, und bis dahin gilt der
     doppelte Preis.
+11. **Ob Entwicklungszeit in eine Delay-Koordinaten-Repräsentation geht.
+    ✔ entschieden: nein, für den gelieferten Prototyp.** §4.23 hat ihn am Code
+    geprüft, nicht am Paper: die Gewichte können unsere Dokumente nicht lesen,
+    nichts darin bestimmt einen Attraktor oder ein Einzugsgebiet, und die eine
+    Messung, die unser Kriterium erfüllt hat, ist ein Artefakt der Satzlänge.
+    Offen bleibt die Architektur selbst, und sie steht als Frage 14 in §5, nicht
+    als wartende Arbeit — sie bräuchte ein deutsches Korpus und einen
+    Trainingslauf, den dieses Projekt nicht bezahlen kann. Die Regel, die der
+    Versuch hervorgebracht hat, gilt für jeden künftigen Vergleich weiter: ein
+    Maß muss zuerst Zufallsgewichte derselben Architektur schlagen.

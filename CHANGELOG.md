@@ -34,6 +34,13 @@ says when it moves them. Their current values are `polished` 5 claims /
   the group already does the work and a check kept for appearance is
   decoration.
 
+- **The report's test count was self-contradictory, and its guard could not
+  see it.** The sentence said "619 tests and one skipped" and then "Two of
+  them are skipped", and the guard matched only the first phrase, so the skip
+  count was baked into the pattern rather than checked. Both halves now state
+  the figure from a run — 626 tests pass and 2 are skipped — and the guard
+  captures both numbers and requires the halves to agree on both.
+
 ### Measured
 
 - **The extractor never used the option to decline a label: 0 of 32 and 0 of
@@ -47,6 +54,26 @@ says when it moves them. Their current values are `polished` 5 claims /
   neither draw fired either of the two rules that key on the label, which is a
   flaw in how the document was chosen. See `docs/prereg-undecided-01.md`,
   `docs/findings-undecided-01.md`, `runs/undecided-01/` and §4.22.
+
+- **An outside delay-coordinate architecture was checked against the
+  conditional failure and could not be run on it: the criterion was met and
+  the result is void.** Haylett's Takens-Based Transformer
+  (`KevinHaylett/takens-embedding-transformer` @ `42beb88`) computes no
+  attractor and no basin anywhere — in Python "attractor" occurs once, as a
+  synthetic Lorenz generator for test data — and its delay grid, verified to
+  be lagged copies of the token embedding, is the only place in the model
+  where information crosses token positions. Both shipped checkpoints are
+  English with 1651 and 111 words; the German test sentence has 2 of 12 tokens
+  in vocabulary, both punctuation. One weight set met the pre-registered
+  criterion and that result is void: untrained random weights score as well
+  (0.783 against 0.774, same verdict in 103 of 106 triples), a length-only
+  baseline scores as well (0.764, agreeing in 97 of 106), and shuffling word
+  order changes 2 verdicts in 106. The pre-registration was under-specified —
+  the untrained floor was a control and not part of the criterion — and the
+  rule from here is that a comparison measure must beat random weights of the
+  same architecture before any other comparison counts. No production code was
+  touched. See `docs/prereg-takens-01.md`, `docs/findings-takens-01.md`,
+  `runs/takens-01/` and §4.23.
 
 ### Added
 

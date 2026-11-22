@@ -34,8 +34,9 @@ def test_the_script_count_matches_the_scripts() -> None:
 def test_the_claimed_test_count_agrees_between_the_language_halves() -> None:
     # A mismatch between the halves means one of them was edited and the other
     # forgotten, which is how §4.16 came to exist in English only.
-    english = re.findall(r"(\d+) tests and one skipped", REPORT)
-    german = re.findall(r"(\d+) Tests und einer übersprungen", REPORT)
+    english = re.findall(r"(\d+) tests pass and (\d+) are skipped", REPORT)
+    german = re.findall(r"(\d+) Tests laufen durch, (\d+) werden übersprungen",
+                        REPORT)
     assert english and german
     assert set(english) == set(german), (english, german)
 
@@ -56,7 +57,8 @@ def test_the_claimed_test_count_is_at_least_the_test_functions_on_disk() -> None
         for path in (ROOT / "tests").glob("test_*.py")
     )
     assert functions > 0
-    claimed = {int(n) for n in re.findall(r"(\d+) tests and one skipped", REPORT)}
+    claimed = {int(n) for n in re.findall(r"(\d+) tests pass and \d+ are skipped",
+                                          REPORT)}
     assert claimed, "the report states no test count"
     assert min(claimed) >= functions, (claimed, functions)
 
