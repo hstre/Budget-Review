@@ -1,0 +1,30 @@
+
+=== vocab solar_system: 1651 entries ===
+user-de/original              2/12  known  ( 16.7%)  oov=['Wenn', 'die', 'Förderung', 'bewilligt', 'wird', 'stellen', 'wir', 'zwei', 'Techniker', 'ein']
+user-de/faithful              1/13  known  (  7.7%)  oov=['Die', 'Einstellung', 'von', 'zwei', 'Technikern', 'ist', 'für', 'den', 'Fall', 'einer', 'Förderzusage', 'zugesagt']
+user-de/distorted             1/6   known  ( 16.7%)  oov=['Wir', 'stellen', 'zwei', 'Techniker', 'ein']
+sco-02-de/original            2/12  known  ( 16.7%)  oov=['Wenn', 'die', 'Mittel', 'bewilligt', 'werden', 'beginnt', 'der', 'Ausbau', 'im', 'Frühjahr']
+sco-02-de/faithful1           2/12  known  ( 16.7%)  oov=['Falls', 'die', 'Mittel', 'bewilligt', 'werden', 'beginnt', 'der', 'Ausbau', 'im', 'Frühjahr']
+sco-02-de/faithful2           1/9   known  ( 11.1%)  oov=['Vorbehaltlich', 'der', 'Mittelbewilligung', 'beginnt', 'der', 'Ausbau', 'im', 'Frühjahr']
+sco-02-de/distorted1          1/6   known  ( 16.7%)  oov=['Der', 'Ausbau', 'beginnt', 'im', 'Frühjahr']
+sco-02-en/original            6/11  known  ( 54.5%)  oov=['funds', 'granted', 'construction', 'begins', 'spring']
+sco-02-en/faithful1           5/11  known  ( 45.5%)  oov=['Provided', 'funds', 'granted', 'construction', 'begins', 'spring']
+sco-02-en/faithful2           6/12  known  ( 50.0%)  oov=['Subject', 'funds', 'granted', 'construction', 'begins', 'spring']
+sco-02-en/distorted1          2/5   known  ( 40.0%)  oov=['Construction', 'begins', 'spring']
+
+=== vocab qba: 111 entries ===
+user-de/original              0/12  known  (  0.0%)  oov=['Wenn', 'die', 'Förderung', 'bewilligt', 'wird', ',', 'stellen', 'wir', 'zwei', 'Techniker', 'ein', '.']
+user-de/faithful              0/13  known  (  0.0%)  oov=['Die', 'Einstellung', 'von', 'zwei', 'Technikern', 'ist', 'für', 'den', 'Fall', 'einer', 'Förderzusage', 'zugesagt', '.']
+user-de/distorted             0/6   known  (  0.0%)  oov=['Wir', 'stellen', 'zwei', 'Techniker', 'ein', '.']
+sco-02-de/original            0/12  known  (  0.0%)  oov=['Wenn', 'die', 'Mittel', 'bewilligt', 'werden', ',', 'beginnt', 'der', 'Ausbau', 'im', 'Frühjahr', '.']
+sco-02-de/faithful1           0/12  known  (  0.0%)  oov=['Falls', 'die', 'Mittel', 'bewilligt', 'werden', ',', 'beginnt', 'der', 'Ausbau', 'im', 'Frühjahr', '.']
+sco-02-de/faithful2           0/9   known  (  0.0%)  oov=['Vorbehaltlich', 'der', 'Mittelbewilligung', 'beginnt', 'der', 'Ausbau', 'im', 'Frühjahr', '.']
+sco-02-de/distorted1          0/6   known  (  0.0%)  oov=['Der', 'Ausbau', 'beginnt', 'im', 'Frühjahr', '.']
+sco-02-en/original            3/11  known  ( 27.3%)  oov=['If', 'funds', 'granted', ',', 'construction', 'begins', 'spring', '.']
+sco-02-en/faithful1           3/11  known  ( 27.3%)  oov=['Provided', 'funds', 'granted', ',', 'construction', 'begins', 'spring', '.']
+sco-02-en/faithful2           2/12  known  ( 16.7%)  oov=['Subject', 'to', 'funds', 'being', 'granted', ',', 'construction', 'begins', 'spring', '.']
+sco-02-en/distorted1          1/5   known  ( 20.0%)  oov=['Construction', 'begins', 'spring', '.']
+
+=== totals ===
+solar_system   29/109 tokens known = 26.6%
+qba            9/109 tokens known = 8.3%

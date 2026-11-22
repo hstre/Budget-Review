@@ -1,0 +1,54 @@
+vocab=1651  embed=128  layers=4  delays=[1, 2, 4, 8, 16, 32, 64, 128]
+parameters=1,137,493
+
+====================================================================
+input: 'Wenn die Förderung bewilligt wird, stellen wir zwei Techniker ein.'
+tokens (12): ['Wenn', 'die', 'Förderung', 'bewilligt', 'wird', ',', 'stellen', 'wir', 'zwei', 'Techniker', 'ein', '.']
+word_ids          : [0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 16]
+unk (id==0) count : 10/12
+token+identity x  : (1, 12, 160)
+Takens grid       : (1, 12, 9, 160)  = [batch, seq, 1+8 delays, dim]
+grid[0,11,0] == x[0,11]      : True
+grid[0,11,j] == x[0,11-delay] : [(1, True), (2, True), (4, True), (8, True), (16, 'pad=0.0'), (32, 'pad=0.0'), (64, 'pad=0.0'), (128, 'pad=0.0')]
+hidden            : (1, 12, 128)  (no sentence vector is produced)
+top-5 next word   : [('<unk>', 20.6), ('(', 3.67), ('Surprisingly', 3.4), (',', 2.8), ('It', 2.76)]
+mean-pooled hidden (my construction, not his): dim=(128,) norm=21.3800
+
+====================================================================
+input: 'Wir stellen zwei Techniker ein.'
+tokens (6): ['Wir', 'stellen', 'zwei', 'Techniker', 'ein', '.']
+word_ids          : [0, 0, 0, 0, 0, 16]
+unk (id==0) count : 5/6
+token+identity x  : (1, 6, 160)
+Takens grid       : (1, 6, 9, 160)  = [batch, seq, 1+8 delays, dim]
+grid[0,5,0] == x[0,5]      : True
+grid[0,5,j] == x[0,5-delay] : [(1, True), (2, True), (4, True), (8, 'pad=0.0'), (16, 'pad=0.0'), (32, 'pad=0.0'), (64, 'pad=0.0'), (128, 'pad=0.0')]
+hidden            : (1, 6, 128)  (no sentence vector is produced)
+top-5 next word   : [('<unk>', 20.82), ('Surprisingly', 3.68), ('(', 3.49), ('It', 2.81), ('Venus', 2.34)]
+mean-pooled hidden (my construction, not his): dim=(128,) norm=21.4280
+
+====================================================================
+input: 'If the funds are granted, construction begins in spring.'
+tokens (11): ['If', 'the', 'funds', 'are', 'granted', ',', 'construction', 'begins', 'in', 'spring', '.']
+word_ids          : [271, 38, 0, 287, 0, 10, 0, 0, 14, 0, 16]
+unk (id==0) count : 5/11
+token+identity x  : (1, 11, 160)
+Takens grid       : (1, 11, 9, 160)  = [batch, seq, 1+8 delays, dim]
+grid[0,10,0] == x[0,10]      : True
+grid[0,10,j] == x[0,10-delay] : [(1, True), (2, True), (4, True), (8, True), (16, 'pad=0.0'), (32, 'pad=0.0'), (64, 'pad=0.0'), (128, 'pad=0.0')]
+hidden            : (1, 11, 128)  (no sentence vector is produced)
+top-5 next word   : [('<unk>', 19.72), ('(', 3.92), ('No', 3.75), ('It', 3.7), ('Surprisingly', 3.64)]
+mean-pooled hidden (my construction, not his): dim=(128,) norm=16.9319
+
+====================================================================
+input: 'How hot is Mercury?'
+tokens (5): ['How', 'hot', 'is', 'Mercury', '?']
+word_ids          : [23, 24, 4, 5, 6]
+unk (id==0) count : 0/5
+token+identity x  : (1, 5, 160)
+Takens grid       : (1, 5, 9, 160)  = [batch, seq, 1+8 delays, dim]
+grid[0,4,0] == x[0,4]      : True
+grid[0,4,j] == x[0,4-delay] : [(1, True), (2, True), (4, True), (8, 'pad=0.0'), (16, 'pad=0.0'), (32, 'pad=0.0'), (64, 'pad=0.0'), (128, 'pad=0.0')]
+hidden            : (1, 5, 128)  (no sentence vector is produced)
+top-5 next word   : [('Mercury', 16.44), ('Venus', 7.73), ('It', 6.63), ('Earth', 6.41), ('Uranus', 5.58)]
+mean-pooled hidden (my construction, not his): dim=(128,) norm=12.5943

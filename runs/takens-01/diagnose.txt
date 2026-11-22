@@ -1,0 +1,13 @@
+
+=== solar_system ===
+length-only baseline      : 0.764 [0.68,0.84]
+full agrees with length   : 81/106 (76%)
+full agrees with untrained: 95/106 (90%)
+min cosine over all pairs : 0.7494   median: 0.9955
+
+=== qba ===
+length-only baseline      : 0.764 [0.68,0.84]
+full agrees with length   : 97/106 (92%)
+full agrees with untrained: 103/106 (97%)
+min cosine over all pairs : 0.9659   median: 0.9981
+triples with 100% oov     : 56  full=0.750  length-only=0.696  agree=53/56

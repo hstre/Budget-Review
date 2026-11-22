@@ -1,0 +1,46 @@
+[
+ {
+  "id": "user-de/original",
+  "text": "Wenn die Förderung bewilligt wird, stellen wir zwei Techniker ein."
+ },
+ {
+  "id": "user-de/faithful",
+  "text": "Die Einstellung von zwei Technikern ist für den Fall einer Förderzusage zugesagt."
+ },
+ {
+  "id": "user-de/distorted",
+  "text": "Wir stellen zwei Techniker ein."
+ },
+ {
+  "id": "sco-02-de/original",
+  "text": "Wenn die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr."
+ },
+ {
+  "id": "sco-02-de/faithful1",
+  "text": "Falls die Mittel bewilligt werden, beginnt der Ausbau im Frühjahr."
+ },
+ {
+  "id": "sco-02-de/faithful2",
+  "text": "Vorbehaltlich der Mittelbewilligung beginnt der Ausbau im Frühjahr."
+ },
+ {
+  "id": "sco-02-de/distorted1",
+  "text": "Der Ausbau beginnt im Frühjahr."
+ },
+ {
+  "id": "sco-02-en/original",
+  "text": "If the funds are granted, construction begins in spring."
+ },
+ {
+  "id": "sco-02-en/faithful1",
+  "text": "Provided the funds are granted, construction begins in spring."
+ },
+ {
+  "id": "sco-02-en/faithful2",
+  "text": "Subject to the funds being granted, construction begins in spring."
+ },
+ {
+  "id": "sco-02-en/distorted1",
+  "text": "Construction begins in spring."
+ }
+]
